@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+.jodit-container {
+    border-radius: 0.5rem !important;
+    border: 1px solid #e5e7eb !important;
+    /* Tailwind gray-300 */
+    font-family: inherit !important;
+}
+
+.jodit-toolbar__box {
+    border-radius: 0.5rem 0.5rem 0 0 !important;
+}
+
+.jodit-status-bar {
+    display: none !important;
+}
+
+/* Global scrollbar styles */
+* {
+    scrollbar-width: thin;
+    /* Firefox */
+    scrollbar-color: var(--scrollbar-thumb, #a0aec0) var(--scrollbar-track, transparent);
+}
+
+/* Chrome, Edge, and Safari */
+*::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+    background: var(--scrollbar-track, transparent);
+}
+
+*::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-thumb, #a0aec0);
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    /* adds some spacing */
+    background-clip: content-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background-color: var(--scrollbar-thumb-hover, #718096);
+}

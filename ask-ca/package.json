@@ -1,0 +1,47 @@
+{
+  "name": "ask-yp",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3002",
+    "build": "next build --turbopack",
+    "start": "next start -p 3002",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@radix-ui/react-dropdown-menu": "^2.1.16",
+    "@react-oauth/google": "^0.12.2",
+    "@tanstack/react-query": "^5.90.7",
+    "axios": "^1.12.2",
+    "date-fns": "^4.1.0",
+    "dotenv": "^17.2.3",
+    "formik": "^2.4.6",
+    "jodit-react": "^5.2.26",
+    "libphonenumber-js": "^1.12.23",
+    "lodash.debounce": "^4.0.8",
+    "lucide-react": "^0.544.0",
+    "next": "15.5.4",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "react-hot-toast": "^2.6.0",
+    "react-icons": "^5.5.0",
+    "react-loading-skeleton": "^3.5.0",
+    "react-phone-input-2": "^2.15.1",
+    "react-select": "^5.10.2",
+    "react-virtuoso": "^4.14.1",
+    "sweetalert2": "^11.26.3",
+    "yup": "^1.7.1"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/lodash.debounce": "^4.0.9",
+    "@types/node": "^20",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.1",
+    "eslint": "^9",
+    "eslint-config-next": "15.5.4",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
