@@ -3,6 +3,36 @@ import { downloadImageAndReplaceSrcNonProperty } from "../helper/folder-cleaners
 import Course from "../models/Courses.js";
 import { autoAddAllSeo } from "./AllSeoController.js";
 import AllSeo from "../models/AllSeo.js";
+import mongoose from "mongoose";
+
+function normalizeBestFor(best_for) {
+  let bestForArray = [];
+
+  if (best_for) {
+    if (Array.isArray(best_for)) {
+      bestForArray = best_for;
+    } else if (typeof best_for === "string") {
+      try {
+        const parsed = JSON.parse(best_for);
+        if (Array.isArray(parsed)) bestForArray = parsed;
+        else if (typeof parsed === "string" && parsed.trim()) bestForArray = [parsed];
+      } catch (err) {
+        if (best_for.includes(",")) {
+          bestForArray = best_for.split(",").map((s) => s.trim()).filter(Boolean);
+        } else if (best_for.trim()) {
+          bestForArray = [best_for.trim()];
+        }
+      }
+    } else {
+      bestForArray = [String(best_for)];
+    }
+  }
+
+  // Keep strings only and filter invalid ObjectId strings.
+  return bestForArray
+    .map((id) => String(id).trim())
+    .filter((id) => mongoose.Types.ObjectId.isValid(id));
+}
 
 export const getCourse = async (req, res) => {
   try {
@@ -50,7 +80,10 @@ export const updateCourse = async (req, res) => {
       description,
       status,
       certification_type,
+      best_for,
     } = req.body;
+
+    const normalizedBestFor = normalizeBestFor(best_for);
 
     let updatedDescription = description;
     if (description) {
@@ -68,21 +101,25 @@ export const updateCourse = async (req, res) => {
       ? imageFile[0]?.filename
       : course.image?.[1];
 
+    const updateObj = {
+      course_name,
+      course_short_name,
+      specialization,
+      stream,
+      image: [existImage, existImageOriginal],
+      duration,
+      description: updatedDescription,
+      status,
+      certification_type,
+    };
+
+    if (best_for !== undefined) {
+      updateObj.best_for = normalizedBestFor;
+    }
+
     const courseUpdated = await Course.findByIdAndUpdate(
       objectId,
-      {
-        $set: {
-          course_name,
-          course_short_name,
-          specialization,
-          stream,
-          image: [existImage, existImageOriginal],
-          duration,
-          description: updatedDescription,
-          status,
-          certification_type,
-        },
-      },
+      { $set: updateObj },
       { new: true }
     );
 
@@ -103,7 +140,7 @@ export const updateCourse = async (req, res) => {
 
 export const addCourse = async (req, res) => {
   try {
-    const {
+    let {
       userId,
       course_name,
       course_short_name,
@@ -112,14 +149,20 @@ export const addCourse = async (req, res) => {
       duration,
       description,
       certification_type,
+      best_for,
     } = req.body;
+
+    if (!course_name) {
+      return res.status(400).json({ error: "Course name is required." });
+    }
+
+    const bestForArray = normalizeBestFor(best_for);
 
     const images = await getUploadedFilePaths(req, "image");
 
     const courseSlug = await generateSlug(course_name);
 
     const existCourse = await Course.findOne({ course_name });
-
     if (existCourse) {
       return res.status(400).json({ error: "This course already exists." });
     }
@@ -129,10 +172,7 @@ export const addCourse = async (req, res) => {
 
     let updatedDescription = description;
     if (description) {
-      updatedDescription = await downloadImageAndReplaceSrcNonProperty(
-        description,
-        "course"
-      );
+      updatedDescription = await downloadImageAndReplaceSrcNonProperty(description, "course");
     }
 
     const newCourse = new Course({
@@ -147,20 +187,29 @@ export const addCourse = async (req, res) => {
       description: updatedDescription,
       course_slug: courseSlug,
       certification_type,
+      best_for: bestForArray,
     });
 
     const courseCreated = await newCourse.save();
-    autoAddAllSeo({
-      type_id: courseCreated._id,
-      title: course_name,
-      description: updatedDescription,
-      slug: generateSlug(course_name),
-      type: "course",
-    });
 
-    return res.status(201).json({ message: "Course added successfully." });
+    try {
+      await autoAddAllSeo({
+        type_id: courseCreated._id,
+        title: course_name,
+        description: updatedDescription,
+        slug: courseSlug,
+        type: "course",
+      });
+    } catch (seoErr) {
+      console.warn("autoAddAllSeo failed:", seoErr?.message || seoErr);
+    }
+
+    return res.status(201).json({
+      message: "Course added successfully.",
+      course: courseCreated,
+    });
   } catch (err) {
-    console.log(err);
+    console.error("addCourse error:", err);
     return res.status(500).json({ error: "Internal Server Error!" });
   }
 };

@@ -284,7 +284,7 @@ export const PropertyValidation = Yup.object({
 	property_name: getValidString("Property Name"),
 	property_email: email,
 	property_mobile_no: mobile_no,
-	category: getValidForOnlyRequired("Academic Type"),
+	academic_type: getValidForOnlyRequired("Academic Type"),
 	property_type: getValidForOnlyRequired("Property Type"),
 });
 

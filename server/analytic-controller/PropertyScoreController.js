@@ -3,14 +3,11 @@ import mongoose from "mongoose";
 import Property from "../models/Property.js";
 import Location from "../models/Location.js";
 import Accomodation from "../models/Accomodation.js";
-import BusinessHour from "../models/BusinessHour.js";
 import Amenities from "../models/Ameniteis.js";
 import Faqs from "../models/Faqs.js";
 import Gallery from "../models/Gallery.js";
 import PropertyCourse from "../models/PropertyCourse.js";
 import Teachers from "../models/Teachers.js";
-import PropertyRetreat from "../models/PropertyRetreat.js";
-import Certifications from "../models/Certifications.js";
 import Category from "../models/Category.js";
 
 export const addPropertyScore = async ({ property_id, property_score }) => {
@@ -123,14 +120,11 @@ const itemScores = {
   property_state: { point: 2, online: false },
   property_country: { point: 2, online: false },
   accomdation: { point: 5, online: false },
-  business_hours: { point: 10, online: false },
   amenities: { point: 10, online: false },
   faqs: { point: 5, online: true },
   gallery: { point: 10, online: true },
   courses: { point: 10, online: true },
   teachers: { point: 5, online: true },
-  retreats: { point: 10, online: true },
-  certifications: { point: 5, online: true },
 };
 
 export const generatePropertyScores = async (req, res) => {
@@ -139,26 +133,20 @@ export const generatePropertyScores = async (req, res) => {
       properties,
       locations,
       accomodations,
-      businessHours,
       amenities,
       faqs,
       galleries,
-      certifications,
       propertyCourses,
       teachers,
-      propertyRetreats,
     ] = await Promise.all([
       Property.find(),
       Location.find(),
       Accomodation.find(),
-      BusinessHour.find(),
       Amenities.find(),
       Faqs.find(),
       Gallery.find(),
-      Certifications.find(),
       PropertyCourse.find(),
       Teachers.find(),
-      PropertyRetreat.find(),
     ]);
 
     const onlineCategory = await Category.findOne({
@@ -181,9 +169,6 @@ export const generatePropertyScores = async (req, res) => {
       const acc = accomodations.find(
         (a) => Number(a.property_id) === Number(prop.uniqueId)
       );
-      const bh = businessHours.find(
-        (b) => Number(b.property_id) === Number(prop.uniqueId)
-      );
       const amen = amenities.find(
         (a) => Number(a.propertyId) === Number(prop.uniqueId)
       );
@@ -199,25 +184,16 @@ export const generatePropertyScores = async (req, res) => {
       const teacherList = teachers.filter(
         (t) => Number(t.property_id) === Number(prop.uniqueId)
       );
-      const retreatList = propertyRetreats.filter(
-        (r) => String(r.property_id) === String(prop._id)
-      );
-      const certifcationList = certifications.find(
-        (r) => Number(r.property_id) === Number(prop.uniqueId)
-      );
 
       return {
         ...loc,
         ...prop,
         accomdation: acc ? [acc] : [],
-        business_hours: bh || {},
         amenities: amen?.selectedAmenities || [],
         faqs: faq.map(toPlain),
         gallery: gal.map(toPlain),
         courses: courses.map(toPlain),
         teachers: teacherList.map(toPlain),
-        retreats: retreatList.map(toPlain),
-        certifications: certifcationList?.certifications || [],
       };
     });
 

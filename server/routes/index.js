@@ -107,13 +107,6 @@ import {
   updatePropertyCourse,
 } from "../controller/PropertyCourseController.js";
 import {
-  addBusinessHours,
-  changePropertyCategory,
-  getBusinessHours,
-  getBusinessHoursByPropertyId,
-  updateBusinessHours,
-} from "../controller/BusinessHourController.js";
-import {
   getCity,
   getCountry,
   getState,
@@ -144,20 +137,6 @@ import {
   UpdateLocation,
 } from "../controller/LocationController.js";
 import {
-  CreateCoupon,
-  DeleteCoupon,
-  getAllCoupon,
-  getCouponByPropertyId,
-  UpdateCoupon,
-} from "../controller/CouponController.js";
-import {
-  addCertifications,
-  addNewcertifications,
-  getAllCertifications,
-  getCertificationsByPropertyId,
-  removecertifications,
-} from "../controller/CertificationsController.js";
-import {
   AddAccomodation,
   AddAccomodationImages,
   EditAccomodation,
@@ -165,6 +144,12 @@ import {
   getAllAccomodation,
   removeAccomodationImages,
 } from "../controller/AccomodationController.js";
+import {
+  AddScholarship,
+  EditScholarship,
+  getAllScholarship,
+  getScholarshipByPropertyId,
+} from "../controller/ScholarshipController.js";
 import { addOrUpdateLegal, getLegal } from "../controller/LegalController.js";
 import {
   CreateBlog,
@@ -201,19 +186,6 @@ import {
   getRequirmentById,
 } from "../controller/RequirmentsController.js";
 import {
-  addHiring,
-  deleteHiring,
-  getHiring,
-  getHiringByObjectId,
-  getHiringByPropertyId,
-  updateHiring,
-} from "../controller/HiringController.js";
-import {
-  applyForHiring,
-  getApplyHiringByPropertyId,
-  getApplyHiringByUserId,
-} from "../controller/ApplyHiringController.js";
-import {
   CreateAllSeo,
   getAllSeo,
   getSeoByTypeId,
@@ -240,6 +212,7 @@ import {
   sendPropertyVerifyEmailOTP,
 } from "../controller/PropertyVerificationController.js";
 import { addExam, deleteExam, getExam, getExamById, getExamWithSeoBySlug, restoreExam, softDeleteExam, updateExam } from "../controller/ExamController.js";
+import { AddAdmissionProcess, EditAdmissionProcess, getAdmissionProcessByPropertyId, getAllAdmissionProcess } from "../controller/AdmissionProcessController.js";
 
 const router = express.Router();
 router.use(bodyParser.json());
@@ -414,6 +387,18 @@ router.post(
   removeAccomodationImages
 );
 
+//? Scholarship Route
+router.get("/scholarship", getAllScholarship);
+router.get("/scholarship/:property_id", getScholarshipByPropertyId);
+router.post("/scholarship", Authorize, AddScholarship);
+router.patch("/scholarship/:objectId", Authorize, EditScholarship);
+
+//? Admission Process Route
+router.get("/admission_process", getAllAdmissionProcess);
+router.get("/admission_process/:property_id", getAdmissionProcessByPropertyId);
+router.post("/admission_process", Authorize, AddAdmissionProcess);
+router.patch("/admission_process/:objectId", Authorize, EditAdmissionProcess);
+
 //? Review Route
 router.get("/review", getReview);
 router.post("/review", Authorize, addReview);
@@ -480,49 +465,11 @@ router.get(
 );
 router.delete("/property-course/:objectId", Authorize, deletePropertyCourse);
 
-//? Business Hours
-router.get("/business-hours", getBusinessHours);
-router.get("/business-hours/:property_id", getBusinessHoursByPropertyId);
-router.post("/business-hours", Authorize, addBusinessHours);
-router.patch("/business-hours/category", Authorize, changePropertyCategory);
-router.patch("/business-hours/:property_id", Authorize, updateBusinessHours);
-
-//?certifications
-const certifications = upload.fields([{ name: "certifications", maxCount: 8 }]);
-router.post(
-  "/certifications",
-  Authorize,
-  certifications,
-  processImage,
-  addCertifications
-);
-router.post(
-  "/certifications/add/:property_id",
-  Authorize,
-  certifications,
-  processImage,
-  addNewcertifications
-);
-router.post(
-  "/certifications/remove/:property_id",
-  Authorize,
-  removecertifications
-);
-router.get("/certifications/:property_id", getCertificationsByPropertyId);
-router.get("/certifications", getAllCertifications);
-
 //? amenties
 router.post("/amenities", Authorize, addAmenities);
 router.get("/amenities", getAmenities);
 router.get("/property/amenities/:propertyId", getAmenitiesByPropertyId);
 router.put("/amenities/:uniqueId", Authorize, updateAmenities);
-
-//? Coupons
-router.post("/coupons", Authorize, CreateCoupon);
-router.get("/coupons", getAllCoupon);
-router.get("/coupons/property/:property_id", getCouponByPropertyId);
-router.delete("/coupon/:uniqueId", Authorize, DeleteCoupon);
-router.patch("/coupon/:uniqueId", Authorize, UpdateCoupon);
 
 //? Legal Routes
 router.get("/legal", getLegal);
@@ -575,22 +522,6 @@ router.post(`/requirment`, Authorize, CreateRequirmentController);
 router.get(`/requirment/all`, getAllRequirments);
 router.get(`/requirment/id/:objectId`, getRequirmentById);
 router.patch(`/requirment/:objectId`, Authorize, updateRequirment);
-
-//? Hiring Routes
-router.post(`/hiring`, Authorize, addHiring);
-router.get(`/hiring`, getHiring);
-router.get(`/hiring/:property_id`, getHiringByPropertyId);
-router.delete(`/hiring/:uniqueId`, Authorize, deleteHiring);
-router.patch(`/hiring/:uniqueId`, Authorize, updateHiring);
-router.get(`/hiring/:objectId`, getHiringByObjectId);
-
-//? Apply Hiring
-const resumeUpload = ResuemUploadMulter.fields([
-  { name: "resume", maxCount: 1 },
-]);
-router.post(`/apply/hiring`, Authorize, resumeUpload, applyForHiring);
-router.get(`/apply/hiring/:userId`, getApplyHiringByUserId);
-router.get(`/apply/applications/:property_id`, getApplyHiringByPropertyId);
 
 //? Property SLug
 router.patch(`/property/slug/generate`, PropertySlugGenerator);

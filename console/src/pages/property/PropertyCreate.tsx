@@ -94,7 +94,7 @@ export function PropertyCreate() {
 			property_short_name: "",
 			property_email: "",
 			property_mobile_no: "",
-			category: "",
+			academic_type: "",
 			property_type: "",
 			property_description: "",
 		},
@@ -279,8 +279,8 @@ export function PropertyCreate() {
 									Academic Type
 								</label>
 								<select
-									name="category"
-									value={formik.values.category}
+									name="academic_type"
+									value={formik.values.academic_type}
 									onChange={formik.handleChange}
 									onBlur={formik.handleBlur}
 									className="w-full px-3 py-2 border border-[var(--yp-border-primary)] rounded-lg bg-[var(--yp-input-primary)] text-[var(--yp-text-primary)]"
@@ -290,12 +290,12 @@ export function PropertyCreate() {
 										categoryData,
 										"academic type"
 									)?.map((cat, index) => (
-										<option key={index} value={cat?.uniqueId}>
+										<option key={index} value={cat?._id}>
 											{cat?.category_name}
 										</option>
 									))}
 								</select>
-								{getFormikError(formik, "category")}
+								{getFormikError(formik, "academic_type")}
 							</div>
 							{/* Property property Type */}
 							<div>
@@ -314,7 +314,7 @@ export function PropertyCreate() {
 										categoryData,
 										"property type"
 									)?.map((cat, index) => (
-										<option key={index} value={cat?.uniqueId}>
+										<option key={index} value={cat?._id}>
 											{cat?.category_name}
 										</option>
 									))}

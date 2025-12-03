@@ -21,6 +21,10 @@ const CourseSchema = new mongoose.Schema(
     stream: {
       type: mongoose.Schema.Types.ObjectId,
     },
+    best_for: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category"
+    }],
     duration: {
       type: String,
     },

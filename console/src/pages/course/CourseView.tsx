@@ -123,6 +123,26 @@ export default function CourseView() {
 		return cat || id;
 	};
 
+	const getCategoryNamesFromBestFor = (bestFor: any) => {
+		if (!bestFor) return [];
+		if (
+			Array.isArray(bestFor) &&
+			bestFor.length > 0 &&
+			typeof bestFor[0] === "object"
+		) {
+			return bestFor
+				.map((b: any) => b.category_name || b.name || b._id)
+				.filter(Boolean);
+		}
+		if (Array.isArray(bestFor)) {
+			return bestFor.map((id: string) => getCategoryById(id));
+		}
+		if (typeof bestFor === "string") {
+			return [getCategoryById(bestFor)];
+		}
+		return [];
+	};
+
 	if (loading) {
 		return <ViewSkeleton />;
 	}
@@ -231,6 +251,14 @@ export default function CourseView() {
 							icon={FiAward}
 							title="Certification"
 							value={getCategoryById(course?.certification_type || "N/A")}
+						/>
+						<InfoCard
+							icon={FiAward}
+							title="Best For"
+							value={(() => {
+								const names = getCategoryNamesFromBestFor(course?.best_for);
+								return names.length ? names.join(", ") : "N/A";
+							})()}
 						/>
 						<InfoCard
 							icon={FiAward}

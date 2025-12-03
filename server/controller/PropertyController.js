@@ -1,6 +1,5 @@
 import { addPropertyScore } from "../analytic-controller/PropertyScoreController.js";
 import { MainImageMover } from "../helper/folder-cleaners/PropertyImageMover.js";
-import Certifications from "../models/Certifications.js";
 import ArchiveEnquiry from "../models/ArchiveEnquiry.js";
 import Enquiry from "../models/Enquiry.js";
 import Review from "../models/Reviews.js";
@@ -14,7 +13,6 @@ import SeoScore from "../analytic-model/SeoScore.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import { downloadImageAndReplaceSrc } from "../helper/folder-cleaners/EditorImagesController.js";
-import Coupon from "../models/Coupon.js";
 import Category from "../models/Category.js";
 import {
   generateSlug,
@@ -23,7 +21,6 @@ import {
 } from "../utils/Callback.js";
 import mongoose from "mongoose";
 import { autoAddPropertySeo } from "./PropertySeoController.js";
-import BusinessHour from "../models/BusinessHour.js";
 import Amenities from "../models/Ameniteis.js";
 import Faqs from "../models/Faqs.js";
 import Gallery from "../models/Gallery.js";
@@ -32,21 +29,118 @@ import Property from "../models/Property.js";
 import PropertyCourse from "../models/PropertyCourse.js";
 import Teachers from "../models/Teachers.js";
 import Accomodation from "../models/Accomodation.js";
-import PropertyRetreat from "../models/PropertyRetreat.js";
+
+function normalizeAffiliatedBy(affiliated_by) {
+  let affiliatedByArray = [];
+
+  if (affiliated_by) {
+    if (Array.isArray(affiliated_by)) {
+      affiliatedByArray = affiliated_by;
+    } else if (typeof affiliated_by === "string") {
+      try {
+        const parsed = JSON.parse(affiliated_by);
+        if (Array.isArray(parsed)) affiliatedByArray = parsed;
+        else if (typeof parsed === "string" && parsed.trim()) affiliatedByArray = [parsed];
+      } catch (err) {
+        if (affiliated_by.includes(",")) {
+          affiliatedByArray = affiliated_by.split(",").map((s) => s.trim()).filter(Boolean);
+        } else if (affiliated_by.trim()) {
+          affiliatedByArray = [affiliated_by.trim()];
+        }
+      }
+    } else {
+      affiliatedByArray = [String(affiliated_by)];
+    }
+  }
+
+  // Keep strings only and filter invalid ObjectId strings.
+  return affiliatedByArray
+    .map((id) => String(id).trim())
+    .filter((id) => mongoose.Types.ObjectId.isValid(id));
+}
+
+function normalizeApprovedBy(approved_by) {
+  let approvedByArray = [];
+
+  if (approved_by) {
+    if (Array.isArray(approved_by)) {
+      approvedByArray = approved_by;
+    } else if (typeof approved_by === "string") {
+      try {
+        const parsed = JSON.parse(approved_by);
+        if (Array.isArray(parsed)) approvedByArray = parsed;
+        else if (typeof parsed === "string" && parsed.trim()) approvedByArray = [parsed];
+      } catch (err) {
+        if (approved_by.includes(",")) {
+          approvedByArray = approved_by.split(",").map((s) => s.trim()).filter(Boolean);
+        } else if (approved_by.trim()) {
+          approvedByArray = [approved_by.trim()];
+        }
+      }
+    } else {
+      approvedByArray = [String(approved_by)];
+    }
+  }
+
+  // Keep strings only and filter invalid ObjectId strings.
+  return approvedByArray
+    .map((id) => String(id).trim())
+    .filter((id) => mongoose.Types.ObjectId.isValid(id));
+}
+
+async function resolveCategoryId(input) {
+  if (!input && input !== 0) return null;
+
+  if (typeof input === "string" && mongoose.Types.ObjectId.isValid(input)) {
+    return input;
+  }
+
+  if (typeof input === "object" && input !== null && input._id) {
+    if (mongoose.Types.ObjectId.isValid(String(input._id))) return String(input._id);
+  }
+
+  const maybeNum = Number(input);
+  if (!Number.isNaN(maybeNum)) {
+    const cat = await Category.findOne({ uniqueId: maybeNum }).select("_id");
+    if (cat) return String(cat._id);
+  }
+
+  return null;
+}
+
+async function findCategoryForScoring(input) {
+  if (!input && input !== 0) return null;
+
+  if (typeof input === "string" && mongoose.Types.ObjectId.isValid(input)) {
+    return await Category.findById(input).lean();
+  }
+
+  if (typeof input === "object" && input !== null && input._id) {
+    return await Category.findById(String(input._id)).lean();
+  }
+
+  const maybeNum = Number(input);
+  if (!Number.isNaN(maybeNum)) {
+    return await Category.findOne({ uniqueId: maybeNum }).lean();
+  }
+
+  return null;
+}
 
 export const addProperty = async (req, res) => {
   try {
     let {
       userId,
       property_name,
+      property_short_name,
       property_email,
       property_mobile_no,
-      category,
+      academic_type,
       property_type,
       property_description,
     } = req.body;
 
-    if (!userId && !property_name && !property_email && !property_mobile_no) {
+    if (!userId && !property_name && !property_short_name && !property_email && !property_mobile_no) {
       return res.status(400).json({ error: "All Fields Required" });
     }
 
@@ -54,12 +148,12 @@ export const addProperty = async (req, res) => {
 
     const allCategories = await Category.find();
     const currentCategory = allCategories.filter(
-      (item) => item.uniqueId === Number(category)
+      (item) => item._id === academic_type
     );
 
     if (currentCategory?.[0]?.category_name === "Online Yoga Studio") {
       score += 39;
-    } else if (category) {
+    } else if (academic_type) {
       score += 1;
     }
 
@@ -114,9 +208,10 @@ export const addProperty = async (req, res) => {
       uniqueId,
       userId,
       property_name,
+      property_short_name,
       property_email,
       property_mobile_no: `+${property_mobile_no}`,
-      category,
+      academic_type,
       property_type,
       property_logo: [],
       featured_image: [],
@@ -284,29 +379,31 @@ export const getPropertiesMultipleObjectId = async (req, res) => {
 export const updateProperty = async (req, res) => {
   try {
     const objectId = req.params.objectId;
-    let score = 0;
+    if (!objectId) return res.status(400).json({ error: "Missing objectId." });
 
-    if (!objectId) {
-      return res.status(400).json({ error: "Missing objectId." });
-    }
-
+    // destructure incoming fields
     const {
       property_alt_mobile_no,
       property_description,
       est_year,
-      category,
+      academic_type,
       status,
       property_type,
       property_website,
+      affiliated_by,
+      approved_by,
     } = req.body;
 
+    // normalize arrays using your existing helpers
+    const normalizedAffiliatedBy = normalizeAffiliatedBy(affiliated_by);
+    const normalizedApprovedBy = normalizeApprovedBy(approved_by);
+
+    // fetch existing property
     const existProperty = await Property.findById(objectId);
-    if (!existProperty) {
-      return res.status(404).json({ error: "Property not found." });
-    }
+    if (!existProperty) return res.status(404).json({ error: "Property not found." });
 
+    // normalize phone and check conflicts
     const formattedAltMobile = normalizePhone(property_alt_mobile_no);
-
     if (formattedAltMobile) {
       const phoneConflict = await Property.findOne({
         _id: { $ne: objectId },
@@ -324,63 +421,63 @@ export const updateProperty = async (req, res) => {
 
       if (existProperty.property_mobile_no === formattedAltMobile) {
         return res.status(400).json({
-          error:
-            "Alternate mobile number cannot be the same as the property's primary mobile number.",
+          error: "Alternate mobile number cannot be the same as the property's primary mobile number.",
         });
       }
     }
 
     let updatedDescription = property_description;
     if (property_description) {
-      updatedDescription = await downloadImageAndReplaceSrc(
-        property_description,
-        existProperty?.uniqueId
-      );
+      updatedDescription = await downloadImageAndReplaceSrc(property_description, existProperty?.uniqueId);
     }
-    const allCategories = await Category.find();
-    const currentCategory = allCategories.filter(
-      (item) => item.uniqueId === Number(category)
-    );
 
-    if (!existProperty?.property_alt_mobile_no && property_alt_mobile_no)
-      score += 1;
+    const scoringCategory = await findCategoryForScoring(academic_type);
+
+    let score = 0;
+    if (!existProperty?.property_alt_mobile_no && property_alt_mobile_no) score += 1;
     if (!existProperty?.property_website && property_website) score += 1;
-    if (!existProperty?.property_description && property_description)
-      score += 1;
-    if (!existProperty?.category) {
-      if (currentCategory?.[0]?.category_name === "Online Yoga Studio") {
+    if (!existProperty?.property_description && property_description) score += 1;
+
+    if (!existProperty?.academic_type) {
+      if (scoringCategory?.category_name === "Online Yoga Studio") {
         score += 39;
-      } else if (category) {
+      } else if (academic_type) {
         score += 1;
       }
     } else {
-      if (
-        currentCategory?.[0]?.category_name !== "Online Yoga Studio" &&
-        existProperty?.category === "Online Yoga Studio"
-      ) {
+      const existingAcademicCat = await Category.findById(existProperty.academic_type).lean().catch(() => null);
+      if (existingAcademicCat && existingAcademicCat.category_name === "Online Yoga Studio" && scoringCategory?.category_name !== "Online Yoga Studio") {
         score -= 38;
       }
     }
+
     if (!existProperty?.est_year && est_year) score += 1;
     if (!existProperty?.property_type && property_type) score += 1;
 
     const updatedFields = {
       property_description: updatedDescription,
       est_year,
-      category,
+      academic_type,
       status,
       property_type,
       property_website,
     };
 
-    if (formattedAltMobile) {
-      updatedFields.property_alt_mobile_no = formattedAltMobile;
+    if (affiliated_by !== undefined) updatedFields.affiliated_by = normalizedAffiliatedBy;
+    if (approved_by !== undefined) updatedFields.approved_by = normalizedApprovedBy;
+    if (formattedAltMobile) updatedFields.property_alt_mobile_no = formattedAltMobile;
+
+    if (updatedFields.academic_type !== undefined) {
+      const resolved = await resolveCategoryId(updatedFields.academic_type);
+      if (resolved) {
+        updatedFields.academic_type = resolved;
+      } else {
+        delete updatedFields.academic_type;
+      }
     }
 
-    Object.keys(updatedFields).forEach((key) => {
-      if (updatedFields[key] === undefined || updatedFields[key] === null) {
-        delete updatedFields[key];
-      }
+    Object.keys(updatedFields).forEach((k) => {
+      if (updatedFields[k] === undefined || updatedFields[k] === null) delete updatedFields[k];
     });
 
     if (Object.keys(updatedFields).length === 0) {
@@ -398,11 +495,15 @@ export const updateProperty = async (req, res) => {
       property_score: score,
     });
 
-    await autoAddPropertySeo({
-      property_id: updatedProperty?._id,
-      title: updateProperty?.property_name,
-      description: updatedDescription,
-    });
+    try {
+      await autoAddPropertySeo({
+        property_id: updatedProperty?._id,
+        title: updatedProperty?.property_name,
+        description: updatedDescription,
+      });
+    } catch (seoErr) {
+      console.warn("autoAddPropertySeo failed:", seoErr?.message || seoErr);
+    }
 
     return res.json({
       message: "Property updated successfully.",
@@ -435,10 +536,7 @@ export const deleteProperty = async (req, res) => {
       Gallery.deleteMany({ propertyId: uniqueId }),
       Review.deleteMany({ property_id: uniqueId }),
       PropertyCourse.deleteMany({ property_id: property?._is }),
-      PropertyRetreat.deleteMany({ property_id: property?._is }),
       Faqs.deleteMany({ property_id: uniqueId }),
-      Certifications.deleteMany({ property_id: uniqueId }),
-      BusinessHour.deleteMany({ property_id: uniqueId }),
       Enquiry.deleteMany({ property_id: objectId }),
       ArchiveEnquiry.deleteMany({ property_id: objectId }),
       Amenities.deleteMany({ propertyId: uniqueId }),
@@ -450,7 +548,6 @@ export const deleteProperty = async (req, res) => {
       PropertyScore.deleteMany({ property_id: objectId }),
       SeoScore.deleteMany({ property_id: objectId }),
       Accomodation.deleteMany({ property_id: uniqueId }),
-      Coupon.deleteMany({ property_id: uniqueId }),
     ]);
 
     try {

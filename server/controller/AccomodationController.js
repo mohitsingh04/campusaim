@@ -76,6 +76,7 @@ export const getAccomodationByPropertyId = async (req, res) => {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
 export const getAllAccomodation = async (req, res) => {
   try {
     const accomodation = await Accomodation.find();

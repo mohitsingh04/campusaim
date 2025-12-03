@@ -14,6 +14,9 @@ const PropertySchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    property_short_name: {
+      type: String,
+    },
     property_email: {
       type: String,
       required: true,
@@ -37,19 +40,27 @@ const PropertySchema = new mongoose.Schema(
     est_year: {
       type: Number,
     },
-    category: {
-      type: Number,
+    academic_type: {
+      type: mongoose.Schema.Types.ObjectId,
     },
     property_slug: {
       type: String,
       unique: true,
     },
+    approved_by: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category"
+    }],
+    affiliated_by: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category"
+    }],
     status: {
       type: String,
       default: "Pending",
     },
     property_type: {
-      type: Number,
+      type: mongoose.Schema.Types.ObjectId,
     },
     property_website: {
       type: String,

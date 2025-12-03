@@ -26,6 +26,7 @@ import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { Breadcrumbs } from "../../ui/breadcrumbs/Breadcrumbs";
 import { CourseValidation } from "../../contexts/ValidationsSchemas";
 import EditSkeleton from "../../ui/skeleton/EditPageSkeleton";
+import Select from "react-select";
 
 export function CourseEdit() {
 	const { objectId } = useParams();
@@ -87,6 +88,7 @@ export function CourseEdit() {
 			certification_type: mainCourse?.certification_type || "",
 			image: null as File | null,
 			status: mainCourse?.status || "",
+			best_for: mainCourse?.best_for || "",
 		},
 		validationSchema: CourseValidation,
 		onSubmit: async (values) => {
@@ -96,6 +98,7 @@ export function CourseEdit() {
 				fd.append("course_short_name", values.course_short_name);
 				fd.append("specialization", values.specialization);
 				fd.append("stream", values.stream);
+				fd.append("best_for", JSON.stringify(values.best_for));
 				fd.append(
 					"duration",
 					`${values?.duration_value} ${values?.duration_type}`
@@ -131,10 +134,15 @@ export function CourseEdit() {
 		"specialization"
 	);
 	const streamOptions = getCategoryAccodingToField(categories, "stream");
+	const bestForOptions = getCategoryAccodingToField(categories, "Best For");
 	const certificationOptions = getCategoryAccodingToField(
 		categories,
 		"Certification Type"
 	);
+	const bestForSelectOptions = bestForOptions.map((opt: any) => ({
+		value: opt._id,
+		label: opt.category_name || opt.name,
+	}));
 
 	if (loading) {
 		return <EditSkeleton />;
@@ -287,6 +295,32 @@ export function CourseEdit() {
 								))}
 							</select>
 							{getFormikError(formik, "stream")}
+						</div>
+
+						{/* Best For */}
+						<div>
+							<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
+								Best For
+							</label>
+
+							<Select
+								isMulti
+								name="best_for"
+								options={bestForSelectOptions}
+								value={bestForSelectOptions.filter((opt) =>
+									formik.values.best_for?.includes(opt.value)
+								)}
+								onChange={(selected) =>
+									formik.setFieldValue(
+										"best_for",
+										Array.isArray(selected) ? selected.map((s) => s.value) : []
+									)
+								}
+								onBlur={() => formik.setFieldTouched("best_for", true)}
+								classNamePrefix="react-select"
+							/>
+
+							{getFormikError(formik, "best_for")}
 						</div>
 					</div>
 

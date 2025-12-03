@@ -3,7 +3,6 @@ import Rank from "../analytic-model/Rank.js";
 import { generateSlug, getAverageRating } from "../utils/Callback.js";
 import Accomodation from "../models/Accomodation.js";
 import Category from "../models/Category.js";
-import Certifications from "../models/Certifications.js";
 import Gallery from "../models/Gallery.js";
 import Location from "../models/Location.js";
 import Property from "../models/Property.js";
@@ -410,7 +409,6 @@ export const PrernaAIPropertySearch = async (req, res) => {
     const [location, certification, gallery, rank, reviews] = await Promise.all(
       [
         Location.findOne({ property_id: property.uniqueId }),
-        Certifications.findOne({ property_id: property.uniqueId }),
         Gallery.findOne({ propertyId: property.uniqueId }),
         Rank.findOne({ property_id: property._id }),
         Review.find({ property_id: property.uniqueId }),
@@ -428,10 +426,6 @@ export const PrernaAIPropertySearch = async (req, res) => {
         matchCategory(property?.category) || "property"
       )}/${generateSlug(property?.property_slug)}/overview`,
       property_description: property?.property_description || null,
-      certifications:
-        certification?.certifications
-          ?.filter((certi) => certi?.endsWith(".webp"))
-          .map((certi) => `${process.env.MEDIA_URL}${certi}`) || [],
       gallery:
         gallery?.gallery
           ?.filter((img) => img?.endsWith(".webp"))
@@ -511,7 +505,6 @@ export const PrernaAIPropertySearchSummaryData = async (req, res) => {
     const [location, certification, gallery, rank, reviews] = await Promise.all(
       [
         Location.findOne({ property_id: property.uniqueId }),
-        Certifications.findOne({ property_id: property.uniqueId }),
         Gallery.findOne({ propertyId: property.uniqueId }),
         Rank.findOne({ property_id: property._id }),
         Review.find({ property_id: property.uniqueId }),
@@ -529,10 +522,6 @@ export const PrernaAIPropertySearchSummaryData = async (req, res) => {
         matchCategory(property?.category) || "property"
       )}/${generateSlug(property?.property_slug)}/overview`,
       property_description: property?.property_description || null,
-      certifications:
-        certification?.certifications
-          ?.filter((certi) => certi?.endsWith(".webp"))
-          .map((certi) => `${process.env.MEDIA_URL}${certi}`) || [],
       gallery:
         gallery?.gallery
           ?.filter((img) => img?.endsWith(".webp"))
