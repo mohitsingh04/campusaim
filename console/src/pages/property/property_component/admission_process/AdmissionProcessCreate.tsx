@@ -77,7 +77,7 @@ export default function AdmissionProcessCreate({
 							disabled={formik.isSubmitting}
 							className="px-6 py-2 rounded-lg text-sm font-medium text-[var(--yp-blue-text)] bg-[var(--yp-blue-bg)]"
 						>
-							Submit
+							{formik.isSubmitting ? "Submitting..." : "Submit"}
 						</button>
 					</div>
 				</form>

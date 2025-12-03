@@ -202,9 +202,7 @@ export default function CourseList({
     return (
       <div className="m-4 pb-4">
         <AddCourseForm
-          requirements={requirements}
           categories={categories}
-          keyOutcomes={keyOutcomes}
           allCourses={allCourses}
           property={property}
           getPropertyCourse={getAllPropertyCourses}

@@ -185,6 +185,18 @@ export default function CourseView() {
 							children={course?.description || "No description provided."}
 						/>
 					</section>
+
+					<section className="bg-[var(--yp-secondary)] rounded-xl p-6 transition-colors duration-200">
+						<h2 className="text-2xl font-bold text-[var(--yp-text-primary)] mb-4 flex items-center gap-2">
+							<FiBookOpen className="w-6 h-6 text-[var(--yp-main)]" />
+							Course Eligibility
+						</h2>
+						<ReadMoreLess
+							children={
+								course?.course_eligibility || "No description provided."
+							}
+						/>
+					</section>
 				</div>
 
 				<div className="lg:col-span-1 space-y-4">
@@ -243,14 +255,25 @@ export default function CourseView() {
 							value={getCategoryById(course?.specialization || "N/A")}
 						/>
 						<InfoCard
-							icon={FiClock}
-							title="Duration"
-							value={course?.duration || "N/A"}
+							icon={FiAward}
+							title="Course Type"
+							value={(() => {
+								const names = getCategoryNamesFromBestFor(course?.course_type);
+								return names.length ? names.join(", ") : "N/A";
+							})()}
 						/>
 						<InfoCard
 							icon={FiAward}
-							title="Certification"
-							value={getCategoryById(course?.certification_type || "N/A")}
+							title="Program Type"
+							value={(() => {
+								const names = getCategoryNamesFromBestFor(course?.program_type);
+								return names.length ? names.join(", ") : "N/A";
+							})()}
+						/>
+						<InfoCard
+							icon={FiClock}
+							title="Duration"
+							value={course?.duration || "N/A"}
 						/>
 						<InfoCard
 							icon={FiAward}
@@ -259,11 +282,6 @@ export default function CourseView() {
 								const names = getCategoryNamesFromBestFor(course?.best_for);
 								return names.length ? names.join(", ") : "N/A";
 							})()}
-						/>
-						<InfoCard
-							icon={FiAward}
-							title="Stream"
-							value={getCategoryById(course?.stream || "N/A")}
 						/>
 						<InfoCard
 							icon={CheckCircle}

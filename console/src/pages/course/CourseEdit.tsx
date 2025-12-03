@@ -81,14 +81,15 @@ export function CourseEdit() {
 			course_name: mainCourse?.course_name || "",
 			course_short_name: mainCourse?.course_short_name || "",
 			specialization: mainCourse?.specialization || "",
-			stream: mainCourse?.stream || "",
 			duration_value: (mainCourse?.duration as string)?.split(" ")?.[0] || "",
 			duration_type: (mainCourse?.duration as string)?.split(" ")?.[1] || "",
-			description: mainCourse?.description || "",
-			certification_type: mainCourse?.certification_type || "",
+			course_type: mainCourse?.course_type || "",
+			program_type: mainCourse?.program_type || "",
+			course_eligibility: mainCourse?.course_eligibility || "",
 			image: null as File | null,
-			status: mainCourse?.status || "",
 			best_for: mainCourse?.best_for || "",
+			description: mainCourse?.description || "",
+			status: mainCourse?.status || "",
 		},
 		validationSchema: CourseValidation,
 		onSubmit: async (values) => {
@@ -97,18 +98,19 @@ export function CourseEdit() {
 				fd.append("course_name", values.course_name);
 				fd.append("course_short_name", values.course_short_name);
 				fd.append("specialization", values.specialization);
-				fd.append("stream", values.stream);
 				fd.append("best_for", JSON.stringify(values.best_for));
 				fd.append(
 					"duration",
 					`${values?.duration_value} ${values?.duration_type}`
 				);
+				fd.append("course_type", values.course_type);
+				fd.append("program_type", String(values.program_type));
 				fd.append("description", values.description);
-				fd.append("certification_type", values.certification_type);
 				fd.append("status", values.status);
 				if (values.image) {
 					fd.append("image", values.image);
 				}
+				fd.append("course_eligibility", String(values.course_eligibility));
 
 				const response = await API.patch(`/course/${objectId}`, fd);
 				toast.success(response.data.message || "Course updated Successfully");
@@ -133,13 +135,24 @@ export function CourseEdit() {
 		categories,
 		"specialization"
 	);
-	const streamOptions = getCategoryAccodingToField(categories, "stream");
 	const bestForOptions = getCategoryAccodingToField(categories, "Best For");
-	const certificationOptions = getCategoryAccodingToField(
-		categories,
-		"Certification Type"
-	);
 	const bestForSelectOptions = bestForOptions.map((opt: any) => ({
+		value: opt._id,
+		label: opt.category_name || opt.name,
+	}));
+	const courseTypeOptions = getCategoryAccodingToField(
+		categories,
+		"Course Type"
+	);
+	const courseTypeSelectOptions = courseTypeOptions.map((opt: any) => ({
+		value: opt._id,
+		label: opt.category_name || opt.name,
+	}));
+	const ProgramTypeOptions = getCategoryAccodingToField(
+		categories,
+		"Program Type"
+	);
+	const programTypeSelectOptions = ProgramTypeOptions.map((opt: any) => ({
 		value: opt._id,
 		label: opt.category_name || opt.name,
 	}));
@@ -245,9 +258,6 @@ export function CourseEdit() {
 									className="w-full px-3 py-2 border border-[var(--yp-border-primary)] rounded-lg bg-[var(--yp-input-primary)] text-[var(--yp-text-primary)]"
 								>
 									<option value="">Select Type</option>
-									<option value="hours">Hours</option>
-									<option value="days">Days</option>
-									<option value="weeks">Weeks</option>
 									<option value="months">Months</option>
 									<option value="years">Years</option>
 								</select>
@@ -255,46 +265,54 @@ export function CourseEdit() {
 							</div>
 						</div>
 
-						{/* Certification Type */}
+						{/* Course Type */}
 						<div>
 							<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
-								Certification Type
+								Course Type
 							</label>
-							<select
-								name="certification_type"
-								value={formik.values.certification_type}
-								onChange={formik.handleChange}
-								className="w-full px-3 py-2 border border-[var(--yp-border-primary)] rounded-lg bg-[var(--yp-input-primary)] text-[var(--yp-text-primary)]"
-							>
-								<option value="">Select Certification</option>
-								{certificationOptions.map((opt: any, idx: number) => (
-									<option key={idx} value={opt._id}>
-										{opt.category_name || opt.name}
-									</option>
-								))}
-							</select>
-							{getFormikError(formik, "certification_type")}
+
+							<Select
+								name="course_type"
+								options={courseTypeSelectOptions}
+								value={courseTypeSelectOptions.find(
+									(opt) => opt.value === formik.values.course_type
+								)}
+								onChange={(selected) =>
+									formik.setFieldValue(
+										"course_type",
+										selected ? selected.value : ""
+									)
+								}
+								onBlur={() => formik.setFieldTouched("course_type", true)}
+								classNamePrefix="react-select"
+							/>
+
+							{getFormikError(formik, "course_type")}
 						</div>
 
-						{/* Stream */}
+						{/* Program Type */}
 						<div>
 							<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
-								Stream
+								Program Type
 							</label>
-							<select
-								name="stream"
-								value={formik.values.stream}
-								onChange={formik.handleChange}
-								className="w-full px-3 py-2 border border-[var(--yp-border-primary)] rounded-lg bg-[var(--yp-input-primary)] text-[var(--yp-text-primary)]"
-							>
-								<option value="">Select Stream</option>
-								{streamOptions.map((opt: any, idx: number) => (
-									<option key={idx} value={opt._id}>
-										{opt.category_name || opt.name}
-									</option>
-								))}
-							</select>
-							{getFormikError(formik, "stream")}
+
+							<Select
+								name="program_type"
+								options={programTypeSelectOptions}
+								value={programTypeSelectOptions.find(
+									(opt) => opt.value === formik.values.program_type
+								)}
+								onChange={(selected) =>
+									formik.setFieldValue(
+										"program_type",
+										selected ? selected.value : ""
+									)
+								}
+								onBlur={() => formik.setFieldTouched("program_type", true)}
+								classNamePrefix="react-select"
+							/>
+
+							{getFormikError(formik, "program_type")}
 						</div>
 
 						{/* Best For */}
@@ -324,27 +342,19 @@ export function CourseEdit() {
 						</div>
 					</div>
 
-					{/* Status */}
+					{/* Course Eligibility */}
 					<div>
 						<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
-							Status
+							Course Eligibility
 						</label>
-						<select
-							name="status"
-							value={formik.values.status}
+						<textarea
+							name="course_eligibility"
+							value={formik.values.course_eligibility}
 							onChange={formik.handleChange}
+							placeholder="Enter Course Eligibility"
 							className="w-full px-3 py-2 border border-[var(--yp-border-primary)] rounded-lg bg-[var(--yp-input-primary)] text-[var(--yp-text-primary)]"
-						>
-							<option value="">Select Status</option>
-							{getStatusAccodingToField(status, "course").map(
-								(opt: any, idx: number) => (
-									<option key={idx} value={opt.parent_status}>
-										{opt.parent_status}
-									</option>
-								)
-							)}
-						</select>
-						{getFormikError(formik, "status")}
+						></textarea>
+						{getFormikError(formik, "course_eligibility")}
 					</div>
 
 					{/* Image */}
@@ -395,6 +405,29 @@ export function CourseEdit() {
 							}
 						/>
 						{getFormikError(formik, "description")}
+					</div>
+
+					{/* Status */}
+					<div>
+						<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
+							Status
+						</label>
+						<select
+							name="status"
+							value={formik.values.status}
+							onChange={formik.handleChange}
+							className="w-full px-3 py-2 border border-[var(--yp-border-primary)] rounded-lg bg-[var(--yp-input-primary)] text-[var(--yp-text-primary)]"
+						>
+							<option value="">Select Status</option>
+							{getStatusAccodingToField(status, "course").map(
+								(opt: any, idx: number) => (
+									<option key={idx} value={opt.parent_status}>
+										{opt.parent_status}
+									</option>
+								)
+							)}
+						</select>
+						{getFormikError(formik, "status")}
 					</div>
 
 					<div className="flex justify-start">

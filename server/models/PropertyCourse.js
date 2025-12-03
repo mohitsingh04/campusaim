@@ -6,54 +6,40 @@ const PropertyCourseSchema = new mongoose.Schema(
     userId: {
       type: mongoose.Schema.Types.ObjectId,
     },
-    uniqueId: {
-      type: Number,
+    course_id: {
+      type: mongoose.Schema.Types.ObjectId,
     },
-    course_type: {
+    property_id: {
       type: mongoose.Schema.Types.ObjectId,
     },
     course_short_name: {
       type: String,
     },
-    certification_type: {
-      type: mongoose.Schema.Types.ObjectId,
-    },
-    prices: {
-      type: Object,
-    },
-    course_level: {
+    specialization: {
       type: mongoose.Schema.Types.ObjectId,
     },
     duration: {
       type: String,
     },
-    course_id: {
+    course_type: {
       type: mongoose.Schema.Types.ObjectId,
+    },
+    program_type: {
+      type: mongoose.Schema.Types.ObjectId,
+    },
+    best_for: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category"
+    }],
+    course_eligibility: {
+      type: String,
+    },
+    prices: {
+      type: Object,
     },
     status: {
       type: String,
       default: "Active",
-    },
-    property_id: {
-      type: mongoose.Schema.Types.ObjectId,
-    },
-    requirements: {
-      type: [mongoose.Schema.Types.ObjectId],
-    },
-    cerification_info: {
-      type: Boolean,
-    },
-    best_for: {
-      type: Array,
-    },
-    languages: {
-      type: Array,
-    },
-    key_outcomes: {
-      type: [mongoose.Schema.Types.ObjectId],
-    },
-    course_format: {
-      type: mongoose.Schema.Types.ObjectId,
     },
   },
   { timestamps: true }

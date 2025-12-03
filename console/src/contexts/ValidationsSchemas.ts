@@ -113,13 +113,13 @@ export const BlogSchema = Yup.object().shape({
 
 export const CourseValidation = Yup.object().shape({
 	course_name: getValidString("Course name"),
+	course_type: Yup.string().required("Course Type is required"),
+	program_type: Yup.string().required("Program Type is required"),
 	specialization: getValidString("Specialization"),
-	stream: getValidString("Stream"),
 	duration_value: Yup.number()
 		.min(1, "Duration value must be at least 1")
 		.required("Duration value is required"),
 	duration_type: getValidForOnlyRequired("Duration type"),
-	certification_type: getValidForOnlyRequired("Certification type"),
 });
 
 export const ExamValidation = Yup.object().shape({
@@ -128,14 +128,11 @@ export const ExamValidation = Yup.object().shape({
 
 export const PropertyCourseValidation = Yup.object().shape({
 	course_name: getValidString("Course name"),
-	course_level: getValidForOnlyRequired("Course level"),
-	course_format: getValidForOnlyRequired("Course format"),
 	course_type: getValidForOnlyRequired("Course type"),
 	duration_value: Yup.number()
 		.min(1, "Duration value must be at least 1")
 		.required("Duration value is required"),
 	duration_type: getValidForOnlyRequired("Duration type"),
-	certification_type: getValidForOnlyRequired("Certification type"),
 });
 
 export const RetreatValidation = Yup.object().shape({

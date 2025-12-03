@@ -4,10 +4,7 @@ import { regularDatabase } from "../database/Databases.js";
 const CourseSchema = new mongoose.Schema(
   {
     userId: {
-      type: Number,
-    },
-    uniqueId: {
-      type: Number,
+      type: mongoose.Schema.Types.ObjectId,
     },
     course_name: {
       type: String,
@@ -18,21 +15,24 @@ const CourseSchema = new mongoose.Schema(
     specialization: {
       type: mongoose.Schema.Types.ObjectId,
     },
-    stream: {
+    duration: {
+      type: String,
+    },
+    course_type: {
+      type: mongoose.Schema.Types.ObjectId,
+    },
+    program_type: {
       type: mongoose.Schema.Types.ObjectId,
     },
     best_for: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category"
     }],
-    duration: {
+    course_eligibility: {
       type: String,
     },
     description: {
       type: String,
-    },
-    property_id: {
-      type: Number,
     },
     course_slug: {
       type: String,
@@ -43,9 +43,6 @@ const CourseSchema = new mongoose.Schema(
     status: {
       type: String,
       default: "Active",
-    },
-    certification_type: {
-      type: mongoose.Schema.Types.ObjectId,
     },
     isDeleted: {
       type: Boolean,

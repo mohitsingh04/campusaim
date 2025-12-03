@@ -78,7 +78,7 @@ export default function ScholarshipEdit({
 							disabled={formik.isSubmitting}
 							className="px-6 py-2 rounded-lg text-sm font-medium text-[var(--yp-blue-text)] bg-[var(--yp-blue-bg)]"
 						>
-							Update
+							{formik.isSubmitting ? "Updating..." : "Update"}
 						</button>
 					</div>
 				</form>

@@ -3,24 +3,66 @@ import Course from "../models/Courses.js";
 import PropertyCourse from "../models/PropertyCourse.js";
 import { generateUniqueId } from "../utils/Callback.js";
 
+export const getPropertyCourse = async (req, res) => {
+  try {
+    const propertyCourse = await PropertyCourse.find();
+    return res.status(200).json(propertyCourse);
+  } catch (error) {
+    console.error(error);
+    return res.send({ error: "Internal Server Error" });
+  }
+};
+
+export const getPropertyCourseById = async (req, res) => {
+  try {
+    const objectId = req.params.objectId;
+    const propertyCourse = await PropertyCourse.findOne({ _id: objectId });
+    return res.status(200).json(propertyCourse);
+  } catch (error) {
+    console.error(error);
+    return res.send({ error: "Internal Server Error" });
+  }
+};
+
+export const getPropertyCourseByUniqueId = async (req, res) => {
+  try {
+    const uniqueId = req.params.uniqueId;
+    const propertyCourse = await PropertyCourse.findOne({ uniqueId: uniqueId });
+    return res.status(200).json(propertyCourse);
+  } catch (error) {
+    console.error(error);
+    return res.send({ error: "Internal Server Error" });
+  }
+};
+
+export const getPropertyCourseByPropertyId = async (req, res) => {
+  try {
+    const propertyId = req.params.propertyId;
+
+    const propertyCourse = await PropertyCourse.find({
+      property_id: propertyId,
+    });
+    return res.status(200).json(propertyCourse);
+  } catch (error) {
+    console.error(error);
+    return res.send({ error: "Internal Server Error" });
+  }
+};
+
 export const addPropertyCourse = async (req, res) => {
   try {
     const {
       userId,
       course_id,
       property_id,
-      course_type,
       course_short_name,
-      prices,
-      course_level,
+      specialization,
       duration,
-      certification_type,
-      final_requirement,
-      cerification_info,
+      course_type,
+      program_type,
+      course_eligibility,
+      prices,
       best_for,
-      languages,
-      course_format,
-      final_key_outcomes,
     } = req.body;
 
     if (!userId || !course_id || !property_id) {
@@ -52,39 +94,27 @@ export const addPropertyCourse = async (req, res) => {
     const propertyCourseFields = [
       "course_type",
       "course_short_name",
-      "prices",
-      "course_level",
+      "specialization",
+      "program_type",
+      "course_eligibility",
       "duration",
-      "certification_type",
-      "requirements",
+      "prices",
       "best_for",
-      "key_outcomes",
-      "languages",
-      "course_format",
-      "cerification_info",
     ];
 
     const inputData = {
       course_type,
       course_short_name,
+      specialization,
+      program_type,
+      course_eligibility,
       prices,
-      course_level,
       duration,
-      certification_type,
-      requirements: final_requirement,
       best_for,
-      key_outcomes: final_key_outcomes,
-      languages,
-      course_format,
-      cerification_info,
     };
 
     const arrayFieldsWithTypes = {
-      requirements: "object",
       best_for: "object",
-      key_outcomes: "object",
-      prices: "object",
-      languages: "string",
     };
 
     const arraysAreEqual = (a, b) => {
@@ -145,49 +175,6 @@ export const addPropertyCourse = async (req, res) => {
   }
 };
 
-export const getPropertyCourse = async (req, res) => {
-  try {
-    const propertyCourse = await PropertyCourse.find();
-    return res.status(200).json(propertyCourse);
-  } catch (error) {
-    console.error(error);
-    return res.send({ error: "Internal Server Error" });
-  }
-};
-
-export const getPropertyCourseById = async (req, res) => {
-  try {
-    const objectId = req.params.objectId;
-    const propertyCourse = await PropertyCourse.findOne({ _id: objectId });
-    return res.status(200).json(propertyCourse);
-  } catch (error) {
-    console.error(error);
-    return res.send({ error: "Internal Server Error" });
-  }
-};
-export const getPropertyCourseByUniqueId = async (req, res) => {
-  try {
-    const uniqueId = req.params.uniqueId;
-    const propertyCourse = await PropertyCourse.findOne({ uniqueId: uniqueId });
-    return res.status(200).json(propertyCourse);
-  } catch (error) {
-    console.error(error);
-    return res.send({ error: "Internal Server Error" });
-  }
-};
-export const getPropertyCourseByPropertyId = async (req, res) => {
-  try {
-    const propertyId = req.params.propertyId;
-
-    const propertyCourse = await PropertyCourse.find({
-      property_id: propertyId,
-    });
-    return res.status(200).json(propertyCourse);
-  } catch (error) {
-    console.error(error);
-    return res.send({ error: "Internal Server Error" });
-  }
-};
 export const updatePropertyCourse = async (req, res) => {
   try {
     const objectId = req.params.objectId;
