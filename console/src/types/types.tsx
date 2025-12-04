@@ -126,6 +126,7 @@ export interface TeacherProps {
 	_id?: string;
 	teacher_name: string;
 	designation: string;
+	department: string;
 	experience: string;
 	profile?: string[];
 	status: string;
@@ -342,6 +343,13 @@ export interface AllDegreeAndInstituteProps {
 
 export interface FAQProps {
 	uniqueId: number;
+	question: string;
+	answer: string;
+	property_id: number;
+}
+
+export interface QnAProps {
+	_id: string;
 	question: string;
 	answer: string;
 	property_id: number;

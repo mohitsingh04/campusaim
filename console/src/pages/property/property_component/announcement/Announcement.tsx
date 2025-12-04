@@ -1,45 +1,45 @@
 import { useCallback, useEffect, useState } from "react";
 import { PropertyProps } from "../../../../types/types";
-import ScholarshipCreate from "./ScholarshipCreate";
-import ScholarshipEdit from "./ScholarshipEdit";
+import AnnouncementCreate from "./AnnouncementCreate";
+import AnnouncementEdit from "./AnnouncementEdit";
 import { API } from "../../../../contexts/API";
 import { Edit, MoreVertical, Trash2 } from "lucide-react";
 import { getErrorResponse } from "../../../../contexts/Callbacks";
 import ReadMoreLess from "../../../../ui/read-more/ReadMoreLess";
 
-export default function Scholarship({
+export default function Announcement({
 	property,
 }: {
 	property: PropertyProps | null;
 }) {
-	const [scholarship, setScholarship] = useState<any[]>([]);
+	const [announcement, setAnnouncement] = useState<any[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [isEdit, setIsEdit] = useState<any>("");
 	const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
 
-	const getScholarship = useCallback(async () => {
+	const getAnnouncement = useCallback(async () => {
 		if (!property?._id) {
 			setLoading(false);
 			return;
 		}
 		try {
-			const response = await API.get(`/scholarship/${property?._id}`);
+			const response = await API.get(`/announcement/${property?._id}`);
 			if (response.data && response.data.length > 0) {
-				setScholarship(response.data);
+				setAnnouncement(response.data);
 			} else {
-				setScholarship([]);
+				setAnnouncement([]);
 			}
 		} catch (error) {
 			getErrorResponse(error, true);
-			setScholarship([]);
+			setAnnouncement([]);
 		} finally {
 			setLoading(false);
 		}
 	}, [property?._id]);
 
 	useEffect(() => {
-		getScholarship();
-	}, [getScholarship]);
+		getAnnouncement();
+	}, [getAnnouncement]);
 
 	if (loading) {
 		return (
@@ -47,18 +47,21 @@ export default function Scholarship({
 		);
 	}
 
-	if (scholarship.length === 0) {
+	if (announcement.length === 0) {
 		return (
-			<ScholarshipCreate property={property} getScholarship={getScholarship} />
+			<AnnouncementCreate
+				property={property}
+				getAnnouncement={getAnnouncement}
+			/>
 		);
 	}
 
 	if (isEdit) {
 		return (
-			<ScholarshipEdit
+			<AnnouncementEdit
 				property={property}
-				scholarship={isEdit}
-				getScholarship={getScholarship}
+				announcement={isEdit}
+				getAnnouncement={getAnnouncement}
 				setIsEdit={setIsEdit}
 			/>
 		);
@@ -66,12 +69,12 @@ export default function Scholarship({
 
 	return (
 		<div className="grid grid-cols-1 gap-6">
-			{scholarship?.map((acc) => {
+			{announcement?.map((acc) => {
 				return (
 					<div key={acc?._id || Math.random()} className="flex flex-col">
 						<div className="flex items-center justify-between px-4 py-3 border-b border-[var(--yp-border-primary)]">
 							<h3 className="text-lg font-semibold text-[var(--yp-text-primary)]">
-								Scholarship Details
+								Announcement Details
 							</h3>
 
 							<div className="flex gap-2">
@@ -111,7 +114,7 @@ export default function Scholarship({
 						</div>
 						{/* Card Body */}
 						<div className="px-4 py-3 flex-1 space-y-3">
-							<ReadMoreLess children={acc?.scholarship} />
+							<ReadMoreLess children={acc?.announcement} />
 						</div>
 					</div>
 				);

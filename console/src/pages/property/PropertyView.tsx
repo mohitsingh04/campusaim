@@ -13,6 +13,12 @@ import {
 	FileText,
 	Map,
 	ExternalLink,
+	Megaphone,
+	Handshake,
+	GraduationCap,
+	BadgeDollarSign,
+	MessageCircle,
+	Medal,
 } from "lucide-react";
 import { BiSolidCheckShield, BiSolidShieldX } from "react-icons/bi";
 import { PropertyTabs } from "../../ui/tabs/PropertyTabs";
@@ -44,6 +50,10 @@ import {
 import CourseList from "./property_component/course/CourseList";
 import Scholarship from "./property_component/scholarship/Scholarship";
 import AdmissionProcess from "./property_component/admission_process/AdmissionProcess";
+import LoanProcess from "./property_component/loan_process/LoanProcess";
+import Announcement from "./property_component/announcement/Announcement";
+import QnA from "./property_component/qna/QnA";
+import Ranking from "./property_component/ranking/Ranking";
 
 export function PropertyView() {
 	const { objectId } = useParams();
@@ -196,7 +206,7 @@ export function PropertyView() {
 		},
 		{
 			id: "teachers",
-			label: "Teachers",
+			label: "Faculty",
 			icon: Users,
 			component: <Teachers property={property} />,
 			online: false,
@@ -218,16 +228,44 @@ export function PropertyView() {
 		{
 			id: "scholarship",
 			label: "Scholarship",
-			icon: Bed,
+			icon: BadgeDollarSign,
 			component: <Scholarship property={property} />,
 			online: isOnline,
 		},
 		{
 			id: "admission_process",
 			label: "Admission Process",
-			icon: Bed,
+			icon: GraduationCap,
 			component: <AdmissionProcess property={property} />,
 			online: isOnline,
+		},
+		{
+			id: "announcement",
+			label: "Announcement",
+			icon: Megaphone,
+			component: <Announcement property={property} />,
+			online: isOnline,
+		},
+		{
+			id: "loan_process",
+			label: "Loan Process",
+			icon: Handshake,
+			component: <LoanProcess property={property} />,
+			online: isOnline,
+		},
+		{
+			id: "qna",
+			label: "QnA",
+			icon: MessageCircle,
+			component: <QnA property={property} />,
+			online: false,
+		},
+		{
+			id: "ranking",
+			label: "Ranking",
+			icon: Medal,
+			component: <Ranking property={property} />,
+			online: false,
 		},
 	];
 	if (loading) {

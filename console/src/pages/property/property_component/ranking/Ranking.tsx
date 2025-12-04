@@ -1,45 +1,45 @@
 import { useCallback, useEffect, useState } from "react";
 import { PropertyProps } from "../../../../types/types";
-import ScholarshipCreate from "./ScholarshipCreate";
-import ScholarshipEdit from "./ScholarshipEdit";
+import RankingCreate from "./RankingCreate";
+import RankingEdit from "./RankingEdit";
 import { API } from "../../../../contexts/API";
 import { Edit, MoreVertical, Trash2 } from "lucide-react";
 import { getErrorResponse } from "../../../../contexts/Callbacks";
 import ReadMoreLess from "../../../../ui/read-more/ReadMoreLess";
 
-export default function Scholarship({
+export default function Ranking({
 	property,
 }: {
 	property: PropertyProps | null;
 }) {
-	const [scholarship, setScholarship] = useState<any[]>([]);
+	const [ranking, setRanking] = useState<any[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [isEdit, setIsEdit] = useState<any>("");
 	const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
 
-	const getScholarship = useCallback(async () => {
+	const getRanking = useCallback(async () => {
 		if (!property?._id) {
 			setLoading(false);
 			return;
 		}
 		try {
-			const response = await API.get(`/scholarship/${property?._id}`);
+			const response = await API.get(`/ranking/${property?._id}`);
 			if (response.data && response.data.length > 0) {
-				setScholarship(response.data);
+				setRanking(response.data);
 			} else {
-				setScholarship([]);
+				setRanking([]);
 			}
 		} catch (error) {
 			getErrorResponse(error, true);
-			setScholarship([]);
+			setRanking([]);
 		} finally {
 			setLoading(false);
 		}
 	}, [property?._id]);
 
 	useEffect(() => {
-		getScholarship();
-	}, [getScholarship]);
+		getRanking();
+	}, [getRanking]);
 
 	if (loading) {
 		return (
@@ -47,18 +47,16 @@ export default function Scholarship({
 		);
 	}
 
-	if (scholarship.length === 0) {
-		return (
-			<ScholarshipCreate property={property} getScholarship={getScholarship} />
-		);
+	if (ranking.length === 0) {
+		return <RankingCreate property={property} getRanking={getRanking} />;
 	}
 
 	if (isEdit) {
 		return (
-			<ScholarshipEdit
+			<RankingEdit
 				property={property}
-				scholarship={isEdit}
-				getScholarship={getScholarship}
+				ranking={isEdit}
+				getRanking={getRanking}
 				setIsEdit={setIsEdit}
 			/>
 		);
@@ -66,12 +64,12 @@ export default function Scholarship({
 
 	return (
 		<div className="grid grid-cols-1 gap-6">
-			{scholarship?.map((acc) => {
+			{ranking?.map((acc) => {
 				return (
 					<div key={acc?._id || Math.random()} className="flex flex-col">
 						<div className="flex items-center justify-between px-4 py-3 border-b border-[var(--yp-border-primary)]">
 							<h3 className="text-lg font-semibold text-[var(--yp-text-primary)]">
-								Scholarship Details
+								Rank Details
 							</h3>
 
 							<div className="flex gap-2">
@@ -94,7 +92,7 @@ export default function Scholarship({
 														className="w-full flex items-center gap-2 px-2 py-1 text-sm"
 													>
 														<Edit className="w-4 h-4 text-blue-500" />
-														Edit Accommodation
+														Edit Rank
 													</button>
 												</li>
 												<li>
@@ -111,7 +109,28 @@ export default function Scholarship({
 						</div>
 						{/* Card Body */}
 						<div className="px-4 py-3 flex-1 space-y-3">
-							<ReadMoreLess children={acc?.scholarship} />
+							<h4 className="text-sm font-semibold text-[var(--yp-text-primary)]">
+								NAAC Rank Details
+							</h4>
+							<ReadMoreLess children={acc?.naac_rank} />
+						</div>
+						<div className="px-4 py-3 flex-1 space-y-3">
+							<h4 className="text-sm font-semibold text-[var(--yp-text-primary)]">
+								NIRF Rank Details
+							</h4>
+							<ReadMoreLess children={acc?.nirf_rank} />
+						</div>
+						<div className="px-4 py-3 flex-1 space-y-3">
+							<h4 className="text-sm font-semibold text-[var(--yp-text-primary)]">
+								NBA Rank Details
+							</h4>
+							<ReadMoreLess children={acc?.nba_rank} />
+						</div>
+						<div className="px-4 py-3 flex-1 space-y-3">
+							<h4 className="text-sm font-semibold text-[var(--yp-text-primary)]">
+								Other Rank Details
+							</h4>
+							<ReadMoreLess children={acc?.other_ranking} />
 						</div>
 					</div>
 				);

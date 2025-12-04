@@ -213,6 +213,10 @@ import {
 } from "../controller/PropertyVerificationController.js";
 import { addExam, deleteExam, getExam, getExamById, getExamWithSeoBySlug, restoreExam, softDeleteExam, updateExam } from "../controller/ExamController.js";
 import { AddAdmissionProcess, EditAdmissionProcess, getAdmissionProcessByPropertyId, getAllAdmissionProcess } from "../controller/AdmissionProcessController.js";
+import { AddLoanProcess, EditLoanProcess, getAllLoanProcess, getLoanProcessByPropertyId } from "../controller/LoanProcessController.js";
+import { AddAnnouncement, EditAnnouncement, getAllAnnouncement, getAnnouncementByPropertyId } from "../controller/AnnouncementController.js";
+import { addQnA, deleteQnA, getQnA, getQnAById, getQnAByPropertyId, updateQnA } from "../controller/QnaController.js";
+import { addRanking, editRanking, getAllRanking, getRankingByPropertyId } from "../controller/RankingController.js";
 
 const router = express.Router();
 router.use(bodyParser.json());
@@ -393,6 +397,24 @@ router.get("/scholarship/:property_id", getScholarshipByPropertyId);
 router.post("/scholarship", Authorize, AddScholarship);
 router.patch("/scholarship/:objectId", Authorize, EditScholarship);
 
+//? Ranking Route
+router.get("/ranking", getAllRanking);
+router.get("/ranking/:property_id", getRankingByPropertyId);
+router.post("/ranking", Authorize, addRanking);
+router.patch("/ranking/:objectId", Authorize, editRanking);
+
+//? Announcement Route
+router.get("/announcement", getAllAnnouncement);
+router.get("/announcement/:property_id", getAnnouncementByPropertyId);
+router.post("/announcement", Authorize, AddAnnouncement);
+router.patch("/announcement/:objectId", Authorize, EditAnnouncement);
+
+//? Loan Process Route
+router.get("/loan_process", getAllLoanProcess);
+router.get("/loan_process/:property_id", getLoanProcessByPropertyId);
+router.post("/loan_process", Authorize, AddLoanProcess);
+router.patch("/loan_process/:objectId", Authorize, EditLoanProcess);
+
 //? Admission Process Route
 router.get("/admission_process", getAllAdmissionProcess);
 router.get("/admission_process/:property_id", getAdmissionProcessByPropertyId);
@@ -439,6 +461,14 @@ router.patch("/faqs/:uniqueId", Authorize, updateFaq);
 router.delete("/faqs/:uniqueId", Authorize, deleteFaq);
 router.get("/faqs/:uniqueId", getFaqById);
 router.get("/property/faq/:propertyId", getFaqByPropertyId);
+
+//? QnA Route
+router.get("/qna", getQnA);
+router.post("/qna", Authorize, addQnA);
+router.patch("/qna/:objectId", Authorize, updateQnA);
+router.delete("/qna/:objectId", Authorize, deleteQnA);
+router.get("/qna/:objectId", getQnAById);
+router.get("/property/qna/:propertyId", getQnAByPropertyId);
 
 //? Seo Route
 router.get("/property/seo", getPropertySeo);

@@ -14,12 +14,12 @@ import {
 } from "../../../../contexts/Callbacks";
 import { getEditorConfig } from "../../../../contexts/JoditEditorConfig";
 
-export default function ScholarshipCreate({
+export default function AnnouncementCreate({
 	property,
-	getScholarship,
+	getAnnouncement,
 }: {
 	property: PropertyProps | null;
-	getScholarship: () => void;
+	getAnnouncement: () => void;
 }) {
 	const [editorContent, setEditorContent] = useState("");
 	const editorConfig = useMemo(() => getEditorConfig(), []);
@@ -29,7 +29,7 @@ export default function ScholarshipCreate({
 		initialValues: {
 			property_id: property?._id || "",
 			userId: authUser?._id || "",
-			scholarship: "",
+			announcement: "",
 		},
 		enableReinitialize: true,
 		onSubmit: async (values, { setSubmitting }) => {
@@ -37,14 +37,14 @@ export default function ScholarshipCreate({
 			try {
 				const payload = {
 					...values,
-					scholarship: editorContent || "",
+					announcement: editorContent || "",
 				};
 
-				const response = await API.post("/scholarship", payload);
+				const response = await API.post("/announcement", payload);
 				toast.success(
-					response.data.message || "Scholarship Created Successfully"
+					response.data.message || "Announcement Created Successfully"
 				);
-				getScholarship();
+				getAnnouncement();
 			} catch (error) {
 				getErrorResponse(error);
 			} finally {
@@ -57,17 +57,17 @@ export default function ScholarshipCreate({
 		<div className="space-y-6">
 			<div>
 				<form onSubmit={formik.handleSubmit} className="p-6 space-y-6">
-					{/* Scholarship */}
+					{/* Announcement */}
 					<div>
 						<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
-							Scholarship
+							Announcement
 						</label>
 						<JoditEditor
 							value={editorContent || ""}
 							config={editorConfig}
 							onChange={(newContent) => setEditorContent(newContent || "")}
 						/>
-						{getFormikError(formik, "scholarship")}
+						{getFormikError(formik, "announcement")}
 					</div>
 
 					{/* Submit */}

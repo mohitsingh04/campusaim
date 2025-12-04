@@ -289,6 +289,10 @@ export const FaqValidation = Yup.object({
 	question: getValidString("Question"),
 });
 
+export const QnAValidation = Yup.object({
+	question: getValidString("Question"),
+});
+
 export const forgotPasswordSchema = Yup.object({ email });
 
 export const propertyBasicDetailsValidationSchema = Yup.object({

@@ -5,9 +5,8 @@ const TeachersSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
   },
-  uniqueId: {
-    type: Number,
-    required: true,
+  property_id: {
+    type: mongoose.Schema.Types.ObjectId,
   },
   teacher_name: {
     type: String,
@@ -17,15 +16,15 @@ const TeachersSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  department: {
+    type: String,
+  },
   experience: {
     type: String,
     required: true,
   },
   profile: {
     type: Array,
-  },
-  property_id: {
-    type: Number,
   },
   status: {
     type: String,

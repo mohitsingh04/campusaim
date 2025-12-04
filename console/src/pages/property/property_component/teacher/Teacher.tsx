@@ -1,17 +1,18 @@
 import { useCallback, useEffect, useState } from "react";
-import { AddTeacherForm } from "./AddTeacherForm";
 import { PropertyProps } from "../../../../types/types";
 import { API } from "../../../../contexts/API";
+import { AddTeacherForm } from "./AddTeacherForm";
+import { EditTeacherForm } from "./EditTeacharForm";
 import Swal from "sweetalert2";
 import toast from "react-hot-toast";
 import { Pencil, Trash2 } from "lucide-react";
-import { EditTeacherForm } from "./EditTeacharForm";
 import { getErrorResponse } from "../../../../contexts/Callbacks";
 
 interface Teacher {
   _id: string;
   teacher_name: string;
   designation: string;
+  department: string;
   experience: string;
   profile?: string[];
   status: string;
@@ -27,14 +28,14 @@ export default function Teachers({
   const [editTeacher, setEditTeacher] = useState<Teacher | null>(null);
 
   const getTeachers = useCallback(async () => {
-    if (!property?.uniqueId) return;
+    if (!property?._id) return;
     try {
-      const response = await API.get(`/teacher/property/${property?.uniqueId}`);
+      const response = await API.get(`/teacher/property/${property?._id}`);
       setTeachers(response.data);
     } catch (error) {
       getErrorResponse(error, true);
     }
-  }, [property?.uniqueId]);
+  }, [property?._id]);
 
   useEffect(() => {
     getTeachers();
@@ -93,13 +94,13 @@ export default function Teachers({
         <section className="p-4">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-[var(--yp-text-primary)]">
-              Teachers
+              Faculty
             </h3>
             <button
               onClick={() => setShowForm(true)}
               className="px-6 py-2 rounded-lg text-sm font-medium text-[var(--yp-blue-text)] bg-[var(--yp-blue-bg)]"
             >
-              Add Teacher
+              Add Faculty
             </button>
           </div>
 
@@ -153,6 +154,9 @@ export default function Teachers({
                 <p className="text-[var(--yp-muted)] text-sm">
                   {teacher.designation}
                 </p>
+                <p className="text-[var(--yp-muted)] text-sm">
+                  {teacher.department}
+                </p>
                 <p className="text-[var(--yp-main)] text-sm mt-1">
                   {teacher.experience}
                 </p>
@@ -164,16 +168,16 @@ export default function Teachers({
         <section>
           <div className="flex flex-col items-center justify-center py-10 sm:py-12 text-center">
             <h3 className="mt-4 text-base sm:text-lg lg:text-xl font-semibold text-[var(--yp-text-primary)]">
-              No Teacher Data Found
+              No Faculty Data Found
             </h3>
             <p className="text-[var(--yp-muted)] mt-1 text-sm sm:text-base">
-              You haven’t added any teachers yet. Click below to get started.
+              You haven’t added any faculty yet. Click below to get started.
             </p>
             <button
               onClick={() => setShowForm(true)}
               className="px-6 py-2 rounded-lg text-sm font-medium text-[var(--yp-blue-text)] bg-[var(--yp-blue-bg)] mt-2"
             >
-              Add Teacher
+              Add Fauclty
             </button>
           </div>
         </section>
