@@ -111,13 +111,13 @@ export default function AddCourseForm({
 		categories,
 		"course type"
 	);
-	const ProgramTypeOptions = getCategoryAccodingToField(
-		categories,
-		"Program Type"
-	);
 	const specializationOptions = getCategoryAccodingToField(
 		categories,
 		"specialization"
+	);
+	const ProgramTypeOptions = getCategoryAccodingToField(
+		categories,
+		"Program Type"
 	);
 	const programTypeSelectOptions = ProgramTypeOptions.map((opt: any) => ({
 		value: opt._id,
