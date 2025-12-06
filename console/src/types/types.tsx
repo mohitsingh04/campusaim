@@ -342,7 +342,7 @@ export interface AllDegreeAndInstituteProps {
 }
 
 export interface FAQProps {
-	uniqueId: number;
+	_id: string;
 	question: string;
 	answer: string;
 	property_id: number;

@@ -7,7 +7,7 @@ import { getErrorResponse } from "../../../../contexts/Callbacks";
 import Swal from "sweetalert2";
 
 interface Gallery {
-  uniqueId: string;
+  _id: string;
   title: string;
   gallery: string[];
 }
@@ -47,12 +47,12 @@ export default function RemoveGalleryImages({
       if (!result.isConfirmed) return;
 
       const data = {
-        galleryId: gallery.uniqueId,
+        galleryId: gallery._id,
         webpPaths: [img],
       };
 
       const response = await API.post(
-        `/gallery/remove/${gallery?.uniqueId}`,
+        `/gallery/remove/${gallery?._id}`,
         data
       );
 

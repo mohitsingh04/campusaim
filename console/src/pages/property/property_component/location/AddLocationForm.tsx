@@ -35,7 +35,7 @@ export default function AddLocationForm({
       property_country: "",
       property_state: "",
       property_city: "",
-      property_id: property?.uniqueId || "",
+      property_id: property?._id || "",
       country_name: "",
       state_name: "",
       city_name: "",

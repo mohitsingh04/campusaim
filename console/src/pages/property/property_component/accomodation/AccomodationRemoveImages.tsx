@@ -33,7 +33,7 @@ export default function AccomodationRemoveImages({
       const data = { webpPaths: [img] };
 
       const response = await API.post(
-        `/accomodation/images/remove/${accomodation?.uniqueId}`,
+        `/accomodation/images/remove/${accomodation?._id}`,
         data
       );
 

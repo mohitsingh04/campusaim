@@ -421,27 +421,8 @@ export function PropertyCreate() {
 											{cat.category_name}
 										</option>
 									))}
-									<option value="custom">Other (Custom)</option>
 								</select>
 								{getFormikError(formik, "academic_type")}
-
-								{formik.values.academic_type === "custom" && (
-									<div className="mt-2">
-										<input
-											type="text"
-											name="academic_type_custom"
-											value={formik.values.academic_type_custom}
-											onChange={formik.handleChange}
-											onBlur={formik.handleBlur}
-											placeholder="Type custom academic type (e.g. 'Vocational Training')"
-											className="w-full px-3 py-2 border border-[var(--yp-border-primary)] rounded-lg bg-[var(--yp-input-primary)] text-[var(--yp-text-primary)]"
-										/>
-										<p className="text-sm text-[var(--yp-muted)] mt-1">
-											If you choose a custom academic type, it will be submitted
-											as text.
-										</p>
-									</div>
-								)}
 							</div>
 
 							{/* Property Type select */}

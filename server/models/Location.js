@@ -4,7 +4,7 @@ import { regularDatabase } from "../database/Databases.js";
 const locationSchema = mongoose.Schema(
   {
     property_id: {
-      type: Number,
+      type: mongoose.Schema.Types.ObjectId,
       required: true,
     },
     property_address: {

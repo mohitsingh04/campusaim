@@ -3,13 +3,10 @@ import { regularDatabase } from "../database/Databases.js";
 
 const ReviewSchema = new mongoose.Schema({
   userId: {
-    type: String,
-  },
-  uniqueId: {
-    type: Number,
+    type: mongoose.Schema.Types.ObjectId,
   },
   property_id: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
   },
   name: {
     type: String,

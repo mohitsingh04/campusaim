@@ -12,24 +12,24 @@ import ReadMoreLess from "../../../../ui/read-more/ReadMoreLess";
 
 export default function Faqs({ property }: { property: PropertyProps | null }) {
   const [faqs, setFaqs] = useState<FAQProps[]>([]);
-  const [openId, setOpenId] = useState<number | null>(null);
+  const [openId, setOpenId] = useState<string | null>(null);
   const [isEdit, setIsEdit] = useState<FAQProps | null>(null);
 
   const getFaqs = useCallback(async () => {
-    if (!property?.uniqueId) return;
+    if (!property?._id) return;
     try {
-      const response = await API.get(`/property/faq/${property?.uniqueId}`);
+      const response = await API.get(`/property/faq/${property?._id}`);
       setFaqs(response.data);
     } catch (error) {
       getErrorResponse(error, true);
     }
-  }, [property?.uniqueId]);
+  }, [property?._id]);
 
   useEffect(() => {
     getFaqs();
   }, [getFaqs]);
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (_id: string) => {
     const result = await Swal.fire({
       title: "Are you sure?",
       text: "You won't be able to revert this!",
@@ -42,7 +42,7 @@ export default function Faqs({ property }: { property: PropertyProps | null }) {
 
     if (result.isConfirmed) {
       try {
-        const response = await API.delete(`/faqs/${id}`);
+        const response = await API.delete(`/faqs/${_id}`);
         toast.success(response.data.message);
         await getFaqs();
       } catch (error) {
@@ -74,13 +74,13 @@ export default function Faqs({ property }: { property: PropertyProps | null }) {
               <div className="space-y-3">
                 {faqs.map((faq) => (
                   <div
-                    key={faq.uniqueId}
+                    key={faq._id}
                     className="bg-[var(--yp-secondary)] rounded-lg"
                   >
                     <button
                       className="w-full flex justify-between items-center px-3 sm:px-4 py-3   rounded-t-lg transition"
                       onClick={() =>
-                        setOpenId(openId === faq.uniqueId ? null : faq.uniqueId)
+                        setOpenId(openId === faq._id ? null : faq._id)
                       }
                     >
                       <span className="font-medium text-[var(--yp-text-primary)] text-sm sm:text-base">
@@ -88,12 +88,12 @@ export default function Faqs({ property }: { property: PropertyProps | null }) {
                       </span>
                       <ChevronDown
                         className={`w-4 h-4 sm:w-5 sm:h-5 text-[var(--yp-muted)] transition-transform ${
-                          openId === faq.uniqueId ? "rotate-180" : ""
+                          openId === faq._id ? "rotate-180" : ""
                         }`}
                       />
                     </button>
 
-                    {openId === faq.uniqueId && (
+                    {openId === faq._id && (
                       <div className="p-3 sm:p-4 space-y-3 bg-[var(--yp-tertiary)] rounded-b-lg">
                         <ReadMoreLess children={faq.answer} />
                         <div className="flex justify-end gap-2 mt-3">
@@ -105,7 +105,7 @@ export default function Faqs({ property }: { property: PropertyProps | null }) {
                           <TableButton
                             color="red"
                             Icon={Trash2}
-                            onClick={() => handleDelete(faq.uniqueId)}
+                            onClick={() => handleDelete(faq._id)}
                           />
                         </div>
                       </div>

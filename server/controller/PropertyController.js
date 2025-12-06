@@ -29,6 +29,12 @@ import Property from "../models/Property.js";
 import PropertyCourse from "../models/PropertyCourse.js";
 import Teachers from "../models/Teachers.js";
 import Accomodation from "../models/Accomodation.js";
+import Scholarship from "../models/Scholarship.js";
+import LoanProcess from "../models/LoanProcess.js";
+import AdmissionProcess from "../models/AdmissionProcess.js";
+import Ranking from "../models/Ranking.js";
+import QnA from "../models/QnA.js";
+import Announcement from "../models/Announcement.js";
 
 function normalizeAffiliatedBy(affiliated_by) {
   let affiliatedByArray = [];
@@ -527,15 +533,15 @@ export const deleteProperty = async (req, res) => {
       return res.status(404).json({ error: "Property not found." });
     }
 
-    const uniqueId = property.uniqueId;
+    const uniqueId = property._id;
     const propertyFolder = path.join(__dirname, `../../media/${uniqueId}`);
 
     await Promise.all([
       Property.findByIdAndDelete(objectId),
-      Teachers.deleteMany({ property_id: uniqueId }),
+      Teachers.deleteMany({ property_id: objectId }),
       Gallery.deleteMany({ propertyId: uniqueId }),
       Review.deleteMany({ property_id: uniqueId }),
-      PropertyCourse.deleteMany({ property_id: property?._is }),
+      PropertyCourse.deleteMany({ property_id: objectId }),
       Faqs.deleteMany({ property_id: uniqueId }),
       Enquiry.deleteMany({ property_id: objectId }),
       ArchiveEnquiry.deleteMany({ property_id: objectId }),
@@ -548,6 +554,12 @@ export const deleteProperty = async (req, res) => {
       PropertyScore.deleteMany({ property_id: objectId }),
       SeoScore.deleteMany({ property_id: objectId }),
       Accomodation.deleteMany({ property_id: uniqueId }),
+      Scholarship.deleteMany({ property_id: uniqueId }),
+      LoanProcess.deleteMany({ property_id: uniqueId }),
+      AdmissionProcess.deleteMany({ property_id: uniqueId }),
+      Ranking.deleteMany({ property_id: uniqueId }),
+      QnA.deleteMany({ property_id: uniqueId }),
+      Announcement.deleteMany({ property_id: uniqueId }),
     ]);
 
     try {

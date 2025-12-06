@@ -43,7 +43,7 @@ export default function AccomodationEdit({
 
   const formik = useFormik({
     initialValues: {
-      property_id: property?.uniqueId || "",
+      property_id: property?._id || "",
       accomodation_name: accomodation?.accomodation_name || "Co. Ed.",
       accomodation_description: accomodation?.accomodation_description || "",
     },
@@ -58,7 +58,7 @@ export default function AccomodationEdit({
         };
 
         const response = await API.patch(
-          `/accomodation/${accomodation?.uniqueId}`,
+          `/accomodation/${accomodation?._id}`,
           payload
         );
 

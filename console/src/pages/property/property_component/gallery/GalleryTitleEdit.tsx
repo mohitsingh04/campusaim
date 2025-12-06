@@ -19,7 +19,7 @@ export default function GalleryTitleEdit({
 }) {
   const formik = useFormik({
     initialValues: {
-      uniqueId: isOpen?.uniqueId || "",
+      _id: isOpen?._id || "",
       title: isOpen?.title || "",
     },
     enableReinitialize: true,

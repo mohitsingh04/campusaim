@@ -27,8 +27,8 @@ export default function AddFaq({ onAddSuccess, property }: AddFaqProps) {
 
   const formik = useFormik({
     initialValues: {
-      userId: authUser?.uniqueId || "",
-      property_id: property?.uniqueId || "",
+      userId: authUser?._id || "",
+      property_id: property?._id || "",
       question: "",
     },
     enableReinitialize: true,

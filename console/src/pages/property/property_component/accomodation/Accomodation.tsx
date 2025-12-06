@@ -43,12 +43,12 @@ export default function Accomodation({
 	const [lightboxIndex, setLightboxIndex] = useState(0);
 
 	const getAccomdation = useCallback(async () => {
-		if (!property?.uniqueId) {
+		if (!property?._id) {
 			setLoading(false);
 			return;
 		}
 		try {
-			const response = await API.get(`/accomodation/${property?.uniqueId}`);
+			const response = await API.get(`/accomodation/${property?._id}`);
 			if (response.data && response.data.length > 0) {
 				setAccomodation(response.data);
 			} else {
@@ -60,7 +60,7 @@ export default function Accomodation({
 		} finally {
 			setLoading(false);
 		}
-	}, [property?.uniqueId]);
+	}, [property?._id]);
 
 	useEffect(() => {
 		getAccomdation();

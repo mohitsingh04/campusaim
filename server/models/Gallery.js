@@ -2,14 +2,11 @@ import mongoose from "mongoose";
 import { regularDatabase } from "../database/Databases.js";
 
 const GallerySchema = new mongoose.Schema({
-  uniqueId: {
-    type: Number,
-  },
   userId: {
-    type: Number,
+    type: mongoose.Schema.Types.ObjectId
   },
   propertyId: {
-    type: Number,
+    type: mongoose.Schema.Types.ObjectId
   },
   title: {
     type: String,

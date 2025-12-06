@@ -4,10 +4,10 @@ import { regularDatabase } from "../database/Databases.js";
 const AmenitiesSchema = new mongoose.Schema(
   {
     uniqueId: {
-      type: Number,
+      type: mongoose.Schema.Types.ObjectId,
     },
     propertyId: {
-      type: Number,
+      type: mongoose.Schema.Types.ObjectId,
       required: [true, "Property ID is required"],
     },
     selectedAmenities: {

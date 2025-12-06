@@ -68,7 +68,7 @@ export default function AddAccomodationImages({
       try {
         setLoading(true);
         const response = await API.patch(
-          `/accomodation/images/${accomodation?.uniqueId}`,
+          `/accomodation/images/${accomodation?._id}`,
           formData
         );
 

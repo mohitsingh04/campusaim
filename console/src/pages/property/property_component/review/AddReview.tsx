@@ -29,8 +29,8 @@ export default function AddReview({
 
   const formik = useFormik({
     initialValues: {
-      userId: authUser?.uniqueId || "",
-      property_id: property?.uniqueId || "",
+      userId: authUser?._id || "",
+      property_id: property?._id || "",
       name: "",
       email: "",
       phone_number: "",

@@ -35,14 +35,14 @@ export default function Gallery({ property }: GalleriesPageProps) {
   const [addGalleryImages, setAddGalleryImages] = useState<any | null>(null);
 
   const getGalleries = useCallback(async () => {
-    if (!property?.uniqueId) return;
+    if (!property?._id) return;
     try {
-      const response = await API.get(`/property/gallery/${property?.uniqueId}`);
+      const response = await API.get(`/property/gallery/${property?._id}`);
       setGalleries(response.data || []);
     } catch (error) {
       getErrorResponse(error, true);
     }
-  }, [property?.uniqueId]);
+  }, [property?._id]);
 
   useEffect(() => {
     getGalleries();
@@ -152,7 +152,7 @@ export default function Gallery({ property }: GalleriesPageProps) {
                       </button>
                     )}
                     <button
-                      onClick={() => handleDeleteGallery(gallery.uniqueId)}
+                      onClick={() => handleDeleteGallery(gallery._id)}
                       className="px-6 py-2 rounded-lg text-sm font-medium text-[var(--yp-red-text)] bg-[var(--yp-red-bg)]"
                     >
                       Delete Gallery

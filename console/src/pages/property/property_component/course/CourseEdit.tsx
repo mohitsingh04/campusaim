@@ -97,8 +97,8 @@ export default function EditCourseForm({
 			try {
 				const payload = {
 					...values,
-					property_id: property?.uniqueId || "",
-					userId: authUser?.uniqueId || "",
+					property_id: property?._id || "",
+					userId: authUser?._id || "",
 					final_requirement: values?.requirements,
 					final_key_outcomes: values?.key_outcomes,
 					duration: `${values?.duration_value} ${values?.duration_type}`,

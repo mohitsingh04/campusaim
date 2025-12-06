@@ -4,11 +4,11 @@ import { regularDatabase } from "../database/Databases.js";
 const FaqsSchema = new mongoose.Schema(
   {
     userId: {
-      type: Number,
+      type: mongoose.Schema.Types.ObjectId,
       required: true,
     },
-    uniqueId: {
-      type: Number,
+    property_id: {
+      type: mongoose.Schema.Types.ObjectId,
       required: true,
     },
     question: {
@@ -17,10 +17,6 @@ const FaqsSchema = new mongoose.Schema(
     },
     answer: {
       type: String,
-      required: true,
-    },
-    property_id: {
-      type: Number,
       required: true,
     },
     status: {

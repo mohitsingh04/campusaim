@@ -94,16 +94,23 @@ export const getCourseById = async (req, res) => {
   }
 };
 
-export const getCourseByUniqueId = async (req, res) => {
+export const getCourseByObjectId = async (req, res) => {
   try {
-    const { uniqueId } = req.params;
-    const course = await Course.findOne({ uniqueId });
+    const { objectId } = req.params;
+
+    if (!objectId || !mongoose.Types.ObjectId.isValid(objectId)) {
+      return res.status(400).json({ error: "Invalid Course ID." });
+    }
+
+    const course = await Course.findById(objectId);
+
     if (!course) {
       return res.status(404).json({ error: "Course not found!" });
     }
+
     return res.status(200).json(course);
   } catch (error) {
-    console.error(error);
+    console.error("Error fetching course:", error);
     return res.status(500).json({ error: "Internal Server Error!" });
   }
 };

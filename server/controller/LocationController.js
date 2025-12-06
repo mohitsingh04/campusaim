@@ -6,6 +6,42 @@ import Country from "../models/Country.js";
 import Property from "../models/Property.js";
 import PropertySeo from "../models/PropertySeo.js";
 import { generateSlug } from "../utils/Callback.js";
+import mongoose from "mongoose";
+
+export const getLocation = async (req, res) => {
+  try {
+    const { property_id } = req.params;
+
+    if (!property_id) {
+      return res.status(400).json({ error: "Property ID is required" });
+    }
+
+    const location = await Location.findOne({ property_id });
+
+    if (!location) {
+      return res.status(404).json({ error: "Location not found" });
+    }
+
+    return res.status(200).json(location);
+  } catch (error) {
+    console.error("getLocation Error:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+export const getAllLocations = async (req, res) => {
+  try {
+    const location = await Location.find();
+    if (!location) {
+      return res.status(404).json({ error: "Locations not Found" });
+    }
+
+    return res.status(200).json(location);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
 
 export const addLocation = async (req, res) => {
   try {
@@ -21,18 +57,22 @@ export const addLocation = async (req, res) => {
       city_name,
     } = req.body;
 
-    // Determine which values to use
+    // Validate ObjectId
+    if (!property_id || !mongoose.Types.ObjectId.isValid(property_id)) {
+      return res.status(400).json({ error: "Invalid or missing property_id." });
+    }
+
+    // Determine final used values
     const finalCountry =
-      country_name?.trim() !== ""
-        ? country_name.trim()
-        : property_country?.trim();
+      country_name?.trim() !== "" ? country_name.trim() : property_country?.trim();
+
     const finalState =
       state_name?.trim() !== "" ? state_name.trim() : property_state?.trim();
+
     const finalCity =
       city_name?.trim() !== "" ? city_name.trim() : property_city?.trim();
 
     if (
-      !property_id ||
       !property_address ||
       !property_pincode ||
       !finalCountry ||
@@ -42,46 +82,40 @@ export const addLocation = async (req, res) => {
       return res.status(400).json({ error: "All fields are required." });
     }
 
-    // Add Country if needed
-    if (country_name?.trim() !== "") {
-      const existingCountry = await Country.findOne({
-        country_name: country_name.trim(),
-      });
-      if (!existingCountry) {
-        await Country.create({ country_name: country_name.trim() });
-      }
+    // Add Country if not exists
+    if (country_name?.trim()) {
+      const existingCountry = await Country.findOne({ country_name: finalCountry });
+      if (!existingCountry) await Country.create({ country_name: finalCountry });
     }
 
-    // Add State if needed
-    if (state_name?.trim() !== "") {
+    // Add State if not exists
+    if (state_name?.trim()) {
       const existingState = await State.findOne({
-        name: state_name.trim(),
+        name: finalState,
         country_name: finalCountry,
       });
       if (!existingState) {
-        await State.create({
-          name: state_name.trim(),
-          country_name: finalCountry,
-        });
+        await State.create({ name: finalState, country_name: finalCountry });
       }
     }
 
-    // Add City if needed
-    if (city_name?.trim() !== "") {
+    // Add City if not exists
+    if (city_name?.trim()) {
       const existingCity = await City.findOne({
-        name: city_name.trim(),
+        name: finalCity,
         state_name: finalState,
         country_name: finalCountry,
       });
       if (!existingCity) {
         await City.create({
-          name: city_name.trim(),
+          name: finalCity,
           state_name: finalState,
           country_name: finalCountry,
         });
       }
     }
 
+    // Check duplicate location
     const existingLocation = await Location.findOne({
       property_id,
       property_address,
@@ -97,7 +131,7 @@ export const addLocation = async (req, res) => {
         .json({ error: "Location already exists for this property." });
     }
 
-    // Create and save the new location
+    // Create Location
     const newLocation = new Location({
       property_id,
       property_address,
@@ -109,43 +143,42 @@ export const addLocation = async (req, res) => {
 
     await newLocation.save();
 
-    // Update property score
-    addPropertyScore({
-      property_id: property_id,
+    // Add Property Score
+    await addPropertyScore({
+      property_id: String(property_id),
       property_score: 10,
     });
 
-    // Generate slug for this property
-    const property = await Property.findOne({ uniqueId: property_id });
+    // Fetch Property using ObjectId
+    const property = await Property.findById(property_id);
     if (property) {
-      const baseSlug = generateSlug(`${property?.property_name}-${finalCity}`);
+      const baseSlug = generateSlug(`${property.property_name}-${finalCity}`);
       let slug = baseSlug;
       let counter = 2;
 
-      // Ensure slug is unique within Property collection
+      // Ensure unique slug
       while (
         await Property.findOne({
           property_slug: slug,
-          uniqueId: { $ne: property?.uniqueId },
+          _id: { $ne: property._id },
         })
       ) {
         slug = `${baseSlug}-${counter}`;
         counter++;
       }
 
-      // Update property with slug
-      await Property.findOneAndUpdate(
-        { uniqueId: property?.uniqueId },
-        { $set: { property_slug: slug } }
-      );
+      // Update property slug
+      await Property.findByIdAndUpdate(property_id, {
+        $set: { property_slug: slug },
+      });
 
-      // Update seo if exists
+      // Update Property SEO
       await PropertySeo.findOneAndUpdate(
-        { property_id: property?._id },
+        { property_id },
         { $set: { seo_slug: slug } }
       );
 
-      console.log("Slug set for property:", property?.uniqueId, slug);
+      console.log("Slug set for property:", property_id, slug);
     }
 
     return res.status(201).json({ message: "Location added successfully." });
@@ -154,6 +187,7 @@ export const addLocation = async (req, res) => {
     return res.status(500).json({ error: "Internal Server Error." });
   }
 };
+
 export const UpdateLocation = async (req, res) => {
   try {
     const { property_id } = req.params;
@@ -301,7 +335,7 @@ export const UpdateLocation = async (req, res) => {
     });
 
     // 🟩 Regenerate slug for property and seo
-    const property = await Property.findOne({ uniqueId: property_id });
+    const property = await Property.findOne({ property_id });
     if (property) {
       const finalCity =
         updateData.property_city || existingLocation?.property_city;
@@ -313,7 +347,6 @@ export const UpdateLocation = async (req, res) => {
       while (
         await Property.findOne({
           property_slug: slug,
-          uniqueId: { $ne: property?.uniqueId },
         })
       ) {
         slug = `${baseSlug}-${counter}`;
@@ -322,7 +355,6 @@ export const UpdateLocation = async (req, res) => {
 
       // Update property slug
       await Property.findOneAndUpdate(
-        { uniqueId: property?.uniqueId },
         { $set: { property_slug: slug } }
       );
 
@@ -336,7 +368,7 @@ export const UpdateLocation = async (req, res) => {
         );
       }
 
-      console.log("Slug updated for property:", property?.uniqueId, slug);
+      console.log("Slug updated for property:", slug);
     }
 
     return res.status(200).json({
@@ -345,41 +377,6 @@ export const UpdateLocation = async (req, res) => {
     });
   } catch (error) {
     console.error("UpdateLocation Error:", error);
-    return res.status(500).json({ error: "Internal Server Error" });
-  }
-};
-
-export const getLocation = async (req, res) => {
-  try {
-    const { property_id } = req.params;
-
-    if (!property_id) {
-      return res.status(400).json({ error: "Property ID is required" });
-    }
-
-    const location = await Location.findOne({ property_id });
-
-    if (!location) {
-      return res.status(404).json({ error: "Location not found" });
-    }
-
-    return res.status(200).json(location);
-  } catch (error) {
-    console.error("getLocation Error:", error);
-    return res.status(500).json({ error: "Internal Server Error" });
-  }
-};
-
-export const getAllLocations = async (req, res) => {
-  try {
-    const location = await Location.find();
-    if (!location) {
-      return res.status(404).json({ error: "Locations not Found" });
-    }
-
-    return res.status(200).json(location);
-  } catch (error) {
-    console.error(error);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };

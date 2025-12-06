@@ -39,9 +39,9 @@ export default function Amenities({ property }: AmenitiesProps) {
   });
 
   const getAmenities = useCallback(async () => {
-    if (!property?.uniqueId) return;
+    if (!property?._id) return;
     try {
-      const response = await API.get(`/property/amenities/${property.uniqueId}`);
+      const response = await API.get(`/property/amenities/${property._id}`);
       const data = response.data;
       setFoundAmenities(data);
 
@@ -74,7 +74,7 @@ export default function Amenities({ property }: AmenitiesProps) {
     } catch (error) {
       getErrorResponse(error, true);
     }
-  }, [property?.uniqueId]);
+  }, [property?._id]);
 
   useEffect(() => {
     getAmenities();
@@ -118,7 +118,7 @@ export default function Amenities({ property }: AmenitiesProps) {
     setLoading(true);
     try {
       const payload: any = {
-        propertyId: property?.uniqueId,
+        propertyId: property?._id,
         selectedAmenities: [],
       };
 
@@ -150,9 +150,9 @@ export default function Amenities({ property }: AmenitiesProps) {
 
       payload.selectedAmenities.push(grouped);
 
-      if (foundAmenities?.uniqueId) {
+      if (foundAmenities?._id) {
         const response = await API.put(
-          `/amenities/${foundAmenities.uniqueId}`,
+          `/amenities/${foundAmenities._id}`,
           payload
         );
         toast.success(

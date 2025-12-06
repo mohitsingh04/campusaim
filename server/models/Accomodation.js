@@ -3,13 +3,8 @@ import { regularDatabase } from "../database/Databases.js";
 
 const AccomodationSchema = mongoose.Schema(
   {
-    userId: { type: Number },
-    property_id: { type: Number },
-    uniqueId: {
-      type: Number,
-      required: true,
-      unique: true,
-    },
+    userId: { type: mongoose.Schema.Types.ObjectId },
+    property_id: { type: mongoose.Schema.Types.ObjectId },
     accomodation_name: { type: String },
     accomodation_price: { type: Object },
     accomodation_description: { type: String },

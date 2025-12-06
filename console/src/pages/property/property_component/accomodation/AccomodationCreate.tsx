@@ -41,8 +41,8 @@ export default function AccomodationCreate({
 
   const formik = useFormik({
     initialValues: {
-      property_id: property?.uniqueId || "",
-      userId: authUser?.uniqueId || "",
+      property_id: property?._id || "",
+      userId: authUser?._id || "",
       accomodation_name: "Co. Ed.",
       accomodation_description: "",
     },

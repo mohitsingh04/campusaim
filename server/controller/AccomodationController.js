@@ -3,6 +3,7 @@ import { AccomodationImageMover } from "../helper/folder-cleaners/PropertyImageM
 import path from "path";
 import Accomodation from "../models/Accomodation.js";
 import { downloadImageAndReplaceSrc } from "../helper/folder-cleaners/EditorImagesController.js";
+import mongoose from "mongoose";
 
 export const AddAccomodation = async (req, res) => {
   try {
@@ -26,13 +27,7 @@ export const AddAccomodation = async (req, res) => {
       );
     }
 
-    const lastAccomodation = await Accomodation.findOne().sort({
-      uniqueId: -1,
-    });
-    let newUniqueId = lastAccomodation ? lastAccomodation.uniqueId + 1 : 1;
-
     const newAccomodation = new Accomodation({
-      uniqueId: newUniqueId,
       accomodation_name,
       accomodation_price,
       accomodation_description: updatedDescription,
@@ -93,7 +88,7 @@ export const getAllAccomodation = async (req, res) => {
 
 export const EditAccomodation = async (req, res) => {
   try {
-    const { uniqueId } = req.params;
+    const { objectId } = req.params;
     const {
       property_id,
       accomodation_name,
@@ -101,15 +96,22 @@ export const EditAccomodation = async (req, res) => {
       accomodation_description,
     } = req.body;
 
-    const existingAccomodation = await Accomodation.findOne({ uniqueId });
+    // Validate objectId
+    if (!mongoose.Types.ObjectId.isValid(objectId)) {
+      return res.status(400).json({ error: "Invalid Accomodation ID." });
+    }
+
+    // Fetch existing accomodation
+    const existingAccomodation = await Accomodation.findById(objectId);
     if (!existingAccomodation) {
       return res.status(404).json({ error: "Accomodation not found." });
     }
 
+    // Check duplicate name for the same property
     const duplicateAccomodation = await Accomodation.findOne({
-      uniqueId: { $ne: uniqueId },
+      _id: { $ne: objectId },
       property_id,
-      accomodation_name: accomodation_name,
+      accomodation_name,
     });
 
     if (duplicateAccomodation) {
@@ -119,6 +121,7 @@ export const EditAccomodation = async (req, res) => {
       });
     }
 
+    // Process description (upload + replace image URLs)
     let updatedDescription = accomodation_description;
     if (accomodation_description) {
       updatedDescription = await downloadImageAndReplaceSrc(
@@ -127,8 +130,9 @@ export const EditAccomodation = async (req, res) => {
       );
     }
 
-    await Accomodation.findOneAndUpdate(
-      { uniqueId },
+    // Update the accommodation
+    await Accomodation.findByIdAndUpdate(
+      objectId,
       {
         $set: {
           accomodation_name,
@@ -142,6 +146,7 @@ export const EditAccomodation = async (req, res) => {
     return res
       .status(200)
       .json({ message: "Accomodation updated successfully" });
+
   } catch (error) {
     console.error("EditAccomodation Error:", error);
     return res.status(500).json({ error: "Internal Server Error" });
@@ -150,10 +155,16 @@ export const EditAccomodation = async (req, res) => {
 
 export const AddAccomodationImages = async (req, res) => {
   try {
-    const { uniqueId } = req.params;
+    const { objectId } = req.params;
+
+    // Validate objectId
+    if (!mongoose.Types.ObjectId.isValid(objectId)) {
+      return res.status(400).json({ error: "Invalid Accomodation ID." });
+    }
 
     let newImages = [];
 
+    // Extract uploaded images
     if (req?.files?.images && req.files.images.length > 0) {
       for (const file of req.files.images) {
         if (file?.originalFilename && file?.webpFilename) {
@@ -177,30 +188,33 @@ export const AddAccomodationImages = async (req, res) => {
       });
     }
 
-    const existingAccomodation = await Accomodation.findOne({ uniqueId });
+    // Fetch accomodation
+    const existingAccomodation = await Accomodation.findById(objectId);
     if (!existingAccomodation) {
       return res.status(404).json({
-        message: "Accomodation not found with the given uniqueId.",
+        message: "Accomodation not found with the given ID.",
       });
     }
 
+    // Check maximum limit (8 real images → 16 file entries)
     const currentCount = existingAccomodation.accomodation_images.length;
     const total = currentCount + newImages.length;
 
     if (total > 16) {
       return res.status(400).json({
-        error: `Cannot add more than 8 image. Currently have ${
-          currentCount / 2
-        } images.`,
+        error: `Cannot add more than 8 images. Currently have ${currentCount / 2
+          } images.`,
       });
     }
 
-    const updatedAccomodation = await Accomodation.findOneAndUpdate(
-      { uniqueId },
+    // Update the images
+    const updatedAccomodation = await Accomodation.findByIdAndUpdate(
+      objectId,
       { $push: { accomodation_images: { $each: newImages } } },
       { new: true }
     );
 
+    // Move images to property folder
     await AccomodationImageMover(req, res, updatedAccomodation?.property_id);
 
     return res
@@ -214,8 +228,12 @@ export const AddAccomodationImages = async (req, res) => {
 
 export const removeAccomodationImages = async (req, res) => {
   try {
-    const { uniqueId } = req.params;
+    const { objectId } = req.params;
     const { webpPaths } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(objectId)) {
+      return res.status(400).json({ message: "Invalid accomodation ID." });
+    }
 
     if (!Array.isArray(webpPaths) || webpPaths.length === 0) {
       return res.status(400).json({
@@ -223,16 +241,17 @@ export const removeAccomodationImages = async (req, res) => {
       });
     }
 
-    const accomodation = await Accomodation.findOne({ uniqueId });
+    const accomodation = await Accomodation.findById(objectId);
     if (!accomodation) {
       return res.status(404).json({
-        message: "No accomodation found for this uniqueId.",
+        message: "No accomodation found for this ID.",
       });
     }
 
     const pathsToRemove = new Set();
 
     for (const webpPath of webpPaths) {
+      if (typeof webpPath !== "string") continue;
       pathsToRemove.add(webpPath);
 
       const webpFileName = path.basename(webpPath);
@@ -247,6 +266,7 @@ export const removeAccomodationImages = async (req, res) => {
       const fileKey = match[1];
 
       const originalPath = accomodation.accomodation_images.find((p) => {
+        if (typeof p !== "string") return false;
         const filename = path.basename(p);
         const dir = path.dirname(p);
         const origMatch = filename.match(/^img-\d+-(.+)\.[a-zA-Z0-9]+$/);
@@ -276,7 +296,7 @@ export const removeAccomodationImages = async (req, res) => {
 
     return res.status(200).json({
       message: "Selected accomodation images removed from database.",
-      accomodation: accomodation,
+      accomodation,
     });
   } catch (error) {
     console.error("Error removing accomodation images:", error);

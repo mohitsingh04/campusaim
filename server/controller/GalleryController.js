@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { addPropertyScore } from "../analytic-controller/PropertyScoreController.js";
 import { GalleryImageMover } from "../helper/folder-cleaners/PropertyImageMover.js";
 import Gallery from "../models/Gallery.js";
@@ -15,14 +16,26 @@ export const getGallery = async (req, res) => {
 
 export const getGalleryById = async (req, res) => {
   try {
-    const uniqueId = req.params.uniqueId;
-    const gallery = await Gallery.findOne({ uniqueId: uniqueId });
+    const { objectId } = req.params;
+
+    // Validate MongoDB ObjectId
+    if (!mongoose.Types.ObjectId.isValid(objectId)) {
+      return res.status(400).json({ error: "Invalid gallery ID." });
+    }
+
+    const gallery = await Gallery.findById(objectId);
+
+    if (!gallery) {
+      return res.status(404).json({ error: "Gallery not found." });
+    }
+
     return res.status(200).json(gallery);
   } catch (error) {
-    console.log(error);
+    console.error("GetGalleryById Error:", error);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
 export const getGalleryByPropertyId = async (req, res) => {
   try {
     const propertyId = req.params.propertyId;
@@ -33,6 +46,7 @@ export const getGalleryByPropertyId = async (req, res) => {
     return res.send({ error: "Internal Server Error!" });
   }
 };
+
 export const addGallery = async (req, res) => {
   try {
     const { propertyId, title } = req.body;
@@ -59,11 +73,7 @@ export const addGallery = async (req, res) => {
 
     const existingGalleries = await Gallery.countDocuments({ propertyId });
 
-    const lastGallery = await Gallery.findOne().sort({ _id: -1 }).limit(1);
-    const uniqueId = lastGallery ? lastGallery.uniqueId + 1 : 1;
-
     const newGallery = new Gallery({
-      uniqueId,
       propertyId,
       title,
       gallery,
@@ -91,7 +101,11 @@ export const addGallery = async (req, res) => {
 
 export const addNewGalleryImages = async (req, res) => {
   try {
-    const { uniqueId } = req.params;
+    const { objectId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(objectId)) {
+      return res.status(400).json({ message: "Invalid gallery ID." });
+    }
 
     let newGalleryImages = [];
 
@@ -107,35 +121,32 @@ export const addNewGalleryImages = async (req, res) => {
 
       if (newGalleryImages.length % 2 !== 0) {
         return res.status(400).json({
-          message:
-            "Uneven number of original and webp images detected in gallery.",
+          message: "Uneven number of original and webp images detected in gallery.",
         });
       }
     }
 
     if (newGalleryImages.length === 0) {
-      return res
-        .status(400)
-        .json({ message: "No valid gallery images provided." });
+      return res.status(400).json({ message: "No valid gallery images provided." });
     }
 
-    const existingGallery = await Gallery.findOne({ uniqueId });
+    const existingGallery = await Gallery.findById(objectId);
 
     if (!existingGallery) {
       return res.status(404).json({
         message:
-          "Gallery not found for this property. Use the 'createGallery' controller to initialize.",
+          "Gallery not found for this ID. Use the 'createGallery' controller to initialize.",
       });
     }
 
-    const currentCount = existingGallery.gallery.length;
+    const currentCount = Array.isArray(existingGallery.gallery)
+      ? existingGallery.gallery.length
+      : 0;
     const totalCount = currentCount + newGalleryImages.length;
 
     if (totalCount > 16) {
       return res.status(400).json({
-        message: `Cannot add more than 8 gallery image pairs. You already have ${
-          currentCount / 2
-        } pairs.`,
+        message: `Cannot add more than 8 gallery image pairs. You already have ${currentCount / 2} pairs.`,
       });
     }
 
@@ -143,7 +154,7 @@ export const addNewGalleryImages = async (req, res) => {
 
     const updatedGallery = await existingGallery.save();
 
-    await GalleryImageMover(req, res, existingGallery.propertyId);
+    await GalleryImageMover(req, res, updatedGallery.property_id);
 
     return res.status(200).json({
       message: "New gallery images added successfully",
@@ -157,25 +168,34 @@ export const addNewGalleryImages = async (req, res) => {
 
 export const removeGalleryImages = async (req, res) => {
   try {
-    const { uniqueId } = req.params;
+    const { objectId } = req.params;
     const { webpPaths } = req.body;
 
+    // Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(objectId)) {
+      return res.status(400).json({ message: "Invalid gallery ID." });
+    }
+
+    // Validate input array
     if (!Array.isArray(webpPaths) || webpPaths.length === 0) {
       return res
         .status(400)
         .json({ message: "Invalid or empty image path array." });
     }
 
-    const galleryDoc = await Gallery.findOne({ uniqueId });
+    // Fetch gallery document
+    const galleryDoc = await Gallery.findById(objectId);
     if (!galleryDoc) {
       return res
         .status(404)
-        .json({ message: "No gallery found for this uniqueId." });
+        .json({ message: "No gallery found for this ID." });
     }
 
     const pathsToRemove = new Set();
 
     for (const webpPath of webpPaths) {
+      if (typeof webpPath !== "string") continue;
+
       pathsToRemove.add(webpPath);
 
       const webpFileName = path.basename(webpPath);
@@ -189,7 +209,10 @@ export const removeGalleryImages = async (req, res) => {
 
       const fileKey = match[1];
 
+      // Find matching original image in DB
       const originalPath = galleryDoc.gallery.find((p) => {
+        if (typeof p !== "string") return false;
+
         const filename = path.basename(p);
         const dir = path.dirname(p);
         const origMatch = filename.match(/^img-\d+-(.+)\.[a-zA-Z0-9]+$/);
@@ -210,6 +233,7 @@ export const removeGalleryImages = async (req, res) => {
       }
     }
 
+    // Remove from gallery list
     const updatedGallery = galleryDoc.gallery.filter(
       (img) => !pathsToRemove.has(img)
     );
@@ -218,7 +242,7 @@ export const removeGalleryImages = async (req, res) => {
     await galleryDoc.save();
 
     return res.status(200).json({
-      message: "Selected gallery image references removed from database.",
+      message: "Selected gallery images removed from database.",
       data: galleryDoc,
     });
   } catch (error) {
@@ -229,92 +253,113 @@ export const removeGalleryImages = async (req, res) => {
 
 export const updateGallery = async (req, res) => {
   try {
-    const { uniqueId } = req.params;
+    const { objectId } = req.params;
 
-    if (!uniqueId) {
-      return res.status(400).json({ error: "Gallery ID is required!" });
+    if (!objectId || !mongoose.Types.ObjectId.isValid(objectId)) {
+      return res.status(400).json({ error: "Gallery ID is required and must be valid!" });
     }
 
-    const existGallery = await Gallery.findOne({ uniqueId });
+    const existGallery = await Gallery.findById(objectId);
     if (!existGallery) {
       return res.status(404).json({ error: "Gallery not found!" });
     }
 
-    // Parse incoming fields
     let { title, gallery } = req.body;
 
-    gallery = Array.isArray(gallery) ? gallery : [];
-
-    const newGallery = [];
-
-    if (req?.files?.newImages && req?.files?.newImages.length > 4) {
-      return res
-        .status(400)
-        .json({ error: "You Cannot Add More than 4 Images at Once." });
-    }
-
-    newGallery.push(gallery);
-    if (req?.files?.newImages && req.files.newImages.length > 0) {
-      for (let i = 0; i < req.files.newImages.length; i++) {
-        gallery.push(req.files.newImages[i]?.path);
+    // Normalize incoming `gallery` to an array of strings
+    if (!gallery) {
+      gallery = [];
+    } else if (typeof gallery === "string") {
+      try {
+        const parsed = JSON.parse(gallery);
+        gallery = Array.isArray(parsed) ? parsed : [String(parsed)];
+      } catch {
+        // assume comma-separated or single string
+        gallery = gallery.split?.(",").map((s) => s.trim()).filter(Boolean) || [String(gallery)];
       }
-      for (let j = 0; j < req.files.newImages.length; j++) {
-        gallery.push(req.files.newImages[j]?.originalPath);
-      }
+    } else if (!Array.isArray(gallery)) {
+      gallery = [String(gallery)];
     }
 
-    const checkLimit = gallery.filter((item) => item.endsWith(".webp"));
-
-    if (checkLimit.length > 8) {
-      return res
-        .status(400)
-        .json({ error: "You Cannot Add More Than 8 Images in a Gallery" });
+    // Validate uploaded files (newImages)
+    const files = req?.files?.newImages || [];
+    if (files.length > 4) {
+      return res.status(400).json({ error: "You cannot add more than 4 images at once." });
     }
 
-    const updateGallery = await Gallery.findOneAndUpdate(
-      { uniqueId: uniqueId },
+    // Append uploaded files to gallery array. Expect each file to expose `path` and `originalPath` (or similar).
+    // Adjust property names if your upload middleware uses different fields (e.g., filename/webpFilename).
+    for (const f of files) {
+      if (f?.path) gallery.push(f.path);
+      if (f?.originalPath) gallery.push(f.originalPath);
+      // fallback checks for common alternate names:
+      if (!f?.path && f?.filename) gallery.push(f.filename);
+      if (!f?.originalPath && f?.webpFilename) gallery.push(f.webpFilename);
+    }
+
+    // Count webp files (assuming webp filenames end with '.webp')
+    const webpCount = gallery.filter((item) => typeof item === "string" && item.toLowerCase().endsWith(".webp")).length;
+
+    if (webpCount > 8) {
+      return res.status(400).json({ error: "You cannot add more than 8 images in a gallery." });
+    }
+
+    const updatedGallery = await Gallery.findByIdAndUpdate(
+      objectId,
       {
         $set: {
-          title: title,
-          gallery: gallery,
+          title: title ?? existGallery.title,
+          gallery,
         },
       },
-      { new: true }
+      { new: true, runValidators: true }
     );
 
-    if (updateGallery) {
-      return res.status(200).json({
-        message: "Gallery updated successfully.",
-      });
-    }
+    return res.status(200).json({
+      message: "Gallery updated successfully.",
+      data: updatedGallery,
+    });
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    console.error("updateGallery Error:", error);
+    return res.status(500).json({ error: error.message || "Internal Server Error" });
   }
 };
+
 export const deleteGallery = async (req, res) => {
   try {
-    const uniqueId = req.params.uniqueId;
+    const { objectId } = req.params;
 
-    const gallery = await Gallery.findOne({ uniqueId });
+    if (!objectId || !mongoose.Types.ObjectId.isValid(objectId)) {
+      return res.status(400).json({ error: "Invalid gallery ID." });
+    }
+
+    const gallery = await Gallery.findById(objectId);
 
     if (!gallery) {
       return res.status(404).json({ error: "Gallery not found!" });
     }
 
-    const propertyId = gallery.propertyId;
+    // support both property_id (ObjectId) and propertyId (string) fields depending on your schema
+    const propertyIdValue = gallery.property_id ?? gallery.propertyId ?? null;
 
-    const galleryCount = await Gallery.countDocuments({ propertyId });
+    // Count galleries for the property (use appropriate field)
+    const galleryCount = await Gallery.countDocuments({
+      $or: [
+        { property_id: propertyIdValue },
+        { propertyId: propertyIdValue },
+      ],
+    });
 
-    await Gallery.findOneAndDelete({ uniqueId });
+    await Gallery.findByIdAndDelete(objectId);
 
-    if (galleryCount === 1) {
+    if (galleryCount === 1 && propertyIdValue) {
       await addPropertyScore({
         property_score: -10,
-        property_id: propertyId,
+        property_id: String(propertyIdValue),
       });
     }
 
-    return res.status(200).json({ message: "Gallery Deleted." });
+    return res.status(200).json({ message: "Gallery deleted." });
   } catch (err) {
     console.error("Error deleting gallery:", err);
     return res.status(500).json({ error: "Internal Server Error!" });
@@ -323,29 +368,30 @@ export const deleteGallery = async (req, res) => {
 
 export const EditGalleryTitle = async (req, res) => {
   try {
-    const { title, uniqueId } = req.body;
+    const { title, objectId } = req.body;
 
-    if (!title || !uniqueId) {
-      return res.status(400).json({ error: "Required Field Missing" });
+    if (!title || !objectId) {
+      return res.status(400).json({ error: "Required fields missing." });
     }
 
-    const isExisting = await Gallery.findOne({ uniqueId });
-    if (!isExisting) {
-      return res.status(400).json({ error: "Gallery Not Found" });
+    if (!mongoose.Types.ObjectId.isValid(objectId)) {
+      return res.status(400).json({ error: "Invalid gallery ID." });
     }
 
-    const updatedTitle = await Gallery.findOneAndUpdate(
-      { uniqueId },
-      {
-        $set: { title },
-      }
+    const existingGallery = await Gallery.findById(objectId);
+    if (!existingGallery) {
+      return res.status(404).json({ error: "Gallery not found." });
+    }
+
+    await Gallery.findByIdAndUpdate(
+      objectId,
+      { $set: { title } },
+      { new: true }
     );
 
-    if (updatedTitle) {
-      return res.status(200).json({ message: "Title Updated Successfully" });
-    }
+    return res.status(200).json({ message: "Title updated successfully." });
   } catch (error) {
-    console.log(error);
+    console.error("EditGalleryTitle Error:", error);
     return res.status(500).json({ error: "Internal Server Error!" });
   }
 };

@@ -76,7 +76,7 @@ export default function AddNewGalleryImages({
       try {
         setLoading(true);
         const response = await API.post(
-          `/gallery/add/${gallery?.uniqueId}`,
+          `/gallery/add/${gallery?._id}`,
           formData
         );
         toast.success(

@@ -72,7 +72,7 @@ import {
   deleteCourse,
   getCourse,
   getCourseById,
-  getCourseByUniqueId,
+  getCourseByObjectId,
   getCourseWithSeoBySlug,
   restoreCourse,
   softDeleteCourse,
@@ -249,7 +249,7 @@ router.patch(
 );
 router.delete("/course/:objectId", Authorize, deleteCourse);
 router.get("/course/:objectId", getCourseById);
-router.get("/course-detail/:uniqueId", getCourseByUniqueId);
+router.get("/course-detail/:objectId", getCourseByObjectId);
 router.get("/course/soft/:objectId", Authorize, softDeleteCourse);
 router.get("/course/restore/:objectId", Authorize, restoreCourse);
 router.post("/course/create/enquiry", createCourseEnquiry);
@@ -377,16 +377,16 @@ const accomodationUpload = upload.fields([{ name: "images", maxCount: 8 }]);
 router.post("/accomodation", Authorize, AddAccomodation);
 router.get("/accomodation", getAllAccomodation);
 router.get("/accomodation/:property_id", getAccomodationByPropertyId);
-router.patch("/accomodation/:uniqueId", Authorize, EditAccomodation);
+router.patch("/accomodation/:objectId", Authorize, EditAccomodation);
 router.patch(
-  "/accomodation/images/:uniqueId",
+  "/accomodation/images/:objectId",
   Authorize,
   accomodationUpload,
   processImage,
   AddAccomodationImages
 );
 router.post(
-  `/accomodation/images/remove/:uniqueId`,
+  `/accomodation/images/remove/:objectId`,
   Authorize,
   removeAccomodationImages
 );
@@ -424,9 +424,9 @@ router.patch("/admission_process/:objectId", Authorize, EditAdmissionProcess);
 //? Review Route
 router.get("/review", getReview);
 router.post("/review", Authorize, addReview);
-router.patch("/review/:uniqueId", Authorize, updateReview);
-router.delete("/review/:uniqueId", Authorize, deleteReview);
-router.get("/review/:uniqueId", getReviewById);
+router.patch("/review/:objectId", Authorize, updateReview);
+router.delete("/review/:objectId", Authorize, deleteReview);
+router.get("/review/:objectId", getReviewById);
 router.get("/review/property/:property_id", getReviewByPropertyId);
 
 //? Gallery Route
@@ -435,31 +435,31 @@ const galleryUpdate = upload.fields([{ name: "newImages", maxCount: 8 }]);
 router.get("/gallery", getGallery);
 router.post("/gallery", Authorize, gallery, processImage, addGallery);
 router.patch(
-  "/gallery/:uniqueId",
+  "/gallery/:objectId",
   Authorize,
   galleryUpdate,
   processImage,
   updateGallery
 );
-router.delete("/gallery/:uniqueId", Authorize, deleteGallery);
-router.get("/gallery/:uniqueId", getGalleryById);
+router.delete("/gallery/:objectId", Authorize, deleteGallery);
+router.get("/gallery/:objectId", getGalleryById);
 router.get("/property/gallery/:propertyId", getGalleryByPropertyId);
 router.post(
-  "/gallery/add/:uniqueId",
+  "/gallery/add/:objectId",
   Authorize,
   gallery,
   processImage,
   addNewGalleryImages
 );
-router.post("/gallery/remove/:uniqueId", Authorize, removeGalleryImages);
+router.post("/gallery/remove/:objectId", Authorize, removeGalleryImages);
 router.patch("/gallery/update/title", Authorize, EditGalleryTitle);
 
 //? Faqs Route
 router.get("/faqs", getFaq);
 router.post("/faqs", Authorize, addFaq);
-router.patch("/faqs/:uniqueId", Authorize, updateFaq);
-router.delete("/faqs/:uniqueId", Authorize, deleteFaq);
-router.get("/faqs/:uniqueId", getFaqById);
+router.patch("/faqs/:objectId", Authorize, updateFaq);
+router.delete("/faqs/:objectId", Authorize, deleteFaq);
+router.get("/faqs/:objectId", getFaqById);
 router.get("/property/faq/:propertyId", getFaqByPropertyId);
 
 //? QnA Route

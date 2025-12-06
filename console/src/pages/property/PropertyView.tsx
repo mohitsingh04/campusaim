@@ -102,7 +102,7 @@ export function PropertyView() {
 
 			const [propertyResult, locationResult] = await Promise.allSettled([
 				Promise.resolve(propertyData),
-				API.get(`/property/location/${propertyData.uniqueId}`),
+				API.get(`/property/location/${objectId}`),
 			]);
 
 			if (propertyResult.status === "fulfilled") {

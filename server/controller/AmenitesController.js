@@ -1,5 +1,6 @@
 import { addPropertyScore } from "../analytic-controller/PropertyScoreController.js";
 import Amenities from "../models/Ameniteis.js";
+import mongoose from "mongoose";
 
 export const getAmenities = async (req, res) => {
   try {
@@ -64,11 +65,7 @@ export const addAmenities = async (req, res) => {
         .json({ error: "Amenities already exist for this property." });
     }
 
-    const lastAmenity = await Amenities.findOne().sort({ uniqueId: -1 });
-    const nextUniqueId = lastAmenity ? lastAmenity.uniqueId + 1 : 1;
-
     const newAmenities = new Amenities({
-      uniqueId: nextUniqueId,
       propertyId,
       selectedAmenities,
     });
@@ -95,36 +92,38 @@ export const addAmenities = async (req, res) => {
 
 export const updateAmenities = async (req, res) => {
   try {
-    const { uniqueId } = req.params;
+    const { objectId } = req.params;
 
-    if (!uniqueId) {
-      return res.status(400).json({ error: "Amenities ID is required!" });
+    if (!objectId || !mongoose.Types.ObjectId.isValid(objectId)) {
+      return res.status(400).json({ error: "Invalid Amenities ID!" });
     }
 
-    const amenitiesId = await Amenities.findOne({ uniqueId });
-    if (!amenitiesId) {
+    const existingAmenities = await Amenities.findById(objectId);
+    if (!existingAmenities) {
       return res.status(404).json({ error: "Amenities not found!" });
     }
 
     const { propertyId, selectedAmenities } = req.body;
 
-    const updatedAmenities = await Amenities.findOneAndUpdate(
-      { uniqueId },
-      {
-        $set: {
-          propertyId,
-          selectedAmenities,
-        },
-      },
-      { new: true }
+    const updateData = {
+      propertyId: propertyId ?? existingAmenities.propertyId,
+      selectedAmenities: selectedAmenities ?? existingAmenities.selectedAmenities,
+    };
+
+    const updatedAmenities = await Amenities.findByIdAndUpdate(
+      objectId,
+      { $set: updateData },
+      { new: true, runValidators: true }
     );
 
-    return res
-      .status(200)
-      .json({ message: "Updated successfully.", updatedAmenities });
+    return res.status(200).json({
+      message: "Amenities updated successfully.",
+      updatedAmenities,
+    });
   } catch (error) {
+    console.error("Update Amenities Error:", error);
     return res.status(500).json({
-      error: "Failed to create amenities",
+      error: "Failed to update amenities",
       details: error.message,
     });
   }

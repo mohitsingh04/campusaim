@@ -78,7 +78,7 @@ export default function AddGallery({
       images.forEach((image) => {
         formData.append("gallery", image);
       });
-      formData.append("propertyId", property?.uniqueId || "");
+      formData.append("propertyId", property?._id || "");
 
       try {
         setLoading(true);

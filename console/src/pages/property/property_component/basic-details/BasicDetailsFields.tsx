@@ -181,8 +181,8 @@ export default function BasicDetailsFields({
 								<option value="">Select {label}</option>
 								{options?.map((opt: any) => (
 									<option
-										key={opt.id || opt.uniqueId || opt.status}
-										value={opt.id || opt.uniqueId || opt.status}
+										key={opt.id || opt._id || opt.status}
+										value={opt.id || opt._id || opt.status}
 									>
 										{opt.type_name || opt.category_name || opt.status}
 									</option>

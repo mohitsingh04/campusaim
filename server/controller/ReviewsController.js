@@ -1,4 +1,64 @@
+import mongoose from "mongoose";
 import Review from "../models/Reviews.js";
+
+export const getReview = async (req, res) => {
+  try {
+    const reviews = await Review.find();
+
+    if (reviews.length === 0) {
+      return res.status(404).json({ error: "No reviews found!" });
+    }
+
+    return res.status(200).json(reviews);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+export const getReviewById = async (req, res) => {
+  try {
+    const { objectId } = req.params;
+
+    if (!objectId || !mongoose.Types.ObjectId.isValid(objectId)) {
+      return res.status(400).json({ error: "Invalid Review ID!" });
+    }
+
+    const review = await Review.findById(objectId);
+
+    if (!review) {
+      return res.status(404).json({ error: "Review not found!" });
+    }
+
+    return res.status(200).json(review);
+  } catch (error) {
+    console.error("Error fetching review:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+export const getReviewByPropertyId = async (req, res) => {
+  try {
+    let { property_id } = req.params;
+
+    if (!property_id) {
+      return res.status(400).json({ error: "Property ID is required!" });
+    }
+
+    const reviews = await Review.find({ property_id });
+
+    if (reviews.length === 0) {
+      return res
+        .status(404)
+        .json({ error: "No reviews found for this property!" });
+    }
+
+    return res.status(200).json(reviews);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
 
 export const addReview = async (req, res) => {
   try {
@@ -33,11 +93,7 @@ export const addReview = async (req, res) => {
       }
     }
 
-    const lastReview = await Review.findOne().sort({ _id: -1 });
-    const uniqueId = lastReview ? lastReview.uniqueId + 1 : 1;
-
     const newReview = new Review({
-      uniqueId,
       property_id,
       name,
       email,
@@ -55,76 +111,24 @@ export const addReview = async (req, res) => {
   }
 };
 
-export const getReview = async (req, res) => {
-  try {
-    const reviews = await Review.find();
-
-    if (reviews.length === 0) {
-      return res.status(404).json({ error: "No reviews found!" });
-    }
-
-    return res.status(200).json(reviews);
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: "Internal Server Error" });
-  }
-};
-
-export const getReviewById = async (req, res) => {
-  try {
-    const { uniqueId } = req.params;
-
-    if (!uniqueId) {
-      return res.status(400).json({ error: "Unique ID is required!" });
-    }
-
-    const review = await Review.findOne({ uniqueId });
-
-    if (!review) {
-      return res.status(404).json({ error: "Review not found!" });
-    }
-
-    return res.status(200).json(review);
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: "Internal Server Error" });
-  }
-};
-export const getReviewByPropertyId = async (req, res) => {
-  try {
-    let { property_id } = req.params;
-
-    if (!property_id) {
-      return res.status(400).json({ error: "Property ID is required!" });
-    }
-
-    const reviews = await Review.find({ property_id });
-
-    if (reviews.length === 0) {
-      return res
-        .status(404)
-        .json({ error: "No reviews found for this property!" });
-    }
-
-    return res.status(200).json(reviews);
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: "Internal Server Error" });
-  }
-};
-
 export const updateReview = async (req, res) => {
   try {
-    const { uniqueId } = req.params;
-    const { name, phone_number, email, rating, review } = req.body;
+    const { objectId } = req.params;
+    const { name, phone_number, email, rating, review: reviewText } = req.body;
 
-    if (!uniqueId || (!name && !phone_number && !email && !rating && !review)) {
+    if (!objectId || !mongoose.Types.ObjectId.isValid(objectId)) {
       return res.status(400).json({
-        error: "Unique ID and at least one field to update are required.",
+        error: "Valid review ID (objectId) is required.",
       });
     }
 
-    const currentReview = await Review.findOne({ uniqueId });
+    if (!name && !phone_number && !email && !rating && !reviewText) {
+      return res.status(400).json({
+        error: "At least one field to update is required.",
+      });
+    }
+
+    const currentReview = await Review.findById(objectId);
     if (!currentReview) {
       return res.status(404).json({ error: "Review not found." });
     }
@@ -132,13 +136,13 @@ export const updateReview = async (req, res) => {
     const updateFields = {};
 
     if (name) updateFields.name = name;
-    if (rating) updateFields.rating = rating;
-    if (review) updateFields.review = review;
+    if (rating !== undefined) updateFields.rating = rating;
+    if (reviewText) updateFields.review = reviewText;
 
+    // Phone handling and uniqueness check
     if (phone_number) {
-      const formattedPhone = phone_number.startsWith("+")
-        ? phone_number
-        : `+${phone_number}`;
+      const trimmed = String(phone_number).trim();
+      const formattedPhone = trimmed.startsWith("+") ? trimmed : `+${trimmed}`;
 
       const phoneExists = await Review.findOne({
         phone_number: formattedPhone,
@@ -153,9 +157,12 @@ export const updateReview = async (req, res) => {
       updateFields.phone_number = formattedPhone;
     }
 
+    // Email uniqueness check
     if (email) {
+      const trimmedEmail = String(email).trim().toLowerCase();
+
       const emailExists = await Review.findOne({
-        email,
+        email: trimmedEmail,
         _id: { $ne: currentReview._id },
         property_id: currentReview.property_id,
       });
@@ -164,30 +171,38 @@ export const updateReview = async (req, res) => {
         return res.status(400).json({ error: "Email already in use." });
       }
 
-      updateFields.email = email;
+      updateFields.email = trimmedEmail;
     }
 
-    const updatedReview = await Review.findOneAndUpdate(
-      { uniqueId },
+    const updatedReview = await Review.findByIdAndUpdate(
+      objectId,
       { $set: updateFields },
       { new: true, runValidators: true }
     );
+
+    if (!updatedReview) {
+      return res.status(404).json({ error: "Review not found." });
+    }
 
     return res.status(200).json({
       message: "Review updated successfully.",
       review: updatedReview,
     });
   } catch (err) {
-    console.error(err);
+    console.error("updateReview Error:", err);
     return res.status(500).json({ error: "Internal Server Error." });
   }
 };
 
 export const deleteReview = async (req, res) => {
   try {
-    const { uniqueId } = req.params;
+    const { objectId } = req.params;
 
-    const deletedReview = await Review.findOneAndDelete({ uniqueId });
+    if (!objectId || !mongoose.Types.ObjectId.isValid(objectId)) {
+      return res.status(400).json({ error: "Invalid review ID." });
+    }
+
+    const deletedReview = await Review.findByIdAndDelete(objectId);
 
     if (!deletedReview) {
       return res.status(404).json({ error: "Review not found." });
@@ -195,7 +210,7 @@ export const deleteReview = async (req, res) => {
 
     return res.status(200).json({ message: "Review deleted successfully." });
   } catch (err) {
-    console.log(err);
+    console.error("deleteReview Error:", err);
     return res.status(500).json({ error: "Internal Server Error." });
   }
 };

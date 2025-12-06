@@ -23,7 +23,6 @@ interface ReviewType {
   phone_number?: string;
   rating: number;
   review: string;
-  uniqueId: number;
   _id: string;
 }
 
@@ -36,20 +35,20 @@ export default function Review({
   const { authUser } = useOutletContext<DashboardOutletContextProps>();
 
   const getReview = useCallback(async () => {
-    if (!property?.uniqueId) return;
+    if (!property?._id) return;
     try {
-      const response = await API.get(`/review/property/${property?.uniqueId}`);
+      const response = await API.get(`/review/property/${property?._id}`);
       setReviews(response.data);
     } catch (error) {
       getErrorResponse(error, true);
     }
-  }, [property?.uniqueId]);
+  }, [property?._id]);
 
   useEffect(() => {
     getReview();
   }, [getReview]);
 
-  const deleteReview = async (id: number) => {
+  const deleteReview = async (_id: string) => {
     const result = await swal.fire({
       title: "Are you sure?",
       text: "You won't be able to revert this!",
@@ -62,8 +61,8 @@ export default function Review({
 
     if (result.isConfirmed) {
       try {
-        const response = await API.delete(`/review/${id}`);
-        setReviews(reviews.filter((r) => r?.uniqueId !== id));
+        const response = await API.delete(`/review/${_id}`);
+        setReviews(reviews.filter((r) => r?._id !== _id));
         toast.success(response.data.message || "Review deleted successfully");
       } catch (error) {
         getErrorResponse(error);
@@ -196,7 +195,7 @@ export default function Review({
                         <TableButton
                           Icon={Trash2}
                           color="red"
-                          onClick={() => deleteReview(review?.uniqueId)}
+                          onClick={() => deleteReview(review?._id)}
                         />
                       )}
                   </div>
