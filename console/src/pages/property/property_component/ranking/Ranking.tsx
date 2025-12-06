@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
-import { PropertyProps } from "../../../../types/types";
+import { CategoryProps, PropertyProps } from "../../../../types/types";
 import RankingCreate from "./RankingCreate";
 import RankingEdit from "./RankingEdit";
 import { API } from "../../../../contexts/API";
 import { Edit, MoreVertical, Trash2 } from "lucide-react";
 import { getErrorResponse } from "../../../../contexts/Callbacks";
-import ReadMoreLess from "../../../../ui/read-more/ReadMoreLess";
 
 export default function Ranking({
 	property,
@@ -16,6 +15,20 @@ export default function Ranking({
 	const [loading, setLoading] = useState(true);
 	const [isEdit, setIsEdit] = useState<any>("");
 	const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
+	const [categories, setCategories] = useState<CategoryProps[]>([]);
+
+	const fetchCategories = useCallback(async () => {
+		try {
+			const res = await API.get("/category");
+			setCategories(res?.data || []);
+		} catch (error) {
+			getErrorResponse(error, true);
+		}
+	}, []);
+
+	useEffect(() => {
+		fetchCategories();
+	}, [fetchCategories]);
 
 	const getRanking = useCallback(async () => {
 		if (!property?._id) {
@@ -40,6 +53,11 @@ export default function Ranking({
 	useEffect(() => {
 		getRanking();
 	}, [getRanking]);
+
+	const getCategoryById = (id: string) => {
+		const cat = categories.find((c: any) => c._id === id)?.category_name;
+		return cat || id;
+	};
 
 	if (loading) {
 		return (
@@ -69,7 +87,7 @@ export default function Ranking({
 					<div key={acc?._id || Math.random()} className="flex flex-col">
 						<div className="flex items-center justify-between px-4 py-3 border-b border-[var(--yp-border-primary)]">
 							<h3 className="text-lg font-semibold text-[var(--yp-text-primary)]">
-								Rank Details
+								Ranking Details
 							</h3>
 
 							<div className="flex gap-2">
@@ -110,27 +128,33 @@ export default function Ranking({
 						{/* Card Body */}
 						<div className="px-4 py-3 flex-1 space-y-3">
 							<h4 className="text-sm font-semibold text-[var(--yp-text-primary)]">
-								NAAC Rank Details
+								NAAC Ranking
 							</h4>
-							<ReadMoreLess children={acc?.naac_rank} />
+							{getCategoryById(acc?.naac_rank || "N/A")}
 						</div>
 						<div className="px-4 py-3 flex-1 space-y-3">
 							<h4 className="text-sm font-semibold text-[var(--yp-text-primary)]">
-								NIRF Rank Details
+								NIRF Ranking
 							</h4>
-							<ReadMoreLess children={acc?.nirf_rank} />
+							{acc?.nirf_rank}
 						</div>
 						<div className="px-4 py-3 flex-1 space-y-3">
 							<h4 className="text-sm font-semibold text-[var(--yp-text-primary)]">
-								NBA Rank Details
+								NBA Ranking
 							</h4>
-							<ReadMoreLess children={acc?.nba_rank} />
+							{acc?.nba_rank}
 						</div>
 						<div className="px-4 py-3 flex-1 space-y-3">
 							<h4 className="text-sm font-semibold text-[var(--yp-text-primary)]">
-								Other Rank Details
+								QS World University Ranking
 							</h4>
-							<ReadMoreLess children={acc?.other_ranking} />
+							{acc?.qs_rank}
+						</div>
+						<div className="px-4 py-3 flex-1 space-y-3">
+							<h4 className="text-sm font-semibold text-[var(--yp-text-primary)]">
+								THE (Times Higher Education) Ranking
+							</h4>
+							{acc?.times_higher_education_rank}
 						</div>
 					</div>
 				);

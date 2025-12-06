@@ -60,15 +60,16 @@ export function PropertyView() {
 	const { authUser, authLoading, categories } =
 		useOutletContext<DashboardOutletContextProps>();
 	const [property, setProperty] = useState<PropertyProps | null>(null);
+	const [allProperty, setAllProperty] = useState<PropertyProps | null>(null);
 	const [location, setLocation] = useState<any>(null);
 	const [loading, setLoading] = useState(true);
 	const navigate = useNavigate();
 
-	useEffect(() => {
-		if (!loading && property === null) {
-			navigate("/not-found");
-		}
-	}, [loading, property, navigate]);
+	// useEffect(() => {
+	// 	if (!loading && property === null) {
+	// 		navigate("/not-found");
+	// 	}
+	// }, [loading, property, navigate]);
 
 	useEffect(() => {
 		if (!authLoading && !loading && property) {
@@ -79,6 +80,19 @@ export function PropertyView() {
 			}
 		}
 	}, [authUser, authLoading, loading, property, navigate]);
+
+	const getAllProperty = useCallback(async () => {
+		setLoading(true);
+		try {
+			const propertyResponse = await API.get(`/property`);
+			const propertyData = propertyResponse.data;
+			setAllProperty(propertyData);
+		} catch (error) {
+			getErrorResponse(error, true);
+		} finally {
+			setLoading(false);
+		}
+	}, []);
 
 	const getProperty = useCallback(async () => {
 		setLoading(true);
@@ -107,7 +121,8 @@ export function PropertyView() {
 
 	useEffect(() => {
 		getProperty();
-	}, [getProperty]);
+		getAllProperty();
+	}, [getProperty, getAllProperty]);
 
 	const getCategoryById = useCallback(
 		(id: string) => {
@@ -148,6 +163,7 @@ export function PropertyView() {
 				<BasicDetails
 					getPropertyBasicDetails={getProperty}
 					property={property}
+					allProperty={allProperty}
 					categories={categories}
 					getCategoryById={getCategoryById}
 				/>
@@ -179,7 +195,11 @@ export function PropertyView() {
 			label: "Course",
 			icon: ListChecks,
 			component: (
-				<CourseList property={property} getCategoryById={getCategoryById} />
+				<CourseList
+					property={property}
+					allProperty={allProperty}
+					getCategoryById={getCategoryById}
+				/>
 			),
 			online: false,
 		},

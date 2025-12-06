@@ -1,18 +1,20 @@
 import { useFormik } from "formik";
 import toast from "react-hot-toast";
 import { useOutletContext } from "react-router-dom";
-import { useMemo } from "react";
-import JoditEditor from "jodit-react";
+import { useCallback, useEffect, useState } from "react";
 import { API } from "../../../../contexts/API";
 import {
+	CategoryProps,
 	DashboardOutletContextProps,
 	PropertyProps,
 } from "../../../../types/types";
 import {
+	getCategoryAccodingToField,
 	getErrorResponse,
 	getFormikError,
 } from "../../../../contexts/Callbacks";
-import { getEditorConfig } from "../../../../contexts/JoditEditorConfig";
+import Select from "react-select";
+import { PropertyRankingValidation } from "../../../../contexts/ValidationsSchemas";
 
 export default function RankingCreate({
 	property,
@@ -21,8 +23,21 @@ export default function RankingCreate({
 	property: PropertyProps | null;
 	getRanking: () => void;
 }) {
-	const editorConfig = useMemo(() => getEditorConfig(), []);
 	const { authUser } = useOutletContext<DashboardOutletContextProps>();
+	const [categories, setCategories] = useState<CategoryProps[]>([]);
+
+	const fetchCategories = useCallback(async () => {
+		try {
+			const res = await API.get("/category");
+			setCategories(res?.data || []);
+		} catch (error) {
+			getErrorResponse(error, true);
+		}
+	}, []);
+
+	useEffect(() => {
+		fetchCategories();
+	}, [fetchCategories]);
 
 	const formik = useFormik({
 		initialValues: {
@@ -31,9 +46,10 @@ export default function RankingCreate({
 			naac_rank: "",
 			nirf_rank: "",
 			nba_rank: "",
-			other_ranking: "",
+			qs_rank: "",
+			times_higher_education_rank: "",
 		},
-		enableReinitialize: true,
+		validationSchema: PropertyRankingValidation,
 		onSubmit: async (values, { setSubmitting, resetForm }) => {
 			setSubmitting(true);
 			try {
@@ -43,11 +59,12 @@ export default function RankingCreate({
 					naac_rank: values.naac_rank || "",
 					nirf_rank: values.nirf_rank || "",
 					nba_rank: values.nba_rank || "",
-					other_ranking: values.other_ranking || "",
+					qs_rank: values.qs_rank || "",
+					times_higher_education_rank: values.times_higher_education_rank || "",
 				};
 
 				const response = await API.post("/ranking", payload);
-				toast.success(response.data.message || "Ranking Created Successfully");
+				toast.success(response.data.message || "Ranking Added Successfully");
 				getRanking();
 				// optionally clear editors
 				resetForm({
@@ -57,7 +74,8 @@ export default function RankingCreate({
 						naac_rank: "",
 						nirf_rank: "",
 						nba_rank: "",
-						other_ranking: "",
+						qs_rank: "",
+						times_higher_education_rank: "",
 					},
 				});
 			} catch (error) {
@@ -69,6 +87,11 @@ export default function RankingCreate({
 			}
 		},
 	});
+	const naacRankOptions = getCategoryAccodingToField(categories, "Naac Rank");
+	const naacRankSelectOptions = naacRankOptions.map((opt: any) => ({
+		value: opt._id,
+		label: opt.category_name || opt.name,
+	}));
 
 	return (
 		<div className="space-y-6">
@@ -77,61 +100,97 @@ export default function RankingCreate({
 					{/* NAAC Ranking */}
 					<div>
 						<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
-							NAAC
+							NAAC Ranking
 						</label>
-						<JoditEditor
-							value={formik.values.naac_rank || ""}
-							config={editorConfig}
-							onChange={(newContent) =>
-								formik.setFieldValue("naac_rank", newContent || "")
+
+						<Select
+							name="naac_rank"
+							options={naacRankSelectOptions}
+							value={naacRankSelectOptions.find(
+								(opt) => opt.value === formik.values.naac_rank
+							)}
+							onChange={(selected) =>
+								formik.setFieldValue(
+									"naac_rank",
+									selected ? selected.value : ""
+								)
 							}
+							onBlur={() => formik.setFieldTouched("naac_rank", true)}
+							classNamePrefix="react-select"
 						/>
+
 						{getFormikError(formik, "naac_rank")}
 					</div>
 
-					{/* NIRF Ranking */}
-					<div>
-						<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
-							NIRF
-						</label>
-						<JoditEditor
-							value={formik.values.nirf_rank || ""}
-							config={editorConfig}
-							onChange={(newContent) =>
-								formik.setFieldValue("nirf_rank", newContent || "")
-							}
-						/>
-						{getFormikError(formik, "nirf_rank")}
+					<div className="grid grid-cols-2 gap-2">
+						{/* NIRF Ranking */}
+						<div>
+							<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
+								NIRF Ranking
+							</label>
+							<input
+								type="text"
+								name="nirf_rank"
+								value={formik.values.nirf_rank}
+								onChange={formik.handleChange}
+								placeholder="Enter NIRF Rank"
+								className="w-full px-3 py-2 border border-[var(--yp-border-primary)] rounded-lg bg-[var(--yp-input-primary)] text-[var(--yp-text-primary)]"
+							/>
+							{getFormikError(formik, "nirf_rank")}
+						</div>
+
+						{/* NBA Ranking */}
+						<div>
+							<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
+								NBA Ranking
+							</label>
+							<input
+								type="text"
+								name="nba_rank"
+								value={formik.values.nba_rank}
+								onChange={formik.handleChange}
+								placeholder="Enter NBA Rank"
+								className="w-full px-3 py-2 border border-[var(--yp-border-primary)] rounded-lg bg-[var(--yp-input-primary)] text-[var(--yp-text-primary)]"
+							/>
+							{getFormikError(formik, "nba_rank")}
+						</div>
 					</div>
 
-					{/* NBA Ranking */}
+					{/* International Rankings */}
 					<div>
 						<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
-							NBA
+							International Rankings
 						</label>
-						<JoditEditor
-							value={formik.values.nba_rank || ""}
-							config={editorConfig}
-							onChange={(newContent) =>
-								formik.setFieldValue("nba_rank", newContent || "")
-							}
-						/>
-						{getFormikError(formik, "nba_rank")}
-					</div>
-
-					{/* Other Ranking */}
-					<div>
-						<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
-							Other Ranking
-						</label>
-						<JoditEditor
-							value={formik.values.other_ranking || ""}
-							config={editorConfig}
-							onChange={(newContent) =>
-								formik.setFieldValue("other_ranking", newContent || "")
-							}
-						/>
-						{getFormikError(formik, "other_ranking")}
+						<div className="grid grid-cols-2 gap-2">
+							<div>
+								<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
+									QS World University Ranking
+								</label>
+								<input
+									type="text"
+									name="qs_rank"
+									value={formik.values.qs_rank}
+									onChange={formik.handleChange}
+									placeholder="Enter QS World University Ranking"
+									className="w-full px-3 py-2 border border-[var(--yp-border-primary)] rounded-lg bg-[var(--yp-input-primary)] text-[var(--yp-text-primary)]"
+								/>
+								{getFormikError(formik, "qs_rank")}
+							</div>
+							<div>
+								<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
+									THE (Times Higher Education) Ranking
+								</label>
+								<input
+									type="text"
+									name="times_higher_education_rank"
+									value={formik.values.times_higher_education_rank}
+									onChange={formik.handleChange}
+									placeholder="Enter THE (Times Higher Education) Ranking"
+									className="w-full px-3 py-2 border border-[var(--yp-border-primary)] rounded-lg bg-[var(--yp-input-primary)] text-[var(--yp-text-primary)]"
+								/>
+								{getFormikError(formik, "times_higher_education_rank")}
+							</div>
+						</div>
 					</div>
 
 					{/* Submit */}

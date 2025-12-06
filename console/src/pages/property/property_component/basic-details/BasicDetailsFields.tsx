@@ -20,6 +20,7 @@ import Select from "react-select";
 
 interface EditBasicDetailsFormProps {
 	property: any;
+	allProperty: any;
 	categories: CategoryProps[];
 	getCategoryById: (id: string) => string | undefined;
 	getPropertyBasicDetails: () => void;
@@ -27,6 +28,7 @@ interface EditBasicDetailsFormProps {
 
 export default function BasicDetailsFields({
 	property,
+	allProperty,
 	categories,
 	getCategoryById,
 	getPropertyBasicDetails,
@@ -34,14 +36,30 @@ export default function BasicDetailsFields({
 	const { authUser } = useOutletContext<DashboardOutletContextProps>();
 	const [editableField, setEditableField] = useState<string | null>(null);
 
-	// options
-	const affiliatedOptions = getCategoryAccodingToField(
-		categories,
-		"Affiliated By"
-	).map((opt: any) => ({
-		value: opt._id,
-		label: opt.category_name || opt.name,
-	}));
+	const isCategoryUniversity = (catId?: string) => {
+		if (!catId) return false;
+		const cat = categories.find((c) => c._id === catId);
+		if (!cat) return false;
+		return (
+			String(cat.category_name || cat.name)
+				.trim()
+				.toLowerCase() === "university"
+		);
+	};
+
+	const affiliatedOptions = (() => {
+		if (!Array.isArray(allProperty)) return [];
+		const universityProps = allProperty.filter((p: any) =>
+			isCategoryUniversity(p.academic_type)
+		);
+		const map = new Map<string, { value: string; label: string }>();
+		for (const p of universityProps) {
+			const id = String(p._id || p.id || "");
+			const name = p.property_name || p.name || "Unnamed";
+			if (!map.has(id)) map.set(id, { value: id, label: name });
+		}
+		return Array.from(map.values());
+	})();
 
 	const approvedOptions = getCategoryAccodingToField(
 		categories,
@@ -50,6 +68,14 @@ export default function BasicDetailsFields({
 		value: opt._id,
 		label: opt.category_name || opt.name,
 	}));
+
+	const getAffiliatedNameById = (id: string) => {
+		if (!Array.isArray(allProperty)) return null;
+		const p = allProperty.find(
+			(x: any) => String(x._id) === String(id) || String(x.id) === String(id)
+		);
+		return p?.property_name || p?.name || null;
+	};
 
 	const formik = useFormik({
 		initialValues: {
@@ -73,10 +99,8 @@ export default function BasicDetailsFields({
 	const isUniversity = (() => {
 		const pt = property?.academic_type;
 		if (!pt) return false;
-
 		const cat = categories.find((c) => c._id === pt);
 		if (!cat) return false;
-
 		return String(cat.category_name || cat.name).toLowerCase() === "university";
 	})();
 
@@ -88,7 +112,6 @@ export default function BasicDetailsFields({
 				await formik.validateField(field);
 				if (formik.errors[field]) return;
 			}
-
 			const payload = { [field]: formik.values[field] };
 			const response = await API.patch(`/property/${property._id}`, payload);
 			toast.success(response.data.message);
@@ -105,21 +128,26 @@ export default function BasicDetailsFields({
 		type: "input" | "select" | "phone" | "multiselect",
 		options?: any[]
 	) => {
-		// Determine displayed value in view mode
 		let displayValue: any = formik.values[field];
 
 		if (field === "academic_type" || field === "property_type") {
 			displayValue = getCategoryById(formik.values[field]) || "No " + label;
 		}
 
-		// For multiselect, show comma separated labels in view mode
 		if (type === "multiselect") {
 			const values = Array.isArray(formik.values[field])
 				? formik.values[field]
 				: [];
-			const names = values
-				.map((id: string) => getCategoryById(id) || id)
-				.filter(Boolean);
+
+			const names =
+				field === "affiliated_by"
+					? values
+							.map((id: string) => getAffiliatedNameById(id) || id)
+							.filter(Boolean)
+					: values
+							.map((id: string) => getCategoryById(id) || id)
+							.filter(Boolean);
+
 			displayValue = names.length ? names.join(", ") : "No " + label;
 		}
 
@@ -182,7 +210,6 @@ export default function BasicDetailsFields({
 										? approvedOptions
 										: affiliatedOptions)
 								}
-								// value must be array of option objects that match current id array
 								value={(
 									options ??
 									(field === "approved_by"
@@ -288,7 +315,7 @@ export default function BasicDetailsFields({
 					"multiselect",
 					approvedOptions
 				)}
-				
+
 				{authUser?.role !== "Property Manager" &&
 					authUser?.role !== "User" &&
 					authUser?.role !== "Support" &&

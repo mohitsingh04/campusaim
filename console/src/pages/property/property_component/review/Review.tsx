@@ -158,7 +158,7 @@ export default function Review({
         <div className="text-center mb-8">
           <button
             onClick={() => setShowReviewForm(!showReviewForm)}
-            className="bg-[var(--yp-tertiary)] text-[var(--yp-text-primary)] px-8 py-3 cursor-pointer rounded-xl"
+            className="bg-[var(--yp-tertiary)] text-[var(--yp-text-primary)] px-8 py-3 bg-blue-300 cursor-pointer rounded-xl"
           >
             {showReviewForm ? "Cancel Review" : "Write a Review"}
           </button>

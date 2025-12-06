@@ -16,11 +16,13 @@ interface CourseViewProps {
 		course_id: string;
 		specialization: string[];
 		program_type: string[];
+		prices?: any;
 		course_eligibility: string;
 	};
 	getCourseById: (id: string) => any;
 	setIsViewing: any;
 	getCategoryById: (id: string) => any;
+	prices?: any;
 }
 
 export default function CourseView({
@@ -37,8 +39,10 @@ export default function CourseView({
 		specialization: course?.specialization || masterCourse?.specialization,
 		course_type: course?.course_type || masterCourse?.course_type,
 		program_type: course?.program_type || masterCourse?.program_type,
+		prices: course?.prices || masterCourse?.prices,
 		duration: course?.duration || masterCourse?.duration,
-		course_eligibility: course?.course_eligibility || masterCourse?.course_eligibility,
+		course_eligibility:
+			course?.course_eligibility || masterCourse?.course_eligibility,
 		status: course?.status || masterCourse?.status,
 		bestFor: course?.best_for || masterCourse?.best_for,
 	};
@@ -142,6 +146,22 @@ export default function CourseView({
 							</td>
 							<td className="px-6 py-4 text-[var(--yp-text-primary)]">
 								{courseData.course_eligibility}
+							</td>
+						</tr>
+						<tr className="bg-[var(--yp-secondary-alt)]">
+							<td className="px-6 py-4 font-medium text-[var(--yp-muted)]">
+								Course Fees
+							</td>
+							<td className="px-6 py-4 text-[var(--yp-text-primary)]">
+								{courseData.prices
+									? Object.entries(courseData.prices).map(
+											([currency, amount], index) => (
+												<div key={index}>
+													{currency} {amount}
+												</div>
+											)
+									  )
+									: "Not specified"}
 							</td>
 						</tr>
 						<tr className="bg-[var(--yp-secondary-alt)]">

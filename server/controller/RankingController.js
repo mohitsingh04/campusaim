@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import { addPropertyScore } from "../analytic-controller/PropertyScoreController.js";
-import { downloadImageAndReplaceSrc } from "../helper/folder-cleaners/EditorImagesController.js";
 import Ranking from "../models/Ranking.js";
 
 export const getAllRanking = async (req, res) => {
@@ -34,7 +33,7 @@ export const getRankingByPropertyId = async (req, res) => {
 
 export const addRanking = async (req, res) => {
     try {
-        const { userId, property_id, naac_rank, nirf_rank, nba_rank, other_ranking } = req.body;
+        const { userId, property_id, naac_rank, nirf_rank, nba_rank, qs_rank, times_higher_education_rank } = req.body;
 
         if (!userId || !property_id) {
             return res.status(400).json({ error: "userId and property_id are required." });
@@ -49,25 +48,16 @@ export const addRanking = async (req, res) => {
             return res.status(409).json({ error: "Ranking already exists for this user & property. Use update endpoint instead." });
         }
 
-        let naacToSave = naac_rank;
-        if (naac_rank) {
-            try {
-                const processed = await downloadImageAndReplaceSrc(naac_rank, property_id);
-                if (processed) naacToSave = processed;
-            } catch (err) {
-                console.warn("Naac Rank processing failed, saving original value. error:", err);
-            }
-        }
-
         const newRanking = new Ranking({
             userId,
             property_id,
-            naac_rank: naacToSave,
+            naac_rank,
             nirf_rank,
             nba_rank,
-            other_ranking,
+            qs_rank,
+            times_higher_education_rank,
         });
-
+        
         const saved = await newRanking.save();
 
         const rankCount = await Ranking.countDocuments({ property_id });
@@ -93,70 +83,86 @@ export const addRanking = async (req, res) => {
 export const editRanking = async (req, res) => {
     try {
         const { objectId } = req.params;
-        const { property_id, naac_rank, nirf_rank, nba_rank, other_ranking } = req.body;
+        const allowedFields = [
+            "naac_rank",
+            "nirf_rank",
+            "nba_rank",
+            "qs_rank",
+            "times_higher_education_rank",
+        ];
 
         if (!mongoose.isValidObjectId(objectId)) {
             return res.status(400).json({ error: "Invalid objectId." });
         }
 
-        const existingRanking = await Ranking.findById(objectId);
+        const existingRanking = await Ranking.findById(objectId).lean();
         if (!existingRanking) {
             return res.status(404).json({ error: "Ranking not found." });
         }
 
-        const propertyIdToUse = property_id || existingRanking.property_id?.toString();
-        if (!propertyIdToUse || !mongoose.isValidObjectId(propertyIdToUse)) {
-            return res.status(400).json({ error: "A valid property_id is required (either existing or provided)." });
-        }
-
-        const isNaacProvided = typeof naac_rank !== "undefined" && naac_rank !== null;
-        const isNirfProvided = typeof nirf_rank !== "undefined" && nirf_rank !== null;
-        const isNbaProvided = typeof nba_rank !== "undefined" && nba_rank !== null;
-        const isOtherProvided = typeof other_ranking !== "undefined" && other_ranking !== null;
-
-        if (!isNaacProvided && !isNirfProvided && !isNbaProvided && !isOtherProvided && !property_id) {
-            return res.status(400).json({ error: "Nothing to update. Provide at least one field to update." });
-        }
-
-        let naacToSave = existingRanking.naac_rank;
-        if (isNaacProvided) {
-            try {
-                const processed = await downloadImageAndReplaceSrc(naac_rank, propertyIdToUse);
-                naacToSave = processed || naac_rank;
-            } catch (procErr) {
-                console.warn("naac_rank processing failed — falling back to provided value:", procErr);
-                naacToSave = naac_rank;
-            }
-        }
-
-        const duplicateQuery = { _id: { $ne: objectId }, property_id: propertyIdToUse };
-        if (isNaacProvided) duplicateQuery.naac_rank = naacToSave;
-        if (isNirfProvided) duplicateQuery.nirf_rank = nirf_rank;
-        if (isNbaProvided) duplicateQuery.nba_rank = nba_rank;
-        if (isOtherProvided) duplicateQuery.other_ranking = other_ranking;
-
-        const hasFieldChecks = Object.keys(duplicateQuery).some(k => !["_id", "property_id"].includes(k));
-        if (hasFieldChecks) {
-            const duplicate = await Ranking.findOne(duplicateQuery).lean();
-            if (duplicate) {
-                return res.status(409).json({
-                    error: "Another ranking with the same values already exists for this property.",
-                });
-            }
-        }
-
         const update = {};
-        if (isNaacProvided) update.naac_rank = naacToSave;
-        if (isNirfProvided) update.nirf_rank = nirf_rank;
-        if (isNbaProvided) update.nba_rank = nba_rank;
-        if (isOtherProvided) update.other_ranking = other_ranking;
-        if (property_id) update.property_id = property_id;
+        // fields that must be numeric
+        const numericFields = [
+            "nirf_rank",
+            "nba_rank",
+            "qs_rank",
+            "times_higher_education_rank",
+        ];
+
+        for (const field of allowedFields) {
+            if (!Object.prototype.hasOwnProperty.call(req.body, field)) continue;
+
+            const raw = req.body[field];
+
+            // clear field with empty string
+            if (raw === "") {
+                update[field] = null;
+                continue;
+            }
+
+            // skip null/undefined (no change)
+            if (raw === null || raw === undefined) {
+                continue;
+            }
+
+            if (field === "naac_rank") {
+                // naac_rank is an ObjectId in your schema
+                if (!mongoose.isValidObjectId(String(raw))) {
+                    return res
+                        .status(400)
+                        .json({ error: "naac_rank must be a valid ObjectId or empty string to clear." });
+                }
+                update[field] = String(raw);
+                continue;
+            }
+
+            // numeric fields validation
+            if (numericFields.includes(field)) {
+                // allow numeric strings as well as numbers
+                const num = Number(raw);
+                if (Number.isNaN(num)) {
+                    return res
+                        .status(400)
+                        .json({ error: `${field} must be a valid number or empty string to clear.` });
+                }
+                update[field] = num;
+                continue;
+            }
+        }
+
+        if (Object.keys(update).length === 0) {
+            return res.status(400).json({ error: "No valid fields provided to update." });
+        }
 
         const updatedDoc = await Ranking.findByIdAndUpdate(
             objectId,
             { $set: update },
             { new: true, runValidators: true }
         ).lean();
+
+        if (!updatedDoc) {
+            return res.status(404).json({ error: "Ranking not found after update." });
+        }
 
         return res.status(200).json({
             message: "Ranking updated successfully",

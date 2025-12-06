@@ -31,15 +31,15 @@ export function PropertyCreate() {
 		[]
 	);
 
+	const [selectedAcademicId, setSelectedAcademicId] = useState<string>("");
+
 	const getAllProperties = useCallback(async () => {
 		try {
-			// Run both requests, but don't break if one fails
 			const [propertyRes, locationRes] = await Promise.allSettled([
 				API.get("/property"),
 				API.get("/locations"),
 			]);
 
-			// Properties must exist; if failed, throw
 			if (propertyRes.status !== "fulfilled") {
 				throw propertyRes.reason;
 			}
@@ -61,6 +61,7 @@ export function PropertyCreate() {
 					city: matchedLocation?.property_city ?? "",
 					state: matchedLocation?.property_state ?? "",
 					country: matchedLocation?.property_country ?? "",
+					property_email: item?.property_email,
 				};
 			});
 
@@ -74,6 +75,7 @@ export function PropertyCreate() {
 		getAllProperties();
 	}, [getAllProperties]);
 
+	// fetch categories
 	const getCategory = useCallback(async () => {
 		try {
 			const response = await API.get("/category");
@@ -87,6 +89,23 @@ export function PropertyCreate() {
 		getCategory();
 	}, [getCategory]);
 
+	const academicOptions: CategoryProps[] = useMemo(() => {
+		const primary =
+			getCategoryAccodingToField(categoryData, "academic type") || [];
+
+		if (primary.length > 0) return primary;
+
+		const keywordRegex =
+			/academy|academic|coaching|college|online|school|university|institute|vocational/i;
+		const fallback = (categoryData || []).filter(
+			(c: any) =>
+				(c.field && String(c.field).toLowerCase().includes("academic")) ||
+				(c.category_name && keywordRegex.test(c.category_name))
+		);
+
+		return fallback.length > 0 ? fallback : categoryData || [];
+	}, [categoryData]);
+
 	const formik = useFormik({
 		initialValues: {
 			userId: authUser?._id || "",
@@ -95,6 +114,7 @@ export function PropertyCreate() {
 			property_email: "",
 			property_mobile_no: "",
 			academic_type: "",
+			academic_type_custom: "",
 			property_type: "",
 			property_description: "",
 		},
@@ -102,7 +122,15 @@ export function PropertyCreate() {
 		validationSchema: PropertyValidation,
 		onSubmit: async (values) => {
 			try {
-				const response = await API.post("/property", values);
+				const payload = {
+					...values,
+					academic_type:
+						values.academic_type_custom?.trim() !== ""
+							? values.academic_type_custom.trim()
+							: values.academic_type,
+				};
+
+				const response = await API.post("/property", payload);
 				toast.success(response.data.message || "Property created successfully");
 				redirector("/dashboard/property");
 				window.location.reload();
@@ -111,6 +139,23 @@ export function PropertyCreate() {
 			}
 		},
 	});
+
+	useEffect(() => {
+		if (academicOptions && academicOptions.length > 0) {
+			const first = academicOptions[0];
+			if (!formik.values.academic_type && !formik.values.academic_type_custom) {
+				setSelectedAcademicId(first._id ?? String(first.category_name));
+				formik.setFieldValue("academic_type", first._id ?? first.category_name);
+			}
+		}
+	}, [academicOptions]);
+
+	const handleAcademicSelect = (cat: CategoryProps) => {
+		const idOrName = cat._id ?? cat.category_name;
+		setSelectedAcademicId(idOrName);
+		formik.setFieldValue("academic_type", idOrName);
+		formik.setFieldValue("academic_type_custom", "");
+	};
 
 	return (
 		<div>
@@ -123,8 +168,78 @@ export function PropertyCreate() {
 						{ label: "Create" },
 					]}
 				/>
+				{/* Academic Category Selection */}
+				{/* Compact 4-col cards — replace your cards wrapper with this */}
+				<div className="bg-[var(--yp-primary)] rounded-xl shadow-sm p-4 mb-6">
+					<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-3">
+						Please select your property type from below options
+					</label>
+
+					<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+						{academicOptions && academicOptions.length > 0 ? (
+							academicOptions.map((cat) => {
+								const idOrName = cat._id ?? cat.category_name;
+								return (
+									<button
+										key={idOrName}
+										type="button"
+										onClick={() => handleAcademicSelect(cat)}
+										className={`text-left rounded-md border px-3 py-4 flex flex-col items-start gap-2 transition-shadow duration-150 focus:outline-none ${
+											selectedAcademicId === idOrName
+												? "border-blue-500 shadow-md ring-2 ring-blue-100"
+												: "border-[var(--yp-border-primary)]"
+										}`}
+									>
+										<div className="flex items-center gap-3 w-full">
+											<div className="w-10 h-10 rounded-full flex items-center justify-center border">
+												<span className="font-semibold text-sm">
+													{String(cat.category_name || "")
+														.split(" ")
+														.map((s) => s[0])
+														.slice(0, 2)
+														.join("")}
+												</span>
+											</div>
+
+											<div className="flex-1">
+												<h4 className="text-sm font-semibold leading-tight">
+													{cat.category_name}
+												</h4>
+												{cat.description && (
+													<p
+														className="text-xs text-[var(--yp-muted)] mt-1 line-clamp-2"
+														dangerouslySetInnerHTML={{
+															__html: cat.description,
+														}}
+													/>
+												)}
+											</div>
+										</div>
+									</button>
+								);
+							})
+						) : (
+							<div className="text-[var(--yp-muted)]">
+								No academic types available
+							</div>
+						)}
+					</div>
+				</div>
+
+				{/* Main form card */}
 				<div className="bg-[var(--yp-primary)] rounded-xl shadow-sm">
 					<form onSubmit={formik.handleSubmit} className="p-6 space-y-6">
+						{/* Header: show selected academic category name if available */}
+						<div className="mb-2">
+							<h2 className="text-lg font-semibold">
+								{selectedAcademicId
+									? academicOptions.find(
+											(a) => (a._id ?? a.category_name) === selectedAcademicId
+									  )?.category_name ?? "Add Property Details"
+									: "Select Property Type to continue"}
+							</h2>
+						</div>
+
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 							{/* Property Name */}
 							<div className="relative">
@@ -145,8 +260,8 @@ export function PropertyCreate() {
 								{formik.values.property_name && (
 									<div
 										className="absolute z-10 mt-1 w-full max-h-60 overflow-y-auto 
-      bg-[var(--yp-tertiary)] scrollbar-hide 
-      rounded-lg shadow-lg"
+          bg-[var(--yp-tertiary)] scrollbar-hide 
+          rounded-lg shadow-lg"
 									>
 										{existingProperties
 											.filter((prop) =>
@@ -172,14 +287,12 @@ export function PropertyCreate() {
 														}
 														className="flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-[var(--yp-secondary)] text-[var(--yp-text-primary)] border-b border-[var(--yp-border-primary)] last:border-0"
 													>
-														{/* Logo */}
 														<img
 															src={logoUrl}
 															alt={prop.property_name}
 															className="w-10 h-10 object-cover rounded-md border border-[var(--yp-border-primary)]"
 														/>
 
-														{/* Details */}
 														<div className="flex flex-col">
 															<p className="font-medium">
 																{prop.property_name}
@@ -210,6 +323,7 @@ export function PropertyCreate() {
 										)}
 									</div>
 								)}
+
 								{getFormikError(formik, "property_name")}
 								{existingProperties.some(
 									(p) => p.property_name === formik.values.property_name
@@ -220,6 +334,7 @@ export function PropertyCreate() {
 									</p>
 								)}
 							</div>
+
 							{/* Property Short Name */}
 							<div className="relative">
 								<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
@@ -236,7 +351,8 @@ export function PropertyCreate() {
 								/>
 								{getFormikError(formik, "property_short_name")}
 							</div>
-							{/* Property Email */}
+
+							{/* Email */}
 							<div>
 								<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
 									Email
@@ -252,7 +368,8 @@ export function PropertyCreate() {
 								/>
 								{getFormikError(formik, "property_email")}
 							</div>
-							{/* Property Contact Number */}
+
+							{/* Phone */}
 							<div>
 								<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
 									Contact Number
@@ -273,31 +390,61 @@ export function PropertyCreate() {
 								/>
 								{getFormikError(formik, "property_mobile_no")}
 							</div>
-							{/* Property Academic Type */}
+
+							{/* Academic Type select (kept for custom / alternate choice) */}
 							<div>
 								<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
 									Academic Type
 								</label>
+
 								<select
 									name="academic_type"
 									value={formik.values.academic_type}
-									onChange={formik.handleChange}
+									onChange={(e) => {
+										formik.handleChange(e);
+										if (e.target.value === "custom") {
+											formik.setFieldValue("academic_type_custom", "");
+											setSelectedAcademicId("");
+										} else {
+											setSelectedAcademicId(e.target.value);
+										}
+									}}
 									onBlur={formik.handleBlur}
 									className="w-full px-3 py-2 border border-[var(--yp-border-primary)] rounded-lg bg-[var(--yp-input-primary)] text-[var(--yp-text-primary)]"
 								>
 									<option value="">Select Academic Type</option>
-									{getCategoryAccodingToField(
-										categoryData,
-										"academic type"
-									)?.map((cat, index) => (
-										<option key={index} value={cat?._id}>
-											{cat?.category_name}
+									{academicOptions?.map((cat) => (
+										<option
+											key={cat._id ?? cat.category_name}
+											value={cat._id ?? cat.category_name}
+										>
+											{cat.category_name}
 										</option>
 									))}
+									<option value="custom">Other (Custom)</option>
 								</select>
 								{getFormikError(formik, "academic_type")}
+
+								{formik.values.academic_type === "custom" && (
+									<div className="mt-2">
+										<input
+											type="text"
+											name="academic_type_custom"
+											value={formik.values.academic_type_custom}
+											onChange={formik.handleChange}
+											onBlur={formik.handleBlur}
+											placeholder="Type custom academic type (e.g. 'Vocational Training')"
+											className="w-full px-3 py-2 border border-[var(--yp-border-primary)] rounded-lg bg-[var(--yp-input-primary)] text-[var(--yp-text-primary)]"
+										/>
+										<p className="text-sm text-[var(--yp-muted)] mt-1">
+											If you choose a custom academic type, it will be submitted
+											as text.
+										</p>
+									</div>
+								)}
 							</div>
-							{/* Property property Type */}
+
+							{/* Property Type select */}
 							<div>
 								<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
 									Property Type
@@ -319,6 +466,9 @@ export function PropertyCreate() {
 										</option>
 									))}
 								</select>
+								<p className="text-sm text-[var(--yp-muted)] mt-1">
+									You can select property type from here as well.
+								</p>
 								{getFormikError(formik, "property_type")}
 							</div>
 						</div>
@@ -345,7 +495,13 @@ export function PropertyCreate() {
 						<div className="flex justify-start">
 							<button
 								type="submit"
-								className="px-6 py-2 rounded-lg text-sm font-medium text-[var(--yp-blue-text)] bg-[var(--yp-blue-bg)]"
+								disabled={
+									!(
+										formik.values.academic_type ||
+										formik.values.academic_type_custom?.trim() !== ""
+									)
+								}
+								className="px-6 py-2 rounded-lg text-sm font-medium text-[var(--yp-blue-text)] bg-[var(--yp-blue-bg)] disabled:opacity-50"
 							>
 								Create Property
 							</button>

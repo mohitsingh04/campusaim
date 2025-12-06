@@ -100,7 +100,7 @@ export const statusValidation = Yup.object({
 });
 
 export const CategorySchema = Yup.object().shape({
-	category_name: getValidString("Category name"),
+	category_name: Yup.string().required("Category name is required"),
 	parent_category: getValidForOnlyRequired("Parent category"),
 });
 
@@ -120,6 +120,10 @@ export const CourseValidation = Yup.object().shape({
 		.min(1, "Duration value must be at least 1")
 		.required("Duration value is required"),
 	duration_type: getValidForOnlyRequired("Duration type"),
+});
+
+export const PropertyRankingValidation = Yup.object().shape({
+	naac_rank: Yup.string().required("This field is required."),
 });
 
 export const ExamValidation = Yup.object().shape({
