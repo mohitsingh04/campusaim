@@ -26,6 +26,7 @@ import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { Breadcrumbs } from "../../ui/breadcrumbs/Breadcrumbs";
 import { ExamValidation } from "../../contexts/ValidationsSchemas";
 import EditSkeleton from "../../ui/skeleton/EditPageSkeleton";
+import Select from "react-select";
 
 export default function ExamsEdit() {
 	const { objectId } = useParams();
@@ -86,7 +87,10 @@ export default function ExamsEdit() {
 			application_form_link: mainExam?.application_form_link || "",
 			exam_form_link: mainExam?.exam_form_link || "",
 			exam_mode: mainExam?.exam_mode || "",
-			description: mainExam && typeof mainExam.description === "string" ? mainExam.description : "",
+			description:
+				mainExam && typeof mainExam.description === "string"
+					? mainExam.description
+					: "",
 			image: null as File | null,
 			status: mainExam?.status || "",
 		},
@@ -118,7 +122,7 @@ export default function ExamsEdit() {
 		},
 	});
 
-  console.log(typeof(mainExam?.description))
+	console.log(typeof mainExam?.description);
 
 	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0] ?? null;
@@ -130,7 +134,11 @@ export default function ExamsEdit() {
 		}
 	};
 
-	const examModeOptions = getCategoryAccodingToField(categories, "Exam Mode");
+	const ExamModeOptions = getCategoryAccodingToField(categories, "Exam Mode");
+	const ExamModeSelectOptions = ExamModeOptions.map((opt: any) => ({
+		value: opt._id,
+		label: opt.category_name || opt.name,
+	}));
 
 	if (loading) {
 		return <EditSkeleton />;
@@ -283,20 +291,21 @@ export default function ExamsEdit() {
 							<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
 								Exam Mode
 							</label>
-							<select
+							<Select
 								name="exam_mode"
-								value={formik.values.exam_mode}
-								onChange={formik.handleChange}
-								className="w-full px-3 py-2 border border-[var(--yp-border-primary)] rounded-lg bg-[var(--yp-input-primary)] text-[var(--yp-text-primary)]"
-							>
-								<option value="">Select Mode</option>
-								{examModeOptions.map((opt: any, idx: number) => (
-									<option key={idx} value={opt._id}>
-										{opt.category_name || opt.name}
-									</option>
-								))}
-							</select>
-							{getFormikError(formik, "exam_mode")}
+								options={ExamModeSelectOptions}
+								value={ExamModeSelectOptions.find(
+									(opt) => opt.value === formik.values.exam_mode
+								)}
+								onChange={(selected) =>
+									formik.setFieldValue(
+										"exam_mode",
+										selected ? selected.value : ""
+									)
+								}
+								onBlur={() => formik.setFieldTouched("exam_mode", true)}
+								classNamePrefix="react-select"
+							/>
 						</div>
 					</div>
 

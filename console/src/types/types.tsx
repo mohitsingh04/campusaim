@@ -207,6 +207,42 @@ export interface ExamProps extends Record<string, unknown> {
 	status: string;
 }
 
+export interface ScholarshipProps extends Record<string, unknown> {
+	_id: string;
+	userId: string;
+	scholarship_title: string;
+	slug: string;
+	scholarship_description: string;
+	scholarship_type: string;
+	age_criteria: {
+		min?: number;
+		max?: number;
+	};
+	qualification?: string;
+	marks: {
+		min?: number;
+		max?: number;
+	};
+	location: string[];
+	card: string[];
+	gender: string[];
+	cast: string[];
+	religion: string[];
+	entrance_exam: string[];
+	sports_quotas: boolean;
+	scholarship_exam?: boolean;
+	scholarship_link?: string;
+	scholarship_amount?: Record<string, number>;
+	army_quota: boolean;
+	annual_income?: Record<string, number>;
+	start_date?: string;
+	end_date?: string;
+	status: string;
+	createdAt?: string;
+	updatedAt?: string;
+	seo_score: number;
+}
+
 export interface RetreatProps extends Record<string, unknown> {
 	_id: string;
 	retreat_name: string;

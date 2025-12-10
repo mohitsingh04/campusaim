@@ -23,7 +23,7 @@ export default function Scholarship({
 			return;
 		}
 		try {
-			const response = await API.get(`/scholarship/${property?._id}`);
+			const response = await API.get(`/property-scholarship/${property?._id}`);
 			if (response.data && response.data.length > 0) {
 				setScholarship(response.data);
 			} else {

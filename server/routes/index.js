@@ -145,11 +145,11 @@ import {
   removeAccomodationImages,
 } from "../controller/AccomodationController.js";
 import {
-  AddScholarship,
-  EditScholarship,
-  getAllScholarship,
-  getScholarshipByPropertyId,
-} from "../controller/ScholarshipController.js";
+  AddPropertyScholarship,
+  EditPropertyScholarship,
+  getAllPropertyScholarship,
+  getPropertyScholarshipByPropertyId,
+} from "../controller/PropertyScholarshipController.js";
 import { addOrUpdateLegal, getLegal } from "../controller/LegalController.js";
 import {
   CreateBlog,
@@ -217,6 +217,7 @@ import { AddLoanProcess, EditLoanProcess, getAllLoanProcess, getLoanProcessByPro
 import { AddAnnouncement, EditAnnouncement, getAllAnnouncement, getAnnouncementByPropertyId } from "../controller/AnnouncementController.js";
 import { addQnA, deleteQnA, getQnA, getQnAById, getQnAByPropertyId, updateQnA } from "../controller/QnaController.js";
 import { addRanking, editRanking, getAllRanking, getRankingByPropertyId } from "../controller/RankingController.js";
+import { addScholarship, deleteScholarship, getScholarship, getScholarshipById, getScholarshipWithSeoBySlug, updateScholarship } from "../controller/ScholarshipController.js";
 
 const router = express.Router();
 router.use(bodyParser.json());
@@ -274,6 +275,14 @@ router.delete("/exam/:objectId", Authorize, deleteExam);
 router.get("/exam/soft/:objectId", Authorize, softDeleteExam);
 // router.post("/exam/create/enquiry", createCourseEnquiry);
 router.get("/exam/seo/:slug", getExamWithSeoBySlug);
+
+// Scholarship Route
+router.get("/scholarship", getScholarship);
+router.get("/scholarship/:objectId", getScholarshipById);
+router.get("/scholarship/seo/:slug", getScholarshipWithSeoBySlug);
+router.post("/scholarship", Authorize, addScholarship);
+router.patch("/scholarship/:objectId", Authorize, updateScholarship);
+router.delete("/scholarship/:objectId", Authorize, deleteScholarship);
 
 // ?Category Route
 const categoryUpload = categoryUploadMulter.fields([
@@ -391,11 +400,11 @@ router.post(
   removeAccomodationImages
 );
 
-//? Scholarship Route
-router.get("/scholarship", getAllScholarship);
-router.get("/scholarship/:property_id", getScholarshipByPropertyId);
-router.post("/scholarship", Authorize, AddScholarship);
-router.patch("/scholarship/:objectId", Authorize, EditScholarship);
+//? Property Scholarship Route
+router.get("/property-scholarship", getAllPropertyScholarship);
+router.get("/property-scholarship/:property_id", getPropertyScholarshipByPropertyId);
+router.post("/property-scholarship", Authorize, AddPropertyScholarship);
+router.patch("/property-scholarship/:objectId", Authorize, EditPropertyScholarship);
 
 //? Ranking Route
 router.get("/ranking", getAllRanking);

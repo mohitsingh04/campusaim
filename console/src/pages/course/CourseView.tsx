@@ -99,12 +99,12 @@ export default function CourseView() {
 		try {
 			const result = await Swal.fire({
 				title: "Are you sure?",
-				text: "Once deleted, you will not be able to recover this!",
+				text: "You want to restore this course?",
 				icon: "warning",
 				showCancelButton: true,
-				confirmButtonColor: "#d33",
+				confirmButtonColor: "#065f46",
 				cancelButtonColor: "#3085d6",
-				confirmButtonText: "Yes, delete it!",
+				confirmButtonText: "Yes, Restore it!",
 			});
 
 			if (result.isConfirmed) {
@@ -257,10 +257,7 @@ export default function CourseView() {
 						<InfoCard
 							icon={FiAward}
 							title="Course Type"
-							value={(() => {
-								const names = getCategoryNamesFromBestFor(course?.course_type);
-								return names.length ? names.join(", ") : "N/A";
-							})()}
+							value={getCategoryById(course?.course_type || "N/A")}
 						/>
 						<InfoCard
 							icon={FiAward}

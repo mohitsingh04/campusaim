@@ -8,6 +8,7 @@ const ExamSchema = new mongoose.Schema(
         },
         exam_name: {
             type: String,
+            required: true
         },
         exam_short_name: {
             type: String,

@@ -2,7 +2,7 @@ import { useFormik } from "formik";
 import CreatableSelect from "react-select/creatable";
 import { useCallback, useEffect, useState } from "react";
 import { Breadcrumbs } from "../../ui/breadcrumbs/Breadcrumbs";
-import { ExamProps } from "../../types/types";
+import { ScholarshipProps } from "../../types/types";
 import {
   generateSlug,
   getErrorResponse,
@@ -27,63 +27,63 @@ type SEOFormValues = {
   primary_focus_keyword: KeywordOption[];
   json_schema: string;
   meta_description: string;
-  exam_id: string | number;
+  scholarship_id: string | number;
   type: string;
 };
 
-export default function ExamSeo() {
+export default function ScholarshipSeo() {
   const { objectId } = useParams();
-  const [exam, setExam] = useState<ExamProps | null>(null);
+  const [scholarship, setScholarship] = useState<ScholarshipProps | null>(null);
   const [loading, setLoading] = useState(true);
-  const [examSeo, setExamSeo] = useState<any | null>(null);
+  const [scholarshipSeo, setScholarshipSeo] = useState<any | null>(null);
   const navigate = useNavigate();
 
-  /** Fetch Exam */
-  const getExam = useCallback(async () => {
+  /** Fetch Scholarship */
+  const getScholarship = useCallback(async () => {
     try {
-      const response = await API.get(`/exam/${objectId}`);
-      setExam(response.data);
+      const response = await API.get(`/scholarship/${objectId}`);
+      setScholarship(response.data);
     } catch (error) {
       getErrorResponse(error, true);
     }
   }, [objectId]);
 
   useEffect(() => {
-    getExam();
-  }, [getExam]);
+    getScholarship();
+  }, [getScholarship]);
 
-  const getExamSeo = useCallback(async () => {
-    if (!exam) return;
+  const getScholarshipSeo = useCallback(async () => {
+    if (!scholarship) return;
     setLoading(true);
     try {
-      const response = await API.get(`/seo/exam/${objectId}`);
-      setExamSeo(response.data);
+      const response = await API.get(`/seo/scholarship/${objectId}`);
+      setScholarshipSeo(response.data);
     } catch (error) {
       getErrorResponse(error, true);
     } finally {
       setLoading(false);
     }
-  }, [exam, objectId]);
+  }, [scholarship, objectId]);
 
   useEffect(() => {
-    getExamSeo();
-  }, [getExamSeo]);
+    getScholarshipSeo();
+  }, [getScholarshipSeo]);
 
   /** Formik setup */
   const formik = useFormik<SEOFormValues>({
     initialValues: {
-      exam_id: exam?._id || "",
-      title: examSeo?.title || exam?.exam_name || "",
-      slug: examSeo?.slug || generateSlug(exam?.exam_name || ""),
+      scholarship_id: scholarship?._id || "",
+      title: scholarshipSeo?.title || scholarship?.scholarship_title || "",
+      slug: scholarshipSeo?.slug || generateSlug(scholarship?.scholarship_title || ""),
       primary_focus_keyword:
-        examSeo?.primary_focus_keyword?.map((k: string) => {
+        scholarshipSeo?.primary_focus_keyword?.map((k: string) => {
           return { value: k, label: k };
         }) || [],
-      json_schema: examSeo?.json_schema || "",
+      json_schema: scholarshipSeo?.json_schema || "",
       meta_description: stripHtml(
-        examSeo?.meta_description || exam?.description
+        scholarshipSeo?.meta_description || scholarship?.scholarship_description
       ).slice(0, 160),
-      type: examSeo?.type || "exam",
+      type: scholarshipSeo?.type || "scholarship",
     },
     enableReinitialize: true,
     validationSchema: SeoValidation,
@@ -100,7 +100,7 @@ export default function ExamSeo() {
         };
         const response = await API.post(`/all/seo`, payload);
         toast.success(response.data.message);
-        navigate(`/dashboard/exam`);
+        navigate(`/dashboard/scholarship`);
       } catch (error) {
         getErrorResponse(error);
       } finally {
@@ -117,13 +117,13 @@ export default function ExamSeo() {
     <div>
       <div>
         <Breadcrumbs
-          title="Exam Seo"
+          title="Scholarship Seo"
           breadcrumbs={[
             { label: "Dashboard", path: "/dashboard" },
-            { label: "Exam", path: "/dashboard/exam" },
+            { label: "Scholarship", path: "/dashboard/scholarship" },
             {
-              label: exam?.exam_name || "",
-              path: `/dashboard/exam/${exam?._id}`,
+              label: scholarship?.scholarship_title || "",
+              path: `/dashboard/scholarship/${scholarship?._id}`,
             },
             { label: "Seo" },
           ]}

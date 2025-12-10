@@ -40,7 +40,7 @@ export default function ScholarshipCreate({
 					scholarship: editorContent || "",
 				};
 
-				const response = await API.post("/scholarship", payload);
+				const response = await API.post("/property-scholarship", payload);
 				toast.success(
 					response.data.message || "Scholarship Created Successfully"
 				);

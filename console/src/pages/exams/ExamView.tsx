@@ -99,12 +99,12 @@ export default function ExamView() {
 		try {
 			const result = await Swal.fire({
 				title: "Are you sure?",
-				text: "Once deleted, you will not be able to recover this!",
+				text: "You want to restore this exam?",
 				icon: "warning",
 				showCancelButton: true,
-				confirmButtonColor: "#d33",
+				confirmButtonColor: "#065f46",
 				cancelButtonColor: "#3085d6",
-				confirmButtonText: "Yes, delete it!",
+				confirmButtonText: "Yes, Restore it!",
 			});
 
 			if (result.isConfirmed) {

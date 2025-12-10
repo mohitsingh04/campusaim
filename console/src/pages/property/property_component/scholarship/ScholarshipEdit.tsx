@@ -38,7 +38,7 @@ export default function ScholarshipEdit({
 				};
 
 				const response = await API.patch(
-					`/scholarship/${scholarship?._id}`,
+					`/property-scholarship/${scholarship?._id}`,
 					payload
 				);
 

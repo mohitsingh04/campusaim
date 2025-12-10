@@ -12,6 +12,9 @@ const SeoSchema = new mongoose.Schema(
     exam_id: {
       type: mongoose.Schema.Types.ObjectId,
     },
+    scholarship_id: {
+      type: mongoose.Schema.Types.ObjectId,
+    },
     event_id: {
       type: mongoose.Schema.Types.ObjectId,
     },

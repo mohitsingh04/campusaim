@@ -29,7 +29,7 @@ import Property from "../models/Property.js";
 import PropertyCourse from "../models/PropertyCourse.js";
 import Teachers from "../models/Teachers.js";
 import Accomodation from "../models/Accomodation.js";
-import Scholarship from "../models/Scholarship.js";
+import Scholarship from "../models/PropertyScholarship.js";
 import LoanProcess from "../models/LoanProcess.js";
 import AdmissionProcess from "../models/AdmissionProcess.js";
 import Ranking from "../models/Ranking.js";

@@ -5,6 +5,106 @@ import {
 } from "../utils/Callback.js";
 import AllSeo from "../models/AllSeo.js";
 
+export const getAllSeo = async (req, res) => {
+  try {
+    const { type } = req.query;
+    let seoRecords;
+    if (type) {
+      seoRecords = await AllSeo.find({ type: type });
+    } else {
+      seoRecords = await AllSeo.find();
+    }
+
+    if (!seoRecords || seoRecords.length === 0) {
+      return res.status(404).json({ error: "SEO records not found!" });
+    }
+
+    const updatedRecords = await Promise.all(
+      seoRecords.map(async (record) => {
+        if (
+          record.seo_score === undefined ||
+          record.seo_score === null ||
+          !record?.seo_score
+        ) {
+          let seo_score = 0;
+
+          if (record.title) seo_score += 25;
+          if (record.slug) seo_score += 25;
+          if (record.meta_description) seo_score += 25;
+
+          if (
+            record.primary_focus_keyword &&
+            record.primary_focus_keyword.length > 0
+          ) {
+            seo_score += record.primary_focus_keyword.length * 12.5; // max 25
+          }
+
+          if (seo_score > 100) seo_score = 100;
+
+          record.seo_score = seo_score;
+          await record.save();
+        }
+        return record;
+      })
+    );
+
+    return res.status(200).json(updatedRecords);
+  } catch (error) {
+    console.error("Error fetching SEO:", error);
+    return res.status(500).json({ error: "Internal server error!" });
+  }
+};
+
+export const getSeoByTypeId = async (req, res) => {
+  try {
+    const { type, type_id } = req.params;
+
+    if (!type || !type_id) {
+      return res.status(400).json({ error: "Type and type_id are required!" });
+    }
+
+    // Determine the correct query field based on `type`
+    let query = {};
+    switch (type) {
+      case "blog":
+        query.blog_id = type_id;
+        break;
+      case "course":
+        query.course_id = type_id;
+        break;
+      case "exam":
+        query.exam_id = type_id;
+        break;
+      case "scholarship":
+        query.scholarship_id = type_id;
+        break;
+      case "event":
+        query.event_id = type_id;
+        break;
+      case "news":
+        query.news_id = type_id;
+        break;
+      case "retreat":
+        query.retreat_id = type_id;
+        break;
+      default:
+        return res.status(400).json({ error: "Invalid type provided!" });
+    }
+
+    // Find SEO record by the appropriate field
+    const seo = await AllSeo.findOne(query);
+
+    if (!seo) {
+      return res.status(404).json({ error: "SEO record not found!" });
+    }
+
+    return res.status(200).json(seo);
+  } catch (error) {
+    console.error("Error fetching SEO by type ID:", error);
+    return res.status(500).json({ error: "Internal server error!" });
+  }
+};
+
 export const autoAddAllSeo = async ({
   type_id,
   title,
@@ -29,6 +129,7 @@ export const autoAddAllSeo = async ({
     blog: "blog_id",
     course: "course_id",
     exam: "exam_id",
+    scholarship: "scholarship_id",
     retreat: "retreat_id",
     event: "event_id",
     news: "news_id",
@@ -105,16 +206,17 @@ export const CreateAllSeo = async (req, res) => {
       blog_id,
       course_id,
       exam_id,
+      scholarship_id,
       event_id,
       news_id,
       retreat_id,
       type,
     } = req.body;
 
-    if (!blog_id && !course_id && !exam_id && !event_id && !news_id && !retreat_id) {
+    if (!blog_id && !course_id && !exam_id && !scholarship_id && !event_id && !news_id && !retreat_id) {
       return res.status(400).json({
         error:
-          "At least one reference ID (blog_id, course_id, exam_id, event_id,retreat_id, or news_id) must be provided.",
+          "At least one reference ID (blog_id, course_id, exam_id, scholarship_id, event_id,retreat_id, or news_id) must be provided.",
       });
     }
 
@@ -135,6 +237,7 @@ export const CreateAllSeo = async (req, res) => {
     if (blog_id) filter.blog_id = blog_id;
     if (course_id) filter.course_id = course_id;
     if (exam_id) filter.exam_id = exam_id;
+    if (scholarship_id) filter.scholarship_id = scholarship_id;
     if (event_id) filter.event_id = event_id;
     if (news_id) filter.news_id = news_id;
     if (retreat_id) filter.retreat_id = retreat_id;
@@ -152,6 +255,7 @@ export const CreateAllSeo = async (req, res) => {
           blog_id,
           course_id,
           exam_id,
+          scholarship_id,
           event_id,
           news_id,
           retreat_id,
@@ -168,103 +272,6 @@ export const CreateAllSeo = async (req, res) => {
     });
   } catch (error) {
     console.error("Error adding/updating SEO:", error);
-    return res.status(500).json({ error: "Internal server error!" });
-  }
-};
-
-export const getSeoByTypeId = async (req, res) => {
-  try {
-    const { type, type_id } = req.params;
-
-    if (!type || !type_id) {
-      return res.status(400).json({ error: "Type and type_id are required!" });
-    }
-
-    // Determine the correct query field based on `type`
-    let query = {};
-    switch (type) {
-      case "blog":
-        query.blog_id = type_id;
-        break;
-      case "course":
-        query.course_id = type_id;
-        break;
-      case "exam":
-        query.exam_id = type_id;
-        break;
-      case "event":
-        query.event_id = type_id;
-        break;
-      case "news":
-        query.news_id = type_id;
-        break;
-      case "retreat":
-        query.retreat_id = type_id;
-        break;
-      default:
-        return res.status(400).json({ error: "Invalid type provided!" });
-    }
-
-    // Find SEO record by the appropriate field
-    const seo = await AllSeo.findOne(query);
-
-    if (!seo) {
-      return res.status(404).json({ error: "SEO record not found!" });
-    }
-
-    return res.status(200).json(seo);
-  } catch (error) {
-    console.error("Error fetching SEO by type ID:", error);
-    return res.status(500).json({ error: "Internal server error!" });
-  }
-};
-
-export const getAllSeo = async (req, res) => {
-  try {
-    const { type } = req.query;
-    let seoRecords;
-    if (type) {
-      seoRecords = await AllSeo.find({ type: type });
-    } else {
-      seoRecords = await AllSeo.find();
-    }
-
-    if (!seoRecords || seoRecords.length === 0) {
-      return res.status(404).json({ error: "SEO records not found!" });
-    }
-
-    const updatedRecords = await Promise.all(
-      seoRecords.map(async (record) => {
-        if (
-          record.seo_score === undefined ||
-          record.seo_score === null ||
-          !record?.seo_score
-        ) {
-          let seo_score = 0;
-
-          if (record.title) seo_score += 25;
-          if (record.slug) seo_score += 25;
-          if (record.meta_description) seo_score += 25;
-
-          if (
-            record.primary_focus_keyword &&
-            record.primary_focus_keyword.length > 0
-          ) {
-            seo_score += record.primary_focus_keyword.length * 12.5; // max 25
-          }
-
-          if (seo_score > 100) seo_score = 100;
-
-          record.seo_score = seo_score;
-          await record.save();
-        }
-        return record;
-      })
-    );
-
-    return res.status(200).json(updatedRecords);
-  } catch (error) {
-    console.error("Error fetching SEO:", error);
     return res.status(500).json({ error: "Internal server error!" });
   }
 };

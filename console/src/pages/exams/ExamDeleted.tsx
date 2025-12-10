@@ -8,7 +8,7 @@ import {
 import { DataTable } from "../../ui/tables/DataTable";
 import { API } from "../../contexts/API";
 import TableButton from "../../ui/button/TableButton";
-import { Eye, LucideArchiveRestore, Plus } from "lucide-react";
+import { Eye, LucideArchiveRestore, Plus, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 import {
@@ -88,7 +88,7 @@ export default function ExamDeleted() {
 					text: "You want to restore this exam?",
 					icon: "warning",
 					showCancelButton: true,
-					confirmButtonColor: "#d33",
+					confirmButtonColor: "#065f46",
 					cancelButtonColor: "#3085d6",
 					confirmButtonText: "Yes, Restore it!",
 				});
@@ -97,6 +97,32 @@ export default function ExamDeleted() {
 					const response = await API.get(`/exam/restore/${id}`);
 
 					toast.success(response.data.message || "Exam restored successfully.");
+					getAllExams();
+				}
+			} catch (error) {
+				getErrorResponse(error);
+			}
+		},
+		[getAllExams]
+	);
+
+	const handleDelete = useCallback(
+		async (id: string) => {
+			try {
+				const result = await Swal.fire({
+					title: "Are you sure?",
+					text: "Once deleted, you will not be able to recover this!",
+					icon: "warning",
+					showCancelButton: true,
+					confirmButtonColor: "#d33",
+					cancelButtonColor: "#3085d6",
+					confirmButtonText: "Yes, delete it!",
+				});
+
+				if (result.isConfirmed) {
+					const response = await API.delete(`/exam/${id}`);
+
+					toast.success(response.data.message || "Deleted successfully");
 					getAllExams();
 				}
 			} catch (error) {
@@ -190,6 +216,16 @@ export default function ExamDeleted() {
 										tooltip="Restore Exam"
 										buttontype="button"
 										onClick={() => handleRestore(row._id)}
+									/>
+								)}
+
+								{matchPermissions(authUser?.permissions, "Delete Exam") && (
+									<TableButton
+										Icon={Trash2}
+										color="red"
+										size="sm"
+										buttontype="button"
+										onClick={() => handleDelete(row._id)}
 									/>
 								)}
 							</>

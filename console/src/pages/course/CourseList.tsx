@@ -91,10 +91,15 @@ export function CourseList() {
 		getAllCourses();
 	}, [getAllCourses]);
 
+	const getCategoryById = (id: string) => {
+		const cat = categories.find((c: any) => c._id === id)?.category_name;
+		return cat || id;
+	};
+
 	const cardIcons: LucideIcon[] = [GraduationCap, Library, FileBadge, Medal];
 	const cardData = getFieldDataSimple(allCourses, "course_type").map(
 		(item, index) => ({
-			title: item.title,
+			title: getCategoryById(item.title),
 			value: item.value,
 			icon: cardIcons[index % cardIcons.length],
 			iconColor: colorsData[index % colorsData.length],
@@ -181,7 +186,9 @@ export function CourseList() {
 				key: "seo_score",
 			},
 			{
-				value: (row: CourseProps) => <p>{row?.course_type}</p>,
+				value: (row: CourseProps) => (
+					<p>{getCategoryById(row?.course_type || "N/A")}</p>
+				),
 				label: "Course Type",
 				key: "course-type",
 				sortingKey: "course_type",

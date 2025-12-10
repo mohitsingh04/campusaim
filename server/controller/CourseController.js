@@ -309,7 +309,7 @@ export const softDeleteCourse = async (req, res) => {
       { $set: { isDeleted: true, status: "Suspended" } }
     );
 
-    return res.status(200).json({ message: "Course is Softly Deleted" });
+    return res.status(200).json({ message: "Moved to Archives Courses." });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: "Internal Server Error" });
@@ -329,7 +329,7 @@ export const restoreCourse = async (req, res) => {
       { $set: { isDeleted: false, status: "Active" } }
     );
 
-    return res.status(200).json({ message: "Course is Softly Deleted" });
+    return res.status(200).json({ message: "Course is Recover successfully." });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: "Internal Server Error" });
