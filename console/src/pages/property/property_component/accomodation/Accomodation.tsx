@@ -2,14 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { PropertyProps } from "../../../../types/types";
 import AccomodationCreate from "./AccomodationCreate";
 import { API } from "../../../../contexts/API";
-import {
-	Edit,
-	Trash2,
-	ImageOff,
-	ImageMinus,
-	ImagePlus,
-	MoreVertical,
-} from "lucide-react";
+import { Edit, Trash2, ImageOff, ImageMinus, ImagePlus } from "lucide-react";
 import Badge from "../../../../ui/badge/Badge";
 import AccomodationEdit from "./AccomodationEdit";
 
@@ -24,6 +17,7 @@ import Counter from "yet-another-react-lightbox/plugins/counter";
 import AccomodationRemoveImages from "./AccomodationRemoveImages";
 import { getErrorResponse } from "../../../../contexts/Callbacks";
 import ReadMoreLess from "../../../../ui/read-more/ReadMoreLess";
+import ActionDropdown from "../../../../common/ActionDropdown";
 
 export default function Accomodation({
 	property,
@@ -35,7 +29,6 @@ export default function Accomodation({
 	const [isEdit, setIsEdit] = useState<any>("");
 	const [isAddingImages, setIsAddingImages] = useState("");
 	const [isRemoveImages, setIsRemoveImages] = useState<any>("");
-	const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
 
 	// Lightbox state
 	const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -130,60 +123,55 @@ export default function Accomodation({
 							</h3>
 
 							<div className="flex gap-2">
-								<div className="relative">
-									<button
-										onClick={() =>
-											setDropdownOpen(dropdownOpen === acc._id ? null : acc._id)
-										}
-										className="p-2 rounded-lg hover:bg-[var(--yp-tertiary)]"
-									>
-										<MoreVertical className="w-5 h-5 text-[var(--yp-muted)]" />
-									</button>
+								<ActionDropdown>
+									<ul className="py-2 text-xs text-[var(--yp-text-primary)]">
+										{(acc?.accomodation_images?.length || 0) < 8 && (
+											<li>
+												<button
+													onClick={() => setIsAddingImages(acc)}
+													className="w-full flex items-center gap-2 px-2 py-1 text-sm"
+												>
+													<ImagePlus className="w-4 h-4 text-green-500" />
+													Add Images
+												</button>
+											</li>
+										)}
 
-									{dropdownOpen === acc._id && (
-										<div className="absolute right-0 mt-2 w-48 bg-[var(--yp-tertiary)] shadow-lg rounded-lg z-20">
-											<ul className="py-2 text-xs text-[var(--yp-text-primary)]">
-												{(acc?.accomodation_images?.length || 0) < 8 && (
-													<li>
-														<button
-															onClick={() => setIsAddingImages(acc)}
-															className="w-full flex items-center gap-2 px-2 py-1 text-sm"
-														>
-															<ImagePlus className="w-4 h-4 text-green-500" />
-															Add Images
-														</button>
-													</li>
-												)}
-												{(acc?.accomodation_images?.length || 0) > 0 && (
-													<li>
-														<button
-															onClick={() => setIsRemoveImages(acc)}
-															className="w-full flex items-center gap-2 px-2 py-1 text-sm"
-														>
-															<ImageMinus className="w-4 h-4 text-orange-500" />
-															Remove Images
-														</button>
-													</li>
-												)}
-												<li>
-													<button
-														onClick={() => setIsEdit(acc)}
-														className="w-full flex items-center gap-2 px-2 py-1 text-sm"
-													>
-														<Edit className="w-4 h-4 text-blue-500" />
-														Edit Accommodation
-													</button>
-												</li>
-												<li>
-													<button className="w-full flex items-center gap-2 px-2 py-1 text-sm">
-														<Trash2 className="w-4 h-4 text-red-500" />
-														Delete
-													</button>
-												</li>
-											</ul>
-										</div>
-									)}
-								</div>
+										{(acc?.accomodation_images?.length || 0) > 0 && (
+											<li>
+												<button
+													onClick={() => setIsRemoveImages(acc)}
+													className="w-full flex items-center gap-2 px-2 py-1 text-sm"
+												>
+													<ImageMinus className="w-4 h-4 text-orange-500" />
+													Remove Images
+												</button>
+											</li>
+										)}
+
+										<li>
+											<button
+												onClick={() => setIsEdit(acc)}
+												className="w-full flex items-center gap-2 px-2 py-1 text-sm"
+											>
+												<Edit className="w-4 h-4 text-blue-500" />
+												Edit Accommodation
+											</button>
+										</li>
+
+										<li>
+											<button
+												onClick={() => {
+													// delete logic
+												}}
+												className="w-full flex items-center gap-2 px-2 py-1 text-sm"
+											>
+												<Trash2 className="w-4 h-4 text-red-500" />
+												Delete
+											</button>
+										</li>
+									</ul>
+								</ActionDropdown>
 							</div>
 						</div>
 

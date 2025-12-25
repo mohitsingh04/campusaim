@@ -162,7 +162,28 @@ export default function CourseList({
 
 	const columns = useMemo<Column<CourseProps>[]>(() => {
 		return [
-			{ value: "course_name" as keyof CourseProps, label: "Name" },
+			{
+				label: "Name",
+				value: (row: CourseProps) => {
+					const specializationName = row.specialization
+						? getCategoryById(row.specialization)
+						: null;
+
+					return (
+						<div className="flex flex-col leading-snug">
+							<span className="text-sm font-medium text-[var(--yp-text-primary)]">
+								{row.course_name}
+							</span>
+
+							{specializationName && (
+								<span className="text-xs text-[var(--yp-muted)]">
+									{specializationName}
+								</span>
+							)}
+						</div>
+					);
+				},
+			},
 			{
 				label: "Course Type",
 				value: (row: any) => row.course_type || "N/A",
@@ -217,6 +238,7 @@ export default function CourseList({
 						allProperty={allProperty}
 						getPropertyCourse={getPropertyCourses}
 						setIsAdding={setIsAdding}
+						getCategoryById={getCategoryById}
 					/>
 				</div>
 			) : isViewing ? (

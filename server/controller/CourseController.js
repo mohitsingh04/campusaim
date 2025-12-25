@@ -1,9 +1,10 @@
-import { generateSlug, getUploadedFilePaths } from "../utils/Callback.js";
+import { getUploadedFilePaths } from "../utils/Callback.js";
 import { downloadImageAndReplaceSrcNonProperty } from "../helper/folder-cleaners/EditorImagesController.js";
 import Course from "../models/Courses.js";
 import { autoAddAllSeo } from "./AllSeoController.js";
 import AllSeo from "../models/AllSeo.js";
 import mongoose from "mongoose";
+import Category from "../models/Category.js";
 
 function normalizeBestFor(best_for) {
   let bestForArray = [];
@@ -68,6 +69,19 @@ function normalizeToStringArray(value) {
   return arr.map((v) => String(v).trim()).filter(Boolean);
 }
 
+export const generateSlug = (courseName, specialization = "") => {
+  const fullText = `${courseName} ${specialization}`;
+
+  return fullText
+    .toLowerCase()
+    .trim()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+};
+
 export const getCourse = async (req, res) => {
   try {
     const courses = await Course.find();
@@ -130,6 +144,8 @@ export const addCourse = async (req, res) => {
       best_for,
     } = req.body;
 
+    const specializationCategory = await Category.findById(specialization);
+
     if (!course_name) {
       return res.status(400).json({ error: "Course name is required." });
     }
@@ -140,11 +156,11 @@ export const addCourse = async (req, res) => {
 
     const images = await getUploadedFilePaths(req, "image");
 
-    const courseSlug = await generateSlug(course_name);
+    const courseSlug = generateSlug(course_name, specializationCategory.category_name);
 
-    const existCourse = await Course.findOne({ course_name });
+    const existCourse = await Course.findOne({ course_name, specialization });
     if (existCourse) {
-      return res.status(400).json({ error: "This course already exists." });
+      return res.status(400).json({ error: "This course with the same specialization already exists." });
     }
 
     let updatedDescription = description;

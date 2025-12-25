@@ -5,6 +5,35 @@ import Accomodation from "../models/Accomodation.js";
 import { downloadImageAndReplaceSrc } from "../helper/folder-cleaners/EditorImagesController.js";
 import mongoose from "mongoose";
 
+export const getAllAccomodation = async (req, res) => {
+  try {
+    const accomodation = await Accomodation.find();
+    if (!accomodation) {
+      return res.status(404).json({ error: "Accomodation Not Found" });
+    }
+
+    return res.status(200).json(accomodation);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+export const getAccomodationByPropertyId = async (req, res) => {
+  try {
+    const { property_id } = req.params;
+    const accomodation = await Accomodation.find({ property_id: property_id });
+    if (!accomodation) {
+      return res.status(404).json({ error: "Accomodation Not Found" });
+    }
+
+    return res.status(200).json(accomodation);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 export const AddAccomodation = async (req, res) => {
   try {
     const {
@@ -53,102 +82,6 @@ export const AddAccomodation = async (req, res) => {
       .json({ message: "Accomodation created successfully" });
   } catch (error) {
     console.error("AddAccomodation Error:", error);
-    return res.status(500).json({ error: "Internal Server Error" });
-  }
-};
-
-export const getAccomodationByPropertyId = async (req, res) => {
-  try {
-    const { property_id } = req.params;
-    const accomodation = await Accomodation.find({ property_id: property_id });
-    if (!accomodation) {
-      return res.status(404).json({ error: "Accomodation Not Found" });
-    }
-
-    return res.status(200).json(accomodation);
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: "Internal Server Error" });
-  }
-};
-
-export const getAllAccomodation = async (req, res) => {
-  try {
-    const accomodation = await Accomodation.find();
-    if (!accomodation) {
-      return res.status(404).json({ error: "Accomodation Not Found" });
-    }
-
-    return res.status(200).json(accomodation);
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: "Internal Server Error" });
-  }
-};
-
-export const EditAccomodation = async (req, res) => {
-  try {
-    const { objectId } = req.params;
-    const {
-      property_id,
-      accomodation_name,
-      accomodation_price,
-      accomodation_description,
-    } = req.body;
-
-    // Validate objectId
-    if (!mongoose.Types.ObjectId.isValid(objectId)) {
-      return res.status(400).json({ error: "Invalid Accomodation ID." });
-    }
-
-    // Fetch existing accomodation
-    const existingAccomodation = await Accomodation.findById(objectId);
-    if (!existingAccomodation) {
-      return res.status(404).json({ error: "Accomodation not found." });
-    }
-
-    // Check duplicate name for the same property
-    const duplicateAccomodation = await Accomodation.findOne({
-      _id: { $ne: objectId },
-      property_id,
-      accomodation_name,
-    });
-
-    if (duplicateAccomodation) {
-      return res.status(400).json({
-        error:
-          "Another accomodation with the same name already exists for this property.",
-      });
-    }
-
-    // Process description (upload + replace image URLs)
-    let updatedDescription = accomodation_description;
-    if (accomodation_description) {
-      updatedDescription = await downloadImageAndReplaceSrc(
-        accomodation_description,
-        property_id
-      );
-    }
-
-    // Update the accommodation
-    await Accomodation.findByIdAndUpdate(
-      objectId,
-      {
-        $set: {
-          accomodation_name,
-          accomodation_price,
-          accomodation_description: updatedDescription,
-        },
-      },
-      { new: true }
-    );
-
-    return res
-      .status(200)
-      .json({ message: "Accomodation updated successfully" });
-
-  } catch (error) {
-    console.error("EditAccomodation Error:", error);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
@@ -223,6 +156,73 @@ export const AddAccomodationImages = async (req, res) => {
   } catch (error) {
     console.error("Error adding accomodation images:", error);
     return res.status(500).json({ error: error.message });
+  }
+};
+
+export const EditAccomodation = async (req, res) => {
+  try {
+    const { objectId } = req.params;
+    const {
+      property_id,
+      accomodation_name,
+      accomodation_price,
+      accomodation_description,
+    } = req.body;
+
+    // Validate objectId
+    if (!mongoose.Types.ObjectId.isValid(objectId)) {
+      return res.status(400).json({ error: "Invalid Accomodation ID." });
+    }
+
+    // Fetch existing accomodation
+    const existingAccomodation = await Accomodation.findById(objectId);
+    if (!existingAccomodation) {
+      return res.status(404).json({ error: "Accomodation not found." });
+    }
+
+    // Check duplicate name for the same property
+    const duplicateAccomodation = await Accomodation.findOne({
+      _id: { $ne: objectId },
+      property_id,
+      accomodation_name,
+    });
+
+    if (duplicateAccomodation) {
+      return res.status(400).json({
+        error:
+          "Another accomodation with the same name already exists for this property.",
+      });
+    }
+
+    // Process description (upload + replace image URLs)
+    let updatedDescription = accomodation_description;
+    if (accomodation_description) {
+      updatedDescription = await downloadImageAndReplaceSrc(
+        accomodation_description,
+        property_id
+      );
+    }
+
+    // Update the accommodation
+    await Accomodation.findByIdAndUpdate(
+      objectId,
+      {
+        $set: {
+          accomodation_name,
+          accomodation_price,
+          accomodation_description: updatedDescription,
+        },
+      },
+      { new: true }
+    );
+
+    return res
+      .status(200)
+      .json({ message: "Accomodation updated successfully" });
+
+  } catch (error) {
+    console.error("EditAccomodation Error:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 };
 

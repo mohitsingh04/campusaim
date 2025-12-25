@@ -174,12 +174,6 @@ import {
   getBlogTagById,
 } from "../controller/BlogTagController.js";
 import {
-  CreateKeyOutComeController,
-  updateKeyOutCome,
-  getAllKeyOutComes,
-  getKeyOutComeById,
-} from "../controller/KeyOutComesController.js";
-import {
   CreateRequirmentController,
   updateRequirment,
   getAllRequirments,
@@ -508,7 +502,7 @@ router.delete("/property-course/:objectId", Authorize, deletePropertyCourse);
 router.post("/amenities", Authorize, addAmenities);
 router.get("/amenities", getAmenities);
 router.get("/property/amenities/:propertyId", getAmenitiesByPropertyId);
-router.put("/amenities/:uniqueId", Authorize, updateAmenities);
+router.put("/amenities/:objectId", Authorize, updateAmenities);
 
 //? Legal Routes
 router.get("/legal", getLegal);
@@ -551,11 +545,6 @@ router.get("/blog/tag/all", getAllBlogTags);
 router.get("/blog/tag/id/:objectId", getBlogTagById);
 router.post("/blog/tag", Authorize, CreateTagController);
 router.patch("/blog/tag/:objectId", Authorize, updateBlogTag);
-
-router.post(`/key-outcome`, Authorize, CreateKeyOutComeController);
-router.get(`/key-outcome/all`, getAllKeyOutComes);
-router.get(`/key-outcome/id/:objectId`, getKeyOutComeById);
-router.patch(`/key-outcome/:objectId`, Authorize, updateKeyOutCome);
 
 router.post(`/requirment`, Authorize, CreateRequirmentController);
 router.get(`/requirment/all`, getAllRequirments);

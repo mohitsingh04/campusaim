@@ -37,7 +37,7 @@ export function SimpleTable<T>({ data, columns }: SimpleTableProps<T>) {
                 {columns.map((col, cidx) => (
                   <td
                     key={cidx}
-                    className="px-6 py-4 text-sm text-[var(--yp-text-secondary)]"
+                    className="px-6 py-4 font-medium text-sm text-[var(--yp-text-secondary)]"
                   >
                     {typeof col.value === "function"
                       ? col.value(row)

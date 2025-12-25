@@ -11,16 +11,11 @@ import Image from "next/image";
 
 const navItems = [
   { name: "Home", href: "/", external: false },
-  { name: "Yoga Institutes", href: "/yoga-institutes", external: false },
-  { name: "Course", href: "/courses", external: false },
-  // {
-  //   name: "Jobs",
-  //   href: `${process.env.NEXT_PUBLIC_CAREER_URL}`,
-  //   external: true,
-  // },
-  { name: "Blog", href: "/blog", external: false },
-  { name: "Events", href: "/events", external: false },
-  { name: "News and Updates", href: "/news-and-updates", external: false },
+  { name: "College & University", href: "/colleges", external: false },
+  { name: "Courses", href: "/courses", external: false },
+  { name: "Blogs", href: "/blog", external: false },
+  { name: "Exams", href: "/events", external: false },
+  { name: "Scholarships", href: "/news-and-updates", external: false },
 ];
 
 const userMenuItems = [

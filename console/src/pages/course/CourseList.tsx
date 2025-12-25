@@ -151,13 +151,20 @@ export function CourseList() {
 								className="w-10 h-10 rounded-full shadow-sm"
 							/>
 						</div>
-						<div className="flex items-center">
+						<div className="flex flex-col">
 							<Link
 								to={`/dashboard/course/${row._id}`}
-								className="font-semibold text-md"
+								className="font-semibold"
 							>
 								{row?.course_name}
 							</Link>
+							<div className="flex flex-col gap-1">
+								{row?.specialization && (
+									<p className="text-xs">
+										{getCategoryById(row?.specialization)}
+									</p>
+								)}
+							</div>
 						</div>
 					</div>
 				),

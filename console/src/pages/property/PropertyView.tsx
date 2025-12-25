@@ -126,10 +126,7 @@ export function PropertyView() {
 
 	const getCategoryById = useCallback(
 		(id: string) => {
-			const cat = categories.find(
-				(item) =>
-					item.uniqueId === Number(id) || String(item._id) === String(id)
-			);
+			const cat = categories.find((item) => item._id === id);
 			return cat?.category_name;
 		},
 		[categories]

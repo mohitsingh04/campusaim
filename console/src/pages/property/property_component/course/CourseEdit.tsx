@@ -238,9 +238,6 @@ export default function EditCourseForm({
 									className="w-full px-3 py-2 border border-[var(--yp-border-primary)] rounded-lg bg-[var(--yp-input-primary)] text-[var(--yp-text-primary)]"
 								>
 									<option value="">Select Type</option>
-									<option value="hours">Hours</option>
-									<option value="days">Days</option>
-									<option value="weeks">Weeks</option>
 									<option value="months">Months</option>
 									<option value="years">Years</option>
 								</select>

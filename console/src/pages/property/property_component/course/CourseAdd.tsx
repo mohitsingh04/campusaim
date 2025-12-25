@@ -26,6 +26,7 @@ export default function AddCourseForm({
 	allPropertyCourse,
 	getPropertyCourse,
 	setIsAdding,
+	getCategoryById,
 }: {
 	categories: CategoryProps[];
 	allCourses: CourseProps[];
@@ -34,6 +35,7 @@ export default function AddCourseForm({
 	property: PropertyProps | null;
 	getPropertyCourse: () => void;
 	setIsAdding: any;
+	getCategoryById: any;
 }) {
 	const [priceInput, setPriceInput] = useState("");
 	const [priceCurrency, setPriceCurrency] = useState("INR");
@@ -108,14 +110,25 @@ export default function AddCourseForm({
 			: undefined;
 
 	const buildLabel = (item: any) => {
-		if (item && item.course_id) {
-			return (
-				item.course_name ||
-				masterCoursesMap.get(String(item.course_id))?.course_name ||
-				"Untitled"
-			);
-		}
-		return item?.course_name || item?.name || "Untitled";
+		// 1️⃣ Resolve master course if this is a property-course
+		const master = item.course_id
+			? masterCoursesMap.get(String(item.course_id))
+			: null;
+
+		// 2️⃣ Resolve course name safely
+		const courseName =
+			item.course_name || master?.course_name || "Unknown Course";
+
+		// 3️⃣ Resolve specialization safely
+		const specializationId = item.specialization || master?.specialization;
+
+		const specializationName = specializationId
+			? getCategoryById(specializationId)
+			: null;
+
+		return specializationName
+			? `${courseName} — ${specializationName}`
+			: courseName;
 	};
 
 	const selectOptions = courseOptionsSource.map((item: any) => ({

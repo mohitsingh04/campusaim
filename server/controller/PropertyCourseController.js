@@ -1,7 +1,32 @@
+import mongoose from "mongoose";
 import { addPropertyScore } from "../analytic-controller/PropertyScoreController.js";
 import Course from "../models/Courses.js";
 import PropertyCourse from "../models/PropertyCourse.js";
 import { generateUniqueId } from "../utils/Callback.js";
+
+const tryParseJSON = (v) => {
+  if (typeof v !== "string") return v;
+  try { return JSON.parse(v); } catch { return v; }
+};
+
+const isEmptyValue = (v) => {
+  if (v === undefined || v === null) return true;
+  if (typeof v === "string" && v.trim() === "") return true;
+  if (Array.isArray(v) && v.length === 0) return true;
+  if (typeof v === "object" && !Array.isArray(v) && Object.keys(v).length === 0) return true;
+  return false;
+};
+
+const toObjectIdIfValid = (val) => {
+  if (val instanceof mongoose.Types.ObjectId) return val;
+  if (typeof val === "object" && val !== null && val._id && mongoose.Types.ObjectId.isValid(String(val._id))) {
+    return new mongoose.Types.ObjectId(String(val._id));
+  }
+  if (typeof val === "string" && mongoose.Types.ObjectId.isValid(val)) {
+    return new mongoose.Types.ObjectId(val);
+  }
+  return val;
+};
 
 export const getPropertyCourse = async (req, res) => {
   try {
@@ -178,6 +203,20 @@ export const addPropertyCourse = async (req, res) => {
 export const updatePropertyCourse = async (req, res) => {
   try {
     const objectId = req.params.objectId;
+    if (!objectId || !mongoose.Types.ObjectId.isValid(objectId)) {
+      return res.status(400).json({ error: "Invalid course id (objectId)." });
+    }
+
+    // Parse body and JSON-string fields (common when using multipart/form-data)
+    const raw = {};
+    for (const k of Object.keys(req.body || {})) raw[k] = tryParseJSON(req.body[k]);
+
+    // Accept duration_value + duration_type or direct duration
+    if ((raw.duration_value || raw.duration_type) && !raw.duration) {
+      const v = (raw.duration_value || "").toString().trim();
+      const t = (raw.duration_type || "").toString().trim();
+      raw.duration = (v || t) ? `${v} ${t}`.trim() : undefined;
+    }
 
     const {
       course_id,
@@ -187,138 +226,104 @@ export const updatePropertyCourse = async (req, res) => {
       course_level,
       duration,
       certification_type,
-      final_requirement,
       cerification_info,
       best_for,
       languages,
       course_format,
+      final_requirement,
       final_key_outcomes,
       status,
-    } = req.body;
+      image, // optional incoming images array (if you send it)
+    } = raw;
 
-    if (!objectId || !course_id) {
-      return res.status(400).json({ error: "Missing required fields." });
+    if (!course_id) return res.status(400).json({ error: "Missing course_id." });
+
+    const existing = await PropertyCourse.findById(objectId);
+    if (!existing) return res.status(404).json({ error: "PropertyCourse not found." });
+
+    // We don't need baseCourse for the simple "always update when sent" logic,
+    // but we load it only to optionally copy image if needed
+    const baseCourse = await Course.findById(course_id).lean();
+
+    const updateData = {};
+
+    // course_id always set (converted to ObjectId)
+    updateData.course_id = toObjectIdIfValid(course_id);
+
+    // If frontend sends a non-empty value, set it (overwrite existing)
+    if (!isEmptyValue(course_short_name)) updateData.course_short_name = course_short_name;
+    if (!isEmptyValue(course_level)) updateData.course_level = course_level;
+    if (!isEmptyValue(duration)) updateData.duration = duration;
+    if (!isEmptyValue(certification_type)) updateData.certification_type = certification_type;
+    // cerification_info may be boolean false - treat false as valid
+    if (typeof cerification_info !== "undefined" && cerification_info !== null) {
+      if (cerification_info === false || cerification_info === true || !isEmptyValue(cerification_info)) {
+        updateData.cerification_info = cerification_info;
+      }
+    }
+    if (!isEmptyValue(course_format)) updateData.course_format = course_format;
+    if (!isEmptyValue(status)) updateData.status = status;
+
+    // course_type: convert to ObjectId if possible
+    if (typeof course_type !== "undefined" && !isEmptyValue(course_type)) {
+      updateData.course_type = toObjectIdIfValid(course_type);
     }
 
-    // Find the existing course
-    const existingCourse = await PropertyCourse.findById(objectId);
-    if (!existingCourse) {
-      return res.status(404).json({ error: "Course not found." });
+    // best_for: accept array or single value -> convert items to ObjectId if possible
+    if (typeof best_for !== "undefined" && !isEmptyValue(best_for)) {
+      const arr = Array.isArray(best_for) ? best_for : [best_for];
+      updateData.best_for = arr.map((x) => toObjectIdIfValid(x));
     }
 
-    // Find the base course
-    const baseCourse = await Course.findOne({ _id: course_id });
-    if (!baseCourse) {
-      return res.status(404).json({ error: "Base course not found." });
+    // languages: keep as array of strings (or single)
+    if (typeof languages !== "undefined" && !isEmptyValue(languages)) {
+      updateData.languages = Array.isArray(languages) ? languages : [languages];
     }
 
-    // Define fields to compare
-    const propertyCourseFields = [
-      "course_type",
-      "course_short_name",
-      "prices",
-      "course_level",
-      "duration",
-      "certification_type",
-      "requirements",
-      "best_for",
-      "key_outcomes",
-      "languages",
-      "course_format",
-      "cerification_info",
-    ];
+    // requirements / key_outcomes
+    if (typeof final_requirement !== "undefined" && !isEmptyValue(final_requirement)) {
+      updateData.requirements = Array.isArray(final_requirement) ? final_requirement : [final_requirement];
+    }
+    if (typeof final_key_outcomes !== "undefined" && !isEmptyValue(final_key_outcomes)) {
+      updateData.key_outcomes = Array.isArray(final_key_outcomes) ? final_key_outcomes : [final_key_outcomes];
+    }
 
-    // Define expected types for array fields
-    const arrayFieldsWithTypes = {
-      requirements: "object",
-      best_for: "object",
-      key_outcomes: "object",
-      prices: "object",
-      languages: "string",
-    };
-
-    // Input data mapping
-    const inputData = {
-      course_type,
-      course_short_name,
-      prices,
-      course_level,
-      duration,
-      certification_type,
-      requirements: final_requirement,
-      best_for,
-      key_outcomes: final_key_outcomes,
-      languages,
-      course_format,
-      cerification_info,
-    };
-
-    // Helper: compare arrays deeply
-    const arraysAreEqual = (a, b) => {
-      return JSON.stringify(a) === JSON.stringify(b);
-    };
-
-    // Prepare update data
-    const updateData = {
-      course_id,
-    };
-
-    // Compare fields with base course
-    for (const field of propertyCourseFields) {
-      const inputVal = inputData[field];
-      const baseVal = baseCourse[field];
-
-      if (typeof inputVal === "undefined") continue;
-
-      const expectedType = arrayFieldsWithTypes[field];
-
-      if (Array.isArray(inputVal) && Array.isArray(baseVal)) {
-        const inputIsExpected = inputVal.every(
-          (item) => typeof item === expectedType
-        );
-        const baseIsExpected = baseVal.every(
-          (item) => typeof item === expectedType
-        );
-
-        if (
-          !inputIsExpected ||
-          !baseIsExpected ||
-          !arraysAreEqual(inputVal, baseVal)
-        ) {
-          updateData[field] = inputVal;
-        }
-      } else {
-        if (JSON.stringify(inputVal) !== JSON.stringify(baseVal)) {
-          updateData[field] = inputVal;
-        }
+    // prices: sanitize to numbers, only if non-empty
+    if (typeof prices !== "undefined" && !isEmptyValue(prices)) {
+      const parsedPrices = (typeof prices === "object") ? prices : tryParseJSON(prices);
+      if (!isEmptyValue(parsedPrices)) {
+        const sanitized = {};
+        Object.entries(parsedPrices).forEach(([k, v]) => {
+          const n = Number(v);
+          sanitized[k] = Number.isNaN(n) ? v : n;
+        });
+        updateData.prices = sanitized;
       }
     }
 
-    // Set image if base course has one
-    if (baseCourse.image) {
-      updateData.image = baseCourse.image;
+    // image: if incoming image array provided, use it; else if existing image empty and baseCourse has valid images, copy filtered base images
+    if (typeof image !== "undefined" && !isEmptyValue(image)) {
+      updateData.image = Array.isArray(image) ? image : [image];
+    } else {
+      // only copy baseCourse.image when property currently has no images
+      const existingHasImage = Array.isArray(existing.image) ? existing.image.filter(Boolean).length > 0 : !isEmptyValue(existing.image);
+      if (!existingHasImage && baseCourse?.image) {
+        // filter out null/empty entries
+        const filtered = Array.isArray(baseCourse.image) ? baseCourse.image.filter((x) => x !== null && typeof x !== "undefined" && String(x).trim() !== "") : baseCourse.image;
+        if (!isEmptyValue(filtered)) updateData.image = filtered;
+      }
     }
 
-    updateData.status = status;
-
-    // Update the course
-    const updatedCourse = await PropertyCourse.findByIdAndUpdate(
-      objectId,
-      { $set: updateData },
-      { new: true }
-    );
-
-    if (!updatedCourse) {
-      return res.status(404).json({ error: "Course not found." });
+    // If nothing to update, return early
+    if (Object.keys(updateData).length === 0) {
+      return res.status(200).json({ message: "No valid fields provided to update." });
     }
 
-    return res.status(200).json({
-      message: "Course updated successfully.",
-      updatedCourse,
-    });
-  } catch (error) {
-    console.error("Error updating course:", error);
-    return res.status(500).json({ error: "Internal Server Error." });
+    const updated = await PropertyCourse.findByIdAndUpdate(objectId, { $set: updateData }, { new: true });
+    return res.status(200).json({ message: "Course updated successfully.", updated });
+  } catch (err) {
+    console.error("updatePropertyCourse.final error:", err);
+    return res.status(500).json({ error: "Internal Server Error", details: err.message });
   }
 };
 

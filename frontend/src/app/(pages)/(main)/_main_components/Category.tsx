@@ -40,20 +40,12 @@ const colorClasses: Record<
 // Categories data
 const categories: CategoryItem[] = [
   {
-    icon: LuLaptop,
-    title: "Online Yoga",
+    icon: LuSchool,
+    title: "Colleges",
     link: "online-yoga-studio",
     description: "Practice from the comfort of your home with expert trainers.",
-    linkText: "Explore Online Yoga",
+    linkText: "Explore Colleges",
     color: "blue",
-  },
-  {
-    icon: LuSchool,
-    title: "Yoga Colleges",
-    link: "college",
-    description: "Browse certified yoga colleges with government affiliations.",
-    linkText: "List of Yoga Colleges",
-    color: "green",
   },
   {
     icon: LuLandmark,
@@ -64,11 +56,19 @@ const categories: CategoryItem[] = [
     color: "purple",
   },
   {
+    icon: LuLaptop,
+    title: "Schools",
+    link: "college",
+    description: "Browse certified yoga colleges with government affiliations.",
+    linkText: "List of Defense Schools",
+    color: "green",
+  },
+  {
     icon: LuStore,
-    title: "Yoga Studios",
+    title: "Academies",
     link: "yoga-studio",
     description: "Join a local yoga studio for in-person group training.",
-    linkText: "List of Yoga Studios",
+    linkText: "List of Academies",
     color: "orange",
   },
 ];
@@ -83,7 +83,7 @@ export default function Category() {
         transition={{ duration: 0.6 }}
         viewport={{ once: true }}
       >
-        Discover Our <span className="text-purple-600">Yoga Categories</span>
+        Discover Our <span className="text-purple-600">Categories</span>
       </motion.h2>
 
       <motion.p
@@ -93,7 +93,7 @@ export default function Category() {
         transition={{ delay: 0.2, duration: 0.6 }}
         viewport={{ once: true }}
       >
-        Explore yoga options tailored to your goals—from online classes to top
+        Explore properties options tailored to your goals—from online classes to top
         institutions.
       </motion.p>
 

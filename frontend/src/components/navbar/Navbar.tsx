@@ -11,8 +11,8 @@ export default function Navbar() {
           <Link href="/" className="flex items-center space-x-2 group">
             <h1 className="relative h-10 w-44 sm:w-56 md:w-64">
               <Image
-                src="/img/logo/logo-black-new.png"
-                alt="Yogprerna Black Logo"
+                src="/img/logo/campusaim-logo.png"
+                alt="Campusaim Black Logo"
                 fill
                 className="object-contain transition-transform duration-200 group-hover:scale-105"
                 sizes="auto"

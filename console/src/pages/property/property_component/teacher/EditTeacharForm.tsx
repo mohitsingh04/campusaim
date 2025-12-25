@@ -235,19 +235,19 @@ export function EditTeacherForm({
 				</div>
 
 				{/* Buttons */}
-				<div className="col-span-1 sm:col-span-2 flex flex-col sm:flex-row justify-between gap-3 mt-6">
+				<div className="col-span-1 sm:col-span-2 flex flex-col sm:flex-row justify-start gap-3 mt-6">
+					<button
+						type="submit"
+						className="px-6 py-2 rounded-lg text-sm font-medium text-[var(--yp-blue-text)] bg-[var(--yp-blue-bg)]"
+					>
+						{teacher?._id ? "Update Teacher" : "Save Teacher"}
+					</button>
 					<button
 						type="button"
 						onClick={onBack}
 						className="px-6 py-2 rounded-lg text-sm font-medium text-[var(--yp-red-text)] bg-[var(--yp-red-bg)]"
 					>
 						Cancel
-					</button>
-					<button
-						type="submit"
-						className="px-6 py-2 rounded-lg text-sm font-medium text-[var(--yp-green-text)] bg-[var(--yp-green-bg)]"
-					>
-						{teacher?._id ? "Update Teacher" : "Save Teacher"}
 					</button>
 				</div>
 			</form>

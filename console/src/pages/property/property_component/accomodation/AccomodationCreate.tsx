@@ -16,7 +16,7 @@ import {
 import { currencyOptions } from "../../../../common/ExtraData";
 import { getEditorConfig } from "../../../../contexts/JoditEditorConfig";
 
-type CurrencyType = "INR" | "EURO" | "DOLLAR";
+type CurrencyType = "INR" | "EUR" | "USD";
 
 export default function AccomodationCreate({
   property,
@@ -35,7 +35,7 @@ export default function AccomodationCreate({
 
   const [accomodationPrice, setAccomodationPrice] = useState<
     Record<CurrencyType, number>
-  >({ INR: 0, EURO: 0, DOLLAR: 0 });
+  >({ INR: 0, EUR: 0, USD: 0 });
 
   const accomodationOptions = ["Co. Ed."];
 

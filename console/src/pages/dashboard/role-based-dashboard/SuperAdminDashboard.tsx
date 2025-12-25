@@ -185,14 +185,6 @@ export default function SuperAdminDashboard() {
       role: ["Super Admin", "Editor", "Seo Manager"],
     },
     {
-      title: "All Retreats",
-      value: retreat?.length || 0,
-      icon: Hotel,
-      link: "/dashboard/retreat",
-      color: colorsData[7 % colorsData.length],
-      role: ["Super Admin", "Editor", "Seo Manager"],
-    },
-    {
       title: "All Properties",
       value: property?.length || 0,
       icon: Building2,
