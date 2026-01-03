@@ -285,6 +285,7 @@ export const getPropertyById = async (req, res) => {
     return res.status(500).json({ error: "Internal Server Error." });
   }
 };
+
 export const getPropertyBySlug = async (req, res) => {
   try {
     const { property_slug } = req.params;

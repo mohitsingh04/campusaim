@@ -268,6 +268,10 @@ export interface DynamicFilterCourseOptionsProps {
 	specializationType: FilterOptionProps[];
 }
 
+export interface DynamicFilterExamOptionsProps {
+	examMode: FilterOptionProps[];
+}
+
 export interface FiltersProps {
 	country: string[];
 	state: string[];

@@ -48,7 +48,7 @@ export default function FeaturedCourses() {
           Featured <span className="text-purple-600">Courses</span>
         </h2>
         <p className="text-gray-600 text-sm sm:text-base max-w-2xl mx-auto">
-          Explore our top-rated yoga courses offered across India by certified
+          Explore our top-rated courses offered across India by certified
           trainers and institutions.
         </p>
       </motion.div>

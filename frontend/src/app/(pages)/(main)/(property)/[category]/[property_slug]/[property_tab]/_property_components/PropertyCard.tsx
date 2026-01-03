@@ -68,7 +68,7 @@ const PropertyDetailCard = ({
                 {property?.category}
               </p>
 
-              <div className="flex items-center text-sm md:text-base text-gray-600 gap-1 whitespace-nowrap">
+              {/* <div className="flex items-center text-sm md:text-base text-gray-600 gap-1 whitespace-nowrap">
                 <h5>YP Rank:</h5>
                 <div className="flex items-center gap-1">
                   <p className="font-semibold">{property?.rank}</p>
@@ -78,7 +78,7 @@ const PropertyDetailCard = ({
                     <LuTrendingDown className="w-5 h-5 text-red-500" />
                   )}
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>

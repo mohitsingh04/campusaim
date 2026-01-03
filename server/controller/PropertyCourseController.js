@@ -62,15 +62,20 @@ export const getPropertyCourseByUniqueId = async (req, res) => {
 
 export const getPropertyCourseByPropertyId = async (req, res) => {
   try {
-    const propertyId = req.params.propertyId;
+    const { propertyId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(propertyId)) {
+      return res.status(400).json({ error: "Invalid Property ID" });
+    }
 
     const propertyCourse = await PropertyCourse.find({
-      property_id: propertyId,
+      property_id: new mongoose.Types.ObjectId(propertyId),
     });
+
     return res.status(200).json(propertyCourse);
   } catch (error) {
     console.error(error);
-    return res.send({ error: "Internal Server Error" });
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 };
 

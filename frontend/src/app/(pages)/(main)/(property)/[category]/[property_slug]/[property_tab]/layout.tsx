@@ -49,7 +49,7 @@ export async function generateMetadata({
     }
   }
 
-  if (property?.uniqueId) {
+  if (property?._id) {
     try {
       const seoRes = await API.get(`/property/seo/property/${property._id}`, {
         headers: { origin: BASE_URL },
@@ -60,10 +60,10 @@ export async function generateMetadata({
       console.error("Error loading SEO:", err.response?.data.error);
     }
   }
-  if (property?.uniqueId) {
+  if (property?._id) {
     try {
       const locationRes = await API.get(
-        `/property/location/${property.uniqueId}`,
+        `/property/location/${property._id}`,
         {
           headers: { origin: BASE_URL },
         }
@@ -137,10 +137,10 @@ export default async function PropertyLayout({
     }
 
     let locationData: any = {};
-    if (property?.uniqueId) {
+    if (property?._id) {
       try {
         const locationRes = await API.get(
-          `/property/location/${property.uniqueId}`,
+          `/property/location/${property._id}`,
           { headers: { origin: BASE_URL } }
         );
         locationData = locationRes?.data || {};
@@ -156,7 +156,7 @@ export default async function PropertyLayout({
 
     // Fetch rank safely
     let rankData: RankProps = {};
-    if (property?.uniqueId) {
+    if (property?._id) {
       try {
         const rankRes = await API.get(`/property/rank/${property._id}`, {
           headers: { origin: BASE_URL },
@@ -172,7 +172,7 @@ export default async function PropertyLayout({
     }
 
     let seoData: SeoProps = {};
-    if (property?.uniqueId) {
+    if (property?._id) {
       try {
         const seoRes = await API.get(`/property/seo/property/${property._id}`, {
           headers: { origin: BASE_URL },
@@ -188,10 +188,10 @@ export default async function PropertyLayout({
     }
 
     let reviewData: ReviewProps[] = [];
-    if (property?.uniqueId) {
+    if (property?._id) {
       try {
         const reviewRes = await API.get(
-          `/review/property/${property.uniqueId}`,
+          `/review/property/${property._id}`,
           {
             headers: { origin: BASE_URL },
           }
@@ -234,7 +234,7 @@ export default async function PropertyLayout({
     // Merge property with category + location + rank
     const mainProperty: PropertyProps = {
       ...property,
-      category: getCategoryById(property?.category),
+      category: getCategoryById(property?.academic_type  || "Unknown"),
       property_address: locationData?.property_address || null,
       property_pincode: locationData?.property_pincode || null,
       property_city: locationData?.property_city || null,

@@ -4,6 +4,7 @@ import Rank from "../analytic-model/Rank.js";
 import SeoScore from "../analytic-model/SeoScore.js";
 import Traffic from "../analytic-model/Traffic.js";
 import Property from "../models/Property.js";
+import mongoose from "mongoose";
 
 export const getAllTimeClicks = async (property_id) => {
   if (!property_id) return 0;
@@ -179,11 +180,15 @@ export const AssignRankToAllProperties = async (req, res) => {
 export const getRankByPropertyId = async (req, res) => {
   try {
     const { property_id } = req.params;
-    if (!property_id) {
-      return res.status(400).json({ error: "Property Id is Required" });
+
+    if (!mongoose.Types.ObjectId.isValid(property_id)) {
+      return res.status(400).json({ error: "Invalid Property ID" });
     }
 
-    const propertyRank = await Rank.findOne({ property_id: property_id });
+    const propertyRank = await Rank.findOne({
+      property_id: new mongoose.Types.ObjectId(property_id),
+    });
+
     if (!propertyRank) {
       return res
         .status(404)
@@ -192,7 +197,7 @@ export const getRankByPropertyId = async (req, res) => {
 
     return res.status(200).json(propertyRank);
   } catch (error) {
-    console.log(error);
+    console.error("getRankByPropertyId Error:", error);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };

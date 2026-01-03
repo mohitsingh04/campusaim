@@ -1,6 +1,5 @@
 "use client";
 import API from "@/contexts/API";
-import { generateSlug } from "@/contexts/Callbacks";
 import { CategoryProps, CourseProps } from "@/types/types";
 import { useParams } from "next/navigation";
 import React, { useCallback, useEffect, useState } from "react";

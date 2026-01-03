@@ -230,6 +230,9 @@ export const updateCourse = async (req, res) => {
       status,
     } = req.body;
 
+    const specializationCategory = await Category.findById(specialization);
+    const courseSlug = generateSlug(course_name, specializationCategory.category_name);
+
     // Normalize fields
     const normalizedBestFor = normalizeBestFor(best_for);
     const normalizedCourseType = normalizeToStringArray(course_type);
@@ -259,6 +262,7 @@ export const updateCourse = async (req, res) => {
       image: [existImage, existImageOriginal],
       duration,
       description: updatedDescription,
+      course_slug: courseSlug,
       status,
     };
 
@@ -284,7 +288,7 @@ export const updateCourse = async (req, res) => {
       type_id: courseUpdated._id,
       title: course_name,
       description: updatedDescription,
-      slug: generateSlug(course_name),
+      slug: courseSlug,
       type: "course",
     });
 

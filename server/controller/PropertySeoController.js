@@ -2,6 +2,7 @@ import { addSeoScore } from "../analytic-controller/SeoScoreController.js";
 import SeoScore from "../analytic-model/SeoScore.js";
 import { calculateSeoScore, stripHtml } from "../utils/Callback.js";
 import PropertySeo from "../models/PropertySeo.js";
+import mongoose from "mongoose";
 
 export const autoAddPropertySeo = async ({
   property_id,
@@ -203,7 +204,14 @@ export const getPropertySeoById = async (req, res) => {
 export const getPropertySeoByPropertyId = async (req, res) => {
   try {
     const { property_id } = req.params;
-    const seo = await PropertySeo.findOne({ property_id });
+
+    if (!mongoose.Types.ObjectId.isValid(property_id)) {
+      return res.status(400).json({ error: "Invalid property ID" });
+    }
+
+    const seo = await PropertySeo.findOne({
+      property_id: new mongoose.Types.ObjectId(property_id),
+    });
 
     if (!seo) {
       return res.status(404).json({ error: "SEO record not found!" });
@@ -215,6 +223,7 @@ export const getPropertySeoByPropertyId = async (req, res) => {
     return res.status(500).json({ error: "Internal server error!" });
   }
 };
+
 
 export const deletePropertySeo = async (req, res) => {
   try {

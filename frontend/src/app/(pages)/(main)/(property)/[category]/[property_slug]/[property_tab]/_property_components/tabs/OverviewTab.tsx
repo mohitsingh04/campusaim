@@ -80,7 +80,7 @@ const Overview = ({
 
           <p className="text-gray-700">
             <span className="font-medium">Academic Type:</span>{" "}
-            {getCategoryById(property?.category) || "N/A"}
+            {getCategoryById(property?.academic_type) || "N/A"}
           </p>
 
           <p className="text-gray-700">
@@ -91,7 +91,7 @@ const Overview = ({
       </div>
 
       {/* Claim Button At Bottom */}
-      {!property?.claimed && (
+      {/* {!property?.claimed && (
         <div className="pt-2 flex justify-end">
           <Link
             href={`/verify/institute/${property?._id}`}
@@ -100,7 +100,7 @@ const Overview = ({
             Claim Your Institute
           </Link>
         </div>
-      )}
+      )} */}
     </div>
   );
 };

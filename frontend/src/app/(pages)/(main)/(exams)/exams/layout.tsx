@@ -1,0 +1,20 @@
+import PropertiesLoader from "@/components/Loader/Property/PropertiesLoader";
+import { Metadata } from "next";
+import { ReactNode, Suspense } from "react";
+
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://www.yogprerna.com";
+
+export const metadata: Metadata = {
+	title: "Exams",
+	description:
+		"Discover yoga exams for all levels — beginner to expert. Learn online or offline with certified yoga training and teacher programs.",
+	keywords: ["Exams", "Yoga Exams"],
+	metadataBase: new URL(baseUrl),
+	alternates: {
+		canonical: "/exams",
+	},
+};
+
+export default function ExamsLayout({ children }: { children: ReactNode }) {
+	return <Suspense fallback={<PropertiesLoader />}>{children}</Suspense>;
+}

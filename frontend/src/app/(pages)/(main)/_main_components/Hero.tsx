@@ -26,13 +26,13 @@ export default function Hero({ modalOpen }: { modalOpen: () => void }) {
 	return (
 		<div className="min-h-screen relative overflow-hidden">
 			{/* --- Background --- */}
-			<div
+			{/* <div
 				className="absolute top-0 left-0 z-[-1] h-full bg-cover bg-center bg-no-repeat w-full md:w-1/4"
 				style={{
 					backgroundImage: "url('/img/section-images/yp-hero.webp')",
 					backgroundPosition: "center right",
 				}}
-			/>
+			/> */}
 
 			{/* --- Main Hero Content --- */}
 			<div className="container mx-auto px-4 h-screen flex items-center justify-center">

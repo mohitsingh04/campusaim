@@ -49,7 +49,7 @@ const FeaturedProperty = ({
 					<span className="text-purple-600">Colleges & Universities</span>
 				</h2>
 				<p className="text-gray-600 text-sm sm:text-base max-w-2xl mx-auto">
-					Explore our carefully selected list of premium yoga institutions from
+					Explore our carefully selected list of colleges and universities from
 					across the country.
 				</p>
 			</motion.div>
@@ -166,7 +166,7 @@ const FeaturedProperty = ({
 			{/* Footer Link */}
 			<div className="text-center mt-10">
 				<Link
-					href="/yoga-institutes"
+					href="/colleges"
 					className="text-purple-600 text-sm font-medium hover:underline inline-flex items-center"
 				>
 					View all Colleges & Universities &nbsp;→

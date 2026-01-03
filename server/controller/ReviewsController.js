@@ -39,15 +39,17 @@ export const getReviewById = async (req, res) => {
 
 export const getReviewByPropertyId = async (req, res) => {
   try {
-    let { property_id } = req.params;
+    const { property_id } = req.params;
 
-    if (!property_id) {
-      return res.status(400).json({ error: "Property ID is required!" });
+    if (!mongoose.Types.ObjectId.isValid(property_id)) {
+      return res.status(400).json({ error: "Invalid Property ID" });
     }
 
-    const reviews = await Review.find({ property_id });
+    const reviews = await Review.find({
+      property_id: new mongoose.Types.ObjectId(property_id),
+    });
 
-    if (reviews.length === 0) {
+    if (!reviews.length) {
       return res
         .status(404)
         .json({ error: "No reviews found for this property!" });
@@ -55,7 +57,7 @@ export const getReviewByPropertyId = async (req, res) => {
 
     return res.status(200).json(reviews);
   } catch (error) {
-    console.log(error);
+    console.error("getReviewByPropertyId Error:", error);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };

@@ -12,11 +12,13 @@ export const getLocation = async (req, res) => {
   try {
     const { property_id } = req.params;
 
-    if (!property_id) {
-      return res.status(400).json({ error: "Property ID is required" });
+    if (!mongoose.Types.ObjectId.isValid(property_id)) {
+      return res.status(400).json({ error: "Invalid property ID" });
     }
 
-    const location = await Location.findOne({ property_id });
+    const location = await Location.findOne({
+      property_id: new mongoose.Types.ObjectId(property_id),
+    });
 
     if (!location) {
       return res.status(404).json({ error: "Location not found" });
@@ -28,6 +30,7 @@ export const getLocation = async (req, res) => {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
 
 export const getAllLocations = async (req, res) => {
   try {

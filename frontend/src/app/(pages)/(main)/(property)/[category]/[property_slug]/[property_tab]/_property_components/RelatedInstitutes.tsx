@@ -41,7 +41,7 @@ const RelatedInstitutes = ({
 
       const merged = allProperties.map((property) => {
         const locationMatch = allLocations.find(
-          (loc) => Number(loc.property_id) === Number(property.uniqueId)
+          (loc) => loc.property_id === property._id
         );
 
         return {
