@@ -19,7 +19,7 @@ export default function PropertyCard({
               src={
                 property?.property_logo?.[0]
                   ? `${process.env.NEXT_PUBLIC_MEDIA_URL}/${property?.property_logo?.[0]}`
-                  : "/img/default-images/yp-institute-logo.webp"
+                  : "/img/default-images/campusaim-logo.png"
               }
               alt="Logo"
               fill

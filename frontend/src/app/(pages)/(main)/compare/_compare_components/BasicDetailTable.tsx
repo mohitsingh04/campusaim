@@ -156,7 +156,7 @@ export default function BasicDetailTable({
                             src={
                               p?.featured_image?.[0]
                                 ? `${process.env.NEXT_PUBLIC_MEDIA_URL}/${p.featured_image?.[0]}`
-                                : "/img/default-images/yp-institutes.webp"
+                                : "/img/default-images/campusaim-featured.png"
                             }
                             alt={p.property_name}
                             fill

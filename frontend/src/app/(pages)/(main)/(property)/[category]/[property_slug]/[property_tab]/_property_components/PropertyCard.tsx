@@ -25,7 +25,7 @@ const PropertyDetailCard = ({
           src={
             property?.featured_image?.[0]
               ? `${process.env.NEXT_PUBLIC_MEDIA_URL}/${property?.featured_image?.[0]}`
-              : "/img/default-images/yp-institutes.webp"
+              : "/img/default-images/campusaim-featured.png"
           }
           alt="Property Featured Image"
           fill
@@ -42,7 +42,7 @@ const PropertyDetailCard = ({
               src={
                 property?.property_logo?.[0]
                   ? `${process.env.NEXT_PUBLIC_MEDIA_URL}/${property?.property_logo?.[0]}`
-                  : "/img/default-images/yp-institute-logo.webp"
+                  : "/img/default-images/campusaim-logo.png"
               }
               alt="Property Logo"
               fill

@@ -33,7 +33,7 @@ export const getPropertyRelatedToPropertyCourse = async (req, res) => {
       .lean();
 
     const locationIds = [
-      ...new Set(relatedProperties.map((item) => item.uniqueId?.toString())),
+      ...new Set(relatedProperties.map((item) => item._id)),
     ].filter(Boolean);
 
     // 4️⃣ Fetch locations based on property_id
@@ -44,7 +44,7 @@ export const getPropertyRelatedToPropertyCourse = async (req, res) => {
     // 5️⃣ Merge location data into each property
     const finalData = relatedProperties.map((prop) => {
       const mainLoc = relatedLocations.find(
-        (loc) => loc.property_id?.toString() === prop.uniqueId.toString()
+        (loc) => loc.property_id?.toString() === prop._id.toString()
       );
 
       return {
@@ -54,7 +54,7 @@ export const getPropertyRelatedToPropertyCourse = async (req, res) => {
         property_country: mainLoc?.property_country || null,
       };
     });
-
+    console.log(finalData)
     // 6️⃣ Send response
     return res.status(200).json({
       success: true,

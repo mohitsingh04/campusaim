@@ -13,9 +13,9 @@ const navItems = [
   { name: "Home", href: "/", external: false },
   { name: "College & University", href: "/colleges", external: false },
   { name: "Courses", href: "/courses", external: false },
-  { name: "Blogs", href: "/blog", external: false },
-  { name: "Exams", href: "/events", external: false },
-  { name: "Scholarships", href: "/news-and-updates", external: false },
+  // { name: "Blogs", href: "/blog", external: false },
+  // { name: "Exams", href: "/events", external: false },
+  // { name: "Scholarships", href: "/news-and-updates", external: false },
 ];
 
 const userMenuItems = [

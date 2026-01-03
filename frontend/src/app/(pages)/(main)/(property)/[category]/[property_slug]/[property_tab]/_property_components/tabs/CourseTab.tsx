@@ -29,7 +29,7 @@ const CoursesTab = ({
                   src={
                     course?.image?.[0]
                       ? `${process.env.NEXT_PUBLIC_MEDIA_URL}/course/${course?.image?.[0]}`
-                      : "/img/default-images/yp-yoga-courses.webp"
+                      : "/img/default-images/campusaim-courses-featured.png"
                   }
                   alt={course?.course_name}
                   fill
@@ -60,7 +60,7 @@ const CoursesTab = ({
               <div className="flex items-center gap-2 text-gray-700 mb-2">
                 <LuTrendingUp className="w-4 h-4 text-purple-600" />
                 <span className="text-sm">
-                  {getCategoryById(course?.course_level)}
+                  {getCategoryById(course?.specialization)}
                 </span>
               </div>
             </div>

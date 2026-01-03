@@ -23,7 +23,7 @@ const CourseDetailCard = ({
 					src={
 						course?.image?.[0]
 							? `${process.env.NEXT_PUBLIC_MEDIA_URL}/course/${course?.image?.[0]}`
-							: "/img/default-images/yp-yoga-courses.webp"
+							: "/img/default-images/campusaim-courses-featured.png"
 					}
 					alt="Course Featured Image"
 					fill

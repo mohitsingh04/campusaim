@@ -167,7 +167,7 @@ export default function CompareModal({
                           src={
                             property?.featured_image?.[0]
                               ? `${process.env.NEXT_PUBLIC_MEDIA_URL}/${property.featured_image?.[0]}`
-                              : "/img/default-images/yp-institutes.webp"
+                              : "/img/default-images/campusaim-featured.png"
                           }
                           alt={property.property_name}
                           fill

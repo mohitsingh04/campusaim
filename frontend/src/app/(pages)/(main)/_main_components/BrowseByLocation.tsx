@@ -80,7 +80,7 @@ export default function BrowseByLocation({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8">
           {topLocations.map((location, index) => (
             <Link
-              href={`/yoga-institutes?country=${generateSlug(
+              href={`/colleges?country=${generateSlug(
                 location.country || ""
               )}&state=${generateSlug(
                 location.state || ""
