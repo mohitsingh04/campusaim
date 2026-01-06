@@ -50,7 +50,6 @@ export interface CourseProps {
 	course_type: string;
 	course_short_name: string;
 	duration: string;
-	course_level: string;
 	description: string;
 	[key: string]: unknown;
 	property_id: string;
@@ -58,9 +57,10 @@ export interface CourseProps {
 	key_outcomes: string[];
 	requirements: string[];
 	best_for: string[];
-	specialization: string[];
+	specialization?: string[];
 	program_type: string[];
-	certification_type: string[];
+	certification_type: string | string[];
+	course_eligibility: string[];
 }
 export interface BlogsProps {
 	uniqueId?: number;
@@ -133,7 +133,7 @@ export interface PropertyProps {
 	certification: string[];
 	average_rating?: number;
 	total_reviews?: number;
-	academic_type?: string;
+	academic_type: string;
 }
 export interface RankProps {
 	property_id?: string;
@@ -156,7 +156,7 @@ export interface SeoProps {
 export interface LocationProps {
 	property_address: string;
 	property_pincode: string;
-	property_id: number;
+	property_id: string;
 	property_city?: string;
 	property_state?: string;
 	property_country?: string;
@@ -253,19 +253,44 @@ export interface PriceProps {
 }
 
 export interface courseFilterProps {
-	course_level: string[];
 	course_type: string[];
 	duration: string[];
 	program_type: string[];
 	specialization: string[];
 }
 
+export interface CourseFilters {
+	course_type?: string[];
+	program_type?: string[];
+	specialization?: string[];
+	certification_type?: string[];
+	duration?: string[];
+}
+
 export interface DynamicFilterCourseOptionsProps {
-	courseLevels: FilterOptionProps[];
-	courseTypes: FilterOptionProps[];
-	durationsLists: FilterOptionProps[];
-	programType: FilterOptionProps[];
-	specializationType: FilterOptionProps[];
+	courseTypes: {
+		name: string;
+		value: string;
+		count: number;
+	}[];
+
+	programType: {
+		name: string;
+		value: string;
+		count: number;
+	}[];
+
+	specializationType: {
+		name: string;
+		value: string;
+		count: number;
+	}[];
+
+	durationsLists: {
+		name: string;
+		value: string;
+		count: number;
+	}[];
 }
 
 export interface DynamicFilterExamOptionsProps {
@@ -277,7 +302,6 @@ export interface FiltersProps {
 	state: string[];
 	city: string[];
 	course_name: string[];
-	course_level: string[];
 	course_type: string[];
 	course_format: string[];
 	rating: string[];
@@ -298,19 +322,37 @@ export interface CategoryOptionProps {
 }
 
 export interface DynamicFilterOptionsProps {
-	countries: FilterOptionProps[];
+	countries: { name: string; count: number }[];
+
 	getStatesForCountries: (selectedCountries?: string[]) => string[];
 	getCitiesForLocation: (
 		selectedCountries?: string[],
 		selectedStates?: string[]
 	) => string[];
-	courseNames: FilterOptionProps[];
-	courseLevels: FilterOptionProps[];
-	courseTypes: FilterOptionProps[];
-	courseFormats: FilterOptionProps[];
-	categories: CategoryOptionProps[];
-	propertyTypes: CategoryOptionProps[];
-	academicTypes: CategoryOptionProps[];
+
+	getStatesWithCounts: (selectedCountries?: string[]) => {
+		name: string;
+		count: number;
+	}[];
+
+	getCitiesWithCounts: (
+		selectedCountries?: string[],
+		selectedStates?: string[]
+	) => {
+		name: string;
+		count: number;
+	}[];
+
+	courseNames: { name: string; count: number }[];
+	courseTypes: { name: string; count: number }[];
+	courseFormats: { name: string; count: number }[];
+
+	categories: { name: string; value: string; count: number }[];
+	propertyTypes: { name: string; value: string; count: number }[];
+
+	ratingCounts: { rating: number; count: number }[];
+
+	academicTypes: { name: string; value: string; count: number }[];
 }
 
 export interface FilterSearchTermsProps {
@@ -318,7 +360,6 @@ export interface FilterSearchTermsProps {
 	state: string;
 	city: string;
 	course_name: string;
-	course_level: string;
 	course_type: string;
 	course_format: string;
 	category: string;
@@ -327,7 +368,6 @@ export interface FilterSearchTermsProps {
 }
 export interface FilterCourseSearchTermsProps {
 	course_type: string;
-	course_level: string;
 	duration: string;
 	program_type: string;
 	specialization: string;
@@ -338,7 +378,6 @@ export interface ExpandedFiltersProps {
 	state: boolean;
 	city: boolean;
 	course_name: boolean;
-	course_level: boolean;
 	course_type: boolean;
 	course_format: boolean;
 	rating: boolean;
@@ -347,7 +386,6 @@ export interface ExpandedFiltersProps {
 	academic_type: boolean;
 }
 export interface ExpandedCourseFiltersProps {
-	course_level: boolean;
 	course_type: boolean;
 	duration: boolean;
 	program_type: boolean;
@@ -374,7 +412,6 @@ export interface PropertyCourse {
 	course_id: string;
 	property_id: string;
 	[key: string]: unknown;
-	course_level: string;
 	course_type: string;
 	course_format: string;
 }
@@ -501,23 +538,22 @@ export interface RatingCount {
 	count: number;
 }
 
-export interface DynamicFilterOptionsProps {
-	countries: FilterOptionProps[];
-	getStatesForCountries: (selectedCountries?: string[]) => string[];
-	getCitiesForLocation: (
-		selectedCountries?: string[],
-		selectedStates?: string[]
-	) => string[];
-	getStatesWithCounts: (selectedCountries?: string[]) => FilterOptionProps[];
-	getCitiesWithCounts: (
-		selectedCountries?: string[],
-		selectedStates?: string[]
-	) => FilterOptionProps[];
-	courseNames: FilterOptionProps[];
-	courseLevels: FilterOptionProps[];
-	courseTypes: FilterOptionProps[];
-	courseFormats: FilterOptionProps[];
-	categories: CategoryOptionProps[];
-	propertyTypes: CategoryOptionProps[];
-	ratingCounts: RatingCount[];
-}
+// export interface DynamicFilterOptionsProps {
+// 	countries: FilterOptionProps[];
+// 	getStatesForCountries: (selectedCountries?: string[]) => string[];
+// 	getCitiesForLocation: (
+// 		selectedCountries?: string[],
+// 		selectedStates?: string[]
+// 	) => string[];
+// 	getStatesWithCounts: (selectedCountries?: string[]) => FilterOptionProps[];
+// 	getCitiesWithCounts: (
+// 		selectedCountries?: string[],
+// 		selectedStates?: string[]
+// 	) => FilterOptionProps[];
+// 	courseNames: FilterOptionProps[];
+// 	courseTypes: FilterOptionProps[];
+// 	courseFormats: FilterOptionProps[];
+// 	categories: CategoryOptionProps[];
+// 	propertyTypes: CategoryOptionProps[];
+// 	ratingCounts: RatingCount[];
+// }

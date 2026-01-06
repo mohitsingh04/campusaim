@@ -53,7 +53,6 @@ export default function EditCourseForm({
 			course_eligibility:
 				isEditing?.course_eligibility || masterCourse?.course_eligibility || "",
 			program_type: isEditing?.program_type || masterCourse?.program_type || "",
-			course_level: isEditing?.course_level || masterCourse?.course_level || "",
 			course_format:
 				isEditing?.course_format || masterCourse?.course_format || "",
 			course_type: isEditing?.course_type_id || masterCourse?.course_type || "",

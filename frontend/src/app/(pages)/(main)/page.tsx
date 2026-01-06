@@ -148,8 +148,7 @@ export default function Home() {
 					<FeaturedFaq />
 				</>
 			) : (
-				// <HomeLoading />
-				<p>Loading...</p>
+				<HomeLoading />
 			)}
 		</>
 	);

@@ -49,7 +49,14 @@ export default function RelatedCourses({
 							</Link>
 							<div className="flex items-center justify-between text-sm text-gray-600 mb-4">
 								<div className="flex items-center space-x-1">
-									<span className="ml-1">{getCategoryByObjectId(course?.specialization)}</span>
+									<span className="ml-1">
+										{Array.isArray(course?.specialization) &&
+											course.specialization.map((id) => (
+												<span key={id} className="ml-1">
+													{getCategoryByObjectId(id)}
+												</span>
+											))}
+									</span>
 								</div>
 							</div>
 							<div className="flex items-center justify-between text-sm text-gray-700 mt-auto pt-4 border-t border-gray-100">
@@ -59,7 +66,14 @@ export default function RelatedCourses({
 								</div>
 								<div className="flex items-center space-x-1">
 									<LuBookOpen className="w-4 h-4" />
-									<span>{getCategoryByObjectId(course?.program_type)}</span>
+									<span>
+										{Array.isArray(course?.program_type) &&
+											course.program_type.map((id) => (
+												<span key={id} className="ml-1">
+													{getCategoryByObjectId(id)}
+												</span>
+											))}
+									</span>
 								</div>
 							</div>
 						</div>

@@ -15,29 +15,21 @@ import {
 } from "@/types/types";
 import { FaBars, FaChevronLeft, FaChevronRight, FaTimes } from "react-icons/fa";
 import Link from "next/link";
-import { generateSlug, transformWorkingHours } from "@/contexts/Callbacks";
+import { generateSlug } from "@/contexts/Callbacks";
 import Overview from "./_property_components/tabs/OverviewTab";
 import API from "@/contexts/API";
 import AmenitiesTab from "./_property_components/tabs/AmenitiesTab";
-import WorkingHoursTab from "./_property_components/tabs/WorkingHoursTab";
 import GalleryTab from "./_property_components/tabs/GalleryTab";
 import { AxiosError, AxiosResponse } from "axios";
-import CertificationTab from "./_property_components/tabs/CertificationTab";
 import FaqsTab from "./_property_components/tabs/FaqsTab";
 import TeachersTab from "./_property_components/tabs/TeachersTab";
 import ReviewsTab from "./_property_components/tabs/ReviewTab";
 import AccommodationTab from "./_property_components/tabs/AccomodationTab";
 import CoursesTab from "./_property_components/tabs/CourseTab";
-import CouponsTab from "./_property_components/tabs/CouponsTab";
-import HiringTab from "./_property_components/tabs/HiringTab";
 import {
-	LuAward,
-	LuBadgePercent,
 	LuBed,
 	LuBookOpen,
-	LuBriefcase,
 	LuCircleHelp,
-	LuClock,
 	LuImage,
 	LuInfo,
 	LuSettings,

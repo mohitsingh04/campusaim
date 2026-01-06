@@ -1,7 +1,6 @@
 import { PropertyProps } from "@/types/types";
 import React from "react";
 import { FaMapMarkerAlt, FaBuilding, FaGlobe } from "react-icons/fa";
-import Link from "next/link";
 
 const Overview = ({
   property,

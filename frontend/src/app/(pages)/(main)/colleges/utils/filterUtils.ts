@@ -51,7 +51,6 @@ export const createDynamicFilterOptions = (
 		state: [],
 		city: [],
 		course_name: [],
-		course_level: [],
 		course_type: [],
 		course_format: [],
 		rating: [],
@@ -255,14 +254,6 @@ export const createDynamicFilterOptions = (
 										generateSlug(name)
 								)
 							);
-						case "course_level":
-							return filterValues.some((level) =>
-								institute.courses.some(
-									(course) =>
-										generateSlug(course.course_level || "") ===
-										generateSlug(level)
-								)
-							);
 						case "course_type":
 							return filterValues.some((type) =>
 								institute.courses.some(
@@ -330,17 +321,6 @@ export const createDynamicFilterOptions = (
 				inst.courses
 					.map((course) => course.course_name)
 					.filter((name): name is string => Boolean(name && name.trim()))
-			)
-		),
-	];
-
-	const filteredForCourseLevels = getFilteredInstitutesForCount("course_level");
-	const courseLevels = [
-		...new Set(
-			filteredForCourseLevels.flatMap((inst) =>
-				inst.courses
-					.map((course) => course.course_level)
-					.filter((level): level is string => Boolean(level && level.trim()))
 			)
 		),
 	];
@@ -433,15 +413,6 @@ export const createDynamicFilterOptions = (
 				)
 			).length,
 		})),
-		courseLevels: courseLevels.map((level) => ({
-			name: level,
-			count: filteredForCourseLevels.filter((inst) =>
-				inst.courses.some(
-					(course) =>
-						generateSlug(course.course_level || "") === generateSlug(level)
-				)
-			).length,
-		})),
 		courseTypes: courseTypes.map((type) => ({
 			name: type,
 			count: filteredForCourseTypes.filter((inst) =>
@@ -529,15 +500,6 @@ export const filterInstitutes = (
 				)
 			);
 
-		const matchesCourseLevel =
-			filters.course_level.length === 0 ||
-			filters.course_level.some((level) =>
-				institute.courses.some(
-					(course) =>
-						generateSlug(course.course_level || "") === generateSlug(level)
-				)
-			);
-
 		const matchesCourseType =
 			filters.course_type.length === 0 ||
 			filters.course_type.some((type) =>
@@ -598,7 +560,6 @@ export const filterInstitutes = (
 			matchesState &&
 			matchesCity &&
 			matchesCourseName &&
-			matchesCourseLevel &&
 			matchesCourseType &&
 			matchesCourseFormat &&
 			matchesRating &&

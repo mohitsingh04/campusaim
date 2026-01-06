@@ -71,9 +71,6 @@ export function CourseList() {
 							course_type:
 								categories?.find((cat) => cat?._id === course?.course_type)
 									?.category_name || "N/A",
-							course_level:
-								categories?.find((cat) => cat?._id === course?.course_level)
-									?.category_name || "N/A",
 						};
 					});
 				}
@@ -334,7 +331,6 @@ export function CourseList() {
 					"course_short_name",
 					"course_type",
 					"duration",
-					"course_level",
 				]}
 				searchFields={["course_name"]}
 			/>

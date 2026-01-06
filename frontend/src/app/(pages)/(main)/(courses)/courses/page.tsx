@@ -12,7 +12,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import {
 	CategoryProps,
 	CourseProps,
-	courseFilterProps,
+	CourseFilters,
 	ExpandedCourseFiltersProps,
 	FilterCourseSearchTermsProps,
 } from "@/types/types";
@@ -51,9 +51,25 @@ export default function AllCourse() {
 	}, [getCategories]);
 
 	const getCategoryById = useCallback(
-		(id: string) => {
-			const cat = category?.find((item) => String(item._id) === String(id));
-			return cat?.category_name;
+		(id: string | string[] | undefined) => {
+			if (!id || !category?.length) return "";
+
+			// ✅ Handle multiple IDs
+			if (Array.isArray(id)) {
+				return id
+					.map((singleId) => {
+						const cat = category.find(
+							(item) => String(item._id) === String(singleId)
+						);
+						return cat?.category_name;
+					})
+					.filter(Boolean)
+					.join(", ");
+			}
+
+			// ✅ Handle single ID
+			const cat = category.find((item) => String(item._id) === String(id));
+			return cat?.category_name ?? "";
 		},
 		[category]
 	);
@@ -83,7 +99,6 @@ export default function AllCourse() {
 				const mergedProperties = coursesData.map((course: CourseProps) => {
 					return {
 						...course,
-						course_level: getCategoryById(course.course_level),
 						course_type: getCategoryById(course.course_type),
 						program_type: getCategoryById(course.program_type),
 						specialization: getCategoryById(course.specialization),
@@ -104,11 +119,10 @@ export default function AllCourse() {
 		getAllCourses();
 	}, [getAllCourses]);
 
-	const initializeFiltersFromURL = useCallback((): courseFilterProps => {
-		const urlFilters: courseFilterProps = {
+	const initializeFiltersFromURL = useCallback((): CourseFilters => {
+		const urlFilters: CourseFilters = {
 			program_type: [],
 			specialization: [],
-			course_level: [],
 			course_type: [],
 			duration: [],
 		};
@@ -117,7 +131,7 @@ export default function AllCourse() {
 		Object.keys(urlFilters).forEach((key) => {
 			const param = searchParams.get(key);
 			if (param) {
-				urlFilters[key as keyof courseFilterProps] = param
+				urlFilters[key as keyof CourseFilters] = param
 					.split(",")
 					.filter(Boolean);
 			}
@@ -128,20 +142,18 @@ export default function AllCourse() {
 
 	const [expandedFilters, setExpandedFilters] =
 		useState<ExpandedCourseFiltersProps>({
-			course_level: true,
 			course_type: true,
 			program_type: true,
 			specialization: true,
 			duration: true,
 		});
 
-	const [filters, setFilters] = useState<courseFilterProps>(
+	const [filters, setFilters] = useState<CourseFilters>(
 		initializeFiltersFromURL
 	);
 
 	const [filterSearchTerms, setFilterSearchTerms] =
 		useState<FilterCourseSearchTermsProps>({
-			course_level: "",
 			course_type: "",
 			program_type: "",
 			specialization: "",
@@ -149,7 +161,7 @@ export default function AllCourse() {
 		});
 
 	const updateURL = useCallback(
-		(newFilters: courseFilterProps, page: number = 1) => {
+		(newFilters: CourseFilters, page: number = 1) => {
 			const params = new URLSearchParams();
 
 			// Add search term if exists
@@ -205,8 +217,7 @@ export default function AllCourse() {
 	);
 
 	const clearFilters = () => {
-		const emptyFilters: courseFilterProps = {
-			course_level: [],
+		const emptyFilters: CourseFilters = {
 			course_type: [],
 			program_type: [],
 			specialization: [],
@@ -215,7 +226,6 @@ export default function AllCourse() {
 
 		setFilters(emptyFilters);
 		setFilterSearchTerms({
-			course_level: "",
 			course_type: "",
 			program_type: "",
 			specialization: "",
@@ -233,7 +243,7 @@ export default function AllCourse() {
 	};
 
 	const handleCheckboxFilter = (
-		filterType: keyof courseFilterProps,
+		filterType: keyof CourseFilters,
 		value: string
 	) => {
 		setFilters((prev) => {
@@ -259,15 +269,15 @@ export default function AllCourse() {
 		setFilterSearchTerms((prev) => ({ ...prev, [filterType]: value }));
 	};
 
-	const removeFilterTag = (
-		filterType: keyof courseFilterProps,
-		value: string
-	) => {
+	const removeFilterTag = (filterType: keyof CourseFilters, value: string) => {
 		setFilters((prev) => {
-			const newFiltersForRemove = {
+			const currentValues = prev[filterType] ?? [];
+
+			const newFiltersForRemove: CourseFilters = {
 				...prev,
-				[filterType]: prev[filterType].filter((item) => item !== value),
+				[filterType]: currentValues.filter((item) => item !== value),
 			};
+
 			updateURL(newFiltersForRemove, currentPage);
 			return newFiltersForRemove;
 		});

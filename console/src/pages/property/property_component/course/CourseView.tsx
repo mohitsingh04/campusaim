@@ -8,7 +8,6 @@ interface CourseViewProps {
 		course_short_name: string;
 		duration: string;
 		description: string;
-		course_level: string;
 		course_slug: string;
 		image: string[];
 		status: string;

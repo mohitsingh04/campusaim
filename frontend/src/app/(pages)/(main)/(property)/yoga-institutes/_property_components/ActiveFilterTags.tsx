@@ -6,7 +6,6 @@ interface Filters {
   state: string[];
   city: string[];
   course_name: string[];
-  course_level: string[];
   course_type: string[];
   course_format: string[];
   rating: string[];

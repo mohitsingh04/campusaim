@@ -1,7 +1,6 @@
 import React from "react";
 import { LuAward, LuGraduationCap } from "react-icons/lu";
 import { CourseProps } from "@/types/types";
-import { generateSlug } from "@/contexts/Callbacks";
 import Link from "next/link";
 import Image from "next/image";
 import { BsClock } from "react-icons/bs";

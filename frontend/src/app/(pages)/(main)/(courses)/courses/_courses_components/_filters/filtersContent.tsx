@@ -3,7 +3,7 @@ import { LuFilter } from "react-icons/lu";
 import CheckboxFilter from "./checkBoxFilter";
 import FilterSection from "./filterSection";
 import {
-	courseFilterProps,
+	CourseFilters,
 	DynamicFilterCourseOptionsProps,
 	ExpandedCourseFiltersProps,
 	FilterCourseSearchTermsProps,
@@ -11,12 +11,12 @@ import {
 
 interface FiltersContentProps {
 	dynamicFilterOptions: DynamicFilterCourseOptionsProps;
-	filters: courseFilterProps;
+	filters: CourseFilters;
 	filterSearchTerms: FilterCourseSearchTermsProps;
 	expandedFilters: ExpandedCourseFiltersProps;
 	onToggleFilter: (filterType: keyof ExpandedCourseFiltersProps) => void;
 	onCheckboxFilter: (
-		filterType: keyof courseFilterProps,
+		filterType: keyof CourseFilters,
 		value: string
 	) => void;
 	onFilterSearchChange: (
@@ -53,7 +53,7 @@ const FiltersContent: React.FC<FiltersContentProps> = ({
 					<CheckboxFilter
 						items={dynamicFilterOptions.courseTypes}
 						filterType="course_type"
-						selectedItems={filters.course_type}
+						selectedItems={filters.course_type ?? []}
 						searchTerm={filterSearchTerms.course_type}
 						onSearchChange={(value) =>
 							onFilterSearchChange("course_type", value)
@@ -75,7 +75,7 @@ const FiltersContent: React.FC<FiltersContentProps> = ({
 					<CheckboxFilter
 						items={dynamicFilterOptions.specializationType}
 						filterType="specialization"
-						selectedItems={filters.specialization}
+						selectedItems={filters.specialization ?? []}
 						searchTerm={filterSearchTerms.specialization}
 						onSearchChange={(value) =>
 							onFilterSearchChange("specialization", value)
@@ -97,7 +97,7 @@ const FiltersContent: React.FC<FiltersContentProps> = ({
 					<CheckboxFilter
 						items={dynamicFilterOptions.programType}
 						filterType="program_type"
-						selectedItems={filters.program_type}
+						selectedItems={filters.program_type ?? []}
 						searchTerm={filterSearchTerms.program_type}
 						onSearchChange={(value) =>
 							onFilterSearchChange("program_type", value)
@@ -119,7 +119,7 @@ const FiltersContent: React.FC<FiltersContentProps> = ({
 					<CheckboxFilter
 						items={dynamicFilterOptions.durationsLists}
 						filterType="duration"
-						selectedItems={filters.duration}
+						selectedItems={filters.duration ?? []}
 						searchTerm={filterSearchTerms.duration}
 						onSearchChange={(value) => onFilterSearchChange("duration", value)}
 						onFilterChange={

@@ -33,7 +33,6 @@ interface DynamicFilterOptions {
 		selectedStates?: string[]
 	) => FilterItem[];
 	courseNames: FilterItem[];
-	courseLevels: FilterItem[];
 	courseTypes: FilterItem[];
 	courseFormats: FilterItem[];
 	categories: CategoryItem[];
@@ -47,7 +46,6 @@ interface Filters {
 	state: string[];
 	city: string[];
 	course_name: string[];
-	course_level: string[];
 	course_type: string[];
 	course_format: string[];
 	rating: string[];
@@ -61,7 +59,6 @@ interface ExpandedFilters {
 	state: boolean;
 	city: boolean;
 	course_name: boolean;
-	course_level: boolean;
 	course_type: boolean;
 	course_format: boolean;
 	rating: boolean;
@@ -263,27 +260,6 @@ const FiltersContent: React.FC<FiltersContentProps> = ({
 						searchTerm={filterSearchTerms.course_name}
 						onSearchChange={(value) =>
 							onFilterSearchChange("course_name", value)
-						}
-						onFilterChange={
-							onCheckboxFilter as (filterType: string, value: string) => void
-						}
-					/>
-				</FilterSection>
-			)}
-
-			{dynamicFilterOptions.courseLevels.length > 0 && (
-				<FilterSection
-					title="Course Level"
-					isExpanded={expandedFilters.course_level}
-					onToggle={() => onToggleFilter("course_level")}
-				>
-					<CheckboxFilter
-						items={dynamicFilterOptions.courseLevels}
-						filterType="course_level"
-						selectedItems={filters.course_level}
-						searchTerm={filterSearchTerms.course_level}
-						onSearchChange={(value) =>
-							onFilterSearchChange("course_level", value)
 						}
 						onFilterChange={
 							onCheckboxFilter as (filterType: string, value: string) => void

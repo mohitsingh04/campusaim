@@ -8,8 +8,6 @@ import {
   LuBookOpen,
   LuMapPin,
   LuStar,
-  LuTrendingDown,
-  LuTrendingUp,
 } from "react-icons/lu";
 
 const PropertyDetailCard = ({

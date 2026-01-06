@@ -1,9 +1,13 @@
 import { generateSlug } from "@/contexts/Callbacks";
 import {
 	DynamicFilterCourseOptionsProps,
-	courseFilterProps,
 	CourseProps,
+	CourseFilters,
 } from "@/types/types";
+
+/* ----------------------------------------
+   Helpers
+---------------------------------------- */
 
 export const matchesMultiWordSearch = (
 	itemName: string,
@@ -13,284 +17,176 @@ export const matchesMultiWordSearch = (
 
 	const itemSlug = generateSlug(itemName);
 	const searchSlug = generateSlug(searchTerm);
-
 	const searchWords = searchSlug.split("-");
 
 	return searchWords.every((word) => itemSlug.includes(word));
 };
 
+/* ----------------------------------------
+   Dynamic Filter Options
+---------------------------------------- */
+
+const normalize = (value?: string | string[]) =>
+	Array.isArray(value) ? value : value ? [value] : [];
+
 export const createDynamicFilterOptions = (
 	allCourses: CourseProps[],
-	searchTerm: string = "",
-	currentFilters: courseFilterProps = {
-		course_level: [],
-		course_type: [],
-		program_type: [],
-		specialization: [],
-		duration: [],
-	}
+	searchTerm = "",
+	currentFilters: CourseFilters = {}
 ): DynamicFilterCourseOptionsProps => {
 	const getFilteredCoursesForCount = (
-		excludeFilterType: keyof courseFilterProps
+		excludeFilterType: keyof CourseFilters
 	) => {
 		return allCourses.filter((course) => {
-			// Apply search term
 			const matchesSearch = matchesMultiWordSearch(
 				course.course_name,
 				searchTerm
 			);
 
-			// Apply all filters except the one we're calculating counts for
 			const filtersToApply = Object.entries(currentFilters).filter(
 				([key]) => key !== excludeFilterType
 			);
 
-			return (
-				filtersToApply.every(([filterType, filterValues]) => {
+			const matchesFilters = filtersToApply.every(
+				([filterType, filterValues]) => {
 					if (!Array.isArray(filterValues) || filterValues.length === 0)
 						return true;
 
-					switch (filterType) {
-						case "course_level":
-							return (
-								course.course_level &&
-								filterValues.some(
-									(cat) =>
-										generateSlug(course.course_level || "") ===
-										generateSlug(cat)
-								)
-							);
-						case "course_type":
-							return (
-								course.course_type &&
-								filterValues.some(
-									(cat) =>
-										generateSlug(course.course_type || "") === generateSlug(cat)
-								)
-							);
-						case "program_type":
-							return (
-								course.program_type &&
-								filterValues.some(
-									(cat) =>
-										generateSlug(course.program_type || "") ===
-										generateSlug(cat)
-								)
-							);
-						case "specialization":
-							return (
-								course.specialization &&
-								filterValues.some(
-									(cat) =>
-										generateSlug(course.specialization || "") ===
-										generateSlug(cat)
-								)
-							);
-						case "duration":
-							return (
-								course.duration &&
-								filterValues.some(
-									(cat) =>
-										generateSlug(course.duration || "") === generateSlug(cat)
-								)
-							);
+					const courseValue = course[filterType as keyof CourseProps];
 
-						default:
-							return true;
-					}
-				}) && matchesSearch
+					if (!courseValue) return false;
+
+					return filterValues.some(
+						(val) => generateSlug(String(courseValue)) === generateSlug(val)
+					);
+				}
 			);
+
+			return matchesSearch && matchesFilters;
 		});
 	};
 
-	// Get unique values for non-location filters
+	const filteredForTypes = getFilteredCoursesForCount("course_type");
+	const filteredForProgram = getFilteredCoursesForCount("program_type");
+	const filteredForSpecialization =
+		getFilteredCoursesForCount("specialization");
+	const filteredForDuration = getFilteredCoursesForCount("duration");
 
-	const filteredForCategories = getFilteredCoursesForCount("course_level");
-	const allLevels = [
-		...new Set(
-			filteredForCategories
-				.map((inst) => inst.course_level)
-				.filter((course_level): course_level is string =>
-					Boolean(course_level && course_level.trim())
-				)
-		),
-	];
-	const filteredForTypes = getFilteredCoursesForCount("course_level");
-	const allTypes = [
-		...new Set(
-			filteredForTypes
-				.map((inst) => inst.course_type)
-				.filter((course_type): course_type is string =>
-					Boolean(course_type && course_type.trim())
-				)
-		),
-	];
-	const filteredForCertiType = getFilteredCoursesForCount("course_level");
-	const allCertiTypes = [
-		...new Set(
-			filteredForCertiType
-				.map((inst) => inst.program_type)
-				.filter((program_type): program_type is string =>
-					Boolean(program_type && program_type.trim())
-				)
-		),
-	];
-	const filteredSpecializationType = getFilteredCoursesForCount("course_level");
-	const allSpecializationTypes = [
-		...new Set(
-			filteredSpecializationType
-				.map((inst) => inst.specialization)
-				.filter((specialization): specialization is string =>
-					Boolean(specialization && specialization.trim())
-				)
-		),
-	];
-	const filteredForDuration = getFilteredCoursesForCount("course_level");
-	const allDuration = [
-		...new Set(
-			filteredForDuration
-				.map((inst) => inst.duration)
-				.filter((duration): duration is string =>
-					Boolean(duration && duration.trim())
-				)
-		),
-	];
+	const unique = (arr: (string | undefined)[]) =>
+		[...new Set(arr.filter(Boolean))] as string[];
 
 	return {
-		courseLevels: allLevels.map((course_level) => ({
-			name: course_level,
-			value: course_level,
-			count: filteredForCategories.filter(
-				(inst) =>
-					generateSlug(inst.course_level || "") === generateSlug(course_level)
+		courseTypes: unique(filteredForTypes.map((c) => c.course_type)).map(
+			(val) => ({
+				name: val,
+				value: val,
+				count: filteredForTypes.filter(
+					(c) => generateSlug(c.course_type || "") === generateSlug(val)
+				).length,
+			})
+		),
+
+		programType: unique(
+			filteredForProgram.flatMap((c) => normalize(c.program_type))
+		).map((val) => ({
+			name: val,
+			value: val,
+			count: filteredForProgram.filter((c) =>
+				normalize(c.program_type).some(
+					(p) => generateSlug(p) === generateSlug(val)
+				)
 			).length,
 		})),
-		courseTypes: allTypes.map((course_type) => ({
-			name: course_type,
-			value: course_type,
-			count: filteredForCategories.filter(
-				(inst) =>
-					generateSlug(inst.course_type || "") === generateSlug(course_type)
+
+		specializationType: unique(
+			filteredForSpecialization.flatMap((c) => normalize(c.specialization))
+		).map((val) => ({
+			name: val,
+			value: val,
+			count: filteredForSpecialization.filter((c) =>
+				normalize(c.specialization).some(
+					(p) => generateSlug(p) === generateSlug(val)
+				)
 			).length,
 		})),
-		programType: allCertiTypes.map((program_type) => ({
-			name: program_type,
-			value: program_type,
-			count: filteredForCategories.filter(
-				(inst) =>
-					generateSlug(inst.program_type || "") === generateSlug(program_type)
-			).length,
-		})),
-		specializationType: allSpecializationTypes.map((specialization) => ({
-			name: specialization,
-			value: specialization,
-			count: filteredForCategories.filter(
-				(inst) =>
-					generateSlug(inst.specialization || "") ===
-					generateSlug(specialization)
-			).length,
-		})),
-		durationsLists: allDuration.map((duration) => ({
-			name: duration,
-			value: duration,
-			count: filteredForDuration.filter(
-				(inst) => generateSlug(inst.duration || "") === generateSlug(duration)
-			).length,
-		})),
+
+		durationsLists: unique(filteredForDuration.map((c) => c.duration)).map(
+			(val) => ({
+				name: val,
+				value: val,
+				count: filteredForDuration.filter(
+					(c) => generateSlug(c.duration || "") === generateSlug(val)
+				).length,
+			})
+		),
 	};
 };
+
+/* ----------------------------------------
+   Filter Courses
+---------------------------------------- */
 
 export const filterdCourses = (
 	allCourses: CourseProps[],
 	searchTerm: string,
-	filters: courseFilterProps
+	filters: CourseFilters
 ): CourseProps[] => {
 	return allCourses.filter((course) => {
-		// Search term matching
 		const matchesSearch = matchesMultiWordSearch(
 			course.course_name,
 			searchTerm
 		);
 
-		const matchesLevels =
-			filters.course_level.length === 0 ||
-			(course.course_level &&
-				filters.course_level.some(
-					(cat) => generateSlug(course.course_level || "") === generateSlug(cat)
-				));
-		const matchesTypes =
-			filters.course_type.length === 0 ||
-			(course.course_type &&
-				filters.course_type.some(
-					(cat) => generateSlug(course.course_type || "") === generateSlug(cat)
-				));
-		const matchesProgramTypes =
-			filters.program_type.length === 0 ||
-			(course.program_type &&
-				filters.program_type.some(
-					(cat) => generateSlug(course.program_type || "") === generateSlug(cat)
-				));
-		const matchesSpecializationTypes =
-			filters.specialization.length === 0 ||
-			(course.specialization &&
-				filters.specialization.some(
-					(cat) =>
-						generateSlug(course.specialization || "") === generateSlug(cat)
-				));
-		const matchesDurations =
-			filters.duration.length === 0 ||
-			(course.duration &&
-				filters.duration.some(
-					(cat) => generateSlug(course.duration || "") === generateSlug(cat)
-				));
+		const matchArray = (
+			filterValues?: string[],
+			courseValue?: string | string[]
+		) => {
+			if (!filterValues?.length) return true;
+			if (!courseValue) return false;
+
+			const courseValues = Array.isArray(courseValue)
+				? courseValue
+				: [courseValue];
+
+			return filterValues.some((filterVal) =>
+				courseValues.some(
+					(val) => generateSlug(val) === generateSlug(filterVal)
+				)
+			);
+		};
 
 		return (
 			matchesSearch &&
-			matchesLevels &&
-			matchesTypes &&
-			matchesProgramTypes &&
-			matchesSpecializationTypes &&
-			matchesDurations
+			matchArray(filters.course_type, course.course_type) &&
+			matchArray(filters.program_type, course.program_type) &&
+			matchArray(filters.specialization, course.specialization) &&
+			matchArray(filters.duration, course.duration)
 		);
 	});
 };
+
+/* ----------------------------------------
+   Pagination Helper
+---------------------------------------- */
 
 export const getVisiblePageNumbers = (
 	currentPage: number,
 	totalPages: number
 ): (number | string)[] => {
-	const maxVisiblePages = 5;
+	const maxVisible = 5;
 	const pages: (number | string)[] = [];
 
-	if (totalPages <= maxVisiblePages) {
-		// Show all pages if total is less than or equal to max visible
-		for (let i = 1; i <= totalPages; i++) {
-			pages.push(i);
-		}
+	if (totalPages <= maxVisible) {
+		for (let i = 1; i <= totalPages; i++) pages.push(i);
+	} else if (currentPage <= 3) {
+		pages.push(1, 2, 3, 4, 5, "ellipsis", totalPages);
+	} else if (currentPage >= totalPages - 2) {
+		pages.push(1, "ellipsis");
+		for (let i = totalPages - 4; i <= totalPages; i++) pages.push(i);
 	} else {
-		if (currentPage <= 3) {
-			// Show first 5 pages
-			for (let i = 1; i <= 5; i++) {
-				pages.push(i);
-			}
-			pages.push("ellipsis");
-			pages.push(totalPages);
-		} else if (currentPage >= totalPages - 2) {
-			// Show last 5 pages
-			pages.push(1);
-			pages.push("ellipsis");
-			for (let i = totalPages - 4; i <= totalPages; i++) {
-				pages.push(i);
-			}
-		} else {
-			pages.push(1);
-			pages.push("ellipsis");
-			for (let i = currentPage - 2; i <= currentPage + 2; i++) {
-				pages.push(i);
-			}
-			pages.push("ellipsis");
-			pages.push(totalPages);
-		}
+		pages.push(1, "ellipsis");
+		for (let i = currentPage - 2; i <= currentPage + 2; i++) pages.push(i);
+		pages.push("ellipsis", totalPages);
 	}
 
 	return pages;

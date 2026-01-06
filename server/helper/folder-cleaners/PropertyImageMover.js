@@ -21,7 +21,7 @@ export const MainImageMover = async (req, res, propertyId, fieldName) => {
     const __dirname = path.dirname(__filename);
 
     const oldDir = path.join(__dirname, "../../images");
-    const newDir = path.join(__dirname, `../../../media/${propertyId}/main`);
+    const newDir = path.join(__dirname, `../../../property/media/${propertyId}/main`);
     await fs.mkdir(newDir, { recursive: true });
 
     const property = await Property.findOne({ uniqueId: propertyId });
@@ -92,7 +92,7 @@ export const GalleryImageMover = async (req, res, propertyId) => {
     const __dirname = path.dirname(__filename);
 
     const oldDir = path.join(__dirname, "../../images");
-    const newDir = path.join(__dirname, `../../../media/${propertyId}/gallery`);
+    const newDir = path.join(__dirname, `../../../property/media/${propertyId}/gallery`);
     await fs.mkdir(newDir, { recursive: true });
 
     const property = await Property.findOne({ uniqueId: propertyId });
@@ -153,7 +153,7 @@ export const AccomodationImageMover = async (req, res, propertyId) => {
     const oldDir = path.join(__dirname, "../../images");
     const newDir = path.join(
       __dirname,
-      `../../../media/${propertyId}/accomodation`
+      `../../../property/media/${propertyId}/accomodation`
     );
     await fs.mkdir(newDir, { recursive: true });
 
@@ -221,7 +221,7 @@ export const TeacherImageMover = async (req, res, propertyId) => {
     const oldDir = path.join(__dirname, "../../images");
     const newDir = path.join(
       __dirname,
-      `../../../media/${propertyId}/teachers`
+      `../../../property/media/${propertyId}/teachers`
     );
     await fs.mkdir(newDir, { recursive: true });
 
@@ -295,7 +295,7 @@ export const verificationDocsImageMover = async (req, res, id) => {
     const oldDir = path.join(__dirname, "../../images");
     const baseNewDir = path.join(
       __dirname,
-      `../../../media/${property_id}/verification`
+      `../../../property/media/${property_id}/verification`
     );
     await fs.mkdir(baseNewDir, { recursive: true });
 

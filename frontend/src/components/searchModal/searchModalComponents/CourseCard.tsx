@@ -2,7 +2,7 @@ import { generateSlug } from "@/contexts/Callbacks";
 import { CourseProps } from "@/types/types";
 import Link from "next/link";
 import React from "react";
-import { LuBookOpenText, LuGraduationCap, LuTrendingUp } from "react-icons/lu";
+import { LuBookOpenText, LuGraduationCap } from "react-icons/lu";
 
 export default function CourseCard({
   course,
@@ -33,10 +33,6 @@ export default function CourseCard({
               {course?.course_short_name && <>- {course?.course_short_name}</>}
             </Link>
 
-            <div className="flex items-center gap-1 text-gray-600 text-sm mt-1">
-              <LuTrendingUp className="w-4 h-4 text-purple-500" />
-              <span>{course?.course_level}</span>
-            </div>
           </div>
         </div>
         <div className="flex items-center gap-1">

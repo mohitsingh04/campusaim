@@ -1,12 +1,7 @@
 import { CourseProps } from "@/types/types";
 import Image from "next/image";
 import React from "react";
-import {
-	LuClock,
-	LuFileBadge2,
-	LuGraduationCap,
-	LuLayers,
-} from "react-icons/lu";
+import { LuClock, LuGraduationCap } from "react-icons/lu";
 
 const CourseDetailCard = ({
 	course,
@@ -38,12 +33,12 @@ const CourseDetailCard = ({
 				</h1>
 
 				<p className="text-gray-600 text-sm md:text-base mb-4">
-          {getCategoryById(course?.specialization)}
-        </p>
+					{getCategoryById(course?.specialization)}
+				</p>
 
 				<p className="text-gray-600 text-sm md:text-base mb-4">
-          {getCategoryById(course?.program_type)}
-        </p>
+					{getCategoryById(course?.program_type)}
+				</p>
 
 				{/* Info Fields */}
 				<div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-6 text-gray-700 text-sm">
@@ -56,13 +51,13 @@ const CourseDetailCard = ({
 						</div>
 					)}
 
-					{course?.certification_type && (
-						<div className="flex items-center whitespace-nowrap">
-							<LuFileBadge2 className="w-4 h-4 mr-2 text-purple-500 shrink-0" />
-							<span className="truncate" title={course?.certification_type}>
-								{course.certification_type}
-							</span>
-						</div>
+					{Array.isArray(course?.certification_type) && (
+						<span
+							className="truncate"
+							title={course.certification_type.join(", ")}
+						>
+							{course.certification_type.join(", ")}
+						</span>
 					)}
 
 					{course?.course_type && (
@@ -70,15 +65,6 @@ const CourseDetailCard = ({
 							<LuGraduationCap className="w-4 h-4 mr-2 text-purple-500 shrink-0" />
 							<span className="truncate" title={course?.course_type}>
 								{course.course_type}
-							</span>
-						</div>
-					)}
-
-					{course?.course_level && (
-						<div className="flex items-center whitespace-nowrap">
-							<LuLayers className="w-4 h-4 mr-2 text-purple-500 shrink-0" />
-							<span className="truncate" title={course?.course_level}>
-								{course.course_level}
 							</span>
 						</div>
 					)}
