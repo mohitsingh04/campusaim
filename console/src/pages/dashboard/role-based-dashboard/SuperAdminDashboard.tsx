@@ -5,10 +5,8 @@ import {
   GraduationCap,
   Briefcase,
   BookOpen,
-  Hotel,
   Building2,
   FileText,
-  CalendarDays,
   Inbox,
   Archive,
   Headset,
@@ -59,8 +57,6 @@ export default function SuperAdminDashboard() {
   const [course, setCourse] = useState<CourseProps[]>([]);
   const [property, setProperty] = useState<any[]>([]);
   const [blog, setBlog] = useState<any[]>([]);
-  const [event, setEvent] = useState<any[]>([]);
-  const [retreat, setRetreat] = useState<any[]>([]);
   const [enquiry, setEnquiry] = useState<any[]>([]);
   const [archiveEnquiry, setArchiveEnquiry] = useState<any[]>([]);
   const [support, setSupport] = useState<any[]>([]);
@@ -100,12 +96,6 @@ export default function SuperAdminDashboard() {
               break;
             case "/blog":
               setBlog(data);
-              break;
-            case "/events":
-              setEvent(data);
-              break;
-            case "/retreat":
-              setRetreat(data);
               break;
             case "/enquiry":
               setEnquiry(data);
@@ -210,14 +200,6 @@ export default function SuperAdminDashboard() {
       icon: FileText,
       link: "/dashboard/blog",
       color: colorsData[10 % colorsData.length],
-      role: ["Super Admin", "Editor", "Seo Manager"],
-    },
-    {
-      title: "All Events",
-      value: event?.length || 0,
-      icon: CalendarDays,
-      link: "/dashboard/events",
-      color: colorsData[11 % colorsData.length],
       role: ["Super Admin", "Editor", "Seo Manager"],
     },
     {

@@ -36,21 +36,21 @@ export default function AuthLayout({
 					<div className="absolute top-16 left-16 w-4 h-4 bg-blue-200 rounded-full opacity-60"></div>
 					<div className="absolute top-32 right-24 w-6 h-6 bg-blue-200 rounded-full opacity-40"></div>
 					<div className="absolute bottom-24 left-12 w-3 h-3 bg-blue-300 rounded-full opacity-50"></div>
-					<div className="relative mb-8 w-72 h-72 flex-shrink-0">
+					{/* <div className="relative mb-8 w-72 h-72 flex-shrink-0">
 						<img
 							src="/img/auth-hero.png"
 							alt="Yoga Illustration"
 							className="object-cover w-full h-full rounded-lg"
 						/>
-					</div>
+					</div> */}
 					<div className="text-center max-w-xl px-4 flex-shrink-0">
 						<h1 className="text-4xl font-bold text-slate-800 mb-4 leading-tight">
 							Welcome to Campusaim
 						</h1>
 						<p className="text-slate-600 text-lg mb-8 leading-relaxed">
-							Discover authentic yoga institutes, learn from trusted
-							instructors, and explore programs designed to bring balance and
-							mindfulness into your everyday life.
+							Discover verified colleges and universities, explore accredited
+							courses, and make informed academic decisions with trusted
+							admission insights—tailored to your goals.
 						</p>
 						<button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold transition-colors shadow-lg hover:shadow-xl">
 							Learn More
@@ -68,7 +68,7 @@ export default function AuthLayout({
 					<div>
 						<img
 							src="/img/logo/campusaim-logo.png"
-							alt="Yogprerna Logo"
+							alt="Campusaim Logo"
 							className="h-10 w-auto object-contain"
 						/>
 					</div>
@@ -86,7 +86,7 @@ export default function AuthLayout({
 
 					<div className="mt-6 text-center mb-6">
 						<p className="text-blue-300 text-xs mb-4">
-							New to Yogprerna?{" "}
+							New to Campusaim?{" "}
 							<button className="text-blue-400 hover:text-blue-300 font-medium underline">
 								Join Us Today
 							</button>

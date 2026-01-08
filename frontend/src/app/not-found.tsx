@@ -5,7 +5,7 @@ import { FaHome } from "react-icons/fa";
 
 const NotFound = () => {
   useEffect(() => {
-    document.title = "Page Not Found - Yogprerna";
+    document.title = "Page Not Found - Campusaim";
   }, []);
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-700 to-indigo-800 flex items-center justify-center relative overflow-hidden">

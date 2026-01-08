@@ -1,12 +1,12 @@
 import { Metadata } from "next";
 import { ReactNode, Suspense } from "react";
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://www.yogprerna.com";
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://www.campusaim.com";
 
 export const metadata: Metadata = {
   title: "Disclaimer",
   description:
-    "Yogprerna’s Disclaimer explains our content accuracy, yoga guidance limitations, and user responsibility for personal decisions.",
+    "Campusaim's Disclaimer explains our content accuracy, yoga guidance limitations, and user responsibility for personal decisions.",
   keywords: ["Disclaimer"],
   metadataBase: new URL(baseUrl),
   alternates: {

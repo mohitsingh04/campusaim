@@ -1,4 +1,3 @@
-import { generateSlug } from "@/contexts/Callbacks";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -24,8 +23,9 @@ export default function Footer() {
 							/>
 						</div>
 						<p className="text-gray-300 text-sm leading-relaxed">
-							At Yogprerna, we make group workouts exciting, healthy eating
-							delicious, and mental wellness effortless with yoga & meditation.
+							At Campusaim, we help students discover verified colleges and
+							universities, explore courses and eligibility, and make informed
+							academic decisions with reliable data.
 						</p>
 
 						{/* Social Icons */}
@@ -33,27 +33,27 @@ export default function Footer() {
 							{[
 								{
 									icon: <FaXTwitter />,
-									href: "https://x.com/PrernaYog40326",
+									href: "https://x.com/campusaim",
 									label: "Twitter",
 								},
 								{
 									icon: <FaLinkedinIn />,
-									href: "https://www.linkedin.com/company/yogprerna",
+									href: "https://www.linkedin.com/company/campusaim",
 									label: "LinkedIn",
 								},
 								{
 									icon: <FaFacebookF />,
-									href: "https://www.facebook.com/yogprernaofficial",
+									href: "https://www.facebook.com/campusaimofficial",
 									label: "Facebook",
 								},
 								{
 									icon: <FaYoutube />,
-									href: "https://www.youtube.com/@yogprerna108",
+									href: "https://www.youtube.com/@campusaim108",
 									label: "YouTube",
 								},
 								{
 									icon: <FaInstagram />,
-									href: "https://www.instagram.com/yog_prerna/",
+									href: "https://www.instagram.com/campusaim/",
 									label: "Instagram",
 								},
 							].map((item, index) => (
@@ -68,146 +68,6 @@ export default function Footer() {
 									{item.icon}
 								</a>
 							))}
-						</div>
-					</div>
-
-					{/* Footer Grid Links */}
-					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-10 text-center">
-						<div>
-							<h3 className="text-lg font-semibold mb-3">LOCATION</h3>
-							<ul className="space-y-2 text-sm text-gray-500">
-								{[
-									{
-										title: "Rishikesh",
-										href: "/yoga-institutes?country=india&state=uttarakhand&city=rishikesh",
-									},
-									{
-										title: "Dehradun",
-										href: "/yoga-institutes?country=india&state=uttarakhand&city=dehradun",
-									},
-									{
-										title: "Bengaluru",
-										href: "/yoga-institutes?country=india&state=karnataka&city=bengaluru",
-									},
-									{
-										title: "Mysuru",
-										href: "/yoga-institutes?country=india&state=karnataka&city=mysuru",
-									},
-								].map((loc, index) => (
-									<li key={index}>
-										<Link
-											href={loc.href}
-											className="hover:text-gray-400 transition-all duration-200"
-										>
-											{loc.title}
-										</Link>
-									</li>
-								))}
-							</ul>
-						</div>
-
-						<div>
-							<h3 className="text-lg font-semibold mb-3">YOGA BY CATEGORY</h3>
-							<ul className="space-y-2 text-sm text-gray-500">
-								{[
-									{ title: "University" },
-									{ title: "College" },
-									{ title: "Yoga Studio" },
-									{ title: "Online Yoga Studio" },
-								].map((item, index) => (
-									<li key={index}>
-										<Link
-											href={`/yoga-institutes?category=${generateSlug(
-												item.title || ""
-											)}`}
-											className="hover:text-gray-400 transition-all duration-200"
-										>
-											{item.title}
-										</Link>
-									</li>
-								))}
-							</ul>
-						</div>
-
-						<div>
-							<h3 className="text-lg font-semibold mb-3">YYT PROGRAMS</h3>
-							<ul className="space-y-2 text-sm text-gray-500">
-								{[
-									{
-										title: "100 Hour YTT",
-										href: "/course/100-hour-yoga-teacher-training",
-									},
-									{
-										title: "200 Hour YTT",
-										href: "/course/200-hour-yoga-teacher-training",
-									},
-									{
-										title: "300 Hour YTT",
-										href: "/course/300-hour-yoga-teacher-training",
-									},
-									{
-										title: "500 Hour YTT",
-										href: "/course/500-hour-yoga-teacher-training",
-									},
-									{
-										title: "700 Hour YTT",
-										href: "/course/700-hour-yoga-teacher-certification",
-									},
-								].map((item, index) => (
-									<li key={index}>
-										<a
-											href={item.href}
-											className="hover:text-gray-400 transition-all duration-200"
-										>
-											{item.title}
-										</a>
-									</li>
-								))}
-							</ul>
-						</div>
-
-						<div>
-							<h3 className="text-lg font-semibold mb-3">RETREAT PROGRAMS</h3>
-							<ul className="space-y-2 text-sm text-gray-500">
-								{[
-									"4 day yoga retreat",
-									"7 day yoga retreat",
-									"10 day yoga retreat",
-									"14 day yoga retreat",
-								].map((item) => (
-									<li key={item}>
-										<a
-											href="#"
-											className="hover:text-gray-400 transition-all duration-200"
-										>
-											{item}
-										</a>
-									</li>
-								))}
-							</ul>
-						</div>
-
-						<div>
-							<h3 className="text-lg font-semibold mb-3">Quick Links</h3>
-							<ul className="space-y-2 text-sm text-gray-500">
-								{[
-									{ title: "Home", href: "/" },
-									{ title: "College & Universities", href: "/colleges" },
-									{ title: "Course", href: "/courses" },
-									{ title: "Blog", href: "/blog" },
-									{ title: "Exams", href: "/exams" },
-									{ title: "Scholarship", href: "/scholarship" },
-								].map((item, index) => (
-									<li key={index}>
-										<Link
-											href={item.href}
-											className="hover:text-gray-400 transition-all duration-200"
-										>
-											{item.title}
-										</Link>
-									</li>
-								))}
-							</ul>
 						</div>
 					</div>
 				</div>

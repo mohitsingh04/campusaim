@@ -1,12 +1,12 @@
 import { Metadata } from "next";
 import { ReactNode, Suspense } from "react";
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://www.yogprerna.com";
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://www.campusaim.com";
 
 export const metadata: Metadata = {
   title: "Cancellation Policy",
   description:
-    "Review Yogprerna’s Cancellation Policy for details on class, course, or event cancellations, refunds, and rescheduling.",
+    "Review Campusaim's Cancellation Policy for details on class, course, or event cancellations, refunds, and rescheduling.",
   keywords: ["Cancellation Policy"],
   metadataBase: new URL(baseUrl),
   alternates: {

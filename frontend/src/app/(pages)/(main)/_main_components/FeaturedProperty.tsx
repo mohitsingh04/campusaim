@@ -26,10 +26,10 @@ const FeaturedProperty = ({
 		.sort((a, b) => a.rank - b.rank)
 		.slice(0, 10);
 
+	console.log(rankedProperties);
+
 	const getCategoryById = (id: string) => {
-		const cat = categorise?.find(
-			(item) => Number(item?.uniqueId) === Number(id)
-		);
+		const cat = categorise?.find((item) => item._id === id);
 		return cat?.category_name;
 	};
 
@@ -100,8 +100,8 @@ const FeaturedProperty = ({
 							>
 								<div className="relative">
 									<Link
-										href={`/${generateSlug(
-											getCategoryById(inst?.category) || ""
+										href={`${process.env.NEXT_PUBLIC_BASE_URL}/${generateSlug(
+											getCategoryById(inst?.academic_type) || ""
 										)}/${inst?.property_slug}`}
 										className="group"
 									>
@@ -139,8 +139,8 @@ const FeaturedProperty = ({
 									</div>
 
 									<Link
-										href={`/${generateSlug(
-											getCategoryById(inst?.category) || ""
+										href={`${process.env.NEXT_PUBLIC_BASE_URL}/${generateSlug(
+											getCategoryById(inst?.academic_type) || ""
 										)}/${inst?.property_slug}`}
 									>
 										<h3 className="text-lg font-semibold text-gray-800 group-hover:text-purple-700 mb-2">
@@ -148,8 +148,8 @@ const FeaturedProperty = ({
 										</h3>
 									</Link>
 									<Link
-										href={`/${generateSlug(
-											getCategoryById(inst?.category) || ""
+										href={`${process.env.NEXT_PUBLIC_BASE_URL}/${generateSlug(
+											getCategoryById(inst?.academic_type) || ""
 										)}/${inst?.property_slug}`}
 										className="text-purple-600 font-medium text-sm inline-flex items-center gap-1 hover:underline"
 									>

@@ -1,12 +1,12 @@
 import { Metadata } from "next";
 import { ReactNode, Suspense } from "react";
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://www.yogprerna.com";
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://www.campusaim.com";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
   description:
-    "At Yogprerna, your privacy matters. Learn how we collect, use, and protect your personal information securely.",
+    "At Campusaim, your privacy matters. Learn how we collect, use, and protect your personal information securely.",
   metadataBase: new URL(baseUrl),
   keywords: ["Privacy Policy"],
   alternates: {
