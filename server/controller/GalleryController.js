@@ -3,6 +3,7 @@ import { addPropertyScore } from "../analytic-controller/PropertyScoreController
 import { GalleryImageMover } from "../helper/folder-cleaners/PropertyImageMover.js";
 import Gallery from "../models/Gallery.js";
 import path from "path";
+import Property from "../models/Property.js";
 
 export const getGallery = async (req, res) => {
   try {
@@ -50,6 +51,14 @@ export const getGalleryByPropertyId = async (req, res) => {
 export const addGallery = async (req, res) => {
   try {
     const { propertyId, title } = req.body;
+
+    const property = await Property.findById(propertyId);
+    if (!property) {
+      return res.status(404).json({ error: "Property not found." });
+    }
+
+    const propertyUniqueId = property.uniqueId;
+
     const gallery = [];
 
     const maxImages = 8;
@@ -80,7 +89,7 @@ export const addGallery = async (req, res) => {
     });
 
     const savedGallery = await newGallery.save();
-    await GalleryImageMover(req, res, propertyId);
+    await GalleryImageMover(req, res, propertyUniqueId, propertyId);
 
     if (existingGalleries === 0) {
       await addPropertyScore({
@@ -106,6 +115,18 @@ export const addNewGalleryImages = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(objectId)) {
       return res.status(400).json({ message: "Invalid gallery ID." });
     }
+
+    const gallery = await Gallery.findById(objectId);
+    if (!gallery) {
+      return res.status(404).json({ error: "Gallery not found." });
+    }
+
+    const property = await Property.findById(gallery.propertyId);
+    if (!property) {
+      return res.status(404).json({ error: "Property not found." });
+    }
+
+    const propertyUniqueId = property.uniqueId;
 
     let newGalleryImages = [];
 
@@ -154,7 +175,7 @@ export const addNewGalleryImages = async (req, res) => {
 
     const updatedGallery = await existingGallery.save();
 
-    await GalleryImageMover(req, res, updatedGallery.property_id);
+    await GalleryImageMover(req, res, propertyUniqueId, gallery.propertyId);
 
     return res.status(200).json({
       message: "New gallery images added successfully",

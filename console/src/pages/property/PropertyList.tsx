@@ -33,7 +33,7 @@ import {
 	matchPermissions,
 } from "../../contexts/Callbacks";
 import { Link, useOutletContext } from "react-router-dom";
-import { CircularProgress } from "../../ui/progress/CircularProgress";
+// import { CircularProgress } from "../../ui/progress/CircularProgress";
 import { colorsData } from "../../common/ExtraData";
 import DashboardCard from "../../ui/cards/DashboardCard";
 import TableSkeletonWithCards from "../../ui/loadings/pages/TableSkeletonWithCards";
@@ -219,16 +219,16 @@ export function PropertyList() {
 				label: "Rank",
 				key: "rank",
 			},
-			{
-				value: (row: PropertyProps) => (
-					<Link to={`/dashboard/property/${row?._id}/analytics`}>
-						<CircularProgress value={row?.score} />
-					</Link>
-				),
-				sortingKey: "score",
-				label: "Property SCORE",
-				key: "property-score",
-			},
+			// {
+			// 	value: (row: PropertyProps) => (
+			// 		<Link to={`/dashboard/property/${row?._id}/analytics`}>
+			// 			<CircularProgress value={row?.score} />
+			// 		</Link>
+			// 	),
+			// 	sortingKey: "score",
+			// 	label: "Property SCORE",
+			// 	key: "property-score",
+			// },
 			{
 				value: (row: PropertyProps) => (
 					<div className="flex gap-3">{row?.category}</div>

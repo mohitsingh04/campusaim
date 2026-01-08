@@ -45,7 +45,7 @@ export default function AuthLayout({
 					</div>
 					<div className="text-center max-w-xl px-4 flex-shrink-0">
 						<h1 className="text-4xl font-bold text-slate-800 mb-4 leading-tight">
-							Welcome to Yogprerna
+							Welcome to Campusaim
 						</h1>
 						<p className="text-slate-600 text-lg mb-8 leading-relaxed">
 							Discover authentic yoga institutes, learn from trusted
@@ -67,7 +67,7 @@ export default function AuthLayout({
 				<div className="w-full md:w-[40%] h-screen bg-slate-900 flex flex-col items-center justify-center px-6 py-8 relative overflow-y-auto scrollbar-hide">
 					<div>
 						<img
-							src="/img/logo/logo-white-new.png"
+							src="/img/logo/campusaim-logo.png"
 							alt="Yogprerna Logo"
 							className="h-10 w-auto object-contain"
 						/>

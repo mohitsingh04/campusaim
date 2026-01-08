@@ -4,6 +4,7 @@ import { TeacherImageMover } from "../helper/folder-cleaners/PropertyImageMover.
 import Teachers from "../models/Teachers.js";
 import { getUploadedFilePaths } from "../utils/Callback.js";
 import { getDataFromToken } from "../utils/getDataFromToken.js";
+import Property from "../models/Property.js";
 
 const toObjectId = (id) => {
   if (!id) return null;
@@ -63,6 +64,13 @@ export const addTeacher = async (req, res) => {
       return res.status(400).send({ error: "Invalid property_id" });
     }
 
+    const property = await Property.findById(property_id);
+    if (!property) {
+      return res.status(404).json({ error: "Property not found." });
+    }
+
+    const propertyUniqueId = property.uniqueId;
+
     const profileImages = await getUploadedFilePaths(req, "profile");
 
     if (!teacher_name || !designation || !experience || !property_id) {
@@ -83,7 +91,7 @@ export const addTeacher = async (req, res) => {
 
     await newTeacher.save();
 
-    await TeacherImageMover(req, res, propIdObj.toString());
+    await TeacherImageMover(req, res, propIdObj.toString(), propertyUniqueId);
 
     if (teacherCount === 0) {
       await addPropertyScore({
@@ -105,12 +113,19 @@ export const updateTeacher = async (req, res) => {
       return res.status(400).send({ error: "Invalid teacher id" });
     }
 
-    const { teacher_name, designation, experience, status, department } = req.body;
-
     const teacher = await Teachers.findById(objectId);
     if (!teacher) {
       return res.status(404).send({ error: "Teacher not found!" });
     }
+
+    const property = await Property.findById(teacher.property_id);
+    if (!property) {
+      return res.status(404).send({ error: "Property not found." });
+    }
+
+    const propertyUniqueId = property.uniqueId;
+
+    const { teacher_name, designation, experience, status, department } = req.body;
 
     const profile =
       req?.files?.["profile"]?.[0]?.webpFilename ||
@@ -137,7 +152,7 @@ export const updateTeacher = async (req, res) => {
       { new: true, runValidators: true }
     );
 
-    await TeacherImageMover(req, res, String(teacher.property_id));
+    await TeacherImageMover(req, res, teacher.property_id.toString(), propertyUniqueId);
 
     return res.status(200).send({ message: "Teacher updated successfully.", data: updated });
   } catch (err) {

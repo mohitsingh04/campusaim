@@ -27,7 +27,7 @@ export function TopBar({ onToggleSidebar }: HeaderProps) {
             className="relative w-42 h-16 flex items-center justify-center overflow-hidden"
           >
             <Image
-              src="/img/logo/logo-black-new.png"
+              src="/img/logo/campusaim-logo.png"
               alt="AI Logo"
               fill
               className="object-contain"

@@ -4,6 +4,7 @@ import path from "path";
 import Accomodation from "../models/Accomodation.js";
 import { downloadImageAndReplaceSrc } from "../helper/folder-cleaners/EditorImagesController.js";
 import mongoose from "mongoose";
+import Property from "../models/Property.js";
 
 export const getAllAccomodation = async (req, res) => {
   try {
@@ -129,6 +130,15 @@ export const AddAccomodationImages = async (req, res) => {
       });
     }
 
+    const proprty = await Property.findById(existingAccomodation.property_id);
+    if (!proprty) {
+      return res.status(404).json({
+        message: "Property not found for the accomodation.",
+      });
+    }
+
+    const propertyUniqueId = proprty.uniqueId;
+
     // Check maximum limit (8 real images → 16 file entries)
     const currentCount = existingAccomodation.accomodation_images.length;
     const total = currentCount + newImages.length;
@@ -148,7 +158,7 @@ export const AddAccomodationImages = async (req, res) => {
     );
 
     // Move images to property folder
-    await AccomodationImageMover(req, res, updatedAccomodation?.property_id);
+    await AccomodationImageMover(req, res, existingAccomodation.property_id.toString(), propertyUniqueId);
 
     return res
       .status(200)
