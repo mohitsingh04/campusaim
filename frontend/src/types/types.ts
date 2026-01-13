@@ -57,7 +57,7 @@ export interface CourseProps {
 	key_outcomes: string[];
 	requirements: string[];
 	best_for: string[];
-	specialization?: string[];
+	specialization?: string;
 	program_type: string[];
 	certification_type: string | string[];
 	course_eligibility: string[];
@@ -88,6 +88,41 @@ export interface AdminProps {
 	name: string;
 	uniqueId: number;
 	profile: string[];
+}
+
+export interface ScholarshipProps {
+	property_id: string;
+	scholarship: string;
+}
+
+export interface AdmissionProcessProps {
+	property_id: string;
+	admission_process: string;
+}
+
+export interface AnnouncementProps {
+	property_id: string;
+	announcement: string;
+}
+
+export interface LoanProcessProps {
+	property_id: string;
+	loan_process: string;
+}
+
+export interface QnAProps {
+	property_id: string;
+	question: string;
+	answer: string;
+}
+
+export interface RankingProps {
+	property_id: string;
+	naac_rank: string;
+	nirf_rank: number;
+	nba_rank: number;
+	qs_rank: number;
+	times_higher_education_rank: number;
 }
 
 export interface PropertyProps {
@@ -134,6 +169,12 @@ export interface PropertyProps {
 	average_rating?: number;
 	total_reviews?: number;
 	academic_type: string;
+	scholarship: ScholarshipProps[];
+	admissionProcess: AdmissionProcessProps[];
+	announcements: AnnouncementProps[];
+	loanProcess: LoanProcessProps[];
+	qna: QnAProps[];
+	ranking: RankingProps;
 }
 export interface RankProps {
 	property_id?: string;

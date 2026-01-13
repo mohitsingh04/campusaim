@@ -2,7 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { LuLaptop, LuSchool, LuLandmark, LuStore } from "react-icons/lu";
+import { LuSchool, LuLandmark } from "react-icons/lu";
 import { cardVariants } from "@/contexts/varients";
 import { CategoryItem, ColorKey } from "@/types/types";
 import Link from "next/link";
@@ -55,22 +55,22 @@ const categories: CategoryItem[] = [
 		linkText: "Explore Universities",
 		color: "purple",
 	},
-	{
-		icon: LuLaptop,
-		title: "Schools",
-		link: "college",
-		description: "Browse certified defense and boarding schools with government affiliations.",
-		linkText: "List of Defense Schools",
-		color: "green",
-	},
-	{
-		icon: LuStore,
-		title: "Academies",
-		link: "academies",
-		description: "Join a academies for in-person group training.",
-		linkText: "List of Academies",
-		color: "orange",
-	},
+	// {
+	// 	icon: LuLaptop,
+	// 	title: "Schools",
+	// 	link: "college",
+	// 	description: "Browse certified defense and boarding schools with government affiliations.",
+	// 	linkText: "List of Defense Schools",
+	// 	color: "green",
+	// },
+	// {
+	// 	icon: LuStore,
+	// 	title: "Academies",
+	// 	link: "academies",
+	// 	description: "Join a academies for in-person group training.",
+	// 	linkText: "List of Academies",
+	// 	color: "orange",
+	// },
 ];
 
 export default function Category() {

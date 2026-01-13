@@ -10,7 +10,7 @@ const CoursesTab = ({
 	getCategoryById,
 }: {
 	courses: CourseProps[];
-	getCategoryById: (id: string) => string | undefined;
+	getCategoryById: (id: string) => string | null;
 }) => {
 	return (
 		<div className="space-y-6 p-4">
@@ -60,10 +60,8 @@ const CoursesTab = ({
 							<div className="flex items-center gap-2 text-gray-700 mb-2">
 								<LuTrendingUp className="w-4 h-4 text-purple-600" />
 								<span className="text-sm">
-									{(course.specialization ?? [])
-										.map((id) => getCategoryById(id))
-										.filter(Boolean)
-										.join(", ")}
+									{course.specialization &&
+										getCategoryById(course.specialization)}
 								</span>
 							</div>
 						</div>

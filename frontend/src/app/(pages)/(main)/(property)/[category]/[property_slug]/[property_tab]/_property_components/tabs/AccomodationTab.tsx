@@ -17,7 +17,6 @@ export default function AccommodationTab({
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [currentAccIndex, setCurrentAccIndex] = useState<number | null>(null);
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
-  console.log("accomodationtab", accommodations);
 
   return (
     <div className="space-y-6 p-6">

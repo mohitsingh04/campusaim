@@ -26,9 +26,6 @@ const enquiryModel = mongoose.Schema(
       type: String,
       required: true,
     },
-    people: {
-      type: Number,
-    },
     date: {
       type: Date,
     },

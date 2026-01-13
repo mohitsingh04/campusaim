@@ -37,6 +37,12 @@ import {
 	LuUsers,
 } from "react-icons/lu";
 import Skeleton from "react-loading-skeleton";
+import ScholarshipTab from "./_property_components/tabs/ScholarshipTab";
+import AdmissionProcessTab from "./_property_components/tabs/AdmissionProcessTab";
+import AnnouncementTab from "./_property_components/tabs/AnnouncementTab";
+import LoanProcessTab from "./_property_components/tabs/LoanProcessTab";
+import QnATab from "./_property_components/tabs/QnATab";
+import RankingTab from "./_property_components/tabs/RankingTab";
 
 const mergeCourseData = (
 	propertyCourses: PropertyCourse[] | undefined,
@@ -80,13 +86,9 @@ const Property = () => {
 	const router = useRouter();
 
 	const getCategoryById = useCallback(
-		(id: string | number) => {
-			const cat = categories.find(
-				(item) =>
-					Number(item.uniqueId) === Number(id) ||
-					String(item?._id) === String(id)
-			);
-			return cat?.category_name;
+		(id: string): string | null => {
+			const cat = categories.find((item) => item._id === id);
+			return cat?.category_name ?? null;
 		},
 		[categories]
 	);
@@ -101,7 +103,7 @@ const Property = () => {
 			return response.data;
 		} catch (error: unknown) {
 			const err = error as AxiosError<{ error: string }>;
-			console.log(err.response?.data.error);
+			console.error(err.response?.data.error);
 		}
 	}, [property_slug]);
 
@@ -110,7 +112,7 @@ const Property = () => {
 			const response = await API.get(`/category`);
 			setCategories(response.data);
 		} catch (error) {
-			console.log(error);
+			console.error(error);
 		}
 	}, []);
 
@@ -145,6 +147,12 @@ const Property = () => {
 				API.get(`/property/amenities/${uniqueId}`),
 				API.get(`/teacher/property/${uniqueId}`),
 				API.get(`/property/faq/${uniqueId}`),
+				API.get(`/property-scholarship/${uniqueId}`),
+				API.get(`/admission_process/${uniqueId}`),
+				API.get(`/announcement/${uniqueId}`),
+				API.get(`/loan_process/${uniqueId}`),
+				API.get(`/property/qna/${uniqueId}`),
+				API.get(`/ranking/${uniqueId}`),
 			];
 
 			const [
@@ -157,6 +165,12 @@ const Property = () => {
 				amenityRes,
 				teacherRes,
 				faqRes,
+				scholarshipRes,
+				admissionProcessRes,
+				announcementRes,
+				loanProcessRes,
+				qnaRes,
+				rankingRes,
 			] = await Promise.allSettled(requests);
 
 			const getData = <T,>(
@@ -191,8 +205,13 @@ const Property = () => {
 						.selectedAmenities?.[0] || {},
 				teachers: getData(teacherRes, []),
 				faqs: getData(faqRes, []),
+				scholarship: getData(scholarshipRes, []),
+				admissionProcess: getData(admissionProcessRes, []),
+				announcements: getData(announcementRes, []),
+				loanProcess: getData(loanProcessRes, []),
+				qna: getData(qnaRes, []),
+				ranking: getData(rankingRes, []),
 			};
-
 			setProperty(finalData);
 		} catch (error) {
 			console.error("Failed to fetch property data:", error);
@@ -267,6 +286,57 @@ const Property = () => {
 				icon: LuStar,
 				show: true,
 				tab: <ReviewsTab getProperty={getProperty} property={property} />,
+			},
+			{
+				id: "scholarships",
+				label: "Scholarships",
+				icon: LuStar,
+				show: true,
+				tab: <ScholarshipTab scholarship={property?.scholarship || []} />,
+			},
+			{
+				id: "admission-process",
+				label: "Admission Process",
+				icon: LuStar,
+				show: true,
+				tab: (
+					<AdmissionProcessTab
+						admissionProcess={property?.admissionProcess || []}
+					/>
+				),
+			},
+			{
+				id: "announcements",
+				label: "Announcements",
+				icon: LuStar,
+				show: true,
+				tab: <AnnouncementTab announcements={property?.announcements || []} />,
+			},
+			{
+				id: "loan-process",
+				label: "Loan Process",
+				icon: LuStar,
+				show: true,
+				tab: <LoanProcessTab loanProcess={property?.loanProcess || []} />,
+			},
+			{
+				id: "qna",
+				label: "Q&A",
+				icon: LuStar,
+				show: true,
+				tab: <QnATab qnas={property?.qna || []} />,
+			},
+			{
+				id: "ranking",
+				label: "Ranking",
+				icon: LuStar,
+				show: true,
+				tab: (
+					<RankingTab
+						ranking={property?.ranking || []}
+						getCategoryById={getCategoryById}
+					/>
+				),
 			},
 		],
 		[property, getCategoryById, getProperty]

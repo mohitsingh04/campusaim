@@ -104,8 +104,8 @@ export default function VerifyEmailSwal() {
 							</h4>
 							<p className="mb-6 text-gray-700 dark:text-gray-300">
 								A verification email has been sent to your registered email
-								address. Please verify your account. This link will expire in 24
-								hours.
+								address. Please verify your account. This link will expire in 1
+								hour.
 							</p>
 
 							{isRunning ? (

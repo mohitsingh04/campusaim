@@ -51,7 +51,7 @@ const ResetPasswordForm = () => {
 			<div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-purple-700 to-purple-500 relative overflow-hidden">
 				<div className="relative w-full h-full">
 					<Image
-						src="/img/section-images/yp-auth.webp"
+						src="/img/section-images/campusaim-featured.png"
 						alt="Forget password"
 						fill
 						className="object-cover"

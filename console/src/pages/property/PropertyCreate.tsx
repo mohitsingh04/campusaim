@@ -172,7 +172,7 @@ export function PropertyCreate() {
 				{/* Compact 4-col cards — replace your cards wrapper with this */}
 				<div className="bg-[var(--yp-primary)] rounded-xl shadow-sm p-4 mb-6">
 					<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-3">
-						Please select your property type from below options
+						Please select your academic type from below options
 					</label>
 
 					<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -392,7 +392,7 @@ export function PropertyCreate() {
 							</div>
 
 							{/* Academic Type select (kept for custom / alternate choice) */}
-							<div>
+							{/* <div>
 								<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
 									Academic Type
 								</label>
@@ -423,7 +423,7 @@ export function PropertyCreate() {
 									))}
 								</select>
 								{getFormikError(formik, "academic_type")}
-							</div>
+							</div> */}
 
 							{/* Property Type select */}
 							<div>

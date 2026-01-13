@@ -43,7 +43,7 @@ export default function Footer() {
 								},
 								{
 									icon: <FaFacebookF />,
-									href: "https://www.facebook.com/campusaimofficial",
+									href: "https://www.facebook.com/campusaim",
 									label: "Facebook",
 								},
 								{
