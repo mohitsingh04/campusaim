@@ -28,6 +28,11 @@ interface User {
 	createdAt?: string;
 	avatar?: string[];
 	isGoogleLogin?: string[];
+	location: {
+		city?: string;
+		state?: string;
+		country?: string;
+	};
 }
 
 interface Question {
@@ -56,20 +61,6 @@ interface Topic {
 interface Reputation {
 	score: number;
 }
-
-// ------- helpers ----------
-const formatDate = (iso?: string) => {
-	if (!iso) return "-";
-	try {
-		return new Intl.DateTimeFormat(undefined, {
-			year: "numeric",
-			month: "short",
-			day: "2-digit",
-		}).format(new Date(iso));
-	} catch {
-		return "-";
-	}
-};
 
 const getInitials = (name = "") =>
 	name
@@ -239,7 +230,6 @@ export default function Profile() {
 
 	// flags
 	const isOwner = !!(authUser && user?._id === authUser._id);
-	const joinedOn = useMemo(() => formatDate(user?.createdAt), [user]);
 	const followersCount = followers.length;
 	const followingCount = following.length;
 	const topicsCount = followedTopicIds.length;
@@ -343,91 +333,100 @@ export default function Profile() {
 				<section className="md:col-span-8">
 					{/* Header */}
 					<div className="flex flex-col sm:flex-row w-full items-start sm:items-center justify-between gap-6 sm:gap-4 p-4 sm:p-6 bg-white rounded-xl shadow-sm border border-gray-100">
+						{/* LEFT: AVATAR + NAME + STATS */}
+						<div className="flex flex-col sm:flex-row items-center gap-5 w-full">
+							{/* Avatar */}
+							<div className="h-20 w-20 flex-shrink-0 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center ring-2 ring-gray-100 shadow-sm">
+								{user?.avatar?.[0] ? (
+									<Image
+										src={
+											user.avatar[0].startsWith("http")
+												? user.avatar[0]
+												: `${process.env.NEXT_PUBLIC_MEDIA_URL}/${user.avatar[0]}`
+										}
+										alt={user?.name || "User"}
+										className="h-full w-full object-cover"
+										width={80}
+										height={80}
+									/>
+								) : (
+									<span className="text-2xl font-bold text-gray-700">
+										{getInitials(user?.name)}
+									</span>
+								)}
+							</div>
 
-	{/* LEFT: AVATAR + NAME + STATS */}
-	<div className="flex flex-col sm:flex-row items-center gap-5 w-full">
+							{/* NAME + META */}
+							<div className="flex-1 text-center sm:text-left">
+								<h1 className="text-2xl font-bold text-gray-900 leading-snug">
+									{user?.name || "User"}
+								</h1>
 
-		{/* Avatar */}
-		<div className="h-20 w-20 flex-shrink-0 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center ring-2 ring-gray-100 shadow-sm">
-			{user?.avatar?.[0] ? (
-				<Image
-					src={
-						user.avatar[0].startsWith("http")
-							? user.avatar[0]
-							: `${process.env.NEXT_PUBLIC_MEDIA_URL}/${user.avatar[0]}`
-					}
-					alt={user?.name || "User"}
-					className="h-full w-full object-cover"
-					width={80}
-					height={80}
-				/>
-			) : (
-				<span className="text-2xl font-bold text-gray-700">
-					{getInitials(user?.name)}
-				</span>
-			)}
-		</div>
+								<p className="mt-1 text-sm text-gray-600">
+									<span className="font-semibold text-gray-900">
+										{followersCount}
+									</span>{" "}
+									followers ·
+									<span className="font-semibold text-gray-900">
+										{" "}
+										{followingCount}
+									</span>{" "}
+									following ·
+									<span className="font-semibold text-gray-900">
+										{" "}
+										{Math.max(0, reputation?.score ?? 0)}
+									</span>{" "}
+									Score ·
+									<span
+										className={`font-semibold ${
+											getReputationLevel(reputation?.score) === "Expert"
+												? "text-green-600"
+												: getReputationLevel(reputation?.score) ===
+												  "Intermediate"
+												? "text-purple-600"
+												: "text-gray-700"
+										}`}
+									>
+										{" "}
+										{getReputationLevel(reputation?.score)}
+									</span>
+								</p>
 
-		{/* NAME + META */}
-		<div className="flex-1 text-center sm:text-left">
-			<h1 className="text-2xl font-bold text-gray-900 leading-snug">
-				{user?.name || "User"}
-			</h1>
+								{/* FOLLOW BUTTON */}
+								{!isOwner && (
+									<ProtectedButton
+										onClick={() => followMutation.mutate()}
+										disabled={followLoading}
+										className={`mt-3 px-5 py-1.5 rounded-full text-sm font-semibold shadow-sm transition-all ${
+											isFollowing
+												? "bg-gray-100 text-gray-800 hover:bg-gray-200"
+												: "bg-purple-600 text-white hover:bg-purple-700"
+										} ${followLoading && "opacity-50 cursor-not-allowed"}`}
+									>
+										{followLoading
+											? "Processing..."
+											: isFollowing
+											? "Unfollow"
+											: "Follow"}
+									</ProtectedButton>
+								)}
+							</div>
+						</div>
 
-			<p className="mt-1 text-sm text-gray-600">
-				<span className="font-semibold text-gray-900">{followersCount}</span> followers ·
-				<span className="font-semibold text-gray-900"> {followingCount}</span> following ·
-				<span className="font-semibold text-gray-900"> {Math.max(0, reputation?.score ?? 0)}</span> Score ·
-				<span
-					className={`font-semibold ${
-						getReputationLevel(reputation?.score) === "Expert"
-							? "text-green-600"
-							: getReputationLevel(reputation?.score) === "Intermediate"
-							? "text-purple-600"
-							: "text-gray-700"
-					}`}
-				>
-					{" "}
-					{getReputationLevel(reputation?.score)}
-				</span>
-			</p>
-
-			{/* FOLLOW BUTTON */}
-			{!isOwner && (
-				<ProtectedButton
-					onClick={() => followMutation.mutate()}
-					disabled={followLoading}
-					className={`mt-3 px-5 py-1.5 rounded-full text-sm font-semibold shadow-sm transition-all ${
-						isFollowing
-							? "bg-gray-100 text-gray-800 hover:bg-gray-200"
-							: "bg-purple-600 text-white hover:bg-purple-700"
-					} ${followLoading && "opacity-50 cursor-not-allowed"}`}
-				>
-					{followLoading
-						? "Processing..."
-						: isFollowing
-						? "Unfollow"
-						: "Follow"}
-				</ProtectedButton>
-			)}
-		</div>
-	</div>
-
-	{/* RIGHT: EDIT BUTTON */}
-	{authUser && isOwner && (
-		<div className="flex-shrink-0 w-full sm:w-auto">
-			<Link
-				href={`${process.env.NEXT_PUBLIC_YP_URL}/profile`}
-				target="blank"
-				className="flex items-center justify-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-purple-700 transition active:scale-[0.97]"
-			>
-				<Pencil className="h-4 w-4" />
-				<span>Edit Profile</span>
-			</Link>
-		</div>
-	)}
-</div>
-
+						{/* RIGHT: EDIT BUTTON */}
+						{authUser && isOwner && (
+							<div className="flex-shrink-0 w-full sm:w-auto">
+								<Link
+									href={`${process.env.NEXT_PUBLIC_CA_URL}/profile`}
+									target="blank"
+									className="flex items-center justify-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-purple-700 transition active:scale-[0.97]"
+								>
+									<Pencil className="h-4 w-4" />
+									<span>Edit Profile</span>
+								</Link>
+							</div>
+						)}
+					</div>
 
 					{/* Tabs */}
 					<nav
@@ -526,16 +525,22 @@ export default function Profile() {
 				</section>
 
 				{/* Sidebar */}
-				<aside className="md:col-span-4 space-y-4 mt-8 md:mt-0">
-					<section className="bg-white border rounded">
-						<h3 className="border-b px-4 py-3 font-semibold text-sm">
-							Credentials & Highlights
-						</h3>
-						<ul className="divide-y">
-							<li className="p-4 text-sm">Joined {joinedOn}</li>
-						</ul>
-					</section>
-				</aside>
+				{user?.location.city && (
+					<aside className="md:col-span-4 space-y-4 mt-8 md:mt-0">
+						<section className="bg-white border rounded">
+							<h3 className="border-b px-4 py-3 font-semibold text-sm">
+								Credentials & Highlights
+							</h3>
+							<ul className="divide-y">
+								{user?.location.city ? (
+									<li className="p-4 text-sm">
+										Belongs to: {user?.location.state}, {user?.location.country}
+									</li>
+								) : null}
+							</ul>
+						</section>
+					</aside>
+				)}
 			</div>
 		</div>
 	);

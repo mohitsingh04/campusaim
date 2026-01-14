@@ -124,7 +124,7 @@ export default function Home() {
 			const response = await API.patch("/property/slug/generate");
 			console.log(response?.data?.message);
 		} catch (error) {
-			console.log(error);
+			console.error(error);
 		}
 	}, []);
 

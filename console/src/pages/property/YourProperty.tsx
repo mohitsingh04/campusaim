@@ -170,7 +170,7 @@ export function PropertyYour() {
                     ? `${import.meta.env.VITE_MEDIA_URL}/${
                         row?.property_logo?.[0]
                       }`
-                    : "/img/default-images/yp-property-logo.webp"
+                    : "/img/default-images/ca-property-default.png"
                 }
                 alt={row?.property_name}
                 className="w-10 h-10 rounded-full border border-[var(--yp-border-primary)]"

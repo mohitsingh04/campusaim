@@ -58,9 +58,7 @@ const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
 			const processedCourses = courseRes.data.map((courseItem: CourseProps) => {
 				const findCategoryNameById = (id: string | number) => {
 					const found = catRes.data.find(
-						(cat: CategoryProps) =>
-							String(cat.uniqueId) === String(id) ||
-							String(cat._id) === String(id)
+						(cat: CategoryProps) => cat._id === id
 					);
 					return found?.category_name || null;
 				};
@@ -84,14 +82,12 @@ const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
 				?.map((propertyItem: PropertyProps) => {
 					const matchingLocation = locationRes.data.find(
 						(locationItem: LocationProps) =>
-							Number(locationItem.property_id) === propertyItem.uniqueId
+							locationItem.property_id === propertyItem._id
 					);
 
 					const findCategoryNameById = (id: string | number) => {
 						const found = catRes.data.find(
-							(cat: CategoryProps) =>
-								String(cat.uniqueId) === String(id) ||
-								String(cat._id) === String(id)
+							(cat: CategoryProps) => cat._id === id
 						);
 						return found?.category_name || null;
 					};
@@ -100,14 +96,14 @@ const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
 						...propertyItem,
 						...matchingLocation,
 						category:
-							findCategoryNameById(propertyItem.category) ||
-							propertyItem.category,
+							findCategoryNameById(propertyItem.academic_type) ||
+							propertyItem.academic_type,
 						property_type:
 							findCategoryNameById(propertyItem.property_type) ||
 							propertyItem.property_type,
 					};
 				});
-
+				
 			setProperties(processedProperties);
 
 			setIsLoading(false);

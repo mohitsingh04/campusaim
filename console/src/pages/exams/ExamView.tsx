@@ -147,7 +147,7 @@ export default function ExamView() {
 							src={
 								exam?.image?.[0]
 									? `${import.meta.env.VITE_MEDIA_URL}/exam/${exam?.image?.[0]}`
-									: "/img/default-images/yp-course.webp"
+									: "/img/default-images/ca-exam.png"
 							}
 							alt={`${exam?.exam_name} image`}
 							className="w-full aspect-video object-cover transition-transform duration-500"

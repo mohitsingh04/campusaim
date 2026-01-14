@@ -12,6 +12,7 @@ import Image from "next/image";
 import Notifications from "../notification/Notification";
 import Tooltip from "../common/Tooltip/Tooltip";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { usePathname } from "next/navigation";
 
 type Topic = {
 	_id: string;
@@ -36,6 +37,7 @@ export default function Navbar({
 	setSidebarOpen: (open: boolean) => void;
 	sidebarOpen?: boolean;
 }) {
+	const pathname = usePathname();
 	const { authUser, authLoading } = useAuth();
 
 	const [searchQuery, setSearchQuery] = useState<string>("");
@@ -50,6 +52,9 @@ export default function Navbar({
 	const notificationRef = useRef<HTMLDivElement>(null);
 	const searchInputRef = useRef<HTMLInputElement>(null);
 	const dropdownRef = useRef<HTMLDivElement>(null);
+
+	const hideMenuRoutes = ["/profile"];
+	const hideMenu = hideMenuRoutes.some((r) => pathname.startsWith(r));
 
 	// Fetch topics, questions, users
 	const { data: topics = [] } = useQuery<Topic[]>({
@@ -200,17 +205,19 @@ export default function Navbar({
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 				<div className="flex justify-between items-center h-16">
 					{/* Mobile menu button */}
-					<button
-						className="lg:hidden mr-2 p-2 rounded-md text-gray-600 hover:bg-gray-100 focus:outline-none cursor-pointer"
-						aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
-						onClick={() => setSidebarOpen(!sidebarOpen)}
-					>
-						{sidebarOpen ? (
-							<X className="h-6 w-6" />
-						) : (
-							<Menu className="h-6 w-6" />
-						)}
-					</button>
+					{!hideMenu && (
+						<button
+							className="lg:hidden mr-2 p-2 rounded-md text-gray-600 hover:bg-gray-100 focus:outline-none cursor-pointer"
+							aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
+							onClick={() => setSidebarOpen(!sidebarOpen)}
+						>
+							{sidebarOpen ? (
+								<X className="h-6 w-6" />
+							) : (
+								<Menu className="h-6 w-6" />
+							)}
+						</button>
+					)}
 
 					{/* Logo */}
 					<Link

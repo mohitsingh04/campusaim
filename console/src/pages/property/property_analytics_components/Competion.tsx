@@ -128,7 +128,7 @@ export default function Competition({
                   ? `${import.meta.env.VITE_MEDIA_URL}/${
                       item?.property?.property_logo?.[0]
                     }`
-                  : "/img/default-images/yp-property-logo.webp"
+                  : "/img/default-images/ca-property-default.png"
               }
               alt={item.property.property_name}
               className="w-10 h-10 rounded-full object-cover"

@@ -26,8 +26,6 @@ const FeaturedProperty = ({
 		.sort((a, b) => a.rank - b.rank)
 		.slice(0, 10);
 
-	console.log(rankedProperties);
-
 	const getCategoryById = (id: string) => {
 		const cat = categorise?.find((item) => item._id === id);
 		return cat?.category_name;

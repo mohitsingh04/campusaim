@@ -198,9 +198,7 @@ function Properties() {
 
 	const getCategoryById = useCallback(
 		(id: string) => {
-			const cat = category?.find(
-				(item) => item.uniqueId === Number(id) || item._id === id
-			);
+			const cat = category?.find((item) => item._id === id);
 			return cat?.category_name;
 		},
 		[category]

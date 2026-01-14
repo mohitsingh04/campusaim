@@ -78,7 +78,7 @@ export default function PropertyLogo({
     if (image) return image;
     if (property?.property_logo?.[0])
       return `${import.meta.env.VITE_MEDIA_URL}/${property.property_logo[0]}`;
-    return "/img/default-images/yp-property-logo.webp";
+    return "/img/default-images/ca-property-default.png";
   };
 
   return (

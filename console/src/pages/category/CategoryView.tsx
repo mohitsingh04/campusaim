@@ -30,10 +30,10 @@ export default function CategoryView() {
 
   const featured_image = category?.featured_image?.[0]
     ? `${import.meta.env.VITE_MEDIA_URL}/category/${category.featured_image[0]}`
-    : "/img/default-images/yp-category.webp";
+    : "/img/default-images/ca-property-default.png";
   const category_icon = category?.category_icon?.[0]
     ? `${import.meta.env.VITE_MEDIA_URL}/category/${category.category_icon[0]}`
-    : "/img/default-images/yp-category.webp";
+    : "/img/default-images/ca-property-default.png";
 
   if (loading) {
     return <ViewSkeleton />;

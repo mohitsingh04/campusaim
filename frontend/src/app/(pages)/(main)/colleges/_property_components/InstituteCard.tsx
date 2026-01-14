@@ -89,12 +89,12 @@ const InstituteCard = ({
         <div className="flex items-center text-gray-600 text-sm mb-3 gap-2">
           <LuGraduationCap className="w-4 h-4 flex-shrink-0 text-purple-500" />
           <span className="capitalize">{institute.academic_type}</span>
-          <Link
+          {/* <Link
             href={`/compare/${institute?.property_slug}`}
             className="ml-auto text-xs sm:text-sm px-3 py-1 border border-purple-600 text-purple-700 rounded-lg hover:bg-purple-600 hover:text-white transition duration-200"
           >
             Compare
-          </Link>
+          </Link> */}
         </div>
 
         {/* Type and Establishment */}

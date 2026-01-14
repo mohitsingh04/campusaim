@@ -40,22 +40,6 @@ type FormValues = {
 	description: string;
 };
 
-function toDatetimeLocal(date: Date) {
-	// Converts a Date to yyyy-MM-ddTHH:mm for input[type="datetime-local"]
-	const pad = (n: number) => n.toString().padStart(2, "0");
-	return (
-		date.getFullYear() +
-		"-" +
-		pad(date.getMonth() + 1) +
-		"-" +
-		pad(date.getDate()) +
-		"T" +
-		pad(date.getHours()) +
-		":" +
-		pad(date.getMinutes())
-	);
-}
-
 export default function AskQuestion() {
 	const router = useRouter();
 	const editorConfig = useMemo(() => getEditorConfig(), []);
@@ -98,8 +82,6 @@ export default function AskQuestion() {
 	const getAnswerCount = (questionId: string): number => {
 		return answerList.filter((a) => a.question === questionId).length;
 	};
-
-	const initialDate = toDatetimeLocal(new Date());
 
 	const initialValues: FormValues = {
 		category: [],

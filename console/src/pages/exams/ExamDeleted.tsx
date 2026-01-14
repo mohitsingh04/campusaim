@@ -144,7 +144,7 @@ export default function ExamDeleted() {
 										? `${import.meta.env.VITE_MEDIA_URL}/exam/${
 												row?.image?.[0]
 										  }`
-										: "/img/default-images/yp-course.webp"
+										: "/img/default-images/ca-exam.png"
 								}
 								alt={row?.exam_name}
 								className="w-10 h-10 rounded-full shadow-sm"

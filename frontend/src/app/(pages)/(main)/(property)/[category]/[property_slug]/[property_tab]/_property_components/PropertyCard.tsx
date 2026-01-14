@@ -148,12 +148,12 @@ const PropertyDetailCard = ({
 					>
 						Enquiry
 					</a>
-					<Link
+					{/* <Link
 						href="/compare/select"
 						className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border-3 border-purple-600 hover:bg-purple-600 text-purple-600 hover:text-white font-semibold hover:opacity-90 transition mb-2"
 					>
 						Compare
-					</Link>
+					</Link> */}
 				</div>
 			</div>
 		</div>

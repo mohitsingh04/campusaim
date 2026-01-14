@@ -27,7 +27,7 @@ const FeaturedBlogs = () => {
       );
       setAuthors(authorRes?.data);
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   }, []);
 

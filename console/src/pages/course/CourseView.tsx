@@ -169,7 +169,7 @@ export default function CourseView() {
 									? `${import.meta.env.VITE_MEDIA_URL}/course/${
 											course?.image?.[0]
 									  }`
-									: "/img/default-images/yp-course.webp"
+									: "/img/default-images/ca-course.png"
 							}
 							alt={`${course?.course_name} image`}
 							className="w-full aspect-video object-cover transition-transform duration-500"

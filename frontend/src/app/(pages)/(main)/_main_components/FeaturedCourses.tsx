@@ -24,7 +24,7 @@ export default function FeaturedCourses() {
 
       setCourses(randomSix);
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   }, []);
 

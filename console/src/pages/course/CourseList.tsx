@@ -142,7 +142,7 @@ export function CourseList() {
 										? `${import.meta.env.VITE_MEDIA_URL}/course/${
 												row?.image?.[0]
 										  }`
-										: "/img/default-images/yp-course.webp"
+										: "/img/default-images/ca-course.png"
 								}
 								alt={row?.course_name}
 								className="w-10 h-10 rounded-full shadow-sm"

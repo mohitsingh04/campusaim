@@ -83,7 +83,7 @@ export default function FeaturedImage({
     if (preview) return preview;
     if (property?.featured_image?.[0])
       return `${import.meta.env.VITE_MEDIA_URL}/${property.featured_image[0]}`;
-    return "/img/default-images/yp-property.webp";
+    return "/img/default-images/ca-property-default.png";
   };
 
   return (

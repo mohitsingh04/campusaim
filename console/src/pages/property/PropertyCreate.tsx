@@ -274,7 +274,7 @@ export function PropertyCreate() {
 													? `${import.meta.env.VITE_MEDIA_URL}/${
 															prop.property_logo[0]
 													  }`
-													: "/img/default-images/yp-property-logo.webp";
+													: "/img/default-images/ca-property-default.png";
 
 												return (
 													<div
