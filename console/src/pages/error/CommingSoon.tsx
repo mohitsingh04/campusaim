@@ -23,10 +23,10 @@ export default function ComingSoon() {
         <div className="text-[var(--yp-text-secondary)] font-semibold text-base sm:text-lg md:text-xl mb-8 break-words">
           Contact:{" "}
           <a
-            href="mailto:yogprerna@gmail.com"
+            href="mailto:campusaim@gmail.com"
             className=" hover:text-[var(--yp-main)] transition-colors"
           >
-            yogprerna@gmail.com
+            campusaim@gmail.com
           </a>
         </div>
 

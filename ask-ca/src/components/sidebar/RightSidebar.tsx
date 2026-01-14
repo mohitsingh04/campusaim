@@ -72,7 +72,7 @@ export default function RightSidebar() {
 												{index + 1}
 											</span>
 											<div className="flex-1">
-												<p className="text-sm text-slate-700 group-hover:text-blue-600 transition-colors leading-snug mb-1">
+												<p className="text-sm text-slate-700 group-hover:text-purple-600 transition-colors leading-snug mb-1">
 													{question.title}
 												</p>
 												<span className="text-xs text-slate-500">
@@ -95,7 +95,7 @@ export default function RightSidebar() {
 			{/* --- Top Contributors Card --- */}
 			<div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
 				<div className="flex items-center gap-2 mb-4">
-					<Users className="w-5 h-5 text-blue-500" />
+					<Users className="w-5 h-5 text-purple-500" />
 					<h3 className="font-semibold text-slate-900">Top Contributors</h3>
 				</div>
 				<div className="space-y-4">
@@ -140,7 +140,7 @@ export default function RightSidebar() {
 											</span>
 										)}
 										<div className="flex-1 min-w-0">
-											<p className="text-sm font-medium text-slate-900 group-hover:text-blue-600 transition-colors truncate">
+											<p className="text-sm font-medium text-slate-900 group-hover:text-purple-600 transition-colors truncate">
 												{user.name}
 											</p>
 											<div className="flex items-center gap-2 text-xs text-slate-500">

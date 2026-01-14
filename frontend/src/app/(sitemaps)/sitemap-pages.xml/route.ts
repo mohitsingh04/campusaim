@@ -1,7 +1,7 @@
 export async function GET() {
   const baseUrl =
     process.env.NEXT_PUBLIC_BASE_URL?.trim().replace(/\/$/, "") ||
-    "https://yogprerna.com"; // fallback
+    "https://campusaim.com"; // fallback
 
   const staticRoutes = [
     { path: "/", priority: 1.0, changefreq: "weekly" },

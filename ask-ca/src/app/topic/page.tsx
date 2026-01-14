@@ -151,7 +151,7 @@ export default function TopicsPage() {
 							value={searchQuery}
 							onChange={(e) => setSearchQuery(e.target.value)}
 							placeholder="Search topics..."
-							className="w-full rounded-full border border-gray-300 py-2 pl-10 pr-4 focus:border-transparent focus:ring-2 focus:ring-blue-500 text-sm"
+							className="w-full rounded-full border border-gray-300 py-2 pl-10 pr-4 focus:border-transparent focus:ring-2 focus:ring-purple-500 text-sm"
 						/>
 					</div>
 
@@ -161,7 +161,7 @@ export default function TopicsPage() {
 							onClick={() => setFilterBy("all")}
 							className={`flex items-center space-x-2 rounded-full px-4 py-2 text-sm font-medium transition-colors cursor-pointer ${
 								filterBy === "all"
-									? "bg-blue-100 text-blue-700 shadow-sm border border-blue-200"
+									? "bg-purple-100 text-purple-700 shadow-sm border border-purple-200"
 									: "text-gray-600 hover:bg-gray-100 border border-gray-200"
 							}`}
 						>
@@ -172,7 +172,7 @@ export default function TopicsPage() {
 							onClick={() => setFilterBy("following")}
 							className={`flex items-center space-x-2 rounded-full px-4 py-2 text-sm font-medium transition-colors cursor-pointer ${
 								filterBy === "following"
-									? "bg-blue-100 text-blue-700 shadow-sm border border-blue-200"
+									? "bg-purple-100 text-purple-700 shadow-sm border border-purple-200"
 									: "text-gray-600 hover:bg-gray-100 border border-gray-200"
 							}`}
 						>
@@ -185,14 +185,14 @@ export default function TopicsPage() {
 
 			{/* Stats */}
 			<div className="mb-6 sm:mb-8 grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-3">
-				<div className="rounded-lg border border-blue-200 bg-gradient-to-r from-blue-50 to-blue-100 p-4 sm:p-6">
+				<div className="rounded-lg border border-purple-200 bg-gradient-to-r from-purple-50 to-purple-100 p-4 sm:p-6">
 					<div className="flex items-center space-x-3">
-						<BookOpen className="h-8 w-8 text-blue-600" />
+						<BookOpen className="h-8 w-8 text-purple-600" />
 						<div>
-							<div className="text-xl sm:text-2xl font-bold text-blue-900">
+							<div className="text-xl sm:text-2xl font-bold text-purple-900">
 								{topicList.length}
 							</div>
-							<div className="text-blue-700 text-sm sm:text-base">
+							<div className="text-purple-700 text-sm sm:text-base">
 								Total Topics
 							</div>
 						</div>

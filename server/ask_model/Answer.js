@@ -9,11 +9,7 @@ const answerSchema = new mongoose.Schema({
     upvotes: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
     downvotes: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
 
-    createdAt: { type: Date, required: true },
-    updatedAt: { type: Date, required: true },
-}
-    // , { timestamps: true }
-);
+}, { timestamps: true });
 
 const Answer = askDatabase.model("Answer", answerSchema);
 export default Answer;

@@ -428,7 +428,7 @@ export default function Page() {
 					<li className="inline-flex items-center">
 						<Link
 							href="/"
-							className="inline-flex items-center text-gray-700 hover:text-blue-600"
+							className="inline-flex items-center text-gray-700 hover:text-purple-600"
 						>
 							<FaHome className="h-4 w-4 me-1" />
 							Home
@@ -440,7 +440,7 @@ export default function Page() {
 
 					{/* Question parent */}
 					<li className="text-gray-700">
-						<Link href="/question" className="hover:text-blue-600">
+						<Link href="/question" className="hover:text-purple-600">
 							<span>Questions</span>
 						</Link>
 					</li>
@@ -576,7 +576,7 @@ export default function Page() {
 									/>
 									{question.description.length > 200 && (
 										<button
-											className="mt-2 text-blue-600 text-sm font-medium hover:underline focus:outline-none"
+											className="mt-2 text-purple-600 text-sm font-medium hover:underline focus:outline-none"
 											onClick={() => setDescExpanded((v) => !v)}
 										>
 											{descExpanded ? "Read less" : "Read more"}
@@ -591,9 +591,9 @@ export default function Page() {
 											{question.category.map((cat) => (
 												<span
 													key={cat._id}
-													className="inline-flex items-center rounded-full bg-blue-100 px-4 py-1 text-xs font-semibold text-blue-800 ring-1 ring-blue-200 shadow-sm"
+													className="inline-flex items-center rounded-full bg-purple-100 px-4 py-1 text-xs font-semibold text-purple-800 ring-1 ring-purple-200 shadow-sm"
 												>
-													<Tag className="mr-1 h-4 w-4 text-blue-400" />
+													<Tag className="mr-1 h-4 w-4 text-purple-400" />
 													{cat.category_name}
 												</span>
 											))}
@@ -736,7 +736,6 @@ export default function Page() {
 								initialData={{
 									title: question.title,
 									description: question.description,
-									createdAt: question.createdAt,
 									category: Array.isArray(question.category)
 										? question.category.map((cat) => cat._id)
 										: [],
@@ -763,7 +762,7 @@ export default function Page() {
 									<select
 										value={sortBy}
 										onChange={(e) => setSortBy(e.target.value)}
-										className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+										className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm shadow-xs focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
 									>
 										<option value="latest">Latest</option>
 										<option value="trending">Trending</option>
@@ -779,7 +778,7 @@ export default function Page() {
 						<>
 							<button
 								onClick={() => setAddAnswerOpen(true)}
-								className="rounded-xl border border-blue-600 bg-blue-50 text-blue-700 px-6 py-3 font-semibold shadow hover:bg-blue-100 transition mb-4 cursor-pointer"
+								className="rounded-xl border border-purple-600 bg-purple-50 text-purple-700 px-6 py-3 font-semibold shadow hover:bg-purple-100 transition mb-4 cursor-pointer"
 							>
 								Add Your Answer
 							</button>
@@ -807,7 +806,7 @@ export default function Page() {
 								<section
 									key={a._id}
 									className={`rounded-xl border border-gray-200 bg-white shadow-xs mb-4 ${
-										isUserAnswer ? "ring-2 ring-blue-200 bg-blue-50" : ""
+										isUserAnswer ? "ring-2 ring-purple-200 bg-purple-50" : ""
 									}`}
 								>
 									<article
@@ -821,7 +820,7 @@ export default function Page() {
 											{/* Accepted or Your Answer badges */}
 											<div className="flex items-center gap-2 mb-2">
 												{isUserAnswer && (
-													<span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-100 text-blue-700 text-xs font-semibold">
+													<span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-purple-100 text-purple-700 text-xs font-semibold">
 														Your Answer
 													</span>
 												)}
@@ -858,13 +857,13 @@ export default function Page() {
 													<>
 														<button
 															onClick={() => setEditingAnswerId(a._id)}
-															className="font-medium text-blue-600 hover:underline"
+															className="font-medium text-purple-600 hover:underline"
 														>
 															Edit Answer
 														</button>
 														<button
 															onClick={() => void handleDeleteAnswer(a._id)}
-															className="font-medium text-blue-600 hover:underline"
+															className="font-medium text-purple-600 hover:underline"
 														>
 															Delete Answer
 														</button>
@@ -903,7 +902,7 @@ export default function Page() {
 													onClick={() => void handleAnswerVote(a._id, "upvote")}
 													className={`flex items-center gap-2 px-4 py-1.5 rounded-full border transition ${
 														a.hasUpvoted
-															? "text-blue-600 bg-blue-50 border-blue-200"
+															? "text-purple-600 bg-purple-50 border-purple-200"
 															: "text-gray-700 bg-white border-gray-300 hover:bg-gray-100"
 													}`}
 												>
@@ -1000,11 +999,11 @@ export default function Page() {
 											className="flex items-start gap-3"
 										>
 											{/* Left indicator */}
-											<div className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-blue-500 opacity-70 group-hover:opacity-100"></div>
+											<div className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-purple-500 opacity-70 group-hover:opacity-100"></div>
 
 											{/* Content */}
 											<div className="flex-1">
-												<p className="font-medium text-gray-900 group-hover:text-blue-700 leading-snug">
+												<p className="font-medium text-gray-900 group-hover:text-purple-700 leading-snug">
 													{q.title}
 												</p>
 

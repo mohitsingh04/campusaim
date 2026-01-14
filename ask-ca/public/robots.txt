@@ -1,5 +1,0 @@
-User-agent: *
-Disallow: /api/
-Disallow: /admin/
-Allow: /
-Sitemap: https://ask.yogprerna.com/sitemap.xml

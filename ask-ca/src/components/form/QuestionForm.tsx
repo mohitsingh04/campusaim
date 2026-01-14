@@ -23,21 +23,18 @@ type QuestionSummary = {
 	title: string;
 	description: string;
 	category: (string | Category)[];
-	createdAt?: string;
 };
 
 type FormValues = {
 	title: string;
 	description: string;
 	category: string[]; // always array of IDs for Formik/API
-	createdAt: string;
-	updatedAt: string;
 };
 
 type QuestionFormProps = {
 	questionId: string;
 	initialData?: Partial<
-		Pick<QuestionSummary, "title" | "description" | "category" | "createdAt">
+		Pick<QuestionSummary, "title" | "description" | "category">
 	>;
 	onClose?: () => void;
 };
@@ -86,17 +83,6 @@ export default function QuestionForm({
 		fetchData();
 	}, []);
 
-	// Use the original createdAt if available and valid, else fallback to now
-	let initialDate = "";
-	if (initialData?.createdAt) {
-		const d = new Date(initialData.createdAt);
-		initialDate = isNaN(d.getTime())
-			? toDatetimeLocal(new Date())
-			: toDatetimeLocal(d);
-	} else {
-		initialDate = toDatetimeLocal(new Date());
-	}
-
 	const initialValues: FormValues = {
 		title: initialData?.title ?? "",
 		description: initialData?.description ?? "",
@@ -105,8 +91,6 @@ export default function QuestionForm({
 					typeof cat === "string" ? cat : cat._id
 			  )
 			: [],
-		createdAt: initialDate,
-		updatedAt: initialDate,
 	};
 
 	const validationSchema = Yup.object({
@@ -122,15 +106,10 @@ export default function QuestionForm({
 	) => {
 		const toastId = toast.loading("Updating question...");
 		try {
-			const createdAtISO = new Date(values.createdAt).toISOString();
-			const updatedAtISO = createdAtISO;
-
 			const response = await API.patch(`/questions/${questionId}`, {
 				title: values.title,
 				description: values.description,
 				category: values.category, // array of IDs
-				createdAt: createdAtISO,
-				updatedAt: updatedAtISO,
 			});
 
 			toast.success(
@@ -247,27 +226,6 @@ export default function QuestionForm({
 						{formik.errors.category}
 					</p>
 				)}
-			</div>
-
-			{/* Date/Time Picker */}
-			<div className="relative">
-				<label
-					htmlFor="createdAt"
-					className="block text-sm font-medium text-gray-700"
-				>
-					Date & Time
-				</label>
-				<input
-					type="datetime-local"
-					id="createdAt"
-					name="createdAt"
-					className="mt-1 block w-full rounded-md border bg-white px-3 py-2 text-sm text-gray-900 shadow-sm border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-					value={formik.values.createdAt}
-					onChange={(e) => {
-						formik.handleChange(e);
-						formik.setFieldValue("updatedAt", e.target.value);
-					}}
-				/>
 			</div>
 
 			{/* Submit */}

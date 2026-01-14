@@ -31,7 +31,7 @@ export default function TopicLayout({ children }: { children: ReactNode }) {
 					<div className="px-3 py-2 border-b border-gray-300 flex justify-between items-center">
 						<Link href="/" className="flex items-center space-x-2">
 							<Image
-								src="/logo-black-new.png"
+								src="/images/logo/campusaim-logo.png"
 								alt="Logo"
 								width={120}
 								height={40}

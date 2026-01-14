@@ -219,7 +219,7 @@ export default function Navbar({
 						prefetch={true}
 					>
 						<Image
-							src="/logo-black-new.png"
+							src="/images/logo/campusaim-logo.png"
 							alt="AskHub Full Logo"
 							width={160}
 							height={48}
@@ -236,7 +236,7 @@ export default function Navbar({
 							value={searchQuery}
 							onChange={handleSearchChange}
 							placeholder="Search questions, topics, or users..."
-							className="w-full pl-12 pr-4 py-2.5 text-sm text-gray-800 bg-gray-100 border border-blue-500 rounded-full transition-all duration-200 ease-in-out focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+							className="w-full pl-12 pr-4 py-2.5 text-sm text-gray-800 bg-gray-100 border border-purple-500 rounded-full transition-all duration-200 ease-in-out focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
 						/>
 						{searchQuery && (
 							<div
@@ -342,14 +342,14 @@ export default function Navbar({
 								{/* Ask Question button (desktop only) */}
 								<Link
 									href="/question/ask"
-									className="hidden sm:inline-flex group items-center justify-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all duration-200 ease-in-out hover:bg-blue-700 hover:shadow-md hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+									className="hidden sm:inline-flex group items-center justify-center space-x-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all duration-200 ease-in-out hover:bg-purple-700 hover:shadow-md hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2"
 								>
 									<Plus className="h-5 w-5 transition-transform group-hover:rotate-90" />
 									<span className="hidden sm:inline">Ask Question</span>
 								</Link>
 								{/* Search icon (mobile only) */}
 								<button
-									className="inline-flex sm:hidden items-center justify-center rounded-lg bg-blue-600 p-2 text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+									className="inline-flex sm:hidden items-center justify-center rounded-lg bg-purple-600 p-2 text-white shadow-sm hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
 									aria-label="Search"
 									onClick={() => setShowMobileSearch(true)}
 								>
@@ -390,7 +390,7 @@ export default function Navbar({
 					<div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-2 p-0 relative border border-gray-200">
 						{/* Close button */}
 						<button
-							className="absolute top-5 border border-gray-400 right-5 text-gray-400 hover:text-gray-700 bg-gray-300 rounded-full p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+							className="absolute top-5 border border-gray-400 right-5 text-gray-400 hover:text-gray-700 bg-gray-300 rounded-full p-1.5 focus:outline-none focus:ring-2 focus:ring-purple-500"
 							onClick={() => setShowMobileSearch(false)}
 							aria-label="Close"
 						>
@@ -404,7 +404,7 @@ export default function Navbar({
 								value={searchQuery}
 								onChange={handleSearchChange}
 								placeholder="Search questions, topics, or users..."
-								className="w-full px-3 py-2 text-base rounded-lg bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition"
+								className="w-full px-3 py-2 text-base rounded-lg bg-gray-100 focus:bg-white focus:ring-2 focus:ring-purple-500 outline-none transition"
 								autoFocus
 							/>
 						</div>
@@ -430,7 +430,7 @@ export default function Navbar({
 														<Link
 															href={`/question/${q.slug}`}
 															key={q._id}
-															className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-blue-50 transition"
+															className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-purple-50 transition"
 															onClick={() => {
 																clearSearch();
 																setShowMobileSearch(false);
@@ -453,13 +453,13 @@ export default function Navbar({
 														<Link
 															href={`/topic/${t.slug}`}
 															key={t._id}
-															className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-blue-50 transition"
+															className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-purple-50 transition"
 															onClick={() => {
 																clearSearch();
 																setShowMobileSearch(false);
 															}}
 														>
-															<span className="text-blue-500 text-lg">🏷</span>
+															<span className="text-purple-500 text-lg">🏷</span>
 															<span className="font-medium text-gray-900">
 																{t.category_name}
 															</span>
@@ -476,7 +476,7 @@ export default function Navbar({
 														<Link
 															href={`/profile/${u.username}`}
 															key={u._id}
-															className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-blue-50 transition"
+															className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-purple-50 transition"
 															onClick={() => {
 																clearSearch();
 																setShowMobileSearch(false);

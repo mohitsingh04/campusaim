@@ -328,7 +328,7 @@ export default function Profile() {
 				</p>
 				<Link
 					href="/"
-					className="mt-6 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+					className="mt-6 rounded-md bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700"
 				>
 					Go to Homepage
 				</Link>
@@ -383,7 +383,7 @@ export default function Profile() {
 						getReputationLevel(reputation?.score) === "Expert"
 							? "text-green-600"
 							: getReputationLevel(reputation?.score) === "Intermediate"
-							? "text-blue-600"
+							? "text-purple-600"
 							: "text-gray-700"
 					}`}
 				>
@@ -400,7 +400,7 @@ export default function Profile() {
 					className={`mt-3 px-5 py-1.5 rounded-full text-sm font-semibold shadow-sm transition-all ${
 						isFollowing
 							? "bg-gray-100 text-gray-800 hover:bg-gray-200"
-							: "bg-blue-600 text-white hover:bg-blue-700"
+							: "bg-purple-600 text-white hover:bg-purple-700"
 					} ${followLoading && "opacity-50 cursor-not-allowed"}`}
 				>
 					{followLoading
@@ -419,7 +419,7 @@ export default function Profile() {
 			<Link
 				href={`${process.env.NEXT_PUBLIC_YP_URL}/profile`}
 				target="blank"
-				className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 transition active:scale-[0.97]"
+				className="flex items-center justify-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-purple-700 transition active:scale-[0.97]"
 			>
 				<Pencil className="h-4 w-4" />
 				<span>Edit Profile</span>
@@ -450,12 +450,12 @@ export default function Profile() {
 										tabIndex={active ? 0 : -1}
 										onClick={() => setSelected(i)}
 										className={`relative py-3 px-2 sm:px-0 whitespace-nowrap ${
-											active ? "text-blue-600" : ""
+											active ? "text-purple-600" : ""
 										}`}
 									>
 										{label}
 										{active && (
-											<span className="absolute inset-x-0 -bottom-px h-0.5 bg-blue-500" />
+											<span className="absolute inset-x-0 -bottom-px h-0.5 bg-purple-500" />
 										)}
 									</button>
 								);

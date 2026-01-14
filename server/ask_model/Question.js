@@ -12,11 +12,7 @@ const questionSchema = new mongoose.Schema({
     viewedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
     viewedIPs: [{ type: String }],
 
-    createdAt: { type: Date, required: true },
-    updatedAt: { type: Date, required: true },
-}
-    // , { timestamps: true }
-);
+}, { timestamps: true });
 
 const Question = askDatabase.model("Question", questionSchema);
 export default Question;

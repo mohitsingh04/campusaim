@@ -63,7 +63,7 @@ export default function TopicCard({
 			<div className="flex-1">
 				<Link
 					href={`/topic/${topic.slug}`}
-					className="text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors"
+					className="text-lg font-semibold text-gray-900 hover:text-purple-600 transition-colors"
 				>
 					{topic.category_name}
 				</Link>
@@ -85,7 +85,7 @@ export default function TopicCard({
 		${
 			isFollowing
 				? "bg-red-50 text-red-600 border-red-300 hover:bg-red-100 hover:border-red-400"
-				: "bg-blue-600 text-white hover:bg-blue-700 border-blue-600"
+				: "bg-purple-600 text-white hover:bg-purple-700 border-purple-600"
 		}
 		${loading ? "opacity-50 cursor-not-allowed" : "hover:shadow-md"}
 	`}

@@ -38,8 +38,6 @@ type FormValues = {
 	category: string[];
 	title: string;
 	description: string;
-	createdAt: string;
-	updatedAt: string;
 };
 
 function toDatetimeLocal(date: Date) {
@@ -107,8 +105,6 @@ export default function AskQuestion() {
 		category: [],
 		title: "",
 		description: "",
-		createdAt: initialDate,
-		updatedAt: initialDate,
 	};
 
 	const validationSchema = Yup.object({
@@ -121,15 +117,7 @@ export default function AskQuestion() {
 	const handleSubmit = async (values: FormValues) => {
 		const toastId = toast.loading("Asking Question......");
 		try {
-			// Convert createdAt to ISO string for backend
-			const createdAtISO = new Date(values.createdAt).toISOString();
-			const updatedAtISO = createdAtISO; // or use a separate field if you want
-
-			const response = await API.post("/questions", {
-				...values,
-				createdAt: createdAtISO,
-				updatedAt: updatedAtISO,
-			});
+			const response = await API.post("/questions", values);
 			toast.success(
 				(response?.data?.message as string) || "Question posted successfully!",
 				{ id: toastId }
@@ -181,7 +169,7 @@ export default function AskQuestion() {
 					<li className="inline-flex items-center">
 						<Link
 							href="/"
-							className="inline-flex items-center text-gray-700 hover:text-blue-600"
+							className="inline-flex items-center text-gray-700 hover:text-purple-600"
 						>
 							<FaHome className="h-4 w-4 me-1" />
 							Home
@@ -209,7 +197,7 @@ export default function AskQuestion() {
 						placeholder="Question Title"
 						className={[
 							"mt-1 block w-full rounded-md border bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 shadow-sm",
-							"border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500",
+							"border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500",
 							formik.touched.title && formik.errors.title
 								? "border-red-500 focus:ring-red-500 focus:border-red-500"
 								: "",
@@ -234,11 +222,11 @@ export default function AskQuestion() {
 									<li key={s._id} className="p-2 hover:bg-gray-50 text-sm">
 										<Link
 											href={`/question/${s.slug}`}
-											className="block text-blue-600 hover:underline"
+											className="block text-purple-600 hover:underline"
 											target="_blank"
 											rel="noopener noreferrer"
 										>
-											<span className="text-blue-600 hover:underline">
+											<span className="text-purple-600 hover:underline">
 												{s.title}
 											</span>
 											<span className="ml-2 text-gray-500 text-xs italic">
@@ -308,33 +296,11 @@ export default function AskQuestion() {
 					)}
 				</div>
 
-				{/* Date/Time Picker */}
-				<div className="relative">
-					<label
-						htmlFor="createdAt"
-						className="block text-sm font-medium text-gray-700 mt-3"
-					>
-						Date & Time
-					</label>
-					<input
-						type="datetime-local"
-						id="createdAt"
-						name="createdAt"
-						className="mt-1 block w-full rounded-md border bg-white px-3 py-2 text-sm text-gray-900 shadow-sm border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-						value={formik.values.createdAt}
-						onChange={(e) => {
-							formik.handleChange(e);
-							// Keep updatedAt in sync (or you can let user pick separately)
-							formik.setFieldValue("updatedAt", e.target.value);
-						}}
-					/>
-				</div>
-
 				{/* Submit */}
 				<div className="pt-2">
 					<button
 						type="submit"
-						className="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition cursor-pointer"
+						className="inline-flex items-center justify-center rounded-md bg-purple-600 px-4 py-2 text-sm font-medium text-white shadow hover:bg-purple-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition cursor-pointer"
 						disabled={formik.isSubmitting}
 					>
 						{formik.isSubmitting ? "Asking Question..." : "Ask Question"}

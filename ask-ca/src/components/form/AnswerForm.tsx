@@ -22,8 +22,6 @@ type Answer = {
 
 type FormValues = {
 	content: string;
-	createdAt: string;
-	updatedAt: string;
 };
 
 type AnswerFormProps = {
@@ -61,17 +59,6 @@ export default function AnswerForm({
 	const editorConfig = useMemo(() => getEditorConfig(), []);
 	const [answer, setAnswer] = useState<Partial<Answer>>(initialData);
 
-	// Set initial date/time for the form
-	let initialDate = "";
-	if (answer?.createdAt) {
-		const d = new Date(answer.createdAt);
-		initialDate = isNaN(d.getTime())
-			? toDatetimeLocal(new Date())
-			: toDatetimeLocal(d);
-	} else {
-		initialDate = toDatetimeLocal(new Date());
-	}
-
 	useEffect(() => {
 		if (isEditing && answerId && !initialData?._id) {
 			const fetchData = async () => {
@@ -98,15 +85,10 @@ export default function AnswerForm({
 			isEditing ? "Updating Answer..." : "Submitting Answer..."
 		);
 		try {
-			const createdAtISO = new Date(values.createdAt).toISOString();
-			const updatedAtISO = new Date(values.updatedAt).toISOString();
-
 			let response;
 			if (isEditing && answerId) {
 				response = await API.patch(`/answers/${answerId}`, {
 					content: values.content,
-					createdAt: createdAtISO,
-					updatedAt: updatedAtISO,
 				});
 			} else {
 				if (!questionId) {
@@ -117,8 +99,6 @@ export default function AnswerForm({
 				}
 				response = await API.post(`/answers/${questionId}`, {
 					content: values.content,
-					createdAt: createdAtISO,
-					updatedAt: updatedAtISO,
 				});
 			}
 
@@ -149,8 +129,6 @@ export default function AnswerForm({
 	const formik = useFormik<FormValues>({
 		initialValues: {
 			content: (answer?.content as string) || "",
-			createdAt: initialDate,
-			updatedAt: initialDate,
 		},
 		validationSchema,
 		onSubmit: handleSubmit,
@@ -184,27 +162,6 @@ export default function AnswerForm({
 				{formik.errors.content && formik.touched.content && (
 					<p className="mt-1 text-sm text-red-600">{formik.errors.content}</p>
 				)}
-			</div>
-
-			{/* Date/Time Picker */}
-			<div className="relative">
-				<label
-					htmlFor="createdAt"
-					className="block text-sm font-medium text-gray-700"
-				>
-					Date & Time
-				</label>
-				<input
-					type="datetime-local"
-					id="createdAt"
-					name="createdAt"
-					className="mt-1 block w-full rounded-md border bg-white px-3 py-2 text-sm text-gray-900 shadow-sm border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-					value={formik.values.createdAt}
-					onChange={(e) => {
-						formik.handleChange(e);
-						formik.setFieldValue("updatedAt", e.target.value);
-					}}
-				/>
 			</div>
 
 			{/* Button */}

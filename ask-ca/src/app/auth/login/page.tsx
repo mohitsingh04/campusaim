@@ -58,7 +58,7 @@ const Login = () => {
 				<div className="absolute inset-0 bg-black/20"></div>
 				<div className="relative w-full h-full">
 					<Image
-						src="/reset_password.jpg"
+						src="/images/common/campusaim-featured.png"
 						alt="Forget password"
 						fill
 						className="object-cover"
@@ -77,7 +77,7 @@ const Login = () => {
 					>
 						<div className="relative h-10 w-48">
 							<Image
-								src="/logo-black-new.png"
+								src="/images/logo/campusaim-logo.png"
 								alt="logo"
 								fill
 								className="object-contain"

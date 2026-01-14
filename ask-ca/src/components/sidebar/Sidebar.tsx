@@ -92,7 +92,7 @@ export default function Sidebar({
 								href={item.path}
 								className={`group flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors duration-150 ${
 									pathname === item.path
-										? "border-l-4 border-blue-600 bg-blue-50 text-blue-700 font-semibold"
+										? "border-l-4 border-purple-600 bg-purple-50 text-purple-700 font-semibold"
 										: "text-gray-600 hover:bg-gray-100 hover:text-gray-900 font-medium"
 								}`}
 							>
@@ -108,7 +108,7 @@ export default function Sidebar({
 							</h3>
 							<Link
 								href="/topic"
-								className="text-xs font-medium text-blue-600 hover:underline"
+								className="text-xs font-medium text-purple-600 hover:underline"
 							>
 								Manage
 							</Link>
@@ -138,7 +138,7 @@ export default function Sidebar({
 								{followedTopics.length > 5 && (
 									<Link
 										href="/topic"
-										className="group mt-2 flex items-center gap-1.5 px-3 text-sm font-medium text-blue-600"
+										className="group mt-2 flex items-center gap-1.5 px-3 text-sm font-medium text-purple-600"
 									>
 										<span>View all topics</span>
 										<ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -195,7 +195,7 @@ export default function Sidebar({
 								href={item.path}
 								className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
 									pathname === item.path
-										? "bg-blue-50 text-blue-600 border-r-2 border-blue-600"
+										? "bg-purple-50 text-purple-600 border-r-2 border-purple-600"
 										: "text-gray-700 hover:bg-gray-100"
 								}`}
 								onClick={() => setSidebarOpen(false)}

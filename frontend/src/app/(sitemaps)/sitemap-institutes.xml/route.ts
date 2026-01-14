@@ -61,7 +61,7 @@ type ApiData = {
 export async function GET() {
   const baseUrl =
     process.env.NEXT_PUBLIC_BASE_URL?.trim().replace(/\/$/, "") ||
-    "https://yogprerna.com";
+    "https://campusaim.com";
 
   const tabs = [
     { id: "overview", label: "Overview", show: true },

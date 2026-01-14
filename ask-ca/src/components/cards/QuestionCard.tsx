@@ -149,7 +149,7 @@ export default function QuestionCard({
 								<Link
 									href={`/profile/${author?.username}`}
 									target="_blank"
-									className="font-semibold text-gray-900 hover:text-blue-600"
+									className="font-semibold text-gray-900 hover:text-purple-600"
 								>
 									{author?.name}
 								</Link>
@@ -170,7 +170,7 @@ export default function QuestionCard({
 
 				{/* Title */}
 				<Link href={`/question/${question.slug}`} prefetch>
-					<h2 className="mt-3 text-lg font-semibold text-gray-900 group-hover:text-blue-600 leading-snug">
+					<h2 className="mt-3 text-lg font-semibold text-gray-900 group-hover:text-purple-600 leading-snug">
 						{question.title}
 					</h2>
 				</Link>
@@ -186,7 +186,7 @@ export default function QuestionCard({
 					{Array.isArray(question.category) &&
 						question.category.map((cat) => (
 							<Link href={`/topic/${cat.slug}`} target="blank" key={cat._id}>
-								<span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 border border-blue-200">
+								<span className="rounded-full bg-purple-50 px-3 py-1 text-xs font-medium text-purple-700 border border-purple-200">
 									{cat.category_name}
 								</span>
 							</Link>
@@ -358,7 +358,7 @@ export default function QuestionCard({
 						onClick={onUpvote}
 						className={`flex items-center gap-1 px-3 py-1.5 rounded-full transition ${
 							hasUpvoted
-								? "text-blue-600 bg-blue-50 border border-blue-200"
+								? "text-purple-600 bg-purple-50 border border-purple-200"
 								: "text-gray-600 bg-white border border-gray-200 hover:bg-gray-100"
 						}`}
 					>

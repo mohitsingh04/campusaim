@@ -53,7 +53,7 @@ export default function ShareModal({
 					/>
 					<button
 						onClick={handleCopy}
-						className="ml-2 p-1 rounded hover:bg-blue-100 text-blue-600 hover:text-blue-800 transition cursor-pointer"
+						className="ml-2 p-1 rounded hover:bg-purple-100 text-purple-600 hover:text-purple-800 transition cursor-pointer"
 						title="Copy link"
 					>
 						<Copy className="w-5 h-5" />
@@ -66,9 +66,9 @@ export default function ShareModal({
 						)}`}
 						target="_blank"
 						rel="noopener noreferrer"
-						className="flex flex-col items-center p-3 rounded-lg bg-blue-50 hover:bg-blue-100 transition"
+						className="flex flex-col items-center p-3 rounded-lg bg-purple-50 hover:bg-purple-100 transition"
 					>
-						<Facebook className="w-7 h-7 text-blue-600" />
+						<Facebook className="w-7 h-7 text-purple-600" />
 						<span className="text-xs mt-2 text-gray-700">Facebook</span>
 					</a> */}
 					{/* <a
@@ -88,9 +88,9 @@ export default function ShareModal({
 						)}&title=${encodeURIComponent(title)}`}
 						target="_blank"
 						rel="noopener noreferrer"
-						className="flex flex-col items-center p-3 rounded-lg bg-blue-50 hover:bg-blue-100 transition"
+						className="flex flex-col items-center p-3 rounded-lg bg-purple-50 hover:bg-purple-100 transition"
 					>
-						<Linkedin className="w-7 h-7 text-blue-700" />
+						<Linkedin className="w-7 h-7 text-purple-700" />
 						<span className="text-xs mt-2 text-gray-700">LinkedIn</span>
 					</a> */}
 					<a

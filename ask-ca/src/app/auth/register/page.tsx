@@ -90,7 +90,7 @@ const Register = () => {
 				<div className="fixed top-0 left-0 w-1/2 h-screen">
 					<div className="relative w-full h-full">
 						<Image
-							src="/reset_password.jpg"
+							src="/images/common/campusaim-featured.png"
 							alt="Forget password"
 							fill
 							className="object-cover"
@@ -110,7 +110,7 @@ const Register = () => {
 					>
 						<div className="relative h-10 w-48">
 							<Image
-								src="/logo-black-new.png"
+								src="/images/logo/campusaim-logo.png"
 								alt="logo"
 								fill
 								className="object-contain"

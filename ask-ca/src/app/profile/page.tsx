@@ -56,15 +56,15 @@ export default function Users() {
 														alt={user.name || "User"}
 														width={40}
 														height={40}
-														className="h-10 w-10 rounded-full object-cover ring-2 ring-blue-200 group-hover:ring-blue-400 transition"
+														className="h-10 w-10 rounded-full object-cover ring-2 ring-purple-200 group-hover:ring-purple-400 transition"
 													/>
 												) : (
-													<span className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200 text-base font-bold text-gray-700 ring-2 ring-blue-200 group-hover:ring-blue-400 transition">
+													<span className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200 text-base font-bold text-gray-700 ring-2 ring-purple-200 group-hover:ring-purple-400 transition">
 														{user.name?.[0]?.toUpperCase() || "U"}
 													</span>
 												)}
 												<div className="flex-1 min-w-0">
-													<p className="font-semibold text-gray-900 truncate group-hover:text-blue-700 transition">
+													<p className="font-semibold text-gray-900 truncate group-hover:text-purple-700 transition">
 														{user.name}
 													</p>
 													<p className="text-xs text-gray-500 truncate">
@@ -103,15 +103,15 @@ export default function Users() {
 														alt={user.name || "User"}
 														width={40}
 														height={40}
-														className="h-10 w-10 rounded-full object-cover ring-2 ring-blue-200 group-hover:ring-blue-400 transition"
+														className="h-10 w-10 rounded-full object-cover ring-2 ring-purple-200 group-hover:ring-purple-400 transition"
 													/>
 												) : (
-													<span className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200 text-base font-bold text-gray-700 ring-2 ring-blue-200 group-hover:ring-blue-400 transition">
+													<span className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200 text-base font-bold text-gray-700 ring-2 ring-purple-200 group-hover:ring-purple-400 transition">
 														{user.name?.[0]?.toUpperCase() || "U"}
 													</span>
 												)}
 												<div className="flex-1 min-w-0">
-													<p className="font-semibold text-gray-900 truncate group-hover:text-blue-700 transition">
+													<p className="font-semibold text-gray-900 truncate group-hover:text-purple-700 transition">
 														{user.name}
 													</p>
 													<p className="text-xs text-gray-500 truncate">
@@ -120,7 +120,7 @@ export default function Users() {
 												</div>
 											</Link>
 											<div className="flex flex-col items-end">
-												<span className="text-base font-bold text-blue-600">
+												<span className="text-base font-bold text-purple-600">
 													{userObj.score}
 												</span>
 												<span className="text-xs text-gray-400">Score</span>

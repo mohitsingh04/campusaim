@@ -80,7 +80,7 @@ export default function VerifyEmailSwal() {
 				{/* Logo */}
 				<div className="mb-8 flex justify-center md:justify-start w-full md:w-1/3">
 					<Image
-						src="/logo-black-new.png"
+						src="/images/logo/campusaim-logo.png"
 						width={192}
 						height={48}
 						className="w-48"

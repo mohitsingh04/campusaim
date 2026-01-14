@@ -67,7 +67,7 @@ export default function LeftSidebar() {
 							href={item.path}
 							className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors ${
 								pathname === item.path
-									? "bg-blue-50 text-blue-700 font-medium"
+									? "bg-purple-50 text-purple-700 font-medium"
 									: "text-slate-600 hover:bg-slate-50"
 							}`}
 						>
@@ -99,7 +99,7 @@ export default function LeftSidebar() {
 					{topics.length > 5 && (
 						<Link
 							href="/topic"
-							className="group mt-2 flex items-center gap-1.5 px-3 text-sm font-medium text-blue-600"
+							className="group mt-2 flex items-center gap-1.5 px-3 text-sm font-medium text-purple-600"
 						>
 							<span>View all topics</span>
 							<ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />

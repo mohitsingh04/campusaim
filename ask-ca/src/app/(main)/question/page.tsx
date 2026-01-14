@@ -86,7 +86,7 @@ export default function QuestionList() {
 										<select
 											value={sortBy}
 											onChange={(e) => setSortBy(e.target.value)}
-											className="appearance-none rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-300 pr-10 cursor-pointer"
+											className="appearance-none rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm focus:border-purple-500 focus:ring-2 focus:ring-purple-300 pr-10 cursor-pointer"
 										>
 											<option value="latest">Latest</option>
 											<option value="trending">Trending</option>
@@ -155,7 +155,7 @@ export default function QuestionList() {
 								{visibleCount < sortedQuestions.length && (
 									<div className="flex justify-center py-4">
 										<button
-											className="px-4 py-2 rounded bg-blue-600 text-white font-medium hover:bg-blue-700 transition cursor-pointer"
+											className="px-4 py-2 rounded bg-purple-600 text-white font-medium hover:bg-purple-700 transition cursor-pointer"
 											onClick={() =>
 												setVisibleCount((prev) =>
 													Math.min(prev + 10, sortedQuestions.length)

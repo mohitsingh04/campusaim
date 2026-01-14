@@ -2,4 +2,4 @@ User-agent: *
 Disallow: /api/
 Disallow: /admin/
 Allow: /
-Sitemap: https://yogprerna.com/sitemap.xml
+Sitemap: https://campusaim.com/sitemap.xml

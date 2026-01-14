@@ -43,7 +43,7 @@ export default function MainLayout({ children }: { children: ReactNode }) {
 							prefetch={true}
 						>
 							<Image
-								src="/logo-black-new.png"
+								src="/images/logo/campusaim-logo.png"
 								alt="AskHub Full Logo"
 								width={120}
 								height={40}
