@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { ReactNode, Suspense } from "react";
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://www.campusaim.com";
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://campusaim.com";
 
 export const metadata: Metadata = {
   title: "Terms & Conditions",
