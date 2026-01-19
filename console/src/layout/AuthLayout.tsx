@@ -1,33 +1,15 @@
-import { Outlet, useLocation, useNavigate } from "react-router";
+import { Navigate, Outlet } from "react-router";
 import GoogleLoginButton from "../pages/auth/GoogleLoginButton";
-import MainLoader from "../ui/loadings/pages/MainLoader";
 import { UserProps } from "../types/types";
-import { useEffect } from "react";
-import { PublicNavigations } from "../common/RouteData";
 
 export default function AuthLayout({
 	authUser,
-	authLoading,
 }: {
-	authLoading: boolean;
 	authUser: UserProps | null;
 }) {
-	const navigate = useNavigate();
-	const location = useLocation();
-
-	useEffect(() => {
-		const isPublicRoute = PublicNavigations.some(
-			(route) =>
-				route.href === location.pathname ||
-				location.pathname.startsWith(route.href.split("/:")[0])
-		);
-
-		if (!authLoading && authUser && !isPublicRoute) {
-			navigate("/dashboard");
-		}
-	}, [authLoading, authUser, navigate, location]);
-
-	// if (authLoading) return <MainLoader />;
+	if (authUser) {
+		return <Navigate to="/dashboard" replace />;
+	}
 
 	return (
 		<>
@@ -36,13 +18,6 @@ export default function AuthLayout({
 					<div className="absolute top-16 left-16 w-4 h-4 bg-blue-200 rounded-full opacity-60"></div>
 					<div className="absolute top-32 right-24 w-6 h-6 bg-blue-200 rounded-full opacity-40"></div>
 					<div className="absolute bottom-24 left-12 w-3 h-3 bg-blue-300 rounded-full opacity-50"></div>
-					{/* <div className="relative mb-8 w-72 h-72 flex-shrink-0">
-						<img
-							src="/img/auth-hero.png"
-							alt="Yoga Illustration"
-							className="object-cover w-full h-full rounded-lg"
-						/>
-					</div> */}
 					<div className="text-center max-w-xl px-4 flex-shrink-0">
 						<h1 className="text-4xl font-bold text-slate-800 mb-4 leading-tight">
 							Welcome to Campusaim

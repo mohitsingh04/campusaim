@@ -29,6 +29,7 @@ import NotFoundPage from "./pages/error/NotFound";
 import AccessDenied from "./pages/error/AccessDenied";
 import ComingSoon from "./pages/error/CommingSoon";
 import PermissionContext from "./contexts/PermissionContext";
+import MainLoader from "./ui/loadings/pages/MainLoader";
 
 function App() {
 	const [authUser, setAuthUser] = useState<UserProps | null>(null);
@@ -66,7 +67,7 @@ function App() {
 			if (!Array.isArray(allPermissions)) return null;
 			for (const doc of allPermissions) {
 				const found = doc.permissions?.find(
-					(perm: { _id: string }) => perm._id === id
+					(perm: { _id: string }) => perm._id === id,
 				);
 				if (found) {
 					return found.title;
@@ -74,7 +75,7 @@ function App() {
 			}
 			return null;
 		},
-		[allPermissions]
+		[allPermissions],
 	);
 
 	useEffect(() => {
@@ -90,7 +91,7 @@ function App() {
 			const rol = roles?.find((item) => item._id === id);
 			return rol?.role;
 		},
-		[roles]
+		[roles],
 	);
 
 	const getAuthUser = useCallback(async () => {
@@ -104,7 +105,7 @@ function App() {
 				: [];
 
 			const permissions = rawPermissions.map((item: string) =>
-				findPermissionInDocs(item)
+				findPermissionInDocs(item),
 			);
 
 			setAuthUser({
@@ -124,6 +125,10 @@ function App() {
 			getAuthUser();
 		}
 	}, [loadingRoles, loadingPermissions, getAuthUser]);
+
+	if (authLoading) {
+		return <MainLoader />; // or AppLoader
+	}
 
 	return (
 		<ThemeProvider>
@@ -187,37 +192,18 @@ function App() {
 					</Route>
 
 					{/* Auth Layout */}
-					<Route
-						path="/"
-						element={
-							<AuthLayout authUser={authUser} authLoading={authLoading} />
-						}
-					>
+					<Route path="/" element={<AuthLayout authUser={authUser} />}>
 						{AuthNavigations.map((page, index) => (
 							<Route
 								path={page.href}
-								element={
-									<ProtectedRoutes
-										authUser={authUser}
-										authLoading={authLoading}
-									>
-										<page.component />
-									</ProtectedRoutes>
-								}
+								element={<page.component />}
 								key={index}
 							/>
 						))}
 						{PublicNavigations.map((page, index) => (
 							<Route
 								path={page.href}
-								element={
-									<ProtectedRoutes
-										authUser={authUser}
-										authLoading={authLoading}
-									>
-										<page.component />
-									</ProtectedRoutes>
-								}
+								element={<page.component />}
 								key={index}
 							/>
 						))}

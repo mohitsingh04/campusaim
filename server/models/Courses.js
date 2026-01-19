@@ -28,9 +28,10 @@ const CourseSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category"
     }],
-    course_eligibility: {
-      type: String,
-    },
+    course_eligibility: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category"
+    }],
     description: {
       type: String,
     },

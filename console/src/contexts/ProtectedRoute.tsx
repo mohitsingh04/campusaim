@@ -28,7 +28,7 @@ export default function ProtectedRoutes({
 	const isPathMatching = (paths: string[]) =>
 		paths.some((route) => matchPath(route, path));
 
-	// if (authLoading) return <MainLoader />;
+	if (authLoading) return <MainLoader />;
 
 	if (isPathMatching(PublicNavigations.map((r) => r.href))) {
 		return children;

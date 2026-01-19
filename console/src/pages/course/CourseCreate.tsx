@@ -51,7 +51,7 @@ export function CourseCreate() {
 			course_type: "",
 			program_type: "",
 			best_for: [] as string[],
-			course_eligibility: "",
+			course_eligibility: [] as string[],
 			image: null as File | null,
 			description: "",
 		},
@@ -65,16 +65,19 @@ export function CourseCreate() {
 				fd.append("specialization", values.specialization);
 				fd.append(
 					"duration",
-					`${values?.duration_value} ${values?.duration_type}`
+					`${values?.duration_value} ${values?.duration_type}`,
 				);
 				fd.append("course_type", values.course_type);
 				fd.append("program_type", values.program_type);
 				fd.append("best_for", JSON.stringify(values.best_for));
+				fd.append(
+					"course_eligibility",
+					JSON.stringify(values.course_eligibility),
+				);
+				fd.append("description", values.description);
 				if (values.image) {
 					fd.append("image", values.image);
 				}
-				fd.append("course_eligibility", values.course_eligibility);
-				fd.append("description", values.description);
 
 				const response = await API.post("/course", fd);
 				toast.success(response.data.message || "Course created Successfully");
@@ -102,16 +105,26 @@ export function CourseCreate() {
 
 	const specializationOptions = getCategoryAccodingToField(
 		categories,
-		"specialization"
+		"specialization",
 	);
 	const bestForOptions = getCategoryAccodingToField(categories, "Best For");
 	const bestForSelectOptions = bestForOptions.map((opt: any) => ({
 		value: opt._id,
 		label: opt.category_name || opt.name,
 	}));
+	const courseEligibilityOptions = getCategoryAccodingToField(
+		categories,
+		"Course Eligibility",
+	);
+	const courseEligibilitySelectOptions = courseEligibilityOptions.map(
+		(opt: any) => ({
+			value: opt._id,
+			label: opt.category_name || opt.name,
+		}),
+	);
 	const courseTypeOptions = getCategoryAccodingToField(
 		categories,
-		"Course Type"
+		"Course Type",
 	);
 	const courseTypeSelectOptions = courseTypeOptions.map((opt: any) => ({
 		value: opt._id,
@@ -119,7 +132,7 @@ export function CourseCreate() {
 	}));
 	const ProgramTypeOptions = getCategoryAccodingToField(
 		categories,
-		"Program Type"
+		"Program Type",
 	);
 	const programTypeSelectOptions = ProgramTypeOptions.map((opt: any) => ({
 		value: opt._id,
@@ -236,12 +249,12 @@ export function CourseCreate() {
 								name="course_type"
 								options={courseTypeSelectOptions}
 								value={courseTypeSelectOptions.find(
-									(opt) => opt.value === formik.values.course_type
+									(opt) => opt.value === formik.values.course_type,
 								)}
 								onChange={(selected) =>
 									formik.setFieldValue(
 										"course_type",
-										selected ? selected.value : ""
+										selected ? selected.value : "",
 									)
 								}
 								onBlur={() => formik.setFieldTouched("course_type", true)}
@@ -261,12 +274,12 @@ export function CourseCreate() {
 								name="program_type"
 								options={programTypeSelectOptions}
 								value={programTypeSelectOptions.find(
-									(opt) => opt.value === formik.values.program_type
+									(opt) => opt.value === formik.values.program_type,
 								)}
 								onChange={(selected) =>
 									formik.setFieldValue(
 										"program_type",
-										selected ? selected.value : ""
+										selected ? selected.value : "",
 									)
 								}
 								onBlur={() => formik.setFieldTouched("program_type", true)}
@@ -287,12 +300,12 @@ export function CourseCreate() {
 								name="best_for"
 								options={bestForSelectOptions}
 								value={bestForSelectOptions.filter((opt) =>
-									formik.values.best_for?.includes(opt.value)
+									formik.values.best_for?.includes(opt.value),
 								)}
 								onChange={(selected) =>
 									formik.setFieldValue(
 										"best_for",
-										Array.isArray(selected) ? selected.map((s) => s.value) : []
+										Array.isArray(selected) ? selected.map((s) => s.value) : [],
 									)
 								}
 								onBlur={() => formik.setFieldTouched("best_for", true)}
@@ -301,21 +314,32 @@ export function CourseCreate() {
 
 							{getFormikError(formik, "best_for")}
 						</div>
-					</div>
 
-					{/* Course Eligibility */}
-					<div>
-						<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
-							Course Eligibility
-						</label>
-						<textarea
-							name="course_eligibility"
-							value={formik.values.course_eligibility}
-							onChange={formik.handleChange}
-							placeholder="Enter Course Eligibility"
-							className="w-full px-3 py-2 border border-[var(--yp-border-primary)] rounded-lg bg-[var(--yp-input-primary)] text-[var(--yp-text-primary)]"
-						></textarea>
-						{getFormikError(formik, "course_eligibility")}
+						{/* Course Eligibility */}
+						<div>
+							<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
+								Course Eligibility
+							</label>
+							<Select
+								isMulti
+								name="course_eligibility"
+								options={courseEligibilitySelectOptions}
+								value={courseEligibilitySelectOptions.filter((opt) =>
+									formik.values.course_eligibility?.includes(opt.value),
+								)}
+								onChange={(selected) =>
+									formik.setFieldValue(
+										"course_eligibility",
+										Array.isArray(selected) ? selected.map((s) => s.value) : [],
+									)
+								}
+								onBlur={() =>
+									formik.setFieldTouched("course_eligibility", true)
+								}
+								classNamePrefix="react-select"
+							/>
+							{getFormikError(formik, "course_eligibility")}
+						</div>
 					</div>
 
 					{/* Image */}

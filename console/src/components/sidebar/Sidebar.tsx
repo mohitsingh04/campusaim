@@ -42,7 +42,7 @@ export function Sidebar({ isCollapsed, authUser }: SidebarProps) {
     <>
       {/* Logo */}
       <div className="flex items-center bg-[var(--yp-primary)] justify-center px-2 py-6 border-b border-[var(--yp-border-primary)] dark:border-gray-700 flex-shrink-0">
-        <Link to={`/`}>
+        <Link to={`/dashboard`}>
           {isCollapsed && !isMobileOpen ? (
             <>
               {theme === "dark" ? (

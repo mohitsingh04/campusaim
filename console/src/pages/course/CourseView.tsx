@@ -168,7 +168,7 @@ export default function CourseView() {
 								course?.image?.[0]
 									? `${import.meta.env.VITE_MEDIA_URL}/course/${
 											course?.image?.[0]
-									  }`
+										}`
 									: "/img/default-images/ca-course.png"
 							}
 							alt={`${course?.course_name} image`}
@@ -191,11 +191,15 @@ export default function CourseView() {
 							<FiBookOpen className="w-6 h-6 text-[var(--yp-main)]" />
 							Course Eligibility
 						</h2>
-						<ReadMoreLess
-							children={
-								course?.course_eligibility || "No description provided."
-							}
-						/>
+
+						<p className="text-[var(--yp-text-secondary)]">
+							{(() => {
+								const names = getCategoryNamesFromBestFor(
+									course?.course_eligibility,
+								);
+								return names.length ? names.join(", ") : "N/A";
+							})()}
+						</p>
 					</section>
 				</div>
 
@@ -219,8 +223,8 @@ export default function CourseView() {
 									{!course?.isDeleted
 										? matchPermissions(
 												authUser?.permissions,
-												"Delete Course"
-										  ) && (
+												"Delete Course",
+											) && (
 												<button
 													className="flex gap-2 px-6 py-2 rounded-lg text-sm font-medium text-[var(--yp-red-text)] bg-[var(--yp-red-bg)]"
 													onClick={() => handleDelete(course?._id || "")}
@@ -228,11 +232,11 @@ export default function CourseView() {
 													<Trash2 className="w-5 h-5" />
 													Delete
 												</button>
-										  )
+											)
 										: matchPermissions(
 												authUser?.permissions,
-												"Restore Course"
-										  ) && (
+												"Restore Course",
+											) && (
 												<button
 													className="flex gap-2 px-6 py-2 rounded-lg text-sm font-medium text-[var(--yp-yellow-text)] bg-[var(--yp-yellow-bg)]"
 													onClick={() => handleRestore(course?._id || "")}
@@ -240,7 +244,7 @@ export default function CourseView() {
 													<LucideArchiveRestore className="w-5 h-5" />
 													Restore
 												</button>
-										  )}
+											)}
 								</div>
 							}
 						/>

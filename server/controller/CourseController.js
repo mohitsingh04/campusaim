@@ -6,38 +6,32 @@ import AllSeo from "../models/AllSeo.js";
 import mongoose from "mongoose";
 import Category from "../models/Category.js";
 
-function normalizeBestFor(best_for) {
-  let bestForArray = [];
+function normalizeObjectIdArray(input) {
+  let arr = [];
 
-  if (best_for) {
-    if (Array.isArray(best_for)) {
-      bestForArray = best_for;
-    } else if (typeof best_for === "string") {
-      try {
-        const parsed = JSON.parse(best_for);
-        if (Array.isArray(parsed)) bestForArray = parsed;
-        else if (typeof parsed === "string" && parsed.trim())
-          bestForArray = [parsed];
-      } catch (err) {
-        if (best_for.includes(",")) {
-          bestForArray = best_for
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean);
-        } else if (best_for.trim()) {
-          bestForArray = [best_for.trim()];
-        }
-      }
-    } else {
-      bestForArray = [String(best_for)];
+  if (!input) return arr;
+
+  if (Array.isArray(input)) {
+    arr = input;
+  } else if (typeof input === "string") {
+    try {
+      const parsed = JSON.parse(input);
+      if (Array.isArray(parsed)) arr = parsed;
+      else if (parsed) arr = [parsed];
+    } catch {
+      arr = input.includes(",")
+        ? input.split(",").map(s => s.trim())
+        : [input.trim()];
     }
+  } else {
+    arr = [String(input)];
   }
 
-  // Keep strings only and filter invalid ObjectId strings.
-  return bestForArray
-    .map((id) => String(id).trim())
-    .filter((id) => mongoose.Types.ObjectId.isValid(id));
+  return arr
+    .map(id => String(id).trim())
+    .filter(id => mongoose.Types.ObjectId.isValid(id));
 }
+
 
 function normalizeToStringArray(value) {
   let arr = [];
@@ -139,9 +133,9 @@ export const addCourse = async (req, res) => {
       duration,
       course_type,
       program_type,
-      course_eligibility,
       description,
       best_for,
+      course_eligibility,
     } = req.body;
 
     const specializationCategory = await Category.findById(specialization);
@@ -150,7 +144,8 @@ export const addCourse = async (req, res) => {
       return res.status(400).json({ error: "Course name is required." });
     }
 
-    const bestForArray = normalizeBestFor(best_for);
+    const bestForArray = normalizeObjectIdArray(best_for);
+    const courseEligibilityArray = normalizeObjectIdArray(course_eligibility);
     const courseTypeArray = normalizeToStringArray(course_type);
     const programTypeArray = normalizeToStringArray(program_type);
 
@@ -179,7 +174,7 @@ export const addCourse = async (req, res) => {
       best_for: bestForArray,
       course_type: courseTypeArray,
       program_type: programTypeArray,
-      course_eligibility,
+      course_eligibility: courseEligibilityArray,
       description: updatedDescription,
       image: images,
       course_slug: courseSlug,
@@ -212,6 +207,7 @@ export const addCourse = async (req, res) => {
 export const updateCourse = async (req, res) => {
   try {
     const { objectId } = req.params;
+
     const course = await Course.findById(objectId);
     if (!course) {
       return res.status(404).json({ error: "Course not found!" });
@@ -230,14 +226,38 @@ export const updateCourse = async (req, res) => {
       status,
     } = req.body;
 
-    const specializationCategory = await Category.findById(specialization);
-    const courseSlug = generateSlug(course_name, specializationCategory.category_name);
+    // Generate slug only if required fields exist
+    let courseSlug = course.course_slug;
+    if (course_name && specialization) {
+      const specializationCategory = await Category.findById(specialization);
+      if (specializationCategory) {
+        courseSlug = generateSlug(
+          course_name,
+          specializationCategory.category_name
+        );
+      }
+    }
 
-    // Normalize fields
-    const normalizedBestFor = normalizeBestFor(best_for);
-    const normalizedCourseType = normalizeToStringArray(course_type);
-    const normalizedProgramType = normalizeToStringArray(program_type);
+    // Normalize inputs (ONLY when provided)
+    const normalizedBestFor =
+      best_for !== undefined ? normalizeObjectIdArray(best_for) : undefined;
 
+    const normalizedEligibility =
+      course_eligibility !== undefined
+        ? normalizeObjectIdArray(course_eligibility)
+        : undefined;
+
+    const normalizedCourseType =
+      course_type !== undefined
+        ? normalizeToStringArray(course_type)
+        : undefined;
+
+    const normalizedProgramType =
+      program_type !== undefined
+        ? normalizeToStringArray(program_type)
+        : undefined;
+
+    // Sanitize description
     let updatedDescription = description;
     if (description) {
       updatedDescription = await downloadImageAndReplaceSrcNonProperty(
@@ -246,35 +266,47 @@ export const updateCourse = async (req, res) => {
       );
     }
 
+    // Handle image safely
     const imageFile = req.files?.["image"];
     const existImage = imageFile
       ? imageFile[0]?.webpFilename
       : course.image?.[0];
+
     const existImageOriginal = imageFile
       ? imageFile[0]?.filename
       : course.image?.[1];
 
+    // Base update object (NO accidental overwrites)
     const updateObj = {
-      course_name,
-      course_short_name,
-      specialization,
-      course_eligibility,
+      ...(course_name && { course_name }),
+      ...(course_short_name && { course_short_name }),
+      ...(specialization && { specialization }),
+      ...(duration && { duration }),
+      ...(updatedDescription && { description: updatedDescription }),
+      ...(status !== undefined && { status }),
+      ...(courseSlug && { course_slug: courseSlug }),
       image: [existImage, existImageOriginal],
-      duration,
-      description: updatedDescription,
-      course_slug: courseSlug,
-      status,
     };
 
-    if (best_for !== undefined) {
+    // Conditional updates
+    if (normalizedBestFor) {
       updateObj.best_for = normalizedBestFor;
     }
 
-    if (course_type !== undefined) {
+    if (normalizedEligibility) {
+      // Validate referenced categories actually exist
+      const validEligibility = await Category.find({
+        _id: { $in: normalizedEligibility },
+      }).select("_id");
+
+      updateObj.course_eligibility = validEligibility.map((c) => c._id);
+    }
+
+    if (normalizedCourseType) {
       updateObj.course_type = normalizedCourseType;
     }
 
-    if (program_type !== undefined) {
+    if (normalizedProgramType) {
       updateObj.program_type = normalizedProgramType;
     }
 
@@ -284,17 +316,21 @@ export const updateCourse = async (req, res) => {
       { new: true }
     );
 
+    // SEO update (non-blocking)
     autoAddAllSeo({
       type_id: courseUpdated._id,
-      title: course_name,
+      title: courseUpdated.course_name,
       description: updatedDescription,
-      slug: courseSlug,
+      slug: courseUpdated.course_slug,
       type: "course",
     });
 
-    return res.status(200).json({ message: "Course updated successfully." });
+    return res.status(200).json({
+      message: "Course updated successfully.",
+      course: courseUpdated,
+    });
   } catch (error) {
-    console.error(error);
+    console.error("updateCourse error:", error);
     return res.status(500).json({ error: "Internal server error!" });
   }
 };
