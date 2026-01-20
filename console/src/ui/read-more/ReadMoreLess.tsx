@@ -88,7 +88,7 @@ const ReadMoreLess: React.FC<ReadMoreLessProps> = ({
   }
 
   return (
-    <div className="text-[var(--yp-text-primary)] leading-relaxed prose dark:prose-invert max-w-none">
+    <div id="blog-main" className="text-[var(--yp-text-primary)] leading-relaxed prose dark:prose-invert max-w-none">
       {!isExpanded ? (
         <span>
           <span>{visibleText}</span>

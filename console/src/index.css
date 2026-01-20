@@ -87,6 +87,7 @@
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -123,6 +124,7 @@ input[type="checkbox"]:checked {
   border: none !important;
   background: none !important;
 }
+
 .jodit-status-bar-link {
   display: none;
 }
@@ -131,26 +133,32 @@ input[type="checkbox"]:checked {
   background: var(--yp-input-primary) !important;
   border: none !important;
 }
+
 .jodit-toolbar-button__button .jodit-toolbar-button__icon svg,
 .jodit-toolbar-button__trigger svg {
   fill: var(--yp-text-secondary) !important;
 }
+
 .jodit-toolbar-button__button:hover .jodit-toolbar-button__icon svg,
 .jodit-toolbar-button__trigger:hover svg {
   fill: var(--yp-input-primary) !important;
 }
+
 .jodit-workplace {
   background-color: var(--yp-input-primary) !important;
   color: var(--yp-text-secondary) !important;
 }
+
 .jodit-placeholder {
   color: var(--yp-text-primary) !important;
 }
+
 .jodit-status-bar {
   background-color: var(--yp-input-primary) !important;
   color: var(--yp-text-secondary) !important;
   border-color: var(--yp-border-primary) !important;
 }
+
 .jodit-status-bar * {
   color: var(--yp-text-secondary) !important;
 }
@@ -176,6 +184,7 @@ input[type="checkbox"]:checked {
 #blog-main {
   font-size: 17px;
 }
+
 #blog-main h1,
 #blog-main h2,
 #blog-main h3,
@@ -184,21 +193,27 @@ input[type="checkbox"]:checked {
   font-weight: 600;
   color: var(--yp-blog-heading);
 }
+
 #blog-main h1 {
   font-size: 24px;
 }
+
 #blog-main h2 {
   font-size: 22px;
 }
+
 #blog-main h3 {
   font-size: 20px;
 }
+
 #blog-main h4 {
   font-size: 18px;
 }
+
 #blog-main .wp-block-list li {
   margin-bottom: 4px;
 }
+
 #blog-main .wp-block-list li:before {
   font-family: "Font Awesome 6 Free";
   content: "\f0da";
@@ -209,12 +224,15 @@ input[type="checkbox"]:checked {
   color: var(--yp-main);
   margin-top: -5px;
 }
+
 #blog-main .post-details {
   font-size: 14px;
 }
+
 #blog-main .post-details .left {
   margin-left: 8px;
 }
+
 #blog-main p,
 mark,
 li {
@@ -223,13 +241,61 @@ li {
   color: var(--yp-text-primary);
   margin-bottom: 12px;
 }
+
 #blog-main a {
   color: var(--yp-main);
   font-weight: 600;
 }
-#blog-main table {
-  font-size: 13px;
+/* Wrapper makes table responsive */
+#blog-main div {
+  width: 100%;
+  overflow-x: auto;
 }
+
+/* Table core */
+#blog-main table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed; /* 🔑 equal column behavior */
+  font-size: 13px;
+  border: 1px solid var(--yp-border-primary);
+  min-width: 600px; /* prevents cell squish on mobile */
+}
+
+/* Cells */
+#blog-main th,
+#blog-main td {
+  padding: 10px 8px;
+  border: 1px solid var(--yp-border-primary);
+  text-align: center;
+  vertical-align: middle;
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+/* Header */
+#blog-main th {
+  font-weight: 800;
+
+}
+
+/* Rows height consistency */
+#blog-main tr {
+  height: 44px; /* keeps visual rhythm */
+}
+
+/* Mobile tuning */
+@media (max-width: 768px) {
+  #blog-main table {
+    font-size: 12px;
+  }
+
+  #blog-main th,
+  #blog-main td {
+    padding: 8px 6px;
+  }
+}
+
 
 .accordion {
   border: 1px solid var(--yp-border-primary);
