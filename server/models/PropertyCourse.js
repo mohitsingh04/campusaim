@@ -15,13 +15,13 @@ const PropertyCourseSchema = new mongoose.Schema(
     course_short_name: {
       type: String,
     },
-    specialization: {
-      type: mongoose.Schema.Types.ObjectId,
-    },
     duration: {
       type: String,
     },
     course_type: {
+      type: mongoose.Schema.Types.ObjectId,
+    },
+    degree_type: {
       type: mongoose.Schema.Types.ObjectId,
     },
     program_type: {
@@ -31,9 +31,14 @@ const PropertyCourseSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category"
     }],
-    course_eligibility: {
-      type: String,
-    },
+    specialization: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category"
+    }],
+    course_eligibility: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category"
+    }],
     prices: {
       type: Object,
     },

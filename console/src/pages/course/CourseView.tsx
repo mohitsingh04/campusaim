@@ -143,6 +143,26 @@ export default function CourseView() {
 		return [];
 	};
 
+	const getCategoryNamesFromSpecialization = (specialization: any) => {
+		if (!specialization) return [];
+		if (
+			Array.isArray(specialization) &&
+			specialization.length > 0 &&
+			typeof specialization[0] === "object"
+		) {
+			return specialization
+				.map((b: any) => b.category_name || b.name || b._id)
+				.filter(Boolean);
+		}
+		if (Array.isArray(specialization)) {
+			return specialization.map((id: string) => getCategoryById(id));
+		}
+		if (typeof specialization === "string") {
+			return [getCategoryById(specialization)];
+		}
+		return [];
+	};
+
 	if (loading) {
 		return <ViewSkeleton />;
 	}
@@ -256,7 +276,12 @@ export default function CourseView() {
 						<InfoCard
 							icon={FiAward}
 							title="Specialization"
-							value={getCategoryById(course?.specialization || "N/A")}
+							value={(() => {
+								const names = getCategoryNamesFromSpecialization(
+									course?.specialization,
+								);
+								return names.length ? names.join(", ") : "N/A";
+							})()}
 						/>
 						<InfoCard
 							icon={FiAward}

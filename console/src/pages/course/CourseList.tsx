@@ -52,7 +52,7 @@ export function CourseList() {
 
 			if (courseResult.status === "fulfilled") {
 				const finalData = courseResult.value.data.filter(
-					(item: CourseProps) => !item.isDeleted
+					(item: CourseProps) => !item.isDeleted,
 				);
 
 				let courses = finalData;
@@ -61,7 +61,7 @@ export function CourseList() {
 
 					courses = finalData.map((course: any) => {
 						const seoMatch = seoData.find(
-							(seo: any) => seo.course_id === course._id
+							(seo: any) => seo.course_id === course._id,
 						);
 
 						return {
@@ -101,7 +101,7 @@ export function CourseList() {
 			icon: cardIcons[index % cardIcons.length],
 			iconColor: colorsData[index % colorsData.length],
 			percentage: Math.round((item?.value / (allCourses?.length || 1)) * 100),
-		})
+		}),
 	);
 
 	const handleDelete = useCallback(
@@ -127,7 +127,7 @@ export function CourseList() {
 				getErrorResponse(error);
 			}
 		},
-		[getAllCourses]
+		[getAllCourses],
 	);
 
 	const columns = useMemo<Column<CourseProps>[]>(
@@ -141,7 +141,7 @@ export function CourseList() {
 									row?.image?.[0]
 										? `${import.meta.env.VITE_MEDIA_URL}/course/${
 												row?.image?.[0]
-										  }`
+											}`
 										: "/img/default-images/ca-course.png"
 								}
 								alt={row?.course_name}
@@ -156,10 +156,8 @@ export function CourseList() {
 								{row?.course_name}
 							</Link>
 							<div className="flex flex-col gap-1">
-								{row?.specialization && (
-									<p className="text-xs">
-										{getCategoryById(row?.specialization)}
-									</p>
+								{row?.course_short_name && (
+									<p className="text-xs">{row?.course_short_name}</p>
 								)}
 							</div>
 						</div>
@@ -247,7 +245,7 @@ export function CourseList() {
 				key: "actions",
 			},
 		],
-		[authLoading, authUser?.permissions, handleDelete]
+		[authLoading, authUser?.permissions, handleDelete],
 	);
 
 	const tabFilters = useMemo(() => {
@@ -257,8 +255,8 @@ export function CourseList() {
 					allCourses
 						.map((u) => u[field])
 						.filter(Boolean)
-						.map((v) => String(v))
-				)
+						.map((v) => String(v)),
+				),
 			);
 
 		return [

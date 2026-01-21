@@ -45,10 +45,11 @@ export function CourseCreate() {
 		initialValues: {
 			course_name: "",
 			course_short_name: "",
-			specialization: "",
+			specialization: [] as string[],
 			duration_value: "",
 			duration_type: "",
 			course_type: "",
+			degree_type: "",
 			program_type: "",
 			best_for: [] as string[],
 			course_eligibility: [] as string[],
@@ -62,12 +63,13 @@ export function CourseCreate() {
 				const fd = new FormData();
 				fd.append("course_name", values.course_name);
 				fd.append("course_short_name", values.course_short_name);
-				fd.append("specialization", values.specialization);
+				fd.append("specialization", JSON.stringify(values.specialization));
 				fd.append(
 					"duration",
 					`${values?.duration_value} ${values?.duration_type}`,
 				);
 				fd.append("course_type", values.course_type);
+				fd.append("degree_type", values.degree_type);
 				fd.append("program_type", values.program_type);
 				fd.append("best_for", JSON.stringify(values.best_for));
 				fd.append(
@@ -107,6 +109,10 @@ export function CourseCreate() {
 		categories,
 		"specialization",
 	);
+	const specializationSelectOptions = specializationOptions.map((opt: any) => ({
+		value: opt._id,
+		label: opt.category_name || opt.name,
+	}));
 	const bestForOptions = getCategoryAccodingToField(categories, "Best For");
 	const bestForSelectOptions = bestForOptions.map((opt: any) => ({
 		value: opt._id,
@@ -127,6 +133,14 @@ export function CourseCreate() {
 		"Course Type",
 	);
 	const courseTypeSelectOptions = courseTypeOptions.map((opt: any) => ({
+		value: opt._id,
+		label: opt.category_name || opt.name,
+	}));
+	const degreeTypeOptions = getCategoryAccodingToField(
+		categories,
+		"Degree Type",
+	);
+	const degreeTypeSelectOptions = degreeTypeOptions.map((opt: any) => ({
 		value: opt._id,
 		label: opt.category_name || opt.name,
 	}));
@@ -189,19 +203,22 @@ export function CourseCreate() {
 							<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
 								Specialization
 							</label>
-							<select
+							<Select
+								isMulti
 								name="specialization"
-								value={formik.values.specialization}
-								onChange={formik.handleChange}
-								className="w-full px-3 py-2 border border-[var(--yp-border-primary)] rounded-lg bg-[var(--yp-input-primary)] text-[var(--yp-text-primary)]"
-							>
-								<option value="">Select Specialization</option>
-								{specializationOptions.map((opt: any, idx: number) => (
-									<option key={idx} value={opt._id}>
-										{opt.category_name || opt.name}
-									</option>
-								))}
-							</select>
+								options={specializationSelectOptions}
+								value={specializationSelectOptions.filter((opt) =>
+									formik.values.specialization?.includes(opt.value),
+								)}
+								onChange={(selected) =>
+									formik.setFieldValue(
+										"specialization",
+										Array.isArray(selected) ? selected.map((s) => s.value) : [],
+									)
+								}
+								onBlur={() => formik.setFieldTouched("specialization", true)}
+								classNamePrefix="react-select"
+							/>
 							{getFormikError(formik, "specialization")}
 						</div>
 
@@ -262,6 +279,31 @@ export function CourseCreate() {
 							/>
 
 							{getFormikError(formik, "course_type")}
+						</div>
+
+						{/* Degree Type */}
+						<div>
+							<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
+								Degree Type
+							</label>
+
+							<Select
+								name="degree_type"
+								options={degreeTypeSelectOptions}
+								value={degreeTypeSelectOptions.find(
+									(opt) => opt.value === formik.values.degree_type,
+								)}
+								onChange={(selected) =>
+									formik.setFieldValue(
+										"degree_type",
+										selected ? selected.value : "",
+									)
+								}
+								onBlur={() => formik.setFieldTouched("degree_type", true)}
+								classNamePrefix="react-select"
+							/>
+
+							{getFormikError(formik, "degree_type")}
 						</div>
 
 						{/* Program Type */}

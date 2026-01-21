@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /api/
+Disallow: /admin/
+Disallow: /verify/*
+Allow: /
+Sitemap: https://yogprerna.com/sitemap.xml

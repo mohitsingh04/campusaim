@@ -43,7 +43,7 @@ export default function AddCourseForm({
 
 	const getAcademicTypeLabel = (
 		prop?: PropertyProps | null,
-		cats?: CategoryProps[]
+		cats?: CategoryProps[],
 	) => {
 		const at = prop?.academic_type;
 		if (!at || !Array.isArray(cats)) return "";
@@ -64,19 +64,19 @@ export default function AddCourseForm({
 		? allPropertyCourse
 		: [];
 	const affiliatedPropertyCourses = propertyCoursesAll.filter((pc: any) =>
-		affiliatedIds.includes(String(pc.property_id))
+		affiliatedIds.includes(String(pc.property_id)),
 	);
 	const thisPropertyCourses =
 		property && property._id
 			? propertyCoursesAll.filter(
-					(pc: any) => String(pc.property_id) === String(property._id)
-			  )
+					(pc: any) => String(pc.property_id) === String(property._id),
+				)
 			: [];
 
 	const masterCoursesMap = useMemo(() => {
 		const m = new Map<string, any>();
 		(Array.isArray(allCourses) ? allCourses : []).forEach((mc: any) =>
-			m.set(String(mc._id), mc)
+			m.set(String(mc._id), mc),
 		);
 		return m;
 	}, [allCourses]);
@@ -84,7 +84,7 @@ export default function AddCourseForm({
 	const universityCourseOptions = useMemo(() => {
 		const pc = thisPropertyCourses || [];
 		const masterFallback = Array.from(masterCoursesMap.values()).filter(
-			(mc: any) => !pc.some((p: any) => String(p.course_id) === String(mc._id))
+			(mc: any) => !pc.some((p: any) => String(p.course_id) === String(mc._id)),
 		);
 		return [...pc, ...masterFallback];
 	}, [thisPropertyCourses, masterCoursesMap]);
@@ -142,15 +142,16 @@ export default function AddCourseForm({
 			course_id: "",
 			course_name: "",
 			course_short_name: "",
-			specialization: "",
+			specialization: [] as string[],
 			duration_value: "",
 			duration_type: "",
 			course_type: "",
+			degree_type: "",
 			program_type: "",
 			best_for: [] as string[],
-			course_eligibility: "",
+			course_eligibility: [] as string[],
 			price: Object.fromEntries(
-				Object.entries({}).map(([key, val]) => [key, Number(val || 0)])
+				Object.entries({}).map(([key, val]) => [key, Number(val || 0)]),
 			),
 		},
 		validationSchema: PropertyCourseValidation,
@@ -165,7 +166,7 @@ export default function AddCourseForm({
 						Object.entries(values.price).map(([key, val]) => [
 							key,
 							Number(val || 0),
-						])
+						]),
 					),
 				};
 				const response = await API.post("/property-course", payload);
@@ -182,7 +183,7 @@ export default function AddCourseForm({
 	const handleCourseSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
 		const selectedId = e.target.value;
 		const selectedOption = selectOptions.find(
-			(opt) => String(opt.value) === String(selectedId)
+			(opt) => String(opt.value) === String(selectedId),
 		);
 		if (!selectedOption) return;
 		const raw = selectedOption.raw;
@@ -239,15 +240,15 @@ export default function AddCourseForm({
 
 	const courseTypeOptions = getCategoryAccodingToField(
 		categories,
-		"course type"
+		"course type",
 	);
 	const specializationOptions = getCategoryAccodingToField(
 		categories,
-		"specialization"
+		"specialization",
 	);
 	const ProgramTypeOptions = getCategoryAccodingToField(
 		categories,
-		"Program Type"
+		"Program Type",
 	);
 	const programTypeSelectOptions = ProgramTypeOptions.map((opt: any) => ({
 		value: opt._id,
@@ -264,6 +265,7 @@ export default function AddCourseForm({
 			<div>
 				<form onSubmit={formik.handleSubmit} className="space-y-6">
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+						{/* Select Course */}
 						<div>
 							<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
 								Select Course
@@ -297,6 +299,7 @@ export default function AddCourseForm({
 							{getFormikError(formik, "course_name")}
 						</div>
 
+						{/* Course Short Name */}
 						<div>
 							<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
 								Course Short Name
@@ -312,6 +315,7 @@ export default function AddCourseForm({
 							{getFormikError(formik, "course_short_name")}
 						</div>
 
+						{/* Specialization */}
 						<div>
 							<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
 								Specialization
@@ -332,6 +336,7 @@ export default function AddCourseForm({
 							{getFormikError(formik, "specialization")}
 						</div>
 
+						{/* Duration */}
 						<div className="grid grid-cols-2 gap-2">
 							<div>
 								<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
@@ -365,6 +370,7 @@ export default function AddCourseForm({
 							</div>
 						</div>
 
+						{/* Course Type */}
 						<div>
 							<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
 								Course Type
@@ -385,6 +391,7 @@ export default function AddCourseForm({
 							{getFormikError(formik, "course_type")}
 						</div>
 
+						{/* Program Type */}
 						<div>
 							<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
 								Program Type
@@ -394,12 +401,12 @@ export default function AddCourseForm({
 								name="program_type"
 								options={programTypeSelectOptions}
 								value={programTypeSelectOptions.find(
-									(opt) => opt.value === formik.values.program_type
+									(opt) => opt.value === formik.values.program_type,
 								)}
 								onChange={(selected) =>
 									formik.setFieldValue(
 										"program_type",
-										selected ? selected.value : ""
+										selected ? selected.value : "",
 									)
 								}
 								onBlur={() => formik.setFieldTouched("program_type", true)}
@@ -409,6 +416,7 @@ export default function AddCourseForm({
 							{getFormikError(formik, "program_type")}
 						</div>
 
+						{/* Best For */}
 						<div className="col-span-2">
 							<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
 								Best For
@@ -419,12 +427,12 @@ export default function AddCourseForm({
 								name="best_for"
 								options={bestForSelectOptions}
 								value={bestForSelectOptions.filter((opt) =>
-									formik.values.best_for?.includes(opt.value)
+									formik.values.best_for?.includes(opt.value),
 								)}
 								onChange={(selected) =>
 									formik.setFieldValue(
 										"best_for",
-										Array.isArray(selected) ? selected.map((s) => s.value) : []
+										Array.isArray(selected) ? selected.map((s) => s.value) : [],
 									)
 								}
 								onBlur={() => formik.setFieldTouched("best_for", true)}
@@ -434,6 +442,7 @@ export default function AddCourseForm({
 							{getFormikError(formik, "best_for")}
 						</div>
 
+						{/* Course Eligibility */}
 						<div className="col-span-2">
 							<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
 								Course Eligibility
@@ -448,6 +457,7 @@ export default function AddCourseForm({
 							{getFormikError(formik, "course_eligibility")}
 						</div>
 
+						{/* Price */}
 						<div className="col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
 							<div className="flex gap-2 items-center">
 								<input
@@ -496,7 +506,7 @@ export default function AddCourseForm({
 													}
 												/>
 											</span>
-										)
+										),
 								)}
 							</div>
 						</div>

@@ -12,19 +12,23 @@ const CourseSchema = new mongoose.Schema(
     course_short_name: {
       type: String,
     },
-    specialization: {
-      type: mongoose.Schema.Types.ObjectId,
-    },
     duration: {
       type: String,
     },
     course_type: {
       type: mongoose.Schema.Types.ObjectId,
     },
+    degree_type: {
+      type: mongoose.Schema.Types.ObjectId,
+    },
     program_type: {
       type: mongoose.Schema.Types.ObjectId,
     },
     best_for: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category"
+    }],
+    specialization: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category"
     }],

@@ -4,6 +4,63 @@ import Course from "../models/Courses.js";
 import PropertyCourse from "../models/PropertyCourse.js";
 import { generateUniqueId } from "../utils/Callback.js";
 
+function normalizeObjectIdArray(input) {
+  let arr = [];
+
+  if (!input) return arr;
+
+  if (Array.isArray(input)) {
+    arr = input;
+  } else if (typeof input === "string") {
+    try {
+      const parsed = JSON.parse(input);
+      if (Array.isArray(parsed)) arr = parsed;
+      else if (parsed) arr = [parsed];
+    } catch {
+      arr = input.includes(",")
+        ? input.split(",").map(s => s.trim())
+        : [input.trim()];
+    }
+  } else {
+    arr = [String(input)];
+  }
+
+  return arr
+    .map(id => String(id).trim())
+    .filter(id => mongoose.Types.ObjectId.isValid(id));
+}
+
+
+function normalizeToStringArray(value) {
+  let arr = [];
+
+  if (value) {
+    if (Array.isArray(value)) {
+      arr = value;
+    } else if (typeof value === "string") {
+      try {
+        const parsed = JSON.parse(value);
+        if (Array.isArray(parsed)) arr = parsed.map((v) => String(v));
+        else if (typeof parsed === "string" && parsed.trim())
+          arr = [parsed];
+      } catch (err) {
+        if (value.includes(",")) {
+          arr = value
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean);
+        } else if (value.trim()) {
+          arr = [value.trim()];
+        }
+      }
+    } else {
+      arr = [String(value)];
+    }
+  }
+
+  return arr.map((v) => String(v).trim()).filter(Boolean);
+}
+
 const tryParseJSON = (v) => {
   if (typeof v !== "string") return v;
   try { return JSON.parse(v); } catch { return v; }

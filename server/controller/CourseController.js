@@ -63,10 +63,8 @@ function normalizeToStringArray(value) {
   return arr.map((v) => String(v).trim()).filter(Boolean);
 }
 
-export const generateSlug = (courseName, specialization = "") => {
-  const fullText = `${courseName} ${specialization}`;
-
-  return fullText
+export const generateSlug = (text) => {
+  return text
     .toLowerCase()
     .trim()
     .replace(/&/g, "and")
@@ -132,30 +130,31 @@ export const addCourse = async (req, res) => {
       specialization,
       duration,
       course_type,
+      degree_type,
       program_type,
       description,
       best_for,
       course_eligibility,
     } = req.body;
-
-    const specializationCategory = await Category.findById(specialization);
-
+    
     if (!course_name) {
       return res.status(400).json({ error: "Course name is required." });
     }
 
     const bestForArray = normalizeObjectIdArray(best_for);
+    const specializationArray = normalizeObjectIdArray(specialization);
     const courseEligibilityArray = normalizeObjectIdArray(course_eligibility);
     const courseTypeArray = normalizeToStringArray(course_type);
+    const degreeTypeArray = normalizeToStringArray(degree_type);
     const programTypeArray = normalizeToStringArray(program_type);
 
     const images = await getUploadedFilePaths(req, "image");
 
-    const courseSlug = generateSlug(course_name, specializationCategory.category_name);
+    const courseSlug = generateSlug(course_name);
 
-    const existCourse = await Course.findOne({ course_name, specialization });
+    const existCourse = await Course.findOne({ course_name });
     if (existCourse) {
-      return res.status(400).json({ error: "This course with the same specialization already exists." });
+      return res.status(400).json({ error: "This course is already exists." });
     }
 
     let updatedDescription = description;
@@ -167,19 +166,19 @@ export const addCourse = async (req, res) => {
       userId,
       course_name,
       course_short_name,
-      specialization,
       duration,
-      course_type,
       program_type,
       best_for: bestForArray,
+      specialization: specializationArray,
       course_type: courseTypeArray,
+      degree_type: degreeTypeArray,
       program_type: programTypeArray,
       course_eligibility: courseEligibilityArray,
       description: updatedDescription,
       image: images,
       course_slug: courseSlug,
     });
-
+    
     const courseCreated = await newCourse.save();
 
     try {
@@ -218,6 +217,7 @@ export const updateCourse = async (req, res) => {
       course_short_name,
       specialization,
       course_type,
+      degree_type,
       program_type,
       course_eligibility,
       duration,
@@ -226,21 +226,14 @@ export const updateCourse = async (req, res) => {
       status,
     } = req.body;
 
-    // Generate slug only if required fields exist
-    let courseSlug = course.course_slug;
-    if (course_name && specialization) {
-      const specializationCategory = await Category.findById(specialization);
-      if (specializationCategory) {
-        courseSlug = generateSlug(
-          course_name,
-          specializationCategory.category_name
-        );
-      }
-    }
+    const courseSlug = generateSlug(course_name);
 
     // Normalize inputs (ONLY when provided)
     const normalizedBestFor =
       best_for !== undefined ? normalizeObjectIdArray(best_for) : undefined;
+
+      const normalizedSpecialization =
+      specialization !== undefined ? normalizeObjectIdArray(specialization) : undefined;
 
     const normalizedEligibility =
       course_eligibility !== undefined
@@ -250,6 +243,11 @@ export const updateCourse = async (req, res) => {
     const normalizedCourseType =
       course_type !== undefined
         ? normalizeToStringArray(course_type)
+        : undefined;
+
+    const normalizedDegreeType =
+      degree_type !== undefined
+        ? normalizeToStringArray(degree_type)
         : undefined;
 
     const normalizedProgramType =
@@ -280,7 +278,6 @@ export const updateCourse = async (req, res) => {
     const updateObj = {
       ...(course_name && { course_name }),
       ...(course_short_name && { course_short_name }),
-      ...(specialization && { specialization }),
       ...(duration && { duration }),
       ...(updatedDescription && { description: updatedDescription }),
       ...(status !== undefined && { status }),
@@ -291,6 +288,10 @@ export const updateCourse = async (req, res) => {
     // Conditional updates
     if (normalizedBestFor) {
       updateObj.best_for = normalizedBestFor;
+    }
+
+    if (normalizedSpecialization) {
+      updateObj.specialization = normalizedSpecialization;
     }
 
     if (normalizedEligibility) {
@@ -304,6 +305,10 @@ export const updateCourse = async (req, res) => {
 
     if (normalizedCourseType) {
       updateObj.course_type = normalizedCourseType;
+    }
+
+    if (normalizedDegreeType) {
+      updateObj.degree_type = normalizedDegreeType;
     }
 
     if (normalizedProgramType) {
