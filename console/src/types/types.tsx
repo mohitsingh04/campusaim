@@ -26,6 +26,13 @@ export interface UserProps extends Record<string, unknown> {
 	isProfessional: boolean;
 }
 
+export interface ReqKoItem {
+	_id: string;
+	best_for?: string;
+	course_eligibility?: string;
+	uniqueId?: string; // 👈 make optional
+}
+
 export interface SkillProps extends Record<string, unknown> {
 	_id: string;
 	skill: string;

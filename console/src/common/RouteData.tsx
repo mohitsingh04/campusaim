@@ -101,6 +101,8 @@ import EditScholarship from "../pages/scholarship/EditScholarship";
 import ScholarshipSeo from "../pages/scholarship/ScholarshipSeo";
 import AllScholarship from "../pages/scholarship/AllScholarship";
 import AssesmentTest from "../pages/assesment/AssesmentTest";
+import BestFor from "../pages/best_for/BestFor";
+import CourseEligibility from "../pages/course_eligibility/CourseEligibility";
 
 export const SidbarNavigations = [
 	{
@@ -244,15 +246,24 @@ export const SidbarNavigations = [
 	//   roles: ["Seo Manager", "Editor", "Super Admin"],
 	//   Permission: "Read Key Outcome",
 	// },
-	// {
-	//   name: "Requirments",
-	//   id: "requirments",
-	//   icon: Clipboard,
-	//   href: "/dashboard/requirments",
-	//   component: Requirements,
-	//   roles: ["Seo Manager", "Editor", "Super Admin"],
-	//   Permission: "Read Requirment",
-	// },
+	{
+		name: "Best For",
+		id: "best_for",
+		icon: Key,
+		href: "/dashboard/best-for",
+		component: BestFor,
+		roles: ["Seo Manager", "Editor", "Super Admin"],
+		Permission: "Read Requirement",
+	},
+	{
+		name: "Course Eligibility",
+		id: "course_eligibility",
+		icon: Clipboard,
+		href: "/dashboard/course-eligibility",
+		component: CourseEligibility,
+		roles: ["Seo Manager", "Editor", "Super Admin"],
+		Permission: "Read Requirement",
+	},
 	// {
 	//   name: "News & Updates",
 	//   id: "news",

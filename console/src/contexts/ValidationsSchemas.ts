@@ -213,6 +213,12 @@ export const KeyOutComeValidation = Yup.object({
 export const RequirementValidation = Yup.object({
 	requirment: getValidString("Requirement"),
 });
+export const BestForValidation = Yup.object({
+	best_for: getValidString("Best For"),
+});
+export const CourseEligibilityValidation = Yup.object({
+	course_eligibility: getValidString("Course Eligibility"),
+});
 export const galleryTitleValidation = Yup.object({
 	title: getValidString("Title"),
 });

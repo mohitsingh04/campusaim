@@ -5,7 +5,7 @@ import {
 	useOutletContext,
 	useParams,
 } from "react-router-dom";
-import { FiBookOpen, FiClock, FiAward } from "react-icons/fi";
+import { FiBookOpen, FiClock, FiAward, FiLayers } from "react-icons/fi";
 import { Breadcrumbs } from "../../ui/breadcrumbs/Breadcrumbs";
 import { API } from "../../contexts/API";
 import {
@@ -55,6 +55,31 @@ export default function CourseView() {
 		useOutletContext<DashboardOutletContextProps>();
 	const [loading, setLoading] = useState(true);
 	const navigate = useNavigate();
+	const [bestFor, setBestFor] = useState<any[]>([]);
+	const [courseEligibility, setCourseEligibility] = useState<any[]>([]);
+
+	const fetchBestFor = useCallback(async () => {
+		try {
+			const res = await API.get("/best-for/all");
+			setBestFor(res?.data || []);
+		} catch (error) {
+			getErrorResponse(error, true);
+		}
+	}, []);
+
+	const fetchCourseEligibility = useCallback(async () => {
+		try {
+			const res = await API.get("/course-eligibility/all");
+			setCourseEligibility(res?.data || []);
+		} catch (error) {
+			getErrorResponse(error, true);
+		}
+	}, []);
+
+	useEffect(() => {
+		fetchBestFor();
+		fetchCourseEligibility();
+	}, [fetchBestFor, fetchCourseEligibility]);
 
 	useEffect(() => {
 		const fetchCourse = async () => {
@@ -163,6 +188,18 @@ export default function CourseView() {
 		return [];
 	};
 
+	const getBestForById = (id: string) => {
+		return bestFor.find((r: any) => r._id === id);
+	};
+
+	const getCourseEligibilityById = (id: string) => {
+		return courseEligibility.find((r: any) => r._id === id);
+	};
+
+	if (loading) {
+		return <ViewSkeleton />;
+	}
+
 	if (loading) {
 		return <ViewSkeleton />;
 	}
@@ -206,21 +243,47 @@ export default function CourseView() {
 						/>
 					</section>
 
-					<section className="bg-[var(--yp-secondary)] rounded-xl p-6 transition-colors duration-200">
-						<h2 className="text-2xl font-bold text-[var(--yp-text-primary)] mb-4 flex items-center gap-2">
-							<FiBookOpen className="w-6 h-6 text-[var(--yp-main)]" />
-							Course Eligibility
-						</h2>
+					{(course?.course_eligibility.length || 0) > 0 && (
+						<section className="md:col-span-2 bg-[var(--yp-secondary)] rounded-xl p-6 transition-colors duration-200">
+							<h2 className="text-2xl font-bold text-[var(--yp-text-primary)] mb-4 flex items-center gap-2">
+								<FiBookOpen className="w-6 h-6 text-[var(--yp-main)]" />
+								Course Eligibility
+							</h2>
+							<ul className="space-y-3">
+								{course?.course_eligibility.map((req: any, i: any) => (
+									<li
+										key={i}
+										className="flex items-start text-[var(--yp-muted)]"
+									>
+										<FiLayers className="w-4 h-4 text-[var(--yp-main)] mr-3 mt-1 flex-shrink-0" />
+										{getCourseEligibilityById(req)?.course_eligibility ||
+											"Requirement details missing"}
+									</li>
+								))}
+							</ul>
+						</section>
+					)}
 
-						<p className="text-[var(--yp-text-secondary)]">
-							{(() => {
-								const names = getCategoryNamesFromBestFor(
-									course?.course_eligibility,
-								);
-								return names.length ? names.join(", ") : "N/A";
-							})()}
-						</p>
-					</section>
+					{(course?.best_for.length || 0) > 0 && (
+						<section className="md:col-span-2 bg-[var(--yp-secondary)] rounded-xl p-6 transition-colors duration-200">
+							<h3 className="text-xl font-bold text-[var(--yp-text-primary)] mb-4 flex items-center gap-2">
+								<FiLayers className="w-5 h-5 text-[var(--yp-main)]" />
+								Best For
+							</h3>
+							<ul className="space-y-3">
+								{course?.best_for.map((req, i) => (
+									<li
+										key={i}
+										className="flex items-start text-[var(--yp-muted)]"
+									>
+										<FiLayers className="w-4 h-4 text-[var(--yp-main)] mr-3 mt-1 flex-shrink-0" />
+										{getBestForById(req)?.best_for ||
+											"Requirement details missing"}
+									</li>
+								))}
+							</ul>
+						</section>
+					)}
 				</div>
 
 				<div className="lg:col-span-1 space-y-4">
@@ -274,14 +337,9 @@ export default function CourseView() {
 							value={course?.course_short_name}
 						/>
 						<InfoCard
-							icon={FiAward}
-							title="Specialization"
-							value={(() => {
-								const names = getCategoryNamesFromSpecialization(
-									course?.specialization,
-								);
-								return names.length ? names.join(", ") : "N/A";
-							})()}
+							icon={FiClock}
+							title="Duration"
+							value={course?.duration || "N/A"}
 						/>
 						<InfoCard
 							icon={FiAward}
@@ -297,15 +355,12 @@ export default function CourseView() {
 							})()}
 						/>
 						<InfoCard
-							icon={FiClock}
-							title="Duration"
-							value={course?.duration || "N/A"}
-						/>
-						<InfoCard
 							icon={FiAward}
-							title="Best For"
+							title="Specialization"
 							value={(() => {
-								const names = getCategoryNamesFromBestFor(course?.best_for);
+								const names = getCategoryNamesFromSpecialization(
+									course?.specialization,
+								);
 								return names.length ? names.join(", ") : "N/A";
 							})()}
 						/>

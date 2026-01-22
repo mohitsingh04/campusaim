@@ -232,13 +232,11 @@ export const updateCourse = async (req, res) => {
     const normalizedBestFor =
       best_for !== undefined ? normalizeObjectIdArray(best_for) : undefined;
 
+    const normalizedCourseEligibility =
+      course_eligibility !== undefined ? normalizeObjectIdArray(course_eligibility) : undefined;
+
       const normalizedSpecialization =
       specialization !== undefined ? normalizeObjectIdArray(specialization) : undefined;
-
-    const normalizedEligibility =
-      course_eligibility !== undefined
-        ? normalizeObjectIdArray(course_eligibility)
-        : undefined;
 
     const normalizedCourseType =
       course_type !== undefined
@@ -290,17 +288,12 @@ export const updateCourse = async (req, res) => {
       updateObj.best_for = normalizedBestFor;
     }
 
-    if (normalizedSpecialization) {
-      updateObj.specialization = normalizedSpecialization;
+    if (normalizedCourseEligibility) {
+      updateObj.course_eligibility = normalizedCourseEligibility;
     }
 
-    if (normalizedEligibility) {
-      // Validate referenced categories actually exist
-      const validEligibility = await Category.find({
-        _id: { $in: normalizedEligibility },
-      }).select("_id");
-
-      updateObj.course_eligibility = validEligibility.map((c) => c._id);
+    if (normalizedSpecialization) {
+      updateObj.specialization = normalizedSpecialization;
     }
 
     if (normalizedCourseType) {

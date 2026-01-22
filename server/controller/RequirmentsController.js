@@ -82,7 +82,7 @@ export const updateRequirment = async (req, res) => {
       data: requirmentsOutcomes,
     });
   } catch (error) {
-    console.error("Update Requirment Error:", error);
+    console.error("Update Requirement Error:", error);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };

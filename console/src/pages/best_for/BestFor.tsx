@@ -4,10 +4,10 @@ import { Column, DashboardOutletContextProps } from "../../types/types";
 import { DataTable } from "../../ui/tables/DataTable";
 import { API } from "../../contexts/API";
 import TableButton from "../../ui/button/TableButton";
-import { Edit2 } from "lucide-react";
+import { Edit2, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useFormik } from "formik";
-import { RequirementValidation } from "../../contexts/ValidationsSchemas";
+import { BestForValidation } from "../../contexts/ValidationsSchemas";
 import { useOutletContext } from "react-router-dom";
 import {
 	getErrorResponse,
@@ -15,29 +15,30 @@ import {
 	matchPermissions,
 } from "../../contexts/Callbacks";
 import TableSkeletonWithOutCards from "../../ui/loadings/pages/TableSkeletonWithOutCards";
+import Swal from "sweetalert2";
 
-export interface RequirementsProps extends Record<string, unknown> {
+export interface BestForProps extends Record<string, unknown> {
 	_id: string;
-	uniqueId: number;
-	requirment: string;
+	best_for: string;
 	createdAt: string;
 	updatedAt: string;
 	__v: number;
 }
 
-export default function Requirements() {
-	const [requirements, setRequirements] = useState<RequirementsProps[]>([]);
+export default function BestFor() {
+	const [bestFor, setBestFor] = useState<BestForProps[]>([]);
 	const [loading, setLoading] = useState(true);
-	const [editingRequirement, setEditingRequirement] =
-		useState<RequirementsProps | null>(null);
+	const [editingBestFor, setEditingBestFor] = useState<BestForProps | null>(
+		null,
+	);
 	const { authUser, authLoading } =
 		useOutletContext<DashboardOutletContextProps>();
 
-	const getAllRequirements = useCallback(async () => {
+	const getAllBestFor = useCallback(async () => {
 		setLoading(true);
 		try {
-			const response = await API.get("/requirment/all");
-			setRequirements(response.data || []);
+			const response = await API.get("/best-for/all");
+			setBestFor(response.data || []);
 		} catch (error) {
 			getErrorResponse(error, true);
 		} finally {
@@ -46,23 +47,21 @@ export default function Requirements() {
 	}, []);
 
 	useEffect(() => {
-		getAllRequirements();
-	}, [getAllRequirements]);
+		getAllBestFor();
+	}, [getAllBestFor]);
 
 	// ✅ Create Formik
 	const formik = useFormik({
 		initialValues: {
-			requirment: "",
+			best_for: "",
 		},
-		validationSchema: RequirementValidation,
+		validationSchema: BestForValidation,
 		onSubmit: async (values, { resetForm }) => {
 			try {
-				const response = await API.post("/requirment", values);
-				toast.success(
-					response.data.message || "Requirment created successfully",
-				);
+				const response = await API.post("/best-for", values);
+				toast.success(response.data.message || "Created successfully");
 				resetForm();
-				getAllRequirements();
+				getAllBestFor();
 			} catch (error) {
 				getErrorResponse(error);
 			}
@@ -73,45 +72,78 @@ export default function Requirements() {
 	const editFormik = useFormik({
 		enableReinitialize: true,
 		initialValues: {
-			requirment: editingRequirement?.requirment || "",
+			best_for: editingBestFor?.best_for || "",
 		},
-		validationSchema: RequirementValidation,
+		validationSchema: BestForValidation,
 		onSubmit: async (values, { resetForm }) => {
-			if (!editingRequirement) return;
+			if (!editingBestFor) return;
 			try {
 				const response = await API.patch(
-					`/requirment/${editingRequirement._id}`,
+					`/best-for/${editingBestFor._id}`,
 					values,
 				);
-				toast.success(
-					response.data.message || "Requirments updated successfully",
-				);
+				toast.success(response.data.message || "Updated successfully");
 				resetForm();
-				setEditingRequirement(null);
-				getAllRequirements();
+				setEditingBestFor(null);
+				getAllBestFor();
 			} catch (error) {
 				getErrorResponse(error);
 			}
 		},
 	});
 
+	const setHandleDelete = useCallback(
+		async (id: string) => {
+			try {
+				const result = await Swal.fire({
+					title: "Are you sure?",
+					text: "Once deleted, you will not be able to recover this!",
+					icon: "warning",
+					showCancelButton: true,
+					confirmButtonColor: "#d33",
+					cancelButtonColor: "#3085d6",
+					confirmButtonText: "Yes, delete it!",
+				});
+
+				if (result.isConfirmed) {
+					const response = await API.delete(`/best-for/${id}`);
+
+					toast.success(response.data.message || "Deleted successfully");
+					getAllBestFor();
+				}
+			} catch (error) {
+				getErrorResponse(error);
+			}
+		},
+		[getAllBestFor],
+	);
+
 	// ✅ Columns
-	const columns = useMemo<Column<RequirementsProps>[]>(
+	const columns = useMemo<Column<BestForProps>[]>(
 		() => [
-			{ value: "requirment", label: "Requirment" },
+			{ value: "best_for", label: "Best For" },
 			{
 				label: "Actions",
-				value: (row: RequirementsProps) => (
+				value: (row: BestForProps) => (
 					<div className="flex space-x-2">
 						{!authLoading &&
 							matchPermissions(authUser?.permissions, "Update Requirement") && (
-								<TableButton
-									Icon={Edit2}
-									color="green"
-									size="sm"
-									buttontype="button"
-									onClick={() => setEditingRequirement(row)}
-								/>
+								<>
+									<TableButton
+										Icon={Edit2}
+										color="green"
+										size="sm"
+										buttontype="button"
+										onClick={() => setEditingBestFor(row)}
+									/>
+									<TableButton
+										Icon={Trash2}
+										color="red"
+										size="sm"
+										buttontype="button"
+										onClick={() => setHandleDelete(row._id)}
+									/>
+								</>
 							)}
 					</div>
 				),
@@ -128,27 +160,31 @@ export default function Requirements() {
 	return (
 		<div>
 			<Breadcrumbs
-				title="Requirments"
+				title="Best For"
 				breadcrumbs={[
 					{ label: "Dashboard", path: "/dashboard" },
-					{ label: "Requirments" },
+					{ label: "Best For" },
 				]}
 			/>
 
-			{/* ✅ Create Requirement Form */}
+			{/* ✅ Create Best For Form */}
 			<div className="bg-[var(--yp-primary)] p-4 sm:p-6 rounded-2xl shadow-sm mb-5">
 				<h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 text-[var(--yp-text-secondary)]">
-					Create Requirement
+					Create Best For
 				</h3>
 				<form
 					onSubmit={formik.handleSubmit}
 					className="flex flex-col sm:flex-row gap-3"
 				>
+					<label htmlFor="create_best_for" className="sr-only">
+						Best For
+					</label>
 					<input
 						type="text"
-						name="requirment"
-						placeholder="Enter Requirment"
-						value={formik.values.requirment}
+						id="create_best_for"
+						name="best_for"
+						placeholder="Enter Best For"
+						value={formik.values.best_for}
 						onChange={formik.handleChange}
 						onBlur={formik.handleBlur}
 						className="w-full px-3 py-2 border border-[var(--yp-border-primary)] rounded-lg bg-[var(--yp-input-primary)] text-[var(--yp-text-primary)]"
@@ -161,38 +197,42 @@ export default function Requirements() {
 						Add
 					</button>
 				</form>
-				{getFormikError(formik, "requirment")}
+				{getFormikError(formik, "best_for")}
 			</div>
 
 			{/* ✅ Data Table */}
-			<DataTable<RequirementsProps> data={requirements} columns={columns} />
+			<DataTable<BestForProps> data={bestFor} columns={columns} />
 
 			{/* ✅ Edit Modal */}
-			{editingRequirement && (
+			{editingBestFor && (
 				<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
 					<div className="bg-[var(--yp-primary)] p-6 rounded-xl shadow-sm w-full max-w-md">
 						<h3 className="text-lg font-semibold text-[var(--yp-text-secondary)] mb-4">
-							Edit Requirment
+							Edit Best For
 						</h3>
 						<form
 							onSubmit={editFormik.handleSubmit}
 							className="flex flex-col gap-4"
 						>
+							<label htmlFor="edit_best_for" className="sr-only">
+								Edit Best For
+							</label>
 							<input
 								type="text"
-								name="requirment"
-								placeholder="Enter Requirment"
-								value={editFormik.values.requirment}
+								id="edit_best_for"
+								name="best_for"
+								placeholder="Enter Best For"
+								value={editFormik.values.best_for}
 								onChange={editFormik.handleChange}
 								onBlur={editFormik.handleBlur}
 								className="w-full px-3 py-2 border border-[var(--yp-border-primary)] rounded-lg bg-[var(--yp-input-primary)] text-[var(--yp-text-primary)]"
 							/>
-							{getFormikError(editFormik, "requirment")}
+							{getFormikError(editFormik, "best_for")}
 
 							<div className="flex justify-end gap-3">
 								<button
 									type="button"
-									onClick={() => setEditingRequirement(null)}
+									onClick={() => setEditingBestFor(null)}
 									className="px-6 py-2 rounded-lg text-sm font-medium text-[var(--yp-text-primary)] bg-[var(--yp-secondary)]"
 								>
 									Cancel

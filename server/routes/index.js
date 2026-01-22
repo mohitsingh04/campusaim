@@ -212,6 +212,8 @@ import { AddAnnouncement, EditAnnouncement, getAllAnnouncement, getAnnouncementB
 import { addQnA, deleteQnA, getQnA, getQnAById, getQnAByPropertyId, updateQnA } from "../controller/QnaController.js";
 import { addRanking, editRanking, getAllRanking, getRankingByPropertyId } from "../controller/RankingController.js";
 import { addScholarship, deleteScholarship, getScholarship, getScholarshipById, getScholarshipWithSeoBySlug, updateScholarship } from "../controller/ScholarshipController.js";
+import { CreateBestFor, deleteBestFor, getAllBestFor, getBestForById, updateBestFor } from "../controller/BestForController.js";
+import { CreateCourseEligibility, deleteCourseEligibility, getAllCourseEligibility, getCourseEligibilityById, updateCourseEligibility } from "../controller/CourseEligibilityController.js";
 
 const router = express.Router();
 router.use(bodyParser.json());
@@ -550,6 +552,20 @@ router.post(`/requirment`, Authorize, CreateRequirmentController);
 router.get(`/requirment/all`, getAllRequirments);
 router.get(`/requirment/id/:objectId`, getRequirmentById);
 router.patch(`/requirment/:objectId`, Authorize, updateRequirment);
+
+// Best For Routes
+router.post(`/best-for`, Authorize, CreateBestFor);
+router.get(`/best-for/all`, getAllBestFor);
+router.get(`/best-for/id/:objectId`, getBestForById);
+router.patch(`/best-for/:objectId`, Authorize, updateBestFor);
+router.delete(`/best-for/:objectId`, Authorize, deleteBestFor);
+
+// Course Eligibility Routes
+router.post(`/course-eligibility`, Authorize, CreateCourseEligibility);
+router.get(`/course-eligibility/all`, getAllCourseEligibility);
+router.get(`/course-eligibility/id/:objectId`, getCourseEligibilityById);
+router.patch(`/course-eligibility/:objectId`, Authorize, updateCourseEligibility);
+router.delete(`/course-eligibility/:objectId`, Authorize, deleteCourseEligibility);
 
 //? Property SLug
 router.patch(`/property/slug/generate`, PropertySlugGenerator);

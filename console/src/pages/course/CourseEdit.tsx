@@ -5,7 +5,7 @@ import React, {
 	useEffect,
 	useCallback,
 } from "react";
-import { Image } from "lucide-react";
+import { Image, Plus } from "lucide-react";
 import JoditEditor from "jodit-react";
 import { getEditorConfig } from "../../contexts/JoditEditorConfig";
 import { API } from "../../contexts/API";
@@ -20,6 +20,7 @@ import {
 	CategoryProps,
 	CourseProps,
 	DashboardOutletContextProps,
+	ReqKoItem,
 } from "../../types/types";
 import toast from "react-hot-toast";
 import { useNavigate, useOutletContext, useParams } from "react-router-dom";
@@ -27,6 +28,8 @@ import { Breadcrumbs } from "../../ui/breadcrumbs/Breadcrumbs";
 import { CourseValidation } from "../../contexts/ValidationsSchemas";
 import EditSkeleton from "../../ui/skeleton/EditPageSkeleton";
 import Select from "react-select";
+import AddBestFor from "./course_components/AddBestFor";
+import AddCourseEligibility from "./course_components/AddCourseEligibility";
 
 export function CourseEdit() {
 	const { objectId } = useParams();
@@ -39,6 +42,28 @@ export function CourseEdit() {
 	const [mainCourse, setMainCourse] = useState<CourseProps | null>(null);
 	const [loading, setLoading] = useState(true);
 	const { status } = useOutletContext<DashboardOutletContextProps>();
+	const [bestFor, setBestFor] = useState<ReqKoItem[]>([]);
+	const [addBestFor, setAddBestFor] = useState(false);
+	const [courseEligibility, setCourseEligibility] = useState<ReqKoItem[]>([]);
+	const [addCourseEligibility, setAddCourseEligibility] = useState(false);
+
+	const fetchBestFor = useCallback(async () => {
+		try {
+			const res = await API.get("/best-for/all");
+			setBestFor((res?.data as ReqKoItem[]) || []);
+		} catch (error) {
+			getErrorResponse(error, true);
+		}
+	}, []);
+
+	const fetchCourseEligibility = useCallback(async () => {
+		try {
+			const res = await API.get("/course-eligibility/all");
+			setCourseEligibility((res?.data as ReqKoItem[]) || []);
+		} catch (error) {
+			getErrorResponse(error, true);
+		}
+	}, []);
 
 	// Fetch course
 	const fetchCourse = useCallback(async () => {
@@ -73,7 +98,9 @@ export function CourseEdit() {
 	useEffect(() => {
 		fetchCourse();
 		fetchCategories();
-	}, [fetchCourse, fetchCategories]);
+		fetchBestFor();
+		fetchCourseEligibility();
+	}, [fetchCourse, fetchCategories, fetchBestFor, fetchCourseEligibility]);
 
 	const formik = useFormik({
 		enableReinitialize: true,
@@ -87,8 +114,8 @@ export function CourseEdit() {
 			degree_type: mainCourse?.degree_type || "",
 			program_type: mainCourse?.program_type || "",
 			image: null as File | null,
-			best_for: mainCourse?.best_for || "",
-			course_eligibility: mainCourse?.course_eligibility || "",
+			best_for: mainCourse?.best_for || [],
+			course_eligibility: mainCourse?.course_eligibility || [],
 			description: mainCourse?.description || "",
 			status: mainCourse?.status || "",
 		},
@@ -144,21 +171,6 @@ export function CourseEdit() {
 		value: opt._id,
 		label: opt.category_name || opt.name,
 	}));
-	const bestForOptions = getCategoryAccodingToField(categories, "Best For");
-	const bestForSelectOptions = bestForOptions.map((opt: any) => ({
-		value: opt._id,
-		label: opt.category_name || opt.name,
-	}));
-	const courseEligibilityOptions = getCategoryAccodingToField(
-		categories,
-		"Course Eligibility",
-	);
-	const courseEligibilitySelectOptions = courseEligibilityOptions.map(
-		(opt: any) => ({
-			value: opt._id,
-			label: opt.category_name || opt.name,
-		}),
-	);
 	const courseTypeOptions = getCategoryAccodingToField(
 		categories,
 		"Course Type",
@@ -183,6 +195,22 @@ export function CourseEdit() {
 		value: opt._id,
 		label: opt.category_name || opt.name,
 	}));
+
+	const bestForOptions = bestFor.map((req) => ({
+		value: String(req._id),
+		label: req.best_for ?? "",
+	}));
+	const bestForValue = bestForOptions.filter((opt) =>
+		formik.values.best_for.includes(opt.value),
+	);
+
+	const courseEligibilityOptions = courseEligibility.map((req) => ({
+		value: String(req._id),
+		label: req.course_eligibility ?? "",
+	}));
+	const courseEligibilityValue = courseEligibilityOptions.filter((opt) =>
+		formik.values.course_eligibility.includes(opt.value),
+	);
 
 	if (loading) {
 		return <EditSkeleton />;
@@ -345,6 +373,81 @@ export function CourseEdit() {
 							{getFormikError(formik, "degree_type")}
 						</div>
 
+						{/* Best For */}
+						<div>
+							<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
+								Best For
+								<button
+									type="button"
+									onClick={() => setAddBestFor(true)}
+									className="px-1 py-1 ms-2 rounded text-sm text-blue-900 bg-blue-100"
+									title="Add Requirments"
+								>
+									<Plus className="w-3 h-3" />
+								</button>
+							</label>
+
+							<Select
+								isMulti
+								name="best_for"
+								options={bestForOptions}
+								value={bestForValue}
+								onChange={(selected: any) =>
+									formik.setFieldValue(
+										"best_for",
+										(selected || []).map((s: any) => String(s.value)),
+									)
+								}
+								onBlur={() => formik.setFieldTouched("best_for", true)}
+								classNamePrefix="react-select"
+							/>
+							{getFormikError(formik, "best_for")}
+							<AddBestFor
+								isOpen={addBestFor}
+								onClose={setAddBestFor}
+								bestFor={bestFor}
+								getData={fetchBestFor}
+							/>
+						</div>
+
+						{/* Course Eligibility */}
+						<div>
+							<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
+								Course Eligibility
+								<button
+									type="button"
+									onClick={() => setAddCourseEligibility(true)}
+									className="px-1 py-1 ms-2 rounded text-sm text-blue-900 bg-blue-100"
+									title="Add Requirments"
+								>
+									<Plus className="w-3 h-3" />
+								</button>
+							</label>
+							<Select
+								isMulti
+								name="course_eligibility"
+								options={courseEligibilityOptions}
+								value={courseEligibilityValue}
+								onChange={(selected: any) =>
+									formik.setFieldValue(
+										"course_eligibility",
+										(selected || []).map((s: any) => String(s.value)),
+									)
+								}
+								onBlur={() =>
+									formik.setFieldTouched("course_eligibility", true)
+								}
+								classNamePrefix="react-select"
+							/>
+							{getFormikError(formik, "course_eligibility")}
+							<AddCourseEligibility
+								isOpen={addCourseEligibility}
+								onClose={setAddCourseEligibility}
+								courseEligibility={courseEligibility}
+								getData={fetchCourseEligibility}
+							/>
+						</div>
+
 						{/* Program Type */}
 						<div>
 							<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
@@ -368,58 +471,6 @@ export function CourseEdit() {
 							/>
 
 							{getFormikError(formik, "program_type")}
-						</div>
-
-						{/* Best For */}
-						<div>
-							<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
-								Best For
-							</label>
-
-							<Select
-								isMulti
-								name="best_for"
-								options={bestForSelectOptions}
-								value={bestForSelectOptions.filter((opt) =>
-									formik.values.best_for?.includes(opt.value),
-								)}
-								onChange={(selected) =>
-									formik.setFieldValue(
-										"best_for",
-										Array.isArray(selected) ? selected.map((s) => s.value) : [],
-									)
-								}
-								onBlur={() => formik.setFieldTouched("best_for", true)}
-								classNamePrefix="react-select"
-							/>
-
-							{getFormikError(formik, "best_for")}
-						</div>
-
-						{/* Course Eligibility */}
-						<div>
-							<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
-								Course Eligibility
-							</label>
-							<Select
-								isMulti
-								name="course_eligibility"
-								options={courseEligibilitySelectOptions}
-								value={courseEligibilitySelectOptions.filter((opt) =>
-									formik.values.course_eligibility?.includes(opt.value),
-								)}
-								onChange={(selected) =>
-									formik.setFieldValue(
-										"course_eligibility",
-										Array.isArray(selected) ? selected.map((s) => s.value) : [],
-									)
-								}
-								onBlur={() =>
-									formik.setFieldTouched("course_eligibility", true)
-								}
-								classNamePrefix="react-select"
-							/>
-							{getFormikError(formik, "course_eligibility")}
 						</div>
 					</div>
 
