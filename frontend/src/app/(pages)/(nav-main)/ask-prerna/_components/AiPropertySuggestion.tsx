@@ -235,7 +235,7 @@ export const AiPropertySugesstion = ({
                         <div className="w-5  h-5 relative flex-shrink-0 bg-gray-900 rounded">
                           <Image
                             fill
-                            src="/img/logo/logo-small-white.png"
+                            src="/img/logo/campusaim-logo.png"
                             alt="Company Logo"
                             className="object-contain"
                           />

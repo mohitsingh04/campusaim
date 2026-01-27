@@ -65,8 +65,8 @@ export function ChatSidebar({ isOpen, onClose, authUser }: SidebarProps) {
                   <Image
                     src={
                       theme === "dark"
-                        ? "/img/logo/logo-small-white.png"
-                        : "/img/logo/logo-small-black.png"
+                        ? "/img/logo/campusaim-logo.png"
+                        : "/img/logo/campusaim-small-logo.png"
                     }
                     alt="AI Logo"
                     fill

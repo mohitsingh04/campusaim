@@ -184,10 +184,11 @@ export interface CourseProps extends Record<string, unknown> {
 	createdAt: string;
 	status: string;
 	course_type: string;
+	degree_type: string;
 	duration: string;
 	duration_value: string;
 	program_type: string;
-	course_eligibility: string;
+	course_eligibility: string[];
 	duration_type: string;
 	best_for: string[];
 	image: string[];

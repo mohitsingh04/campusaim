@@ -6,6 +6,8 @@ import { API } from "../../../../contexts/API";
 import { Edit, Trash2 } from "lucide-react";
 import { getErrorResponse } from "../../../../contexts/Callbacks";
 import ActionDropdown from "../../../../common/ActionDropdown";
+import toast from "react-hot-toast";
+import Swal from "sweetalert2";
 
 export default function Ranking({
 	property,
@@ -59,6 +61,31 @@ export default function Ranking({
 		return cat || id;
 	};
 
+	const handleDelete = useCallback(
+		async (id: any) => {
+			try {
+				const result = await Swal.fire({
+					title: "Are you sure?",
+					text: "Once deleted, you will not be able to recover this!",
+					icon: "warning",
+					showCancelButton: true,
+					confirmButtonColor: "#d33",
+					cancelButtonColor: "#3085d6",
+					confirmButtonText: "Yes, delete it!",
+				});
+
+				if (result.isConfirmed) {
+					const delRes = await API.delete(`/delete-rank/${id}`);
+					toast.success(delRes.data.message || "Deleted successfully");
+					getRanking();
+				}
+			} catch (error) {
+				getErrorResponse(error);
+			}
+		},
+		[getRanking],
+	);
+
 	if (loading) {
 		return (
 			<div className="text-gray-700 dark:text-gray-200 p-4">Loading...</div>
@@ -105,7 +132,7 @@ export default function Ranking({
 										<li>
 											<button
 												onClick={() => {
-													// delete logic
+													handleDelete(acc?._id);
 												}}
 												className="w-full flex items-center gap-2 px-2 py-1 text-sm"
 											>

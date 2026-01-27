@@ -9,7 +9,7 @@ export default function Loader() {
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="relative h-12 w-12 animate-pulse">
             <Image
-              src="/img/logo/logo-small-black.png"
+              src="/img/logo/campusaim-small-logo.png"
               alt="Logo"
               fill
               className="object-contain"

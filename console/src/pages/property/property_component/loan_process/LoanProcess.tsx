@@ -7,6 +7,8 @@ import { Edit, Trash2 } from "lucide-react";
 import { getErrorResponse } from "../../../../contexts/Callbacks";
 import ReadMoreLess from "../../../../ui/read-more/ReadMoreLess";
 import ActionDropdown from "../../../../common/ActionDropdown";
+import Swal from "sweetalert2";
+import toast from "react-hot-toast";
 
 export default function LoanProcess({
 	property,
@@ -40,6 +42,31 @@ export default function LoanProcess({
 	useEffect(() => {
 		getLoanProcess();
 	}, [getLoanProcess]);
+
+	const handleDelete = useCallback(
+		async (id: any) => {
+			try {
+				const result = await Swal.fire({
+					title: "Are you sure?",
+					text: "Once deleted, you will not be able to recover this!",
+					icon: "warning",
+					showCancelButton: true,
+					confirmButtonColor: "#d33",
+					cancelButtonColor: "#3085d6",
+					confirmButtonText: "Yes, delete it!",
+				});
+
+				if (result.isConfirmed) {
+					const delRes = await API.delete(`/delete-loan-process/${id}`);
+					toast.success(delRes.data.message || "Deleted successfully");
+					getLoanProcess();
+				}
+			} catch (error) {
+				getErrorResponse(error);
+			}
+		},
+		[getLoanProcess],
+	);
 
 	if (loading) {
 		return (
@@ -89,7 +116,7 @@ export default function LoanProcess({
 										<li>
 											<button
 												onClick={() => {
-													// delete logic
+													handleDelete(acc?._id);
 												}}
 												className="w-full flex items-center gap-2 px-2 py-1 text-sm"
 											>

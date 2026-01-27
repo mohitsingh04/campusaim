@@ -132,3 +132,36 @@ export const EditPropertyScholarship = async (req, res) => {
         return res.status(500).json({ error: "Internal Server Error" });
     }
 };
+
+export const deletePropertyScholarship = async (req, res) => {
+    try {
+        const { objectId } = req.params;
+
+        if (!mongoose.isValidObjectId(objectId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid property scholarship ID",
+            });
+        }
+
+        const deletedPropertyScholarship = await PropertyScholarship.findByIdAndDelete(objectId);
+
+        if (!deletedPropertyScholarship) {
+            return res.status(404).json({
+                success: false,
+                message: "Property Scholarship not found",
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Property Scholarship deleted successfully",
+        });
+    } catch (error) {
+        console.error("Delete Property Scholarship Error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+        });
+    }
+};

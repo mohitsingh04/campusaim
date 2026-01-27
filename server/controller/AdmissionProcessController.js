@@ -132,3 +132,36 @@ export const EditAdmissionProcess = async (req, res) => {
         return res.status(500).json({ error: "Internal Server Error" });
     }
 };
+
+export const deleteAdmissionProcess = async (req, res) => {
+    try {
+        const { objectId } = req.params;
+
+        if (!mongoose.isValidObjectId(objectId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid admission process ID",
+            });
+        }
+
+        const deletedAdmissionProcess = await AdmissionProcess.findByIdAndDelete(objectId);
+
+        if (!deletedAdmissionProcess) {
+            return res.status(404).json({
+                success: false,
+                message: "AdmissionProcess not found",
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "AdmissionProcess deleted successfully",
+        });
+    } catch (error) {
+        console.error("Delete AdmissionProcess Error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+        });
+    }
+};

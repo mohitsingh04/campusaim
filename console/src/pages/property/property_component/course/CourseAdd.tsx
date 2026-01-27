@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import { X } from "lucide-react";
 import { API } from "../../../../contexts/API";
 import Select from "react-select";
@@ -16,6 +16,7 @@ import {
 	CourseProps,
 	DashboardOutletContextProps,
 	PropertyProps,
+	ReqKoItem,
 } from "../../../../types/types";
 import { currencyOptions } from "../../../../common/ExtraData";
 
@@ -23,126 +24,45 @@ export default function AddCourseForm({
 	categories,
 	allCourses,
 	property,
-	allPropertyCourse,
 	getPropertyCourse,
 	setIsAdding,
-	getCategoryById,
+	bestFor,
+	courseEligibility,
 }: {
 	categories: CategoryProps[];
 	allCourses: CourseProps[];
-	allProperty: PropertyProps[];
-	allPropertyCourse: any[];
 	property: PropertyProps | null;
 	getPropertyCourse: () => void;
 	setIsAdding: any;
-	getCategoryById: any;
+	bestFor: ReqKoItem[];
+	courseEligibility: ReqKoItem[];
 }) {
-	const [priceInput, setPriceInput] = useState("");
-	const [priceCurrency, setPriceCurrency] = useState("INR");
 	const { authUser } = useOutletContext<DashboardOutletContextProps>();
 
-	const getAcademicTypeLabel = (
-		prop?: PropertyProps | null,
-		cats?: CategoryProps[],
-	) => {
-		const at = prop?.academic_type;
-		if (!at || !Array.isArray(cats)) return "";
-		const cat = cats.find((c) => String(c._id) === String(at));
-		return String(cat?.category_name || cat?.name || "")
-			.trim()
-			.toLowerCase();
-	};
-
-	const academicLabel = getAcademicTypeLabel(property, categories);
-
-	const affiliatedIds: string[] =
-		Array.isArray(property?.affiliated_by) && property?.affiliated_by.length
-			? (property.affiliated_by as any[]).map((id) => String(id))
-			: [];
-
-	const propertyCoursesAll = Array.isArray(allPropertyCourse)
-		? allPropertyCourse
-		: [];
-	const affiliatedPropertyCourses = propertyCoursesAll.filter((pc: any) =>
-		affiliatedIds.includes(String(pc.property_id)),
-	);
-	const thisPropertyCourses =
-		property && property._id
-			? propertyCoursesAll.filter(
-					(pc: any) => String(pc.property_id) === String(property._id),
-				)
-			: [];
+	/* -------------------------------------------------------------------------- */
+	/*                               COURSE OPTIONS                               */
+	/* -------------------------------------------------------------------------- */
 
 	const masterCoursesMap = useMemo(() => {
-		const m = new Map<string, any>();
-		(Array.isArray(allCourses) ? allCourses : []).forEach((mc: any) =>
-			m.set(String(mc._id), mc),
-		);
-		return m;
+		const map = new Map<string, CourseProps>();
+		(allCourses || []).forEach((c) => map.set(String(c._id), c));
+		return map;
 	}, [allCourses]);
 
-	const universityCourseOptions = useMemo(() => {
-		const pc = thisPropertyCourses || [];
-		const masterFallback = Array.from(masterCoursesMap.values()).filter(
-			(mc: any) => !pc.some((p: any) => String(p.course_id) === String(mc._id)),
-		);
-		return [...pc, ...masterFallback];
-	}, [thisPropertyCourses, masterCoursesMap]);
-
-	const collegeCourseOptions = useMemo(() => {
-		return affiliatedPropertyCourses;
-	}, [affiliatedPropertyCourses]);
-
-	const courseOptionsSource = useMemo(() => {
-		if (academicLabel.includes("college")) return collegeCourseOptions;
-		if (academicLabel.includes("university")) return universityCourseOptions;
-		return Array.isArray(allCourses) ? allCourses : [];
-	}, [
-		academicLabel,
-		collegeCourseOptions,
-		universityCourseOptions,
-		allCourses,
-	]);
-
-	const findMasterCourseById = (id?: string) =>
-		Array.isArray(allCourses)
-			? allCourses.find((c) => String(c._id) === String(id))
-			: undefined;
-
-	const buildLabel = (item: any) => {
-		// 1️⃣ Resolve master course if this is a property-course
-		const master = item.course_id
-			? masterCoursesMap.get(String(item.course_id))
-			: null;
-
-		// 2️⃣ Resolve course name safely
-		const courseName =
-			item.course_name || master?.course_name || "Unknown Course";
-
-		// 3️⃣ Resolve specialization safely
-		const specializationId = item.specialization || master?.specialization;
-
-		const specializationName = specializationId
-			? getCategoryById(specializationId)
-			: null;
-
-		return specializationName
-			? `${courseName} — ${specializationName}`
-			: courseName;
-	};
-
-	const selectOptions = courseOptionsSource.map((item: any) => ({
-		value: item._id,
-		label: buildLabel(item),
-		raw: item,
+	const selectOptions = (allCourses || []).map((course) => ({
+		value: course._id,
+		label: course.course_name,
 	}));
+
+	/* -------------------------------------------------------------------------- */
+	/*                                   FORMIK                                   */
+	/* -------------------------------------------------------------------------- */
 
 	const formik = useFormik({
 		initialValues: {
 			course_id: "",
 			course_name: "",
 			course_short_name: "",
-			specialization: [] as string[],
 			duration_value: "",
 			duration_type: "",
 			course_type: "",
@@ -150,115 +70,157 @@ export default function AddCourseForm({
 			program_type: "",
 			best_for: [] as string[],
 			course_eligibility: [] as string[],
-			price: Object.fromEntries(
-				Object.entries({}).map(([key, val]) => [key, Number(val || 0)]),
-			),
+			specialization_fees: [] as {
+				specialization_id: string;
+				tuition_fee: number | "";
+				registration_fee: number | "";
+				exam_fee: number | "";
+				currency: string;
+			}[],
 		},
+
 		validationSchema: PropertyCourseValidation,
+
 		onSubmit: async (values) => {
 			try {
 				const payload = {
-					...values,
-					property_id: property?._id || "",
-					userId: authUser?._id || "",
-					duration: `${values?.duration_value} ${values?.duration_type}`,
-					prices: Object.fromEntries(
-						Object.entries(values.price).map(([key, val]) => [
-							key,
-							Number(val || 0),
-						]),
-					),
+					course_id: values.course_id,
+					course_name: values.course_name,
+					course_short_name: values.course_short_name,
+					course_type: values.course_type,
+					degree_type: values.degree_type,
+					program_type: values.program_type,
+					best_for: values.best_for,
+					course_eligibility: values.course_eligibility,
+					property_id: property?._id,
+					userId: authUser?._id,
+					duration: `${values.duration_value} ${values.duration_type}`,
+					specialization_fees: values.specialization_fees.map((s) => ({
+						specialization_id: s.specialization_id,
+						fees: {
+							tuition_fee: Number(s.tuition_fee || 0),
+							registration_fee: Number(s.registration_fee || 0),
+							exam_fee: Number(s.exam_fee || 0),
+							currency: s.currency,
+						},
+					})),
 				};
-				const response = await API.post("/property-course", payload);
-				toast.success(response.data.message || "Course created Successfully");
+
+				await API.post("/property-course", payload);
+				toast.success("Course created successfully");
 				getPropertyCourse();
 				setIsAdding(false);
 			} catch (error) {
 				getErrorResponse(error);
 			}
 		},
-		enableReinitialize: false,
 	});
 
+	/* -------------------------------------------------------------------------- */
+	/*                            COURSE SELECT HANDLER                            */
+	/* -------------------------------------------------------------------------- */
+
 	const handleCourseSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
-		const selectedId = e.target.value;
-		const selectedOption = selectOptions.find(
-			(opt) => String(opt.value) === String(selectedId),
-		);
-		if (!selectedOption) return;
-		const raw = selectedOption.raw;
-		if (raw && raw.course_id) {
-			const master =
-				masterCoursesMap.get(String(raw.course_id)) ||
-				findMasterCourseById(raw.course_id) ||
-				null;
-			formik.setValues({
-				...formik.values,
-				course_id: raw.course_id || "",
-				course_name: raw.course_name || master?.course_name || "",
-				course_short_name:
-					raw.course_short_name || master?.course_short_name || "",
-				specialization: raw.specialization || master?.specialization || "",
-				duration_value:
-					(raw.duration || master?.duration || "").split(" ")?.[0] || "",
-				duration_type:
-					(raw.duration || master?.duration || "").split(" ")?.[1] || "",
-				course_type: raw.course_type || master?.course_type || "",
-				program_type: raw.program_type || master?.program_type || "",
-				course_eligibility:
-					raw.course_eligibility || master?.course_eligibility || "",
-				best_for: raw.best_for || master?.best_for || [],
-			});
-			return;
-		}
-		const master = raw || findMasterCourseById(selectedId);
-		if (master) {
-			formik.setValues({
-				...formik.values,
-				course_id: master._id || "",
-				course_name: master.course_name || "",
-				course_short_name: master.course_short_name || "",
-				specialization: master.specialization || "",
-				duration_value: master.duration?.split(" ")?.[0] || "",
-				duration_type: master.duration?.split(" ")?.[1] || "",
-				course_type: master.course_type || "",
-				program_type: master.program_type || "",
-				course_eligibility: master.course_eligibility || "",
-				best_for: master.best_for || [],
-			});
-		}
-	};
+		const course = masterCoursesMap.get(e.target.value);
+		if (!course) return;
 
-	const handleAddPrice = () => {
-		if (!priceInput) return;
-		formik.setFieldValue("price", {
-			...formik.values.price,
-			[priceCurrency]: Number(priceInput),
+		formik.setValues({
+			...formik.values,
+			course_id: course._id || "",
+			course_name: course.course_name || "",
+			course_short_name: course.course_short_name || "",
+			duration_value: course.duration?.split(" ")?.[0] || "",
+			duration_type: course.duration?.split(" ")?.[1] || "",
+			course_type: course.course_type || "",
+			degree_type: course.degree_type || "",
+			program_type: course.program_type || "",
+			best_for: course.best_for || [],
+			course_eligibility: course.course_eligibility || [],
+			specialization_fees: [], // manual only
 		});
-		setPriceInput("");
 	};
 
-	const courseTypeOptions = getCategoryAccodingToField(
-		categories,
-		"course type",
+	/* -------------------------------------------------------------------------- */
+	/*                         SPECIALIZATION HANDLERS                             */
+	/* -------------------------------------------------------------------------- */
+
+	const addSpecialization = () => {
+		formik.setFieldValue("specialization_fees", [
+			...formik.values.specialization_fees,
+			{
+				specialization_id: "",
+				tuition_fee: "",
+				registration_fee: "",
+				exam_fee: "",
+				currency: "INR",
+			},
+		]);
+	};
+
+	const removeSpecialization = (index: number) => {
+		const updated = [...formik.values.specialization_fees];
+		updated.splice(index, 1);
+		formik.setFieldValue("specialization_fees", updated);
+	};
+
+	const selectedSpecializationIds = formik.values.specialization_fees.map(
+		(s) => s.specialization_id,
 	);
+
+	/* -------------------------------------------------------------------------- */
+	/*                                 OPTIONS                                    */
+	/* -------------------------------------------------------------------------- */
+
 	const specializationOptions = getCategoryAccodingToField(
 		categories,
 		"specialization",
 	);
-	const ProgramTypeOptions = getCategoryAccodingToField(
+
+	const courseTypeSelectOptions = getCategoryAccodingToField(
+		categories,
+		"course type",
+	).map((opt: any) => ({
+		value: opt._id,
+		label: opt.category_name || opt.name,
+	}));
+
+	const degreeTypeSelectOptions = getCategoryAccodingToField(
+		categories,
+		"Degree Type",
+	).map((opt: any) => ({
+		value: opt._id,
+		label: opt.category_name || opt.name,
+	}));
+
+	const programTypeSelectOptions = getCategoryAccodingToField(
 		categories,
 		"Program Type",
+	).map((opt: any) => ({
+		value: opt._id,
+		label: opt.category_name || opt.name,
+	}));
+
+	const bestForOptions = bestFor.map((b) => ({
+		value: String(b._id),
+		label: b.best_for ?? "",
+	}));
+
+	const bestForValue = bestForOptions.filter((opt) =>
+		formik.values.best_for.includes(opt.value),
 	);
-	const programTypeSelectOptions = ProgramTypeOptions.map((opt: any) => ({
-		value: opt._id,
-		label: opt.category_name || opt.name,
+
+	const courseEligibilityOptions = courseEligibility.map((c) => ({
+		value: String(c._id),
+		label: c.course_eligibility ?? "",
 	}));
-	const bestForOptions = getCategoryAccodingToField(categories, "Best For");
-	const bestForSelectOptions = bestForOptions.map((opt: any) => ({
-		value: opt._id,
-		label: opt.category_name || opt.name,
-	}));
+
+	const courseEligibilityValue = courseEligibilityOptions.filter((opt) =>
+		formik.values.course_eligibility.includes(opt.value),
+	);
+
+	/* -------------------------------------------------------------------------- */
+	/*                                   RENDER                                   */
+	/* -------------------------------------------------------------------------- */
 
 	return (
 		<div>
@@ -273,7 +235,7 @@ export default function AddCourseForm({
 							<select
 								name="course_select"
 								value={
-									selectOptions.find((opt) => {
+									selectOptions.find((opt: any) => {
 										const raw = opt.raw;
 										if (raw && raw.course_id)
 											return (
@@ -315,27 +277,6 @@ export default function AddCourseForm({
 							{getFormikError(formik, "course_short_name")}
 						</div>
 
-						{/* Specialization */}
-						<div>
-							<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
-								Specialization
-							</label>
-							<select
-								name="specialization"
-								value={formik.values.specialization}
-								onChange={formik.handleChange}
-								className="w-full px-3 py-2 border border-[var(--yp-border-primary)] rounded-lg bg-[var(--yp-input-primary)] text-[var(--yp-text-primary)]"
-							>
-								<option value="">Select Specialization</option>
-								{specializationOptions.map((opt: any, idx: number) => (
-									<option key={idx} value={opt._id}>
-										{opt.category_name || opt.name}
-									</option>
-								))}
-							</select>
-							{getFormikError(formik, "specialization")}
-						</div>
-
 						{/* Duration */}
 						<div className="grid grid-cols-2 gap-2">
 							<div>
@@ -375,20 +316,96 @@ export default function AddCourseForm({
 							<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
 								Course Type
 							</label>
-							<select
+
+							<Select
 								name="course_type"
-								value={formik.values.course_type}
-								onChange={formik.handleChange}
-								className="w-full px-3 py-2 border border-[var(--yp-border-primary)] rounded-lg bg-[var(--yp-input-primary)] text-[var(--yp-text-primary)]"
-							>
-								<option value="">Select Course Type</option>
-								{courseTypeOptions.map((opt: any, idx: number) => (
-									<option key={idx} value={opt._id}>
-										{opt.category_name || opt.name}
-									</option>
-								))}
-							</select>
+								options={courseTypeSelectOptions}
+								value={courseTypeSelectOptions.find(
+									(opt) => opt.value === formik.values.course_type,
+								)}
+								onChange={(selected) =>
+									formik.setFieldValue(
+										"course_type",
+										selected ? selected.value : "",
+									)
+								}
+								onBlur={() => formik.setFieldTouched("course_type", true)}
+								classNamePrefix="react-select"
+							/>
+
 							{getFormikError(formik, "course_type")}
+						</div>
+
+						{/* Degree Type */}
+						<div>
+							<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
+								Degree Type
+							</label>
+
+							<Select
+								name="degree_type"
+								options={degreeTypeSelectOptions}
+								value={degreeTypeSelectOptions.find(
+									(opt) => opt.value === formik.values.degree_type,
+								)}
+								onChange={(selected) =>
+									formik.setFieldValue(
+										"degree_type",
+										selected ? selected.value : "",
+									)
+								}
+								onBlur={() => formik.setFieldTouched("degree_type", true)}
+								classNamePrefix="react-select"
+							/>
+
+							{getFormikError(formik, "degree_type")}
+						</div>
+
+						{/* Best For */}
+						<div>
+							<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
+								Best For
+							</label>
+
+							<Select
+								isMulti
+								name="best_for"
+								options={bestForOptions}
+								value={bestForValue}
+								onChange={(selected: any) =>
+									formik.setFieldValue(
+										"best_for",
+										(selected || []).map((s: any) => String(s.value)),
+									)
+								}
+								onBlur={() => formik.setFieldTouched("best_for", true)}
+								classNamePrefix="react-select"
+							/>
+							{getFormikError(formik, "best_for")}
+						</div>
+
+						{/* Course Eligibility */}
+						<div>
+							<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
+								Course Eligibility
+							</label>
+							<Select
+								isMulti
+								name="course_eligibility"
+								options={courseEligibilityOptions}
+								value={courseEligibilityValue}
+								onChange={(selected: any) =>
+									formik.setFieldValue(
+										"course_eligibility",
+										(selected || []).map((s: any) => String(s.value)),
+									)
+								}
+								onBlur={() =>
+									formik.setFieldTouched("course_eligibility", true)
+								}
+								classNamePrefix="react-select"
+							/>
+							{getFormikError(formik, "course_eligibility")}
 						</div>
 
 						{/* Program Type */}
@@ -415,103 +432,133 @@ export default function AddCourseForm({
 
 							{getFormikError(formik, "program_type")}
 						</div>
-
-						{/* Best For */}
-						<div className="col-span-2">
-							<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
-								Best For
-							</label>
-
-							<Select
-								isMulti
-								name="best_for"
-								options={bestForSelectOptions}
-								value={bestForSelectOptions.filter((opt) =>
-									formik.values.best_for?.includes(opt.value),
-								)}
-								onChange={(selected) =>
-									formik.setFieldValue(
-										"best_for",
-										Array.isArray(selected) ? selected.map((s) => s.value) : [],
-									)
-								}
-								onBlur={() => formik.setFieldTouched("best_for", true)}
-								classNamePrefix="react-select"
-							/>
-
-							{getFormikError(formik, "best_for")}
-						</div>
-
-						{/* Course Eligibility */}
-						<div className="col-span-2">
-							<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
-								Course Eligibility
-							</label>
-							<textarea
-								name="course_eligibility"
-								value={formik.values.course_eligibility}
-								onChange={formik.handleChange}
-								placeholder="Enter Course Eligibility"
-								className="w-full px-3 py-2 border border-[var(--yp-border-primary)] rounded-lg bg-[var(--yp-input-primary)] text-[var(--yp-text-primary)]"
-							></textarea>
-							{getFormikError(formik, "course_eligibility")}
-						</div>
-
-						{/* Price */}
-						<div className="col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
-							<div className="flex gap-2 items-center">
-								<input
-									type="number"
-									value={priceInput}
-									onChange={(e) => setPriceInput(e.target.value)}
-									placeholder="Enter Price"
-									className="w-full px-3 py-2 border border-[var(--yp-border-primary)] rounded-lg bg-[var(--yp-input-primary)] text-[var(--yp-text-primary)]"
-								/>
-								<select
-									value={priceCurrency}
-									onChange={(e) => setPriceCurrency(e.target.value)}
-									className="w-full px-3 py-2 border border-[var(--yp-border-primary)] rounded-lg bg-[var(--yp-input-primary)] text-[var(--yp-text-primary)]"
-								>
-									<option value="">Select Currency</option>
-									{currencyOptions.map((opt) => (
-										<option key={opt} value={opt}>
-											{opt}
-										</option>
-									))}
-								</select>
-								<button
-									type="button"
-									onClick={handleAddPrice}
-									className="px-6 py-2 rounded-lg text-sm font-medium text-[var(--yp-green-text)] bg-[var(--yp-green-bg)]"
-								>
-									Add
-								</button>
-							</div>
-							<div className="col-span-1 md:col-span-3 flex flex-wrap gap-2 mt-2">
-								{Object.entries(formik.values.price).map(
-									([currency, value]) =>
-										value && (
-											<span
-												key={currency}
-												className="flex items-center px-3 py-1 bg-[var(--yp-tertiary)] bg-opacity-30 text-[var(--yp-text-primary)] rounded-full text-sm"
-											>
-												{currency}: {value}
-												<X
-													className="ml-2 w-4 h-4 cursor-pointer"
-													onClick={() =>
-														formik.setFieldValue("price", {
-															...formik.values.price,
-															[currency]: "",
-														})
-													}
-												/>
-											</span>
-										),
-								)}
-							</div>
-						</div>
 					</div>
 
+					{/* Specializations & Fees */}
+					<div className="space-y-4">
+						{/* Header */}
+						<div className="flex items-center justify-between">
+							<h3 className="text-sm font-semibold text-gray-800">
+								Specializations & Fees
+							</h3>
+
+							<button
+								type="button"
+								onClick={addSpecialization}
+								className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700"
+							>
+								+ Add Specialization
+							</button>
+						</div>
+
+						{/* Column Labels (Desktop only) */}
+						<div className="hidden md:grid grid-cols-12 gap-3 px-3 text-xs font-medium text-gray-500">
+							<div className="col-span-4">Specialization</div>
+							<div className="col-span-3">Tuition Fee</div>
+							<div className="col-span-3">Reg. Fee</div>
+							<div className="col-span-1">Currency</div>
+							<div className="col-span-1 text-right">Action</div>
+						</div>
+
+						{/* Rows */}
+						{formik.values.specialization_fees.map((item, idx) => (
+							<div
+								key={idx}
+								className="grid grid-cols-1 md:grid-cols-12 gap-3 p-4 rounded-lg border bg-white shadow-sm"
+							>
+								{/* Specialization */}
+								<div className="md:col-span-4">
+									<select
+										value={item.specialization_id}
+										onChange={(e) =>
+											formik.setFieldValue(
+												`specialization_fees.${idx}.specialization_id`,
+												e.target.value,
+											)
+										}
+										className="w-full px-3 py-2 border rounded-md text-sm"
+									>
+										<option value="">Select specialization</option>
+										{specializationOptions.map((opt: any) => (
+											<option
+												key={opt._id}
+												value={opt._id}
+												disabled={selectedSpecializationIds.includes(opt._id)}
+											>
+												{opt.category_name || opt.name}
+											</option>
+										))}
+									</select>
+								</div>
+
+								{/* Tuition Fee */}
+								<div className="md:col-span-3">
+									<input
+										type="number"
+										placeholder="Tuition fee"
+										value={item.tuition_fee}
+										onChange={(e) =>
+											formik.setFieldValue(
+												`specialization_fees.${idx}.tuition_fee`,
+												e.target.value,
+											)
+										}
+										className="w-full px-3 py-2 border rounded-md text-sm"
+									/>
+								</div>
+
+								{/* Registration Fee */}
+								<div className="md:col-span-3">
+									<input
+										type="number"
+										placeholder="Registration fee"
+										value={item.registration_fee}
+										onChange={(e) =>
+											formik.setFieldValue(
+												`specialization_fees.${idx}.registration_fee`,
+												e.target.value,
+											)
+										}
+										className="w-full px-3 py-2 border rounded-md text-sm"
+									/>
+								</div>
+
+								{/* Currency */}
+								<div className="md:col-span-1">
+									<select
+										value={item.currency}
+										onChange={(e) =>
+											formik.setFieldValue(
+												`specialization_fees.${idx}.currency`,
+												e.target.value,
+											)
+										}
+										className="w-full px-2 py-2 border rounded-md text-sm"
+									>
+										{currencyOptions.map((c) => (
+											<option key={c} value={c}>
+												{c}
+											</option>
+										))}
+									</select>
+								</div>
+
+								{/* Remove */}
+								<div className="md:col-span-1 flex items-center justify-end">
+									<button
+										type="button"
+										onClick={() => removeSpecialization(idx)}
+										className="text-gray-400 hover:text-red-500 transition"
+										title="Remove specialization"
+									>
+										<X size={18} />
+									</button>
+								</div>
+							</div>
+						))}
+					</div>
+
+					{/* Submit Button */}
 					<div className="flex justify-start gap-2">
 						<button
 							type="submit"

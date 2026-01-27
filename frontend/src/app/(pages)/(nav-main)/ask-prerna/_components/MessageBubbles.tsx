@@ -51,7 +51,7 @@ export const TypingIndicator = () => (
         <Image
           fill
           className="object-cover"
-          src="/img/logo/logo-small-white.png"
+          src="/img/logo/campusaim-logo.png"
           alt="Company Logo"
         />
       </div>
@@ -105,7 +105,7 @@ export function MessageBubble({
             <Image
               fill
               className="object-cover"
-              src="/img/logo/logo-small-white.png"
+              src="/img/logo/campusaim-logo.png"
               alt="Assistant Logo"
             />
           </div>

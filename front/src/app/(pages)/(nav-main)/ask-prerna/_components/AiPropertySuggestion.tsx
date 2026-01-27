@@ -239,8 +239,8 @@ export const AiPropertySugesstion = ({
                             fill
                             src={
                               theme === "light"
-                                ? "/img/logo/logo-small-white.png"
-                                : "/img/logo/logo-small-black.png"
+                                ? "/img/logo/campusaim-logo.png"
+                                : "/img/logo/campusaim-small-logo.png"
                             }
                             alt="Company Logo"
                             className="object-contain"

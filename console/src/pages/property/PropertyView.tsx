@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
 	MapPin,
 	Users,
@@ -21,15 +21,27 @@ import {
 	Medal,
 } from "lucide-react";
 import { BiSolidCheckShield, BiSolidShieldX } from "react-icons/bi";
-import { PropertyTabs } from "../../ui/tabs/PropertyTabs";
 import {
 	Link,
 	useNavigate,
 	useOutletContext,
 	useParams,
 } from "react-router-dom";
-import { DashboardOutletContextProps, PropertyProps } from "../../types/types";
+
+import { PropertyTabs } from "../../ui/tabs/PropertyTabs";
+import { Breadcrumbs } from "../../ui/breadcrumbs/Breadcrumbs";
+import ViewSkeleton from "../../ui/skeleton/ViewSkeleton";
+
 import { API } from "../../contexts/API";
+import {
+	generateSlug,
+	getErrorResponse,
+	matchPermissions,
+} from "../../contexts/Callbacks";
+
+import { DashboardOutletContextProps, PropertyProps } from "../../types/types";
+
+// Components
 import FAQs from "./property_component/faqs/Faqs";
 import Gallery from "./property_component/gallery/Gallery";
 import Location from "./property_component/location/Location";
@@ -37,16 +49,9 @@ import Teachers from "./property_component/teacher/Teacher";
 import SEODetails from "./property_component/seo/Seo";
 import Amenities from "./property_component/amenities/Amenities";
 import Accomodation from "./property_component/accomodation/Accomodation";
-import { Breadcrumbs } from "../../ui/breadcrumbs/Breadcrumbs";
 import Review from "./property_component/review/Review";
 import BasicDetails from "./property_component/basic-details/BasicDetails";
-import ViewSkeleton from "../../ui/skeleton/ViewSkeleton";
 import { Enquiry } from "./property_component/enquiry/Enquiry";
-import {
-	generateSlug,
-	getErrorResponse,
-	matchPermissions,
-} from "../../contexts/Callbacks";
 import CourseList from "./property_component/course/CourseList";
 import Scholarship from "./property_component/scholarship/Scholarship";
 import AdmissionProcess from "./property_component/admission_process/AdmissionProcess";
@@ -56,66 +61,66 @@ import QnA from "./property_component/qna/QnA";
 import Ranking from "./property_component/ranking/Ranking";
 
 export function PropertyView() {
+	const navigate = useNavigate();
 	const { objectId } = useParams();
+
 	const { authUser, authLoading, categories } =
 		useOutletContext<DashboardOutletContextProps>();
+
 	const [property, setProperty] = useState<PropertyProps | null>(null);
 	const [allProperty, setAllProperty] = useState<PropertyProps | null>(null);
 	const [location, setLocation] = useState<any>(null);
-	const [loading, setLoading] = useState(true);
-	const navigate = useNavigate();
 
-	// useEffect(() => {
-	// 	if (!loading && property === null) {
-	// 		navigate("/not-found");
-	// 	}
-	// }, [loading, property, navigate]);
+	const [propertyLoading, setPropertyLoading] = useState(true);
+	const [allPropertyLoading, setAllPropertyLoading] = useState(true);
 
+	// 🔑 Single source of truth
+	const loading = authLoading || propertyLoading || allPropertyLoading;
+
+	// ---------- AUTH GUARD ----------
 	useEffect(() => {
-		if (!authLoading && !loading && property) {
-			if (authUser?.role === "Property Manager" || authUser?.role === "User") {
-				if (property.userId !== authUser?._id) {
-					navigate("/dashboard");
-				}
-			}
-		}
-	}, [authUser, authLoading, loading, property, navigate]);
+		if (authLoading || !property) return;
 
+		if (
+			(authUser?.role === "Property Manager" || authUser?.role === "User") &&
+			property.userId !== authUser?._id
+		) {
+			navigate("/dashboard");
+		}
+	}, [authLoading, authUser, property, navigate]);
+
+	// ---------- API CALLS ----------
 	const getAllProperty = useCallback(async () => {
-		setLoading(true);
+		setAllPropertyLoading(true);
 		try {
-			const propertyResponse = await API.get(`/property`);
-			const propertyData = propertyResponse.data;
-			setAllProperty(propertyData);
-		} catch (error) {
-			getErrorResponse(error, true);
+			const res = await API.get("/property");
+			setAllProperty(res.data);
+		} catch (err) {
+			getErrorResponse(err, true);
 		} finally {
-			setLoading(false);
+			setAllPropertyLoading(false);
 		}
 	}, []);
 
 	const getProperty = useCallback(async () => {
-		setLoading(true);
+		setPropertyLoading(true);
 		try {
-			const propertyResponse = await API.get(`/property/${objectId}`);
-			const propertyData = propertyResponse.data;
-
-			const [propertyResult, locationResult] = await Promise.allSettled([
-				Promise.resolve(propertyData),
+			const [propertyRes, locationRes] = await Promise.allSettled([
+				API.get(`/property/${objectId}`),
 				API.get(`/property/location/${objectId}`),
 			]);
 
-			if (propertyResult.status === "fulfilled") {
-				setProperty(propertyResult.value);
+			if (propertyRes.status === "fulfilled") {
+				setProperty(propertyRes.value.data);
 			}
 
-			if (locationResult.status === "fulfilled") {
-				setLocation(locationResult.value.data);
+			if (locationRes.status === "fulfilled") {
+				setLocation(locationRes.value.data);
 			}
-		} catch (error) {
-			getErrorResponse(error, true);
+		} catch (err) {
+			getErrorResponse(err, true);
 		} finally {
-			setLoading(false);
+			setPropertyLoading(false);
 		}
 	}, [objectId]);
 
@@ -124,18 +129,25 @@ export function PropertyView() {
 		getAllProperty();
 	}, [getProperty, getAllProperty]);
 
+	// ---------- HELPERS ----------
 	const getCategoryById = useCallback(
-		(id: string) => {
-			const cat = categories.find((item) => item._id === id);
-			return cat?.category_name;
-		},
-		[categories]
+		(id: any) => categories.find((c) => c._id === id)?.category_name,
+		[categories],
 	);
 
-	const isOnline =
-		getCategoryById(property?.category || "")?.toLowerCase() ===
-		"online yoga studio";
+	const isOnline = useMemo(() => {
+		return (
+			getCategoryById(property?.category || "")?.toLowerCase() ===
+			"online yoga studio"
+		);
+	}, [property, getCategoryById]);
 
+	// ---------- LOADING ----------
+	if (loading) {
+		return <ViewSkeleton />;
+	}
+
+	// ---------- TABS ----------
 	const tabs = [
 		{
 			id: "enquiry",
@@ -148,8 +160,8 @@ export function PropertyView() {
 			id: "analytics",
 			label: "Analytics",
 			icon: BarChart2,
-			component: <div></div>,
 			redirect: `/dashboard/property/${property?._id}/analytics`,
+			component: <div />,
 			online: false,
 		},
 		{
@@ -158,11 +170,11 @@ export function PropertyView() {
 			icon: BookOpen,
 			component: (
 				<BasicDetails
-					getPropertyBasicDetails={getProperty}
 					property={property}
 					allProperty={allProperty}
 					categories={categories}
 					getCategoryById={getCategoryById}
+					getPropertyBasicDetails={getProperty}
 				/>
 			),
 			online: false,
@@ -285,9 +297,6 @@ export function PropertyView() {
 			online: false,
 		},
 	];
-	if (loading) {
-		return <ViewSkeleton />;
-	}
 
 	return (
 		<div>
@@ -330,7 +339,7 @@ export function PropertyView() {
 								{/* Verification Icon */}
 								{matchPermissions(
 									authUser?.permissions,
-									"Read Property Verification"
+									"Read Property Verification",
 								) ? (
 									<Link
 										to={`/dashboard/property/${property?._id}/verification`}
@@ -376,7 +385,7 @@ export function PropertyView() {
 				{property?.property_slug && (
 					<a
 						href={`${import.meta.env.VITE_MAIN_URL}/${generateSlug(
-							getCategoryById(property?.category ?? "") || ""
+							getCategoryById(property?.academic_type ?? "") || "",
 						)}/${generateSlug(property.property_slug || "")}/overview`}
 						target="_blank"
 						rel="noopener noreferrer"

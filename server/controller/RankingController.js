@@ -57,7 +57,7 @@ export const addRanking = async (req, res) => {
             qs_rank,
             times_higher_education_rank,
         });
-        
+
         const saved = await newRanking.save();
 
         const rankCount = await Ranking.countDocuments({ property_id });
@@ -171,5 +171,38 @@ export const editRanking = async (req, res) => {
     } catch (error) {
         console.error("Edit Ranking Error:", error);
         return res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+export const deleteRanking = async (req, res) => {
+    try {
+        const { objectId } = req.params;
+
+        if (!mongoose.isValidObjectId(objectId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid ranking ID",
+            });
+        }
+
+        const deletedRanking = await Ranking.findByIdAndDelete(objectId);
+
+        if (!deletedRanking) {
+            return res.status(404).json({
+                success: false,
+                message: "Ranking not found",
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Ranking deleted successfully",
+        });
+    } catch (error) {
+        console.error("Delete Ranking Error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+        });
     }
 };

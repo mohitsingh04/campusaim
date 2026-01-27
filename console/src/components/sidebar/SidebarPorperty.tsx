@@ -103,13 +103,13 @@ export function SidebarProperty({
 							<>
 								{theme === "dark" ? (
 									<img
-										src="/img/logo/logo-small-white.png"
+										src="/img/logo/campusaim-logo.png"
 										alt="Logo Small Black"
 										className="h-8 w-auto"
 									/>
 								) : (
 									<img
-										src="/img/logo/logo-small-black.png"
+										src="/img/logo/campusaim-small-logo.png"
 										alt="Logo Small Black"
 										className="h-8 w-auto"
 									/>

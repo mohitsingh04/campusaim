@@ -59,21 +59,21 @@ const StatsSection = () => {
   const stats = [
     {
       number: property.length,
-      title: "Expert Gurus",
+      title: "Verified Institutions",
       description:
-        "Certified yoga instructors guiding you through every breath and asana.",
+        "Accredited colleges and universities providing recognized academic programs.",
     },
     {
       number: course.length,
-      title: "Wellness Sessions",
+      title: "Academic Programs",
       description:
-        "A wide variety of classes including Hatha, Vinyasa, and guided meditation.",
+        "Undergraduate, postgraduate, diploma, and doctoral courses across multiple disciplines.",
     },
     {
       number: events.length,
-      title: "Happy Practitioners",
+      title: "Student Users",
       description:
-        "Join our growing community finding peace and strength every single day.",
+        "Students and learners using Campusaim to research colleges and academic options.",
     },
   ];
 

@@ -73,7 +73,7 @@ export function ChatSidebar({ isOpen, onClose, authUser }: SidebarProps) {
               <div className="flex items-center gap-3">
                 <div className="relative w-12 h-12 flex items-center justify-center overflow-hidden rounded-xl bg-gray-100">
                   <Image
-                    src="/img/logo/logo-small-black.png"
+                    src="/img/logo/campusaim-small-logo.png"
                     alt="AI Logo"
                     fill
                     className="object-contain"

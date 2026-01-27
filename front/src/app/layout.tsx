@@ -21,23 +21,18 @@ const poppins = Poppins({
   display: "swap",
 });
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://www.yogprerna.com";
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://campusaim.com";
 
 export const metadata: Metadata = {
   title: {
-    default: "Yogprerna",
-    template: "%s - Yogprerna",
+    default: "Campusaim",
+    template: "%s - Campusaim",
   },
   description:
-    "Discover yoga properties, instructors, and facilities. Yogprerna is your all-in-one platform for finding everything related to yoga.",
+    "Discover verified colleges and universities, explore accredited courses, and make informed academic decisions with trusted admission insights—tailored to your goals.",
   keywords: [
-    "yoga",
-    "yogprerna",
-    "yog prerna",
-    "yoga classes",
-    "yoga studios",
-    "yoga retreats",
-    "yoga near me",
+    "college",
+    "university",
   ],
   metadataBase: new URL(baseUrl),
   alternates: {

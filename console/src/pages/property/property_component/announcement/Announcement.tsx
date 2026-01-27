@@ -7,6 +7,8 @@ import { Edit, Trash2 } from "lucide-react";
 import { getErrorResponse } from "../../../../contexts/Callbacks";
 import ReadMoreLess from "../../../../ui/read-more/ReadMoreLess";
 import ActionDropdown from "../../../../common/ActionDropdown";
+import Swal from "sweetalert2";
+import toast from "react-hot-toast";
 
 export default function Announcement({
 	property,
@@ -40,6 +42,31 @@ export default function Announcement({
 	useEffect(() => {
 		getAnnouncement();
 	}, [getAnnouncement]);
+
+	const handleDelete = useCallback(
+		async (id: any) => {
+			try {
+				const result = await Swal.fire({
+					title: "Are you sure?",
+					text: "Once deleted, you will not be able to recover this!",
+					icon: "warning",
+					showCancelButton: true,
+					confirmButtonColor: "#d33",
+					cancelButtonColor: "#3085d6",
+					confirmButtonText: "Yes, delete it!",
+				});
+
+				if (result.isConfirmed) {
+					const delRes = await API.delete(`/delete-announcement/${id}`);
+					toast.success(delRes.data.message || "Deleted successfully");
+					getAnnouncement();
+				}
+			} catch (error) {
+				getErrorResponse(error);
+			}
+		},
+		[getAnnouncement],
+	);
 
 	if (loading) {
 		return (
@@ -92,7 +119,7 @@ export default function Announcement({
 										<li>
 											<button
 												onClick={() => {
-													// delete logic
+													handleDelete(acc?._id);
 												}}
 												className="w-full flex items-center gap-2 px-2 py-1 text-sm"
 											>

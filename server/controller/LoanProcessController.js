@@ -132,3 +132,36 @@ export const EditLoanProcess = async (req, res) => {
         return res.status(500).json({ error: "Internal Server Error" });
     }
 };
+
+export const deleteLoanProcess = async (req, res) => {
+    try {
+        const { objectId } = req.params;
+
+        if (!mongoose.isValidObjectId(objectId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid loan process ID",
+            });
+        }
+
+        const deletedLoanProcess = await LoanProcess.findByIdAndDelete(objectId);
+
+        if (!deletedLoanProcess) {
+            return res.status(404).json({
+                success: false,
+                message: "Loan Process not found",
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Loan Process deleted successfully",
+        });
+    } catch (error) {
+        console.error("Delete Loan Process Error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+        });
+    }
+};

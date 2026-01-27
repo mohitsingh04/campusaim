@@ -146,6 +146,7 @@ import {
 } from "../controller/AccomodationController.js";
 import {
   AddPropertyScholarship,
+  deletePropertyScholarship,
   EditPropertyScholarship,
   getAllPropertyScholarship,
   getPropertyScholarshipByPropertyId,
@@ -206,11 +207,11 @@ import {
   sendPropertyVerifyEmailOTP,
 } from "../controller/PropertyVerificationController.js";
 import { addExam, deleteExam, getExam, getExamById, getExamWithSeoBySlug, restoreExam, softDeleteExam, updateExam } from "../controller/ExamController.js";
-import { AddAdmissionProcess, EditAdmissionProcess, getAdmissionProcessByPropertyId, getAllAdmissionProcess } from "../controller/AdmissionProcessController.js";
-import { AddLoanProcess, EditLoanProcess, getAllLoanProcess, getLoanProcessByPropertyId } from "../controller/LoanProcessController.js";
-import { AddAnnouncement, EditAnnouncement, getAllAnnouncement, getAnnouncementByPropertyId } from "../controller/AnnouncementController.js";
+import { AddAdmissionProcess, deleteAdmissionProcess, EditAdmissionProcess, getAdmissionProcessByPropertyId, getAllAdmissionProcess } from "../controller/AdmissionProcessController.js";
+import { AddLoanProcess, deleteLoanProcess, EditLoanProcess, getAllLoanProcess, getLoanProcessByPropertyId } from "../controller/LoanProcessController.js";
+import { AddAnnouncement, deleteAnnouncement, EditAnnouncement, getAllAnnouncement, getAnnouncementByPropertyId } from "../controller/AnnouncementController.js";
 import { addQnA, deleteQnA, getQnA, getQnAById, getQnAByPropertyId, updateQnA } from "../controller/QnaController.js";
-import { addRanking, editRanking, getAllRanking, getRankingByPropertyId } from "../controller/RankingController.js";
+import { addRanking, deleteRanking, editRanking, getAllRanking, getRankingByPropertyId } from "../controller/RankingController.js";
 import { addScholarship, deleteScholarship, getScholarship, getScholarshipById, getScholarshipWithSeoBySlug, updateScholarship } from "../controller/ScholarshipController.js";
 import { CreateBestFor, deleteBestFor, getAllBestFor, getBestForById, updateBestFor } from "../controller/BestForController.js";
 import { CreateCourseEligibility, deleteCourseEligibility, getAllCourseEligibility, getCourseEligibilityById, updateCourseEligibility } from "../controller/CourseEligibilityController.js";
@@ -401,30 +402,35 @@ router.get("/property-scholarship", getAllPropertyScholarship);
 router.get("/property-scholarship/:property_id", getPropertyScholarshipByPropertyId);
 router.post("/property-scholarship", Authorize, AddPropertyScholarship);
 router.patch("/property-scholarship/:objectId", Authorize, EditPropertyScholarship);
+router.delete("/delete-property-scholarship/:objectId", Authorize, deletePropertyScholarship);
 
 //? Ranking Route
 router.get("/ranking", getAllRanking);
 router.get("/ranking/:property_id", getRankingByPropertyId);
 router.post("/ranking", Authorize, addRanking);
 router.patch("/ranking/:objectId", Authorize, editRanking);
+router.delete("/delete-rank/:objectId", Authorize, deleteRanking);
 
 //? Announcement Route
 router.get("/announcement", getAllAnnouncement);
 router.get("/announcement/:property_id", getAnnouncementByPropertyId);
 router.post("/announcement", Authorize, AddAnnouncement);
 router.patch("/announcement/:objectId", Authorize, EditAnnouncement);
+router.delete("/delete-announcement/:objectId", Authorize, deleteAnnouncement);
 
 //? Loan Process Route
 router.get("/loan_process", getAllLoanProcess);
 router.get("/loan_process/:property_id", getLoanProcessByPropertyId);
 router.post("/loan_process", Authorize, AddLoanProcess);
 router.patch("/loan_process/:objectId", Authorize, EditLoanProcess);
+router.delete("/delete-loan-process/:objectId", Authorize, deleteLoanProcess);
 
 //? Admission Process Route
 router.get("/admission_process", getAllAdmissionProcess);
 router.get("/admission_process/:property_id", getAdmissionProcessByPropertyId);
 router.post("/admission_process", Authorize, AddAdmissionProcess);
 router.patch("/admission_process/:objectId", Authorize, EditAdmissionProcess);
+router.delete("/delete-admission-process/:objectId", Authorize, deleteAdmissionProcess);
 
 //? Review Route
 router.get("/review", getReview);

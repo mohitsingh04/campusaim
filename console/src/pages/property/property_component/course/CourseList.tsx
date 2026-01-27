@@ -35,23 +35,23 @@ export default function CourseList({
 	const [isViewing, setIsViewing] = useState<any | null>(null);
 	const [isEditing, setIsEditing] = useState<any | null>(null);
 	const [isAdding, setIsAdding] = useState(false);
-	const [requirements, setRequirements] = useState<ReqKoItem[]>([]);
-	const [keyOutcomes, setKeyOutcomes] = useState<ReqKoItem[]>([]);
 	const [categories, setCategories] = useState<CategoryProps[]>([]);
+	const [bestFor, setBestFor] = useState<ReqKoItem[]>([]);
+	const [courseEligibility, setCourseEligibility] = useState<ReqKoItem[]>([]);
 
-	const fetchRequirements = useCallback(async () => {
+	const fetchBestFor = useCallback(async () => {
 		try {
-			const res = await API.get("/requirment/all");
-			setRequirements((res?.data as ReqKoItem[]) || []);
+			const res = await API.get("/best-for/all");
+			setBestFor((res?.data as ReqKoItem[]) || []);
 		} catch (error) {
 			getErrorResponse(error, true);
 		}
 	}, []);
 
-	const fetchKeyOutcomes = useCallback(async () => {
+	const fetchCourseEligibility = useCallback(async () => {
 		try {
-			const res = await API.get("/key-outcome/all");
-			setKeyOutcomes((res?.data as ReqKoItem[]) || []);
+			const res = await API.get("/course-eligibility/all");
+			setCourseEligibility((res?.data as ReqKoItem[]) || []);
 		} catch (error) {
 			getErrorResponse(error, true);
 		}
@@ -67,10 +67,10 @@ export default function CourseList({
 	}, []);
 
 	useEffect(() => {
-		fetchRequirements();
-		fetchKeyOutcomes();
 		fetchCategories();
-	}, [fetchRequirements, fetchKeyOutcomes, fetchCategories]);
+		fetchBestFor();
+		fetchCourseEligibility();
+	}, [fetchCategories, fetchBestFor, fetchCourseEligibility]);
 
 	const getAllCourses = useCallback(async () => {
 		try {
@@ -99,7 +99,7 @@ export default function CourseList({
 		if (!property?._id) return;
 		try {
 			const response = await API.get(
-				`/property/property-course/${property?._id}`
+				`/property/property-course/${property?._id}`,
 			);
 			setPropertyCourse(Array.isArray(response.data) ? response.data : []);
 		} catch (error) {
@@ -134,13 +134,13 @@ export default function CourseList({
 				getErrorResponse(error);
 			}
 		},
-		[getPropertyCourses]
+		[getPropertyCourses],
 	);
 
 	const mergedCourses = useMemo(() => {
 		return propertyCourse?.map((propertyCourse) => {
 			const masterCourse = allCourses.find(
-				(mc) => String(mc._id) === String(propertyCourse.course_id)
+				(mc) => String(mc._id) === String(propertyCourse.course_id),
 			);
 
 			return {
@@ -148,12 +148,6 @@ export default function CourseList({
 				...propertyCourse,
 				course_name:
 					propertyCourse?.course_name || masterCourse?.course_name || "N/A",
-				course_type:
-					getCategoryById(
-						propertyCourse?.course_type || masterCourse?.course_type
-					) || "N/A",
-				course_type_id:
-					propertyCourse?.course_type || masterCourse?.course_type,
 				duration: propertyCourse?.duration || masterCourse?.duration || "N/A",
 				status: propertyCourse?.status || masterCourse?.status || "N/A",
 			};
@@ -165,28 +159,18 @@ export default function CourseList({
 			{
 				label: "Name",
 				value: (row: CourseProps) => {
-					const specializationName = row.specialization
-						? getCategoryById(row.specialization)
-						: null;
-
 					return (
 						<div className="flex flex-col leading-snug">
 							<span className="text-sm font-medium text-[var(--yp-text-primary)]">
 								{row.course_name}
 							</span>
-
-							{specializationName && (
-								<span className="text-xs text-[var(--yp-muted)]">
-									{specializationName}
-								</span>
-							)}
 						</div>
 					);
 				},
 			},
 			{
 				label: "Course Type",
-				value: (row: any) => row.course_type || "N/A",
+				value: (row: any) => getCategoryById(row.course_type) || "N/A",
 			},
 			{
 				label: "Duration",
@@ -224,7 +208,7 @@ export default function CourseList({
 				),
 			},
 		];
-	}, [handleDelete]);
+	}, [handleDelete, getCategoryById]);
 
 	return (
 		<div className="m-4 pb-4">
@@ -239,6 +223,8 @@ export default function CourseList({
 						getPropertyCourse={getPropertyCourses}
 						setIsAdding={setIsAdding}
 						getCategoryById={getCategoryById}
+						bestFor={bestFor}
+						courseEligibility={courseEligibility}
 					/>
 				</div>
 			) : isViewing ? (
@@ -250,21 +236,23 @@ export default function CourseList({
 							allCourses.find((c) => String(c._id) === String(id))
 						}
 						getCategoryById={getCategoryById}
+						bestFor={bestFor}
+						courseEligibility={courseEligibility}
 					/>
 				</div>
 			) : isEditing ? (
 				<div className="m-4 pb-4">
 					<EditCourseForm
-						requirements={requirements}
 						categories={categories}
 						getPropertyCourse={getPropertyCourses}
 						property={property}
-						keyOutcomes={keyOutcomes}
 						isEditing={isEditing}
 						setIsEditing={setIsEditing}
 						getCourseById={(id: any) =>
 							allCourses.find((c) => String(c._id) === String(id))
 						}
+						bestFor={bestFor}
+						courseEligibility={courseEligibility}
 					/>
 				</div>
 			) : (

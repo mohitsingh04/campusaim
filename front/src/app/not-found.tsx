@@ -18,7 +18,7 @@ const NotFound = () => {
         >
           <div className="w-44 h-12 relative">
             <Image
-              src="/img/logo/logo-black.png"
+              src="/img/logo/campusaim-logo.png"
               alt="Confused Blue Monster"
               fill
               className="mx-auto object-contain drop-shadow-2xl"

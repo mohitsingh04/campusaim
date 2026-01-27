@@ -6,13 +6,13 @@ import { useEffect, useState } from "react";
 
 export default function YpLogo({ size = "h-8 w-44" }: { size?: string }) {
   const { theme } = useTheme();
-  const [img, setImg] = useState("/img/logo/logo-black.png");
+  const [img, setImg] = useState("/img/logo/campusaim-logo.png");
 
   useEffect(() => {
     if (theme === "dark") {
-      setImg("/img/logo/logo-white.png");
+      setImg("/img/logo/campusaim-logo.png");
     } else {
-      setImg("/img/logo/logo-black.png");
+      setImg("/img/logo/campusaim-logo.png");
     }
   }, [theme]);
 
