@@ -22,6 +22,7 @@ const PropertyCourseDetails = () => {
     setLoading(true);
     try {
       const res = await API.get(`/property-course/slug/${property_asset_slug}`);
+      console.log(res)
       setMainCourse(res.data);
     } catch (error) {
       getErrorResponse(error, true);

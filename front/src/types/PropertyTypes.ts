@@ -44,7 +44,7 @@ export interface PropertyProps {
   certification: string[];
   average_rating?: number;
   total_reviews?: number;
-  academic_type?: string;
+  academic_type?: string[];
 }
 
 export interface PropertyCourseProps {
@@ -73,7 +73,7 @@ export interface PropertyReviewProps {
 export interface PropertyLocationProps {
   property_address: string;
   property_pincode: string;
-  property_id: number;
+  property_id: string;
   property_city?: string;
   property_state?: string;
   property_country?: string;

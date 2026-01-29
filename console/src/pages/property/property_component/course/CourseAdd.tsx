@@ -95,15 +95,17 @@ export default function AddCourseForm({
 					property_id: property?._id,
 					userId: authUser?._id,
 					duration: `${values.duration_value} ${values.duration_type}`,
-					specialization_fees: values.specialization_fees.map((s) => ({
-						specialization_id: s.specialization_id,
-						fees: {
-							tuition_fee: Number(s.tuition_fee || 0),
-							registration_fee: Number(s.registration_fee || 0),
-							exam_fee: Number(s.exam_fee || 0),
-							currency: s.currency,
-						},
-					})),
+					specialization_fees: hasSpecialization
+						? values.specialization_fees.map((s) => ({
+								specialization_id: s.specialization_id,
+								fees: {
+									tuition_fee: Number(s.tuition_fee || 0),
+									registration_fee: Number(s.registration_fee || 0),
+									exam_fee: Number(s.exam_fee || 0),
+									currency: s.currency,
+								},
+							}))
+						: [],
 				};
 
 				await API.post("/property-course", payload);
@@ -115,6 +117,12 @@ export default function AddCourseForm({
 			}
 		},
 	});
+
+	const selectedCourse = useMemo(() => {
+		return masterCoursesMap.get(formik.values.course_id);
+	}, [formik.values.course_id, masterCoursesMap]);
+
+	const hasSpecialization = Boolean(selectedCourse?.specialization?.length);
 
 	/* -------------------------------------------------------------------------- */
 	/*                            COURSE SELECT HANDLER                            */
@@ -171,10 +179,30 @@ export default function AddCourseForm({
 	/*                                 OPTIONS                                    */
 	/* -------------------------------------------------------------------------- */
 
-	const specializationOptions = getCategoryAccodingToField(
-		categories,
-		"specialization",
-	);
+	const specializationOptions = useMemo(() => {
+		if (!selectedCourse?.specialization?.length) return [];
+
+		// Build a lookup map once
+		const specializationMap = new Map(
+			categories
+				.filter((c) => c.parent_category === "Specialization")
+				.map((c) => [String(c._id), c]),
+		);
+
+		return selectedCourse.specialization
+			.map((spec: any) => {
+				const specId = String(spec._id || spec);
+				const category = specializationMap.get(specId);
+
+				if (!category) return null;
+
+				return {
+					_id: category._id,
+					category_name: category.category_name,
+				};
+			})
+			.filter(Boolean);
+	}, [selectedCourse, categories]);
 
 	const courseTypeSelectOptions = getCategoryAccodingToField(
 		categories,
@@ -435,128 +463,131 @@ export default function AddCourseForm({
 					</div>
 
 					{/* Specializations & Fees */}
-					<div className="space-y-4">
-						{/* Header */}
-						<div className="flex items-center justify-between">
-							<h3 className="text-sm font-semibold text-gray-800">
-								Specializations & Fees
-							</h3>
+					{hasSpecialization && (
+						<div className="space-y-4">
+							{/* Header */}
+							<div className="flex items-center justify-between">
+								<h3 className="text-sm font-semibold text-gray-800">
+									Specializations & Fees
+								</h3>
 
-							<button
-								type="button"
-								onClick={addSpecialization}
-								className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700"
-							>
-								+ Add Specialization
-							</button>
-						</div>
-
-						{/* Column Labels (Desktop only) */}
-						<div className="hidden md:grid grid-cols-12 gap-3 px-3 text-xs font-medium text-gray-500">
-							<div className="col-span-4">Specialization</div>
-							<div className="col-span-3">Tuition Fee</div>
-							<div className="col-span-3">Reg. Fee</div>
-							<div className="col-span-1">Currency</div>
-							<div className="col-span-1 text-right">Action</div>
-						</div>
-
-						{/* Rows */}
-						{formik.values.specialization_fees.map((item, idx) => (
-							<div
-								key={idx}
-								className="grid grid-cols-1 md:grid-cols-12 gap-3 p-4 rounded-lg border bg-white shadow-sm"
-							>
-								{/* Specialization */}
-								<div className="md:col-span-4">
-									<select
-										value={item.specialization_id}
-										onChange={(e) =>
-											formik.setFieldValue(
-												`specialization_fees.${idx}.specialization_id`,
-												e.target.value,
-											)
-										}
-										className="w-full px-3 py-2 border rounded-md text-sm"
-									>
-										<option value="">Select specialization</option>
-										{specializationOptions.map((opt: any) => (
-											<option
-												key={opt._id}
-												value={opt._id}
-												disabled={selectedSpecializationIds.includes(opt._id)}
-											>
-												{opt.category_name || opt.name}
-											</option>
-										))}
-									</select>
-								</div>
-
-								{/* Tuition Fee */}
-								<div className="md:col-span-3">
-									<input
-										type="number"
-										placeholder="Tuition fee"
-										value={item.tuition_fee}
-										onChange={(e) =>
-											formik.setFieldValue(
-												`specialization_fees.${idx}.tuition_fee`,
-												e.target.value,
-											)
-										}
-										className="w-full px-3 py-2 border rounded-md text-sm"
-									/>
-								</div>
-
-								{/* Registration Fee */}
-								<div className="md:col-span-3">
-									<input
-										type="number"
-										placeholder="Registration fee"
-										value={item.registration_fee}
-										onChange={(e) =>
-											formik.setFieldValue(
-												`specialization_fees.${idx}.registration_fee`,
-												e.target.value,
-											)
-										}
-										className="w-full px-3 py-2 border rounded-md text-sm"
-									/>
-								</div>
-
-								{/* Currency */}
-								<div className="md:col-span-1">
-									<select
-										value={item.currency}
-										onChange={(e) =>
-											formik.setFieldValue(
-												`specialization_fees.${idx}.currency`,
-												e.target.value,
-											)
-										}
-										className="w-full px-2 py-2 border rounded-md text-sm"
-									>
-										{currencyOptions.map((c) => (
-											<option key={c} value={c}>
-												{c}
-											</option>
-										))}
-									</select>
-								</div>
-
-								{/* Remove */}
-								<div className="md:col-span-1 flex items-center justify-end">
-									<button
-										type="button"
-										onClick={() => removeSpecialization(idx)}
-										className="text-gray-400 hover:text-red-500 transition"
-										title="Remove specialization"
-									>
-										<X size={18} />
-									</button>
-								</div>
+								<button
+									type="button"
+									onClick={addSpecialization}
+									disabled={specializationOptions.length === 0}
+									className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700"
+								>
+									+ Add Specialization
+								</button>
 							</div>
-						))}
-					</div>
+
+							{/* Column Labels (Desktop only) */}
+							<div className="hidden md:grid grid-cols-12 gap-3 px-3 text-xs font-medium text-gray-500">
+								<div className="col-span-4">Specialization</div>
+								<div className="col-span-3">Tuition Fee</div>
+								<div className="col-span-3">Reg. Fee</div>
+								<div className="col-span-1">Currency</div>
+								<div className="col-span-1 text-right">Action</div>
+							</div>
+
+							{/* Rows */}
+							{formik.values.specialization_fees.map((item, idx) => (
+								<div
+									key={idx}
+									className="grid grid-cols-1 md:grid-cols-12 gap-3 p-4 rounded-lg border bg-white shadow-sm"
+								>
+									{/* Specialization */}
+									<div className="md:col-span-4">
+										<select
+											value={item.specialization_id}
+											onChange={(e) =>
+												formik.setFieldValue(
+													`specialization_fees.${idx}.specialization_id`,
+													e.target.value,
+												)
+											}
+											className="w-full px-3 py-2 border rounded-md text-sm"
+										>
+											<option value="">Select specialization</option>
+											{specializationOptions.map((opt: any) => (
+												<option
+													key={opt._id}
+													value={opt._id}
+													disabled={selectedSpecializationIds.includes(opt._id)}
+												>
+													{opt.category_name || opt.name}
+												</option>
+											))}
+										</select>
+									</div>
+
+									{/* Tuition Fee */}
+									<div className="md:col-span-3">
+										<input
+											type="number"
+											placeholder="Tuition fee"
+											value={item.tuition_fee}
+											onChange={(e) =>
+												formik.setFieldValue(
+													`specialization_fees.${idx}.tuition_fee`,
+													e.target.value,
+												)
+											}
+											className="w-full px-3 py-2 border rounded-md text-sm"
+										/>
+									</div>
+
+									{/* Registration Fee */}
+									<div className="md:col-span-3">
+										<input
+											type="number"
+											placeholder="Registration fee"
+											value={item.registration_fee}
+											onChange={(e) =>
+												formik.setFieldValue(
+													`specialization_fees.${idx}.registration_fee`,
+													e.target.value,
+												)
+											}
+											className="w-full px-3 py-2 border rounded-md text-sm"
+										/>
+									</div>
+
+									{/* Currency */}
+									<div className="md:col-span-1">
+										<select
+											value={item.currency}
+											onChange={(e) =>
+												formik.setFieldValue(
+													`specialization_fees.${idx}.currency`,
+													e.target.value,
+												)
+											}
+											className="w-full px-2 py-2 border rounded-md text-sm"
+										>
+											{currencyOptions.map((c) => (
+												<option key={c} value={c}>
+													{c}
+												</option>
+											))}
+										</select>
+									</div>
+
+									{/* Remove */}
+									<div className="md:col-span-1 flex items-center justify-end">
+										<button
+											type="button"
+											onClick={() => removeSpecialization(idx)}
+											className="text-gray-400 hover:text-red-500 transition"
+											title="Remove specialization"
+										>
+											<X size={18} />
+										</button>
+									</div>
+								</div>
+							))}
+						</div>
+					)}
 
 					{/* Submit Button */}
 					<div className="flex justify-start gap-2">

@@ -26,8 +26,8 @@
   --text-color-emphasis: #353535;
 
   --main-light: #fff4e6;
-  --main: #dc955d;
-  --main-subtle: #db5f00;
+  --main: #3176a1;
+  --main-subtle: #491a85;
   --main-emphasis: #864514;
 
   --success: #22c55e;
@@ -90,6 +90,7 @@
   --gray-subtle: #f3f4f6;
   --gray-emphasis: #2c313a;
 }
+
 .text-shadow {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 }
@@ -122,6 +123,7 @@
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
 }
+
 h1,
 h2,
 h3,
@@ -172,65 +174,71 @@ a:disabled {
 .css-15lsz6c-indicatorContainer {
   padding: 2px !important;
 }
+
 .css-1u9des2-indicatorSeparator {
   margin: 0% !important;
 }
 
 /* Calendar icon styling */
 input[type="month"]::-webkit-calendar-picker-indicator {
-  filter: brightness(0) saturate(100%) invert(36%) sepia(94%) saturate(749%)
-    hue-rotate(195deg) brightness(100%) contrast(97%);
+  filter: brightness(0) saturate(100%) invert(36%) sepia(94%) saturate(749%) hue-rotate(195deg) brightness(100%) contrast(97%);
   cursor: pointer;
 }
 
 /* Optional: dark mode version */
 .dark input[type="month"]::-webkit-calendar-picker-indicator {
-  filter: brightness(0) saturate(100%) invert(65%) sepia(82%) saturate(640%)
-    hue-rotate(185deg) brightness(95%) contrast(92%);
+  filter: brightness(0) saturate(100%) invert(65%) sepia(82%) saturate(640%) hue-rotate(185deg) brightness(95%) contrast(92%);
 }
+
 input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: brightness(0) saturate(100%) invert(36%) sepia(94%) saturate(749%)
-    hue-rotate(195deg) brightness(100%) contrast(97%);
+  filter: brightness(0) saturate(100%) invert(36%) sepia(94%) saturate(749%) hue-rotate(195deg) brightness(100%) contrast(97%);
   cursor: pointer;
 }
 
 /* Optional: dark mode version */
 .dark input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: brightness(0) saturate(100%) invert(65%) sepia(82%) saturate(640%)
-    hue-rotate(185deg) brightness(95%) contrast(92%);
+  filter: brightness(0) saturate(100%) invert(65%) sepia(82%) saturate(640%) hue-rotate(185deg) brightness(95%) contrast(92%);
 }
 
 .footer-list,
 li {
   font-size: 13px;
 }
+
 .heading-lg {
   font-size: 24px;
 }
+
 .heading {
   font-size: 18px;
 }
+
 .sub-heading {
   font-size: 16px;
 }
+
 .heading-sm {
   font-size: 14px;
 }
+
 p,
 .paragraph {
   font-size: 13px;
 }
 
 @media (max-width: 768px) {
+
   p,
   .paragraph {
-    font-size: 12px; /* tablet */
+    font-size: 12px;
+    /* tablet */
   }
 }
 
 .shadow-custom {
   box-shadow: 0 1px 3px rgba(255, 253, 253, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
 }
+
 .rounded-custom {
   border-radius: 8px;
 }
@@ -238,6 +246,7 @@ p,
 #blog-main {
   font-size: 17px;
 }
+
 #blog-main h1,
 #blog-main h2,
 #blog-main h3,
@@ -246,21 +255,27 @@ p,
   font-weight: 600;
   color: var(--text-color-emphasis);
 }
+
 #blog-main h1 {
   font-size: 24px;
 }
+
 #blog-main h2 {
   font-size: 22px;
 }
+
 #blog-main h3 {
   font-size: 20px;
 }
+
 #blog-main h4 {
   font-size: 18px;
 }
+
 #blog-main .wp-block-list li {
   margin-bottom: 4px;
 }
+
 #blog-main .wp-block-list li:before {
   font-family: "Font Awesome 6 Free";
   content: "\f0da";
@@ -271,12 +286,15 @@ p,
   color: var(--main);
   margin-top: -5px;
 }
+
 #blog-main .post-details {
   font-size: 14px;
 }
+
 #blog-main .post-details .left {
   margin-left: 8px;
 }
+
 #blog-main p,
 #blog-main mark,
 #blog-main li {
@@ -285,10 +303,12 @@ p,
   color: var(--text-color) !important;
   margin-bottom: 12px;
 }
+
 #blog-main a {
   color: var(--main);
   font-weight: 600;
 }
+
 #blog-main table {
   font-size: 13px;
 }
@@ -357,12 +377,10 @@ p,
   left: -100%;
   width: 50%;
   height: 100%;
-  background: linear-gradient(
-    120deg,
-    transparent,
-    rgba(255, 255, 255, 0.35),
-    transparent
-  );
+  background: linear-gradient(120deg,
+      transparent,
+      rgba(255, 255, 255, 0.35),
+      transparent);
   transition: left 0.6s ease;
 }
 

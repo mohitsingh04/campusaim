@@ -181,122 +181,6 @@ input[type="checkbox"]:checked {
   color: var(--yp-text-primary) !important;
 }
 
-#blog-main {
-  font-size: 17px;
-}
-
-#blog-main h1,
-#blog-main h2,
-#blog-main h3,
-#blog-main h4 {
-  margin: 10px 0 12px;
-  font-weight: 600;
-  color: var(--yp-blog-heading);
-}
-
-#blog-main h1 {
-  font-size: 24px;
-}
-
-#blog-main h2 {
-  font-size: 22px;
-}
-
-#blog-main h3 {
-  font-size: 20px;
-}
-
-#blog-main h4 {
-  font-size: 18px;
-}
-
-#blog-main .wp-block-list li {
-  margin-bottom: 4px;
-}
-
-#blog-main .wp-block-list li:before {
-  font-family: "Font Awesome 6 Free";
-  content: "\f0da";
-  display: inline-block;
-  padding-right: 7px;
-  vertical-align: middle;
-  font-weight: 600;
-  color: var(--yp-main);
-  margin-top: -5px;
-}
-
-#blog-main .post-details {
-  font-size: 14px;
-}
-
-#blog-main .post-details .left {
-  margin-left: 8px;
-}
-
-#blog-main p,
-mark,
-li {
-  font-size: 16px;
-  line-height: 1.6;
-  color: var(--yp-text-primary);
-  margin-bottom: 12px;
-}
-
-#blog-main a {
-  color: var(--yp-main);
-  font-weight: 600;
-}
-/* Wrapper makes table responsive */
-#blog-main div {
-  width: 100%;
-  overflow-x: auto;
-}
-
-/* Table core */
-#blog-main table {
-  width: 100%;
-  border-collapse: collapse;
-  table-layout: fixed; /* 🔑 equal column behavior */
-  font-size: 13px;
-  border: 1px solid var(--yp-border-primary);
-  min-width: 600px; /* prevents cell squish on mobile */
-}
-
-/* Cells */
-#blog-main th,
-#blog-main td {
-  padding: 10px 8px;
-  border: 1px solid var(--yp-border-primary);
-  text-align: center;
-  vertical-align: middle;
-  line-height: 1.4;
-  word-wrap: break-word;
-}
-
-/* Header */
-#blog-main th {
-  font-weight: 800;
-
-}
-
-/* Rows height consistency */
-#blog-main tr {
-  height: 44px; /* keeps visual rhythm */
-}
-
-/* Mobile tuning */
-@media (max-width: 768px) {
-  #blog-main table {
-    font-size: 12px;
-  }
-
-  #blog-main th,
-  #blog-main td {
-    padding: 8px 6px;
-  }
-}
-
-
 .accordion {
   border: 1px solid var(--yp-border-primary);
   margin-bottom: 10px;
@@ -335,4 +219,309 @@ li {
 .accordion.active .accordion-answer {
   display: block;
   padding: 15px;
+}
+
+/* =========================================================
+   ROOT WRAPPER (FRONTEND VIEW)
+========================================================= */
+#blog-main {
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--yp-text-primary);
+  word-break: break-word;
+}
+
+/* =========================================================
+   HEADINGS (FRONTEND)
+========================================================= */
+#blog-main h1,
+#blog-main h2,
+#blog-main h3,
+#blog-main h4,
+#blog-main h5,
+#blog-main h6 {
+  margin: 14px 0 12px;
+  font-weight: 600;
+  color: var(--yp-blog-heading);
+  font-size: revert;
+}
+
+#blog-main h1 {
+  font-size: 24px;
+}
+
+#blog-main h2 {
+  font-size: 22px;
+}
+
+#blog-main h3 {
+  font-size: 20px;
+}
+
+#blog-main h4 {
+  font-size: 18px;
+}
+
+#blog-main h5 {
+  font-size: 16px;
+}
+
+#blog-main h6 {
+  font-size: 15px;
+}
+
+/* =========================================================
+   TEXT & INLINE ELEMENTS
+========================================================= */
+#blog-main p {
+  margin-bottom: 12px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--yp-text-primary);
+}
+
+#blog-main strong,
+#blog-main b {
+  font-weight: 600;
+}
+
+#blog-main em,
+#blog-main i {
+  font-style: italic;
+}
+
+#blog-main mark {
+  background: rgba(255, 230, 150, 0.6);
+  padding: 0 4px;
+  border-radius: 3px;
+}
+
+/* =========================================================
+   LINKS
+========================================================= */
+#blog-main a {
+  color: var(--yp-main);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+#blog-main a:hover {
+  text-decoration: underline;
+}
+
+/* =========================================================
+   LIST FIX (CRITICAL)
+========================================================= */
+#blog-main ul {
+  list-style-type: disc;
+  list-style-position: outside;
+}
+
+#blog-main ol {
+  list-style-type: decimal;
+  list-style-position: outside;
+}
+
+/* Nested lists */
+#blog-main ul ul {
+  list-style-type: circle;
+}
+
+#blog-main ul ul ul {
+  list-style-type: square;
+}
+
+
+/* =========================================================
+   IMAGES
+========================================================= */
+#blog-main img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+  margin: 10px 0;
+}
+
+/* =========================================================
+   BLOCKQUOTE
+========================================================= */
+#blog-main blockquote {
+  border-left: 4px solid var(--yp-main);
+  padding: 10px 14px;
+  margin: 14px 0;
+  background: var(--yp-bg-subtle);
+  font-style: italic;
+}
+
+/* =========================================================
+   CODE
+========================================================= */
+#blog-main pre {
+  background: #0f172a;
+  color: #e5e7eb;
+  padding: 14px;
+  border-radius: 6px;
+  overflow-x: auto;
+  font-size: 14px;
+}
+
+#blog-main code {
+  background: rgba(0, 0, 0, 0.05);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+/* =========================================================
+   TABLES (RESPONSIVE & SAFE)
+========================================================= */
+#blog-main .jodit-table-wrapper,
+#blog-main .table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  margin: 12px 0;
+}
+
+#blog-main table {
+  width: 100%;
+  min-width: 600px;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 13px;
+  border: 1px solid var(--yp-border-primary);
+}
+
+#blog-main th,
+#blog-main td {
+  padding: 10px 8px;
+  border: 1px solid var(--yp-border-primary);
+  text-align: center;
+  vertical-align: middle;
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+#blog-main th {
+  font-weight: 700;
+  background: var(--yp-bg-subtle);
+}
+
+#blog-main tr {
+  height: 44px;
+}
+
+@media (max-width: 768px) {
+  #blog-main table {
+    font-size: 12px;
+  }
+
+  #blog-main th,
+  #blog-main td {
+    padding: 8px 6px;
+  }
+}
+
+/* =========================================================
+   ACCORDION (JODIT HTML)
+========================================================= */
+#blog-main .accordion {
+  border: 1px solid var(--yp-border-primary);
+  border-radius: 6px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+#blog-main .accordion-question {
+  padding: 12px 14px;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--yp-bg-subtle);
+}
+
+#blog-main .accordion-answer {
+  display: none;
+  padding: 12px 14px;
+  background: var(--yp-bg);
+}
+
+#blog-main .accordion.active .accordion-answer {
+  display: block;
+}
+
+/* =========================================================
+   DETAILS / META
+========================================================= */
+#blog-main .post-details {
+  font-size: 14px;
+  color: var(--yp-text-secondary);
+}
+
+#blog-main .post-details .left {
+  margin-left: 8px;
+}
+
+/* =========================================================
+   HR
+========================================================= */
+#blog-main hr {
+  border: none;
+  border-top: 1px solid var(--yp-border-primary);
+  margin: 20px 0;
+}
+
+/* =========================================================
+   JODIT EDITOR HEADING PREVIEW (EDITOR ONLY)
+========================================================= */
+.jodit-wysiwyg h1 {
+  font-size: 26px !important;
+  font-weight: 700 !important;
+  margin: 12px 0 !important;
+  line-height: 1.3;
+}
+
+.jodit-wysiwyg h2 {
+  font-size: 22px !important;
+  font-weight: 600 !important;
+}
+
+.jodit-wysiwyg h3 {
+  font-size: 20px !important;
+  font-weight: 600 !important;
+}
+
+.jodit-wysiwyg h4 {
+  font-size: 18px !important;
+  font-weight: 600 !important;
+}
+
+/* =========================================================
+   JODIT EDITOR LIST PREVIEW (CRITICAL)
+========================================================= */
+.jodit-wysiwyg ul {
+  list-style-type: disc !important;
+  list-style-position: outside !important;
+  padding-left: 22px !important;
+  margin: 10px 0 14px !important;
+}
+
+.jodit-wysiwyg ol {
+  list-style-type: decimal !important;
+  list-style-position: outside !important;
+  padding-left: 22px !important;
+  margin: 10px 0 14px !important;
+}
+
+/* Nested lists */
+.jodit-wysiwyg ul ul {
+  list-style-type: circle !important;
+}
+
+.jodit-wysiwyg ul ul ul {
+  list-style-type: square !important;
+}
+
+/* List items */
+.jodit-wysiwyg li {
+  margin-bottom: 6px;
+  line-height: 1.6;
 }

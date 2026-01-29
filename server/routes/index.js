@@ -105,6 +105,7 @@ import {
   getPropertyCourseByPropertyId,
   getPropertyCourseByUniqueId,
   updatePropertyCourse,
+  getPropertyCourseBySlug
 } from "../controller/PropertyCourseController.js";
 import {
   getCity,
@@ -505,6 +506,7 @@ router.get(
   getPropertyCourseByPropertyId
 );
 router.delete("/property-course/:objectId", Authorize, deletePropertyCourse);
+router.get("/property-course/slug/:slug", getPropertyCourseBySlug);
 
 //? amenties
 router.post("/amenities", Authorize, addAmenities);

@@ -152,9 +152,7 @@ export const addPropertyCourse = async (req, res) => {
       specialization_fees = [],
     } = req.body;
 
-    /* ------------------------------------------------------------------ */
-    /*                          BASIC VALIDATION                           */
-    /* ------------------------------------------------------------------ */
+    /* ------------------------ BASIC VALIDATION ------------------------ */
 
     if (!userId || !course_id || !property_id) {
       return res.status(400).json({
@@ -162,17 +160,15 @@ export const addPropertyCourse = async (req, res) => {
       });
     }
 
-    if (!mongoose.Types.ObjectId.isValid(course_id)) {
-      return res.status(400).json({ error: "Invalid course_id" });
+    if (
+      !mongoose.Types.ObjectId.isValid(userId) ||
+      !mongoose.Types.ObjectId.isValid(course_id) ||
+      !mongoose.Types.ObjectId.isValid(property_id)
+    ) {
+      return res.status(400).json({ error: "Invalid ObjectId provided" });
     }
 
-    if (!mongoose.Types.ObjectId.isValid(property_id)) {
-      return res.status(400).json({ error: "Invalid property_id" });
-    }
-
-    /* ------------------------------------------------------------------ */
-    /*                     PREVENT DUPLICATE COURSE                        */
-    /* ------------------------------------------------------------------ */
+    /* -------------------- PREVENT DUPLICATE COURSE -------------------- */
 
     const exists = await PropertyCourse.findOne({
       course_id,
@@ -186,9 +182,7 @@ export const addPropertyCourse = async (req, res) => {
       });
     }
 
-    /* ------------------------------------------------------------------ */
-    /*                    ENSURE MASTER COURSE EXISTS                      */
-    /* ------------------------------------------------------------------ */
+    /* ------------------- ENSURE MASTER COURSE EXISTS ------------------ */
 
     const masterCourse = await Course.findById(course_id).lean();
     if (!masterCourse) {
@@ -197,9 +191,7 @@ export const addPropertyCourse = async (req, res) => {
       });
     }
 
-    /* ------------------------------------------------------------------ */
-    /*                VALIDATE SPECIALIZATION FEES STRUCTURE               */
-    /* ------------------------------------------------------------------ */
+    /* ---------------- SPECIALIZATION BUSINESS RULE -------------------- */
 
     if (!Array.isArray(specialization_fees)) {
       return res.status(400).json({
@@ -207,31 +199,51 @@ export const addPropertyCourse = async (req, res) => {
       });
     }
 
-    const sanitizedSpecializationFees = specialization_fees.map((item, idx) => {
-      const { specialization_id, fees } = item || {};
+    let sanitizedSpecializationFees = [];
 
-      if (!mongoose.Types.ObjectId.isValid(specialization_id)) {
-        throw new Error(`Invalid specialization_id at index ${idx}`);
+    const hasSpecialization =
+      Array.isArray(masterCourse.specialization) &&
+      masterCourse.specialization.length > 0;
+
+    if (hasSpecialization) {
+      if (specialization_fees.length === 0) {
+        return res.status(400).json({
+          error: "Specialization is required for this course",
+        });
       }
 
-      if (!fees || typeof fees !== "object") {
-        throw new Error(`Fees missing for specialization at index ${idx}`);
+      sanitizedSpecializationFees = specialization_fees.map((item, idx) => {
+        const { specialization_id, fees } = item || {};
+
+        if (!mongoose.Types.ObjectId.isValid(specialization_id)) {
+          throw new Error(`Invalid specialization_id at index ${idx}`);
+        }
+
+        if (!fees || typeof fees !== "object") {
+          throw new Error(`Fees missing for specialization at index ${idx}`);
+        }
+
+        return {
+          specialization_id: new mongoose.Types.ObjectId(specialization_id),
+          fees: {
+            tuition_fee: Number(fees.tuition_fee || 0),
+            registration_fee: Number(fees.registration_fee || 0),
+            exam_fee: Number(fees.exam_fee || 0),
+            currency: String(fees.currency || "INR").toUpperCase(),
+          },
+        };
+      });
+
+      // 🚫 DUPLICATE SPECIALIZATION GUARD (MANDATORY)
+      const ids = sanitizedSpecializationFees.map(s => String(s.specialization_id));
+      if (new Set(ids).size !== ids.length) {
+        return res.status(400).json({
+          error: "Duplicate specialization detected",
+        });
       }
+    }
 
-      return {
-        specialization_id: new mongoose.Types.ObjectId(specialization_id),
-        fees: {
-          tuition_fee: Number(fees.tuition_fee || 0),
-          registration_fee: Number(fees.registration_fee || 0),
-          exam_fee: Number(fees.exam_fee || 0),
-          currency: fees.currency || "INR",
-        },
-      };
-    });
-
-    /* ------------------------------------------------------------------ */
-    /*                         CREATE PROPERTY COURSE                      */
-    /* ------------------------------------------------------------------ */
+    /* -------------------- CREATE PROPERTY COURSE ---------------------- */
 
     const uniqueId = await generateUniqueId(PropertyCourse);
 
@@ -249,33 +261,15 @@ export const addPropertyCourse = async (req, res) => {
       course_eligibility,
       specialization_fees: sanitizedSpecializationFees,
     });
-    console.log(propertyCourse)
 
     await propertyCourse.save();
-
-    /* ------------------------------------------------------------------ */
-    /*                     PROPERTY SCORE (FIRST COURSE)                   */
-    /* ------------------------------------------------------------------ */
-
-    const propertyCourseCount = await PropertyCourse.countDocuments({
-      property_id,
-      isDeleted: false,
-    });
-
-    if (propertyCourseCount === 1) {
-      await addPropertyScore({
-        property_score: 10,
-        property_id,
-      });
-    }
 
     return res.status(201).json({
       message: "Property course added successfully",
       data: propertyCourse,
     });
   } catch (error) {
-    console.error("addPropertyCourse error:", error.message);
-
+    console.error("addPropertyCourse error:", error);
     return res.status(500).json({
       error: error.message || "Internal Server Error",
     });
@@ -290,16 +284,12 @@ export const updatePropertyCourse = async (req, res) => {
       return res.status(400).json({ error: "Invalid property course id." });
     }
 
-    // 🔹 Parse JSON fields (multipart-safe)
     const raw = {};
     for (const key of Object.keys(req.body || {})) {
       raw[key] = tryParseJSON(req.body[key]);
     }
 
     const {
-      userId,
-      property_id,
-      course_id,
       course_short_name,
       course_type,
       degree_type,
@@ -316,19 +306,41 @@ export const updatePropertyCourse = async (req, res) => {
       return res.status(404).json({ error: "Property course not found." });
     }
 
+    const masterCourse = await Course.findById(existing.course_id).lean();
+    if (!masterCourse) {
+      return res.status(404).json({ error: "Master course not found." });
+    }
+
+    const hasSpecialization =
+      Array.isArray(masterCourse.specialization) &&
+      masterCourse.specialization.length > 0;
+
     const updateData = {};
 
-    // 🔹 Simple scalar fields
-    if (!isEmptyValue(course_short_name)) updateData.course_short_name = course_short_name;
-    if (!isEmptyValue(status)) updateData.status = status;
-    if (!isEmptyValue(duration)) updateData.duration = duration;
+    if (!isEmptyValue(course_short_name)) {
+      updateData.course_short_name = course_short_name;
+    }
 
-    // 🔹 ObjectId fields
-    if (!isEmptyValue(course_type)) updateData.course_type = toObjectIdIfValid(course_type);
-    if (!isEmptyValue(degree_type)) updateData.degree_type = toObjectIdIfValid(degree_type);
-    if (!isEmptyValue(program_type)) updateData.program_type = toObjectIdIfValid(program_type);
+    if (!isEmptyValue(status)) {
+      updateData.status = status;
+    }
 
-    // 🔹 Array<ObjectId>
+    if (!isEmptyValue(duration)) {
+      updateData.duration = duration;
+    }
+
+    if (!isEmptyValue(course_type)) {
+      updateData.course_type = toObjectIdIfValid(course_type);
+    }
+
+    if (!isEmptyValue(degree_type)) {
+      updateData.degree_type = toObjectIdIfValid(degree_type);
+    }
+
+    if (!isEmptyValue(program_type)) {
+      updateData.program_type = toObjectIdIfValid(program_type);
+    }
+
     if (Array.isArray(best_for)) {
       updateData.best_for = best_for
         .map(toObjectIdIfValid)
@@ -341,24 +353,51 @@ export const updatePropertyCourse = async (req, res) => {
         .filter((id) => mongoose.Types.ObjectId.isValid(String(id)));
     }
 
-    // 🔹 SPECIALIZATION FEES (CORE FIX)
-    if (Array.isArray(specialization_fees)) {
-      updateData.specialization_fees = specialization_fees
-        .filter((s) => s?.specialization_id) // ⬅️ prevent empty rows
-        .map((s) => ({
-          specialization_id: toObjectIdIfValid(s.specialization_id),
-          fees: {
-            tuition_fee: Number(s?.fees?.tuition_fee || 0),
-            registration_fee: Number(s?.fees?.registration_fee || 0),
-            exam_fee: Number(s?.fees?.exam_fee || 0),
-            currency: s?.fees?.currency || "INR",
-          },
-        }));
+    if (!hasSpecialization) {
+      updateData.specialization_fees = [];
     }
 
-    // 🔹 Guard: nothing valid to update
+    if (hasSpecialization) {
+      if (Array.isArray(specialization_fees) && specialization_fees.length === 0) {
+        return res.status(400).json({
+          error: "Specialization is required for this course",
+        });
+      }
+
+      if (Array.isArray(specialization_fees)) {
+        const sanitized = specialization_fees
+          .filter((s) => s?.specialization_id)
+          .map((s, idx) => {
+            if (!mongoose.Types.ObjectId.isValid(s.specialization_id)) {
+              throw new Error(`Invalid specialization_id at index ${idx}`);
+            }
+
+            return {
+              specialization_id: new mongoose.Types.ObjectId(s.specialization_id),
+              fees: {
+                tuition_fee: Number(s?.fees?.tuition_fee || 0),
+                registration_fee: Number(s?.fees?.registration_fee || 0),
+                exam_fee: Number(s?.fees?.exam_fee || 0),
+                currency: String(s?.fees?.currency || "INR").toUpperCase(),
+              },
+            };
+          });
+
+        const ids = sanitized.map((s) => String(s.specialization_id));
+        if (new Set(ids).size !== ids.length) {
+          return res.status(400).json({
+            error: "Duplicate specialization detected",
+          });
+        }
+
+        updateData.specialization_fees = sanitized;
+      }
+    }
+
     if (Object.keys(updateData).length === 0) {
-      return res.status(200).json({ message: "No valid fields provided to update." });
+      return res.status(200).json({
+        message: "No valid fields provided to update.",
+      });
     }
 
     const updated = await PropertyCourse.findByIdAndUpdate(
@@ -413,6 +452,67 @@ export const deletePropertyCourse = async (req, res) => {
     }
   } catch (error) {
     console.error("Error deleting property course:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+export const getPropertyCourseBySlug = async (req, res) => {
+  try {
+    const { slug } = req.params;
+
+    const allCourses = await Course.find({});
+
+    const course = allCourses.find(
+      (c) => generateSlug(c.course_name) === generateSlug(slug)
+    );
+
+    if (!course) {
+      return res.status(404).json({ error: "Course not found" });
+    }
+
+    const propertyCourse = await PropertyCourse.findOne({
+      course_id: course._id,
+    });
+
+    const merged =
+      propertyCourse != null
+        ? {
+          ...course.toObject(),
+          ...propertyCourse.toObject(),
+          course_id: course._id, // keep original
+        }
+        : course.toObject();
+
+    const findingCatgories = [
+      merged?.course_type,
+      merged?.course_format,
+      merged?.certification_type,
+      merged?.course_level,
+    ];
+
+    const keyOutComes = await KeyOutComes.find({ _id: merged.key_outcomes });
+    const requirements = await Requirments.find({ _id: merged.requirements });
+    const categories = await Category.find({ _id: findingCatgories });
+
+    const finalData = {
+      ...merged,
+      requirements: requirements.map((item) => item.requirment),
+      key_outcomes: keyOutComes.map((item) => item.key_outcome),
+      course_type: categories.find((item) => item?._id?.toString() === merged.course_type?.toString())
+        ?.category_name,
+      certification_type: categories.find(
+        (item) => item?._id?.toString() === merged.certification_type?.toString()
+      )?.category_name,
+      course_level: categories.find((item) => item?._id?.toString() === merged.course_level?.toString())
+        ?.category_name,
+      course_format: categories.find(
+        (item) => item?._id?.toString() === merged.course_format?.toString()
+      )?.category_name,
+    };
+
+    return res.json(finalData);
+  } catch (error) {
+    console.error(error);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };

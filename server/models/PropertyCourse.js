@@ -78,7 +78,7 @@ const PropertyCourseSchema = new mongoose.Schema(
 
     specialization_fees: {
       type: [specializationFeeSchema],
-      validate: v => Array.isArray(v) && v.length > 0,
+      default: [],
     },
 
     status: {

@@ -21,7 +21,7 @@ export default function YpLogo({ size = "h-8 w-44" }: { size?: string }) {
       <div className={`relative ${size}`}>
         <Image
           src={img}
-          alt="Yogprerna Black Logo"
+          alt="Campusaim Logo"
           fill
           className="object-contain transition-transform duration-200 group-hover:scale-105"
           sizes="auto"

@@ -10,6 +10,7 @@ const Overview = ({
   property: PropertyProps | null;
   getCategoryById: (id: string | number) => string | undefined;
 }) => {
+  // console.log(property?.category)
   return (
     <div className="space-y-6 p-5 text-(--text-color)">
       <div>
