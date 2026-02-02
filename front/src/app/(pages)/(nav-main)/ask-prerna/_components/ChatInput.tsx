@@ -71,6 +71,8 @@ export function ChatInput({
     }
   };
 
+  console.log(message)
+
   return (
     <div className="border-t border-(--border) bg-(--secondary-bg) backdrop-blur-sm p-4 shadow-lg fixed bottom-0 w-full left-0">
       <div className="max-w-4xl mx-auto">

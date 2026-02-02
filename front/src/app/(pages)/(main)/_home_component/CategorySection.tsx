@@ -3,9 +3,6 @@ import { useEffect, useState } from "react";
 import CountUp from "react-countup";
 import Link from "next/link";
 import { LuGraduationCap, LuUniversity } from "react-icons/lu";
-import { RiPresentationLine } from "react-icons/ri";
-import { GrYoga } from "react-icons/gr";
-import { LiaUniversalAccessSolid } from "react-icons/lia";
 import { generateSlug, getFieldDataSimpleWithCount } from "@/context/Callbacks";
 import { HeadingProps } from "@/ui/headings/MainHeading";
 import { PropertyProps } from "@/types/PropertyTypes";
@@ -36,7 +33,7 @@ export default function CategorySection({
 	const statsData = [
 		{
 			description:
-				"Colleges providing structured yoga learning, wellness activities, and elective courses to integrate yoga into your academic life.",
+				"Colleges offering structured academic programs, practical learning opportunities, and electives to support your educational and career goals.",
 			value:
 				uniqueCategory?.find(
 					(item) => generateSlug(item?.title) === generateSlug("College"),
@@ -48,7 +45,7 @@ export default function CategorySection({
 		},
 		{
 			description:
-				"Pursue a formal degree or diploma! Universities offering certified yoga courses, educational programs, and accredited academic learning.",
+				"Pursue a formal degree or diploma! Universities offering accredited programs, certified courses, and recognized academic learning.",
 			value:
 				uniqueCategory?.find(
 					(item) => generateSlug(item?.title) === generateSlug("University"),
@@ -56,7 +53,7 @@ export default function CategorySection({
 			label: "University",
 			icon: LuUniversity,
 			colors: { sub: "--danger-subtle", emphasis: "--danger-emphasis" },
-			href: "/universities?category=university",
+			href: "/colleges?category=university",
 		},
 		// {
 		// 	description:
@@ -100,7 +97,7 @@ export default function CategorySection({
 		<section className="relative bg-(--primary-bg)  py-10 px-4 sm:px-8  overflow-hidden">
 			<div className="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-6">
 				<HeadingProps
-					tag="Find Your Yoga Fit"
+					tag="Find Verified Colleges"
 					title=" Browse by "
 					activetitle="Academic Type"
 					subtitle="Verified colleges. Recognized universities. Accredited programs. Filter by your goals—whether you’re exploring courses, exams, or institutions."

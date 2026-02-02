@@ -1,6 +1,6 @@
 export async function GET() {
   const baseUrl =
-    process.env.NEXT_PUBLIC_BASE_URL?.trim() || "https://yogprerna.com";
+    process.env.NEXT_PUBLIC_BASE_URL?.trim() || "https://campusaim.com";
 
   if (!baseUrl) {
     return new Response("Base URL not configured", { status: 500 });

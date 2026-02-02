@@ -152,8 +152,6 @@ export const addPropertyCourse = async (req, res) => {
       specialization_fees = [],
     } = req.body;
 
-    /* ------------------------ BASIC VALIDATION ------------------------ */
-
     if (!userId || !course_id || !property_id) {
       return res.status(400).json({
         error: "userId, course_id and property_id are required",
@@ -168,8 +166,6 @@ export const addPropertyCourse = async (req, res) => {
       return res.status(400).json({ error: "Invalid ObjectId provided" });
     }
 
-    /* -------------------- PREVENT DUPLICATE COURSE -------------------- */
-
     const exists = await PropertyCourse.findOne({
       course_id,
       property_id,
@@ -182,16 +178,13 @@ export const addPropertyCourse = async (req, res) => {
       });
     }
 
-    /* ------------------- ENSURE MASTER COURSE EXISTS ------------------ */
-
     const masterCourse = await Course.findById(course_id).lean();
+
     if (!masterCourse) {
       return res.status(404).json({
         error: "Course not found in master Course collection",
       });
     }
-
-    /* ---------------- SPECIALIZATION BUSINESS RULE -------------------- */
 
     if (!Array.isArray(specialization_fees)) {
       return res.status(400).json({
@@ -201,17 +194,11 @@ export const addPropertyCourse = async (req, res) => {
 
     let sanitizedSpecializationFees = [];
 
-    const hasSpecialization =
+    const hasMasterSpecialization =
       Array.isArray(masterCourse.specialization) &&
       masterCourse.specialization.length > 0;
 
-    if (hasSpecialization) {
-      if (specialization_fees.length === 0) {
-        return res.status(400).json({
-          error: "Specialization is required for this course",
-        });
-      }
-
+    if (hasMasterSpecialization && specialization_fees.length > 0) {
       sanitizedSpecializationFees = specialization_fees.map((item, idx) => {
         const { specialization_id, fees } = item || {};
 
@@ -234,16 +221,16 @@ export const addPropertyCourse = async (req, res) => {
         };
       });
 
-      // 🚫 DUPLICATE SPECIALIZATION GUARD (MANDATORY)
-      const ids = sanitizedSpecializationFees.map(s => String(s.specialization_id));
-      if (new Set(ids).size !== ids.length) {
+      const specializationIds = sanitizedSpecializationFees.map((s) =>
+        String(s.specialization_id),
+      );
+
+      if (new Set(specializationIds).size !== specializationIds.length) {
         return res.status(400).json({
           error: "Duplicate specialization detected",
         });
       }
     }
-
-    /* -------------------- CREATE PROPERTY COURSE ---------------------- */
 
     const uniqueId = await generateUniqueId(PropertyCourse);
 
@@ -252,7 +239,8 @@ export const addPropertyCourse = async (req, res) => {
       uniqueId,
       course_id,
       property_id,
-      course_short_name: course_short_name || masterCourse.course_short_name,
+      course_short_name:
+        course_short_name || masterCourse.course_short_name,
       course_type,
       degree_type,
       program_type,
@@ -311,7 +299,7 @@ export const updatePropertyCourse = async (req, res) => {
       return res.status(404).json({ error: "Master course not found." });
     }
 
-    const hasSpecialization =
+    const hasMasterSpecialization =
       Array.isArray(masterCourse.specialization) &&
       masterCourse.specialization.length > 0;
 
@@ -353,18 +341,14 @@ export const updatePropertyCourse = async (req, res) => {
         .filter((id) => mongoose.Types.ObjectId.isValid(String(id)));
     }
 
-    if (!hasSpecialization) {
+    if (!hasMasterSpecialization) {
       updateData.specialization_fees = [];
     }
 
-    if (hasSpecialization) {
-      if (Array.isArray(specialization_fees) && specialization_fees.length === 0) {
-        return res.status(400).json({
-          error: "Specialization is required for this course",
-        });
-      }
-
-      if (Array.isArray(specialization_fees)) {
+    if (hasMasterSpecialization && Array.isArray(specialization_fees)) {
+      if (specialization_fees.length === 0) {
+        updateData.specialization_fees = [];
+      } else {
         const sanitized = specialization_fees
           .filter((s) => s?.specialization_id)
           .map((s, idx) => {
@@ -373,17 +357,24 @@ export const updatePropertyCourse = async (req, res) => {
             }
 
             return {
-              specialization_id: new mongoose.Types.ObjectId(s.specialization_id),
+              specialization_id: new mongoose.Types.ObjectId(
+                s.specialization_id,
+              ),
               fees: {
                 tuition_fee: Number(s?.fees?.tuition_fee || 0),
-                registration_fee: Number(s?.fees?.registration_fee || 0),
+                registration_fee: Number(
+                  s?.fees?.registration_fee || 0,
+                ),
                 exam_fee: Number(s?.fees?.exam_fee || 0),
                 currency: String(s?.fees?.currency || "INR").toUpperCase(),
               },
             };
           });
 
-        const ids = sanitized.map((s) => String(s.specialization_id));
+        const ids = sanitized.map((s) =>
+          String(s.specialization_id),
+        );
+
         if (new Set(ids).size !== ids.length) {
           return res.status(400).json({
             error: "Duplicate specialization detected",
@@ -403,7 +394,7 @@ export const updatePropertyCourse = async (req, res) => {
     const updated = await PropertyCourse.findByIdAndUpdate(
       objectId,
       { $set: updateData },
-      { new: true }
+      { new: true },
     );
 
     return res.status(200).json({

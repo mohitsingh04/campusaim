@@ -71,7 +71,7 @@ const Testimonials = () => {
         tag="Don't just take our word for it"
         title="Loved by "
         activetitle="Thousands"
-        subtitle="Hear how our platform helps studios grow and students find their perfect yoga education."
+        subtitle="Hear how our platform helps students to find their perfect education."
       />
 
       <div className="w-full mt-8 flex justify-center text-slate-800">

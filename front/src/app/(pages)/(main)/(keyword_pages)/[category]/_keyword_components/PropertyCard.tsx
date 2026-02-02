@@ -26,7 +26,7 @@ function KeywordPropertyCard({
 
   const logoSrc = property?.property_logo?.[0]
     ? `${process.env.NEXT_PUBLIC_MEDIA_URL}/${property.property_logo[0]}`
-    : "/img/default-images/yp-institute-logo.webp";
+    : "/img/default-images/campusaim-logo.png";
 
   const rating = getAverageRating(property?.reviews) || 0;
   const reviewCount = property?.reviews?.length || 0;

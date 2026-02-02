@@ -78,6 +78,8 @@ export default function CompareModal({
       router.push(`/compare/${slugs}`);
     }
   };
+  
+  console.log(draftSelectedProperties)
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
@@ -91,7 +93,7 @@ export default function CompareModal({
           <div className="flex flex-col gap-4">
             <div className="flex items-start justify-between">
               <div>
-                <HeadingLine title="Compare Institutes" />
+                <HeadingLine title="Compare Colleges" />
                 <div className="mt-2 flex items-center gap-2 text-sm text-(--text-color)">
                   <span
                     className={`px-2 py-0.5 rounded-custom font-bold ${

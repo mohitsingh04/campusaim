@@ -5,7 +5,7 @@ import { NewsProps } from "@/types/NewsTypes";
 export async function GET() {
   const baseUrl =
     process.env.NEXT_PUBLIC_BASE_URL?.trim().replace(/\/$/, "") ||
-    "https://yogprerna.com";
+    "https://campusaim.com";
 
   let allNews: NewsProps[] = [];
   let allSeo: any[] = [];

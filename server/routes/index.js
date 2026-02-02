@@ -39,6 +39,7 @@ import {
   getPropertyBySlug,
   getPropertyByUniqueId,
   getPropertyByUserId,
+  getRelatedProperties,
   PropertySlugGenerator,
   updateProperty,
   updatePropertyImages,
@@ -349,6 +350,7 @@ router.get("/property/userId/:userId", getPropertyByUserId);
 router.get("/property/:objectId", getPropertyById);
 router.get("/property/slug/:property_slug", getPropertyBySlug);
 router.post("/property/multi/objectId", getPropertiesMultipleObjectId);
+router.get("/related/property", getRelatedProperties);
 
 //? Property Verification
 router.post("/property/verify/email", sendPropertyVerifyEmailOTP);

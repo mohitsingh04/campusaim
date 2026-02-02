@@ -3,7 +3,6 @@ import API from "@/context/API";
 import {
   generateSlug,
   getErrorResponse,
-  isDateActive,
   mergeCourseData,
   transformWorkingHours,
 } from "@/context/Callbacks";
@@ -15,13 +14,9 @@ import { notFound, useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FaBars, FaChevronLeft, FaChevronRight, FaTimes } from "react-icons/fa";
 import {
-  LuAward,
-  LuBadgePercent,
   LuBed,
   LuBookOpen,
-  LuBriefcase,
   LuCircleHelp,
-  LuClock,
   LuImage,
   LuInfo,
   LuSettings,
@@ -30,13 +25,9 @@ import {
 } from "react-icons/lu";
 import Overview from "../_property_components/tabs/Overview";
 import GalleryTab from "../_property_components/tabs/GalleryTab";
-import CertificationTab from "../_property_components/tabs/CertificationTab";
-import WorkingHoursTab from "../_property_components/tabs/WorkingHoursTab";
 import FaqsTab from "../_property_components/tabs/FaqsTab";
 import AmenitiesTab from "../_property_components/tabs/AmenitiesTab";
 import TeachersTab from "../_property_components/tabs/TeachersTab";
-import CouponsTab from "../_property_components/tabs/CouponsTab";
-import HiringTab from "../_property_components/tabs/HiringTab";
 import ReviewsTab from "../_property_components/tabs/ReviewsTab";
 import AccommodationTab from "../_property_components/tabs/AccomodationTab";
 import CoursesTab from "../_property_components/tabs/Courses";
@@ -259,22 +250,8 @@ export default function Page() {
         tab: <AmenitiesTab property={property} />,
       },
       {
-        id: "certifications",
-        label: "Certifications",
-        icon: LuAward,
-        show: (property?.certification?.length || 0) > 0,
-        tab: <CertificationTab property={property} />,
-      },
-      {
-        id: "hours",
-        label: "Working Hours",
-        icon: LuClock,
-        show: (property?.working_hours?.length || 0) > 0,
-        tab: <WorkingHoursTab property={property} />,
-      },
-      {
         id: "teachers",
-        label: "Teachers",
+        label: "Faculty",
         icon: LuUsers,
         show: (property?.teachers?.length || 0) > 0,
         tab: <TeachersTab teachers={property?.teachers || []} />,
@@ -298,24 +275,6 @@ export default function Page() {
             property={property}
           />
         ),
-      },
-      {
-        id: "coupons",
-        label: "Coupons",
-        icon: LuBadgePercent,
-        show: property?.coupons?.some((c) =>
-          isDateActive(c.start_from, c.valid_upto)
-        ),
-        tab: <CouponsTab coupons={property?.coupons || []} />,
-      },
-      {
-        id: "hiring",
-        label: "Hiring",
-        icon: LuBriefcase,
-        show: property?.hiring?.some((c) =>
-          isDateActive(c.start_date, c.end_date)
-        ),
-        tab: <HiringTab hiring={property?.hiring || []} />,
       },
     ],
     [property, getCategoryById, getPropertyData, profile]

@@ -111,33 +111,31 @@ export const getEnquiryByObjectId = async (req, res) => {
 export const addEnquiry = async (req, res) => {
   try {
     const {
+      userId,
       property_id,
+      property_name,
       name,
       email,
       contact,
-      date,
       city,
-      property_name,
       message,
-      userId,
     } = req.body;
 
     if (!property_id) {
       return res.status(400).json({ error: "Required field is Missing" });
     }
 
-    const property = await Property.findOne({ uniqueId: property_id });
+    const property = await Property.findOne({ _id: property_id });
     // Create a new Enquiry instance
     const newEnquiry = new Enquiry({
+      userId,
       property_id: property?._id,
+      property_name,
       name,
       email,
       contact,
-      date,
       city,
-      property_name,
       message,
-      userId,
     });
 
     // Save the new enquiry

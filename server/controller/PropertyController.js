@@ -725,3 +725,282 @@ export const PropertySlugGenerator = async (req, res) => {
     res.status(500).json({ error: "Something went wrong" });
   }
 };
+
+// export const getRelatedProperties = async (req, res) => {
+//   try {
+//     const { property_id, category, property_type, city, state, country } =
+//       req.query;
+//     if (!property_id) {
+//       return res.status(400).json({ message: "Property Id is required" });
+//     }
+//     console.log(property_id, category, property_type, city, state, country);
+//     let filters = [];
+
+//     if (city) filters.push({ type: "city", query: { property_city: city } });
+//     if (category) filters.push({ type: "category", query: { category } });
+//     if (state)
+//       filters.push({ type: "state", query: { property_state: state } });
+//     if (property_type)
+//       filters.push({ type: "ptype", query: { property_type } });
+//     if (country)
+//       filters.push({ type: "country", query: { property_country: country } });
+
+//     let selected = [];
+//     const selectedIds = new Set();
+
+//     const findProperties = async (locationQuery = {}, propQuery = {}) => {
+//       const locations = await Location.find(locationQuery);
+
+//       const propertyIds = locations.map((loc) => loc.property_id);
+
+//       const props = await Property.find({
+//         ...propQuery,
+//         _id: { $in: propertyIds, $ne: property_id },
+//         status: "Active",
+//       });
+
+//       return props;
+//     };
+
+//     for (let rule of filters) {
+//       if (selected.length >= 4) break;
+
+//       let results = [];
+
+//       switch (rule.type) {
+//         case "city":
+//           results = await findProperties({
+//             property_city: rule.query.property_city,
+//           });
+//           break;
+
+//         case "category":
+//           results = await Property.find({
+//             category: rule.query.category,
+//             _id: { $ne: property_id },
+//             status: "Active",
+//           });
+//           break;
+
+//         case "state":
+//           results = await findProperties({
+//             property_state: rule.query.property_state,
+//           });
+//           break;
+
+//         case "ptype":
+//           results = await Property.find({
+//             property_type: rule.query.property_type,
+//             _id: { $ne: property_id },
+//             status: "Active",
+//           });
+//           break;
+
+//         case "country":
+//           results = await findProperties({
+//             property_country: rule.query.property_country,
+//           });
+//           break;
+//       }
+
+//       const filtered = results
+//         .filter((p) => !selectedIds.has(p.property_id))
+//         .sort(() => 0.5 - Math.random())
+//         .slice(0, 4 - selected.length);
+
+//       filtered.forEach((p) => selectedIds.add(p.property_id));
+//       selected = [...selected, ...filtered];
+//     }
+
+//     // ---- Random fill if less than 4 ----
+//     if (selected.length < 4) {
+//       const randomFill = await Property.aggregate([
+//         {
+//           $match: {
+//             _id: { $ne: property_id },
+//             status: "Active",
+//           },
+//         },
+//         { $sample: { size: 4 - selected.length } },
+//       ]);
+
+//       selected = [...selected, ...randomFill];
+//     }
+
+//     // ---- Merge location data ----
+//     const propertyIds = selected.map((p) => p.property_id);
+
+//     const locations = await Location.find({
+//       property_id: { $in: propertyIds },
+//     });
+
+//     const locMap = {};
+//     locations.forEach((loc) => {
+//       locMap[loc.property_id] = loc;
+//     });
+
+//     const mergedResponse = selected.map((property) => {
+//       const loc = locMap[property.property_id] || {};
+
+//       return {
+//         ...property._doc,
+//         property_city: loc.property_city || "Unknown",
+//         property_state: loc.property_state || "Unknown",
+//         property_country: loc.property_country || "Unknown",
+//       };
+//     });
+
+//     return res.status(200).json(mergedResponse);
+//   } catch (err) {
+//     console.error("Error fetching related properties:", err);
+//     return res.status(500).json({ message: "Server error", error: err });
+//   }
+// };
+
+export const getRelatedProperties = async (req, res) => {
+  try {
+    const { property_id, category, property_type, city, state, country } =
+      req.query;
+
+    if (!property_id || !mongoose.Types.ObjectId.isValid(property_id)) {
+      return res.status(400).json({ message: "Valid property_id is required" });
+    }
+
+    const excludeId = new mongoose.Types.ObjectId(property_id);
+    const LIMIT = 4;
+
+    const selected = [];
+    const selectedIds = new Set();
+
+    /* ----------------------------------
+       Helper: find by location (ObjectId)
+    ---------------------------------- */
+    const findByLocation = async (locationQuery = {}) => {
+      const locations = await Location.find({
+        ...locationQuery,
+        property_id: { $ne: excludeId },
+      })
+        .select("property_id")
+        .lean();
+
+      if (!locations.length) return [];
+
+      const propertyIds = locations.map((l) => l.property_id);
+
+      return Property.find({
+        _id: { $in: propertyIds, $ne: excludeId },
+        status: "Active",
+      })
+        .select(
+          "_id property_name property_slug featured_image academic_type category status"
+        )
+        .lean();
+    };
+
+    /* ----------------------------------
+       Priority rules
+    ---------------------------------- */
+    const rules = [
+      city && { fn: () => findByLocation({ property_city: city }) },
+      category && {
+        fn: () =>
+          Property.find({
+            category,
+            _id: { $ne: excludeId },
+            status: "Active",
+          })
+            .select(
+              "_id property_name property_slug featured_image academic_type category status"
+            )
+            .lean(),
+      },
+      state && { fn: () => findByLocation({ property_state: state }) },
+      property_type && {
+        fn: () =>
+          Property.find({
+            property_type,
+            _id: { $ne: excludeId },
+            status: "Active",
+          })
+            .select(
+              "_id property_name property_slug featured_image academic_type category status"
+            )
+            .lean(),
+      },
+      country && { fn: () => findByLocation({ property_country: country }) },
+    ].filter(Boolean);
+
+    /* ----------------------------------
+       Collect results
+    ---------------------------------- */
+    for (const rule of rules) {
+      if (selected.length >= LIMIT) break;
+
+      const results = await rule.fn();
+      for (const p of results) {
+        if (selected.length >= LIMIT) break;
+        if (selectedIds.has(p._id.toString())) continue;
+
+        selected.push(p);
+        selectedIds.add(p._id.toString());
+      }
+    }
+
+    /* ----------------------------------
+       Random fallback
+    ---------------------------------- */
+    if (selected.length < LIMIT) {
+      const fill = await Property.aggregate([
+        {
+          $match: {
+            _id: { $ne: excludeId },
+            status: "Active",
+          },
+        },
+        {
+          $project: {
+            property_name: 1,
+            property_slug: 1,
+            featured_image: 1,
+            academic_type: 1,
+            category: 1,
+          },
+        },
+        { $sample: { size: LIMIT - selected.length } },
+      ]);
+
+      fill.forEach((p) => {
+        if (!selectedIds.has(p._id.toString())) {
+          selected.push(p);
+          selectedIds.add(p._id.toString());
+        }
+      });
+    }
+
+    /* ----------------------------------
+       Merge location data (ObjectId)
+    ---------------------------------- */
+    const locations = await Location.find({
+      property_id: { $in: selected.map((p) => p._id) },
+    }).lean();
+
+    const locationMap = Object.fromEntries(
+      locations.map((l) => [l.property_id.toString(), l])
+    );
+
+    const response = selected.map((p) => {
+      const loc = locationMap[p._id.toString()];
+      return {
+        ...p,
+        property_city: loc?.property_city ?? "Unknown",
+        property_state: loc?.property_state ?? "Unknown",
+        property_country: loc?.property_country ?? "Unknown",
+      };
+    });
+
+    return res.status(200).json(response);
+  } catch (err) {
+    console.error("Error fetching related properties:", err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};

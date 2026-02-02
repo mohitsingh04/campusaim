@@ -18,7 +18,7 @@ const CourseCard = ({
   const slug = `/course/${course.course_slug}`;
   const imageSrc = course?.image?.[0]
     ? `${process.env.NEXT_PUBLIC_MEDIA_URL}/course/${course.image[0]}`
-    : "/img/default-images/yp-yoga-courses.webp";
+    : "/img/default-images/campusaim-courses-featured.png";
 
   return (
     <div
@@ -61,12 +61,12 @@ const CourseCard = ({
             <div className="grid grid-cols-2 gap-4">
               <div className="flex items-center gap-2 text-sm">
                 <FiAward className="text-(--main) w-4 h-4" />
-                <p>{course.course_level}</p>
+                <p>{course.program_type}</p>
               </div>
 
               <div className="flex items-center gap-2 text-sm">
                 <PiCertificateLight className="text-(--main) w-4 h-4" />
-                <p>{course.certification_type}</p>
+                <p>{course.degree_type}</p>
               </div>
               <div className="flex items-center gap-2 col-span-2 text-sm">
                 <PiBookOpenTextLight className="text-(--main) w-4 h-4" />

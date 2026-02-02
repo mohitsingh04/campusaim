@@ -37,8 +37,7 @@ const ResultsHeader = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 space-y-6 gap-4 shrink-0">
         <div className="m-0 p-0 flex flex-col justify-center">
           <h1 className="heading font-bold text-(--text-color-emphasis)">
-            <span className="text-(--main)">{totalResults}</span> Yoga
-            Institutes Found
+            <span className="text-(--main)">{totalResults}</span> Colleges Found
           </h1>
           {totalResults > 0 && (
             <p className="leading-relaxed m-0">

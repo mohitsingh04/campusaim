@@ -67,7 +67,7 @@ const BlogCourse = () => {
                     src={
                       courseItem?.image?.[0]
                         ? `${process.env.NEXT_PUBLIC_MEDIA_URL}/course/${courseItem.image[0]}`
-                        : "/img/default-images/yp-yoga-courses.webp"
+                        : "/img/default-images/campusaim-courses-featured.png"
                     }
                     alt={courseItem.course_name}
                     fill

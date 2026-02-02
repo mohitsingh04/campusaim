@@ -4,14 +4,14 @@ import { regularDatabase } from "../database/Databases.js";
 const enquiryModel = mongoose.Schema(
   {
     userId: {
-      type: Number,
-    },
-    property_name: {
-      type: String,
-      required: true,
+      type: mongoose.Schema.Types.ObjectId,
     },
     property_id: {
       type: mongoose.Schema.Types.ObjectId,
+      required: true,
+    },
+    property_name: {
+      type: String,
       required: true,
     },
     name: {
@@ -26,18 +26,15 @@ const enquiryModel = mongoose.Schema(
       type: String,
       required: true,
     },
-    date: {
-      type: Date,
-    },
-    status: {
-      type: String,
-      default: "Pending",
-    },
     city: {
       type: String,
     },
     message: {
       type: String,
+    },
+    status: {
+      type: String,
+      default: "Pending",
     },
   },
   { timestamps: true }

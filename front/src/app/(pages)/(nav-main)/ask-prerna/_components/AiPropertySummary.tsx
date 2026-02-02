@@ -31,11 +31,11 @@ export const AiPropertySummary = ({
   // Optimized Logic from User Requirements
   const featuredImage = property?.featured_image?.[0]
     ? `${process.env.NEXT_PUBLIC_MEDIA_URL}/${property?.featured_image[0]}`
-    : "/img/default-images/yp-institutes.webp";
+    : "/img/default-images/campusaim-featured.png";
 
   const logoImage = property?.property_logo?.[0]
     ? `${process.env.NEXT_PUBLIC_MEDIA_URL}/${property.property_logo[0]}`
-    : "/img/default-images/yp-institutes.webp";
+    : "/img/default-images/campusaim-featured.png";
 
   const establishedYear = property?.est_year || "";
 
@@ -249,7 +249,7 @@ export const AiPropertySummary = ({
                         src={
                           course.image?.[0]
                             ? `${process.env.NEXT_PUBLIC_MEDIA_URL}/course/${course.image?.[0]}`
-                            : "/img/default-images/yp-yoga-courses.webp"
+                            : "/img/default-images/campusaim-courses-featured.png"
                         }
                         fill
                         className="object-cover"

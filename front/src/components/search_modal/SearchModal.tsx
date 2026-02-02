@@ -97,7 +97,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
       ...finalProps.map((item: any) => ({
         Icon: FaBuilding,
         title: item.property_name,
-        href: `/${generateSlug(item?.category)}/${generateSlug(
+        href: `/${generateSlug(item?.academic_type)}/${generateSlug(
           item?.property_slug
         )}/overview`,
       })),

@@ -3,9 +3,7 @@ import API from "@/context/API";
 import {
 	generateSlug,
 	getErrorResponse,
-	isDateActive,
 	mergeCourseData,
-	transformWorkingHours,
 } from "@/context/Callbacks";
 import { PropertyProps } from "@/types/PropertyTypes";
 import { CategoryProps, CourseProps } from "@/types/Types";
@@ -15,11 +13,8 @@ import { notFound, useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FaBars, FaChevronLeft, FaChevronRight, FaTimes } from "react-icons/fa";
 import {
-	LuAward,
-	LuBadgePercent,
 	LuBed,
 	LuBookOpen,
-	LuBriefcase,
 	LuCircleHelp,
 	LuClock,
 	LuImage,
@@ -30,19 +25,21 @@ import {
 } from "react-icons/lu";
 import Overview from "./_property_components/tabs/Overview";
 import GalleryTab from "./_property_components/tabs/GalleryTab";
-import CertificationTab from "./_property_components/tabs/CertificationTab";
-import WorkingHoursTab from "./_property_components/tabs/WorkingHoursTab";
 import FaqsTab from "./_property_components/tabs/FaqsTab";
 import AmenitiesTab from "./_property_components/tabs/AmenitiesTab";
 import TeachersTab from "./_property_components/tabs/TeachersTab";
-import CouponsTab from "./_property_components/tabs/CouponsTab";
-import HiringTab from "./_property_components/tabs/HiringTab";
 import ReviewsTab from "./_property_components/tabs/ReviewsTab";
 import AccommodationTab from "./_property_components/tabs/AccomodationTab";
 import CoursesTab from "./_property_components/tabs/Courses";
 import { getProfile } from "@/context/getAssets";
 import { UserProps } from "@/types/UserTypes";
 import TabLoading from "@/ui/loader/component/TabLoading";
+import RankingTab from "./_property_components/tabs/RankingTab";
+import QnaTab from "./_property_components/tabs/QnaTab";
+import AnnouncementTab from "./_property_components/tabs/AnnouncementTab";
+import LoanProcessTab from "./_property_components/tabs/LoanProcessTab";
+import AdmissionProcessTab from "./_property_components/tabs/AdmissionProcessTab";
+import ScholarshipTab from "./_property_components/tabs/ScholarshipTab";
 
 export default function Page() {
 	const { category, property_slug, property_tab } = useParams<{
@@ -141,12 +138,14 @@ export default function Page() {
 				API.get(`/property/gallery/${objectId}`),
 				API.get(`/accomodation/${objectId}`),
 				API.get(`/property/amenities/${objectId}`),
-				API.get(`/certifications/${objectId}`),
-				API.get(`/business-hours/${objectId}`),
 				API.get(`/teacher/property/${objectId}`),
 				API.get(`/property/faq/${objectId}`),
-				API.get(`/coupons/property/${objectId}`),
-				API.get(`/hiring/${objectId}`),
+				API.get(`/property-scholarship/${objectId}`),
+				API.get(`/admission_process/${objectId}`),
+				API.get(`/loan_process/${objectId}`),
+				API.get(`/announcement/${objectId}`),
+				API.get(`/property/qna/${objectId}`),
+				API.get(`/ranking/${objectId}`),
 			];
 
 			const [
@@ -157,12 +156,14 @@ export default function Page() {
 				galleryRes,
 				accomodationRes,
 				amenityRes,
-				certiRes,
-				hoursRes,
 				teacherRes,
 				faqRes,
-				couponRes,
-				hiringRes,
+				propScholarRes,
+				admissionProcessRes,
+				loanProcessRes,
+				announcementRes,
+				qnaRes,
+				rankingRes,
 			] = await Promise.allSettled(requests);
 
 			const getData = <T,>(
@@ -195,13 +196,14 @@ export default function Page() {
 				amenities:
 					getData(amenityRes, { selectedAmenities: [{}] })
 						.selectedAmenities?.[0] || {},
-				certification:
-					getData(certiRes, { certifications: [] })?.certifications ?? [],
-				working_hours: transformWorkingHours(getData(hoursRes, [])),
 				teachers: getData(teacherRes, []),
 				faqs: getData(faqRes, []),
-				coupons: getData(couponRes, []),
-				hiring: getData(hiringRes, []),
+				scholarship: getData(propScholarRes, []),
+				admissionProcess: getData(admissionProcessRes, []),
+				loanProcess: getData(loanProcessRes, []),
+				announcement: getData(announcementRes, []),
+				qna: getData(qnaRes, []),
+				ranking: getData(rankingRes, []),
 			};
 
 			setProperty(finalData);
@@ -259,22 +261,76 @@ export default function Page() {
 				tab: <AmenitiesTab property={property} />,
 			},
 			{
-				id: "certifications",
-				label: "Certifications",
-				icon: LuAward,
-				show: (property?.certification?.length || 0) > 0,
-				tab: <CertificationTab property={property} />,
+				id: "scholarship",
+				label: "Scholarship",
+				icon: LuClock,
+				show: (property?.scholarship?.length || 0) > 0,
+				tab: (
+					<ScholarshipTab
+						property_short_name={property?.property_short_name}
+						scholarship={property?.scholarship}
+					/>
+				),
 			},
 			{
-				id: "hours",
-				label: "Working Hours",
+				id: "admission-process",
+				label: "Admission Process",
 				icon: LuClock,
-				show: (property?.working_hours?.length || 0) > 0,
-				tab: <WorkingHoursTab property={property} />,
+				show: (property?.admissionProcess?.length || 0) > 0,
+				tab: (
+					<AdmissionProcessTab
+						property_short_name={property?.property_short_name}
+						admissionProcess={property?.admissionProcess}
+					/>
+				),
+			},
+			{
+				id: "loan-process",
+				label: "Loan Process",
+				icon: LuClock,
+				show: (property?.loanProcess?.length || 0) > 0,
+				tab: (
+					<LoanProcessTab
+						property_short_name={property?.property_short_name}
+						loanProcess={property?.loanProcess}
+					/>
+				),
+			},
+			{
+				id: "announcements",
+				label: "Announcements",
+				icon: LuClock,
+				show: (property?.announcement?.length || 0) > 0,
+				tab: (
+					<AnnouncementTab
+						property_short_name={property?.property_short_name}
+						announcement={property?.announcement}
+					/>
+				),
+			},
+			{
+				id: "qna",
+				label: "Q&A",
+				icon: LuClock,
+				show: (property?.qna?.length || 0) > 0,
+				tab: <QnaTab qna={property?.qna || []} />,
+			},
+			{
+				id: "ranking",
+				label: "Ranking",
+				icon: LuClock,
+				show: (property?.ranking?.length || 0) > 0,
+				tab: (
+					<RankingTab
+						property_short_name={property?.property_short_name}
+						ranking={property?.ranking}
+						getCategoryById={getCategoryById}
+					/>
+				),
 			},
 			{
 				id: "teachers",
-				label: "Teachers",
+				label: "Faculty",
 				icon: LuUsers,
 				show: (property?.teachers?.length || 0) > 0,
 				tab: <TeachersTab teachers={property?.teachers || []} />,
@@ -298,24 +354,6 @@ export default function Page() {
 						property={property}
 					/>
 				),
-			},
-			{
-				id: "coupons",
-				label: "Coupons",
-				icon: LuBadgePercent,
-				show: property?.coupons?.some((c) =>
-					isDateActive(c.start_from, c.valid_upto),
-				),
-				tab: <CouponsTab coupons={property?.coupons || []} />,
-			},
-			{
-				id: "hiring",
-				label: "Hiring",
-				icon: LuBriefcase,
-				show: property?.hiring?.some((c) =>
-					isDateActive(c.start_date, c.end_date),
-				),
-				tab: <HiringTab hiring={property?.hiring || []} />,
 			},
 		],
 		[property, getCategoryById, getPropertyData, profile],

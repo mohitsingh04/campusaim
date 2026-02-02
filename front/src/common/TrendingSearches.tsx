@@ -1,89 +1,40 @@
 export const trendingSearches = [
-  {
-    title: "200 Hour Yoga Teacher Training",
-    value: "200 Hour Yoga Teacher Training",
-  },
-  {
-    title: "50 Hour Yoga Teacher Training",
-    value: "50 Hour Yoga Teacher Training",
-  },
-  {
-    title: "700 Hour Yoga Teacher Certification",
-    value: "700 Hour Yoga Teacher Certification",
-  },
-  {
-    title: "100 Hour Yoga Teacher Training",
-    value: "100 Hour Yoga Teacher Training",
-  },
-  {
-    title: "300 Hour Yoga Teacher Training",
-    value: "300 Hour Yoga Teacher Training",
-  },
-  {
-    title: "500 Hour Yoga Teacher Training",
-    value: "500 Hour Yoga Teacher Training",
-  },
-  { title: "Best Yoga Studio", value: "Yoga Studio" },
-  { title: "Best Online Yoga Studio", value: "Online Yoga Studio" },
-  { title: "Top Yoga Colleges", value: "College" },
-  { title: "Top University", value: "University" },
-  { title: "Rishikesh", value: "Rishikesh" },
-  { title: "Dehradun", value: "Dehradun" },
-  { title: "Bengaluru", value: "Bengaluru" },
-  { title: "Mysuru", value: "Mysuru" },
-  { title: "Chennai", value: "Chennai" },
-  { title: "Dharamshala", value: "Dharamshala" },
-  { title: "Varkala", value: "Varkala" },
-  { title: "South Goa", value: "South Goa" },
-  { title: "New Dehli", value: "New Dehli" },
-  { title: "Varanasi", value: "Varanasi" },
-  { title: "Nepal", value: "Nepal" },
-  { title: "Canada", value: "Canada" },
-  { title: "India", value: "India" },
-  { title: "Russia", value: "Russia" },
-  {
-    title: "Professional Certification Courses",
-    value: "Professional Certification Courses",
-  },
-  { title: "Diploma Course", value: "Diploma Course" },
-  { title: "Academic Degrees", value: "Academic Degrees" },
-  { title: "Private Institutes", value: "Private" },
-  { title: "NGO Yoga Institutes", value: "NGO" },
-  { title: "Goverment Yoga Institutes", value: "Goverment" },
-  {
-    title: "Dhyana Yoga – The Ultimate Guide To Dhyana Benefits",
-    value: "Dhyana Yoga – The Ultimate Guide To Dhyana Benefits",
-  },
-  {
-    title: "Important Asanas Of Yoga And Their Benefits",
-    value: "Important Asanas Of Yoga And Their Benefits",
-  },
-  {
-    title: "Bhakti Yoga in Bhagavad Gita – 9 Best Concepts of Bhakti Yoga",
-    value: "Bhakti Yoga in Bhagavad Gita – 9 Best Concepts of Bhakti Yoga",
-  },
-  {
-    title: "Yoga Sutras of Patanjali – 8 Best Ways To Improve Yoga",
-    value: "Yoga Sutras of Patanjali – 8 Best Ways To Improve Yoga",
-  },
-  {
-    title: "What is the Best Time to Practice Yoga",
-    value: "What is the Best Time to Practice Yoga",
-  },
-  {
-    title: "8 Best Yoga Asanas For Hair Fall Control",
-    value: "8 Best Yoga Asanas For Hair Fall Control",
-  },
-  {
-    title: "What is Yoga Nidra and its Benefits",
-    value: "What is Yoga Nidra and its Benefits",
-  },
-  {
-    title: "7 Best Yoga Exercise For Fat Loss - A Complete Guide",
-    value: "7 Best Yoga Exercise For Fat Loss - A Complete Guide",
-  },
-  {
-    title: "3 Best Power Yoga Poses – A Complete Guide",
-    value: "3 Best Power Yoga Poses – A Complete Guide",
-  },
+	{ title: "Top Colleges in India", value: "Top Colleges in India" },
+	{ title: "Best Universities Near Me", value: "Best Universities" },
+	{ title: "Private Colleges Admission", value: "Private Colleges" },
+	{ title: "Government Colleges List", value: "Government Colleges" },
+
+	{
+		title: "Professional Certification Courses",
+		value: "Certification Courses",
+	},
+	{ title: "Diploma Courses After 12th", value: "Diploma Courses" },
+	{ title: "Degree Courses After Graduation", value: "Degree Courses" },
+	{ title: "Skill-Based Courses", value: "Skill Based Courses" },
+
+	{ title: "Online Courses With Certificate", value: "Online Courses" },
+	{ title: "Distance Learning Programs", value: "Distance Learning" },
+	{ title: "Part-Time Courses", value: "Part Time Courses" },
+
+	{ title: "Career Options After 12th", value: "Career Options After 12th" },
+	{ title: "Best Career Oriented Courses", value: "Career Oriented Courses" },
+	{ title: "High Paying Jobs in India", value: "High Paying Jobs" },
+
+	{ title: "Top Institutes in Delhi", value: "Delhi Institutes" },
+	{ title: "Top Institutes in Bengaluru", value: "Bengaluru Institutes" },
+	{ title: "Top Institutes in Mumbai", value: "Mumbai Institutes" },
+	{ title: "Top Institutes in Pune", value: "Pune Institutes" },
+	{ title: "Top Institutes in Dehradun", value: "Dehradun Institutes" },
+
+	{ title: "Study Abroad Programs", value: "Study Abroad" },
+	{ title: "Colleges in Canada", value: "Canada Colleges" },
+	{ title: "Colleges in UK", value: "UK Colleges" },
+	{ title: "Colleges in Australia", value: "Australia Colleges" },
+
+	{ title: "Admission Open 2026", value: "Admission Open" },
+	{ title: "Scholarship Programs", value: "Scholarships" },
+	{ title: "Entrance Exam Preparation", value: "Entrance Exams" },
+
+	{ title: "Top Training Institutes", value: "Training Institutes" },
+	{ title: "Best Coaching Centers", value: "Coaching Centers" },
 ];

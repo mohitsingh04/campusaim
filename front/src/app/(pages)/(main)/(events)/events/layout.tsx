@@ -2,7 +2,7 @@ import InsitutesLoader from "@/ui/loader/page/institutes/Institutes";
 import { Metadata } from "next";
 import { ReactNode, Suspense } from "react";
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://www.yogprerna.com";
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://www.campusaim.com";
 
 export const metadata: Metadata = {
   title: "Events",

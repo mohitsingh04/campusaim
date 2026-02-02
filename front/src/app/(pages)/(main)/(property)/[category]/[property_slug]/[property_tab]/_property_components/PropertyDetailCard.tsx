@@ -14,11 +14,11 @@ const PropertyDetailCard = ({
 }) => {
   const imageSrc = property?.featured_image?.[0]
     ? `${process.env.NEXT_PUBLIC_MEDIA_URL}/${property.featured_image[0]}`
-    : "/img/default-images/yp-institutes.webp";
+    : "/img/default-images/campusaim-featured.png";
 
   const logoSrc = property?.property_logo?.[0]
     ? `${process.env.NEXT_PUBLIC_MEDIA_URL}/${property.property_logo[0]}`
-    : "/img/default-images/yp-institute-logo.webp";
+    : "/img/default-images/campusaim-logo.png";
 
   return (
     <div className=" overflow-hidden bg-(--primary-bg) sm:rounded-2xl shadow-custom">

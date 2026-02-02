@@ -376,7 +376,7 @@ export default function PropertyFilters({
                   <div className="text-center py-16 bg-(--primary-bg) shadow-custom rounded-2xl">
                     <FaGraduationCap className="w-16 h-16 text-(--text-color) mx-auto mb-4" />
                     <h3 className="heading font-bold mb-2">
-                      No institutes found
+                      No college found
                     </h3>
                     <p>Try adjusting your filters</p>
                   </div>

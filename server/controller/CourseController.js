@@ -136,7 +136,7 @@ export const addCourse = async (req, res) => {
       best_for,
       course_eligibility,
     } = req.body;
-    
+
     if (!course_name) {
       return res.status(400).json({ error: "Course name is required." });
     }
@@ -178,7 +178,7 @@ export const addCourse = async (req, res) => {
       image: images,
       course_slug: courseSlug,
     });
-    
+
     const courseCreated = await newCourse.save();
 
     try {
@@ -235,7 +235,7 @@ export const updateCourse = async (req, res) => {
     const normalizedCourseEligibility =
       course_eligibility !== undefined ? normalizeObjectIdArray(course_eligibility) : undefined;
 
-      const normalizedSpecialization =
+    const normalizedSpecialization =
       specialization !== undefined ? normalizeObjectIdArray(specialization) : undefined;
 
     const normalizedCourseType =
@@ -394,32 +394,35 @@ export const getCourseWithSeoBySlug = async (req, res) => {
   try {
     const { slug } = req.params;
 
-    // 1️⃣ Try finding SEO data first
-    let seoData = await AllSeo.findOne({ slug, type: "course" });
-    let course;
+    if (!slug) {
+      return res.status(400).json({ error: "Slug is required" });
+    }
 
-    if (seoData) {
-      // If SEO exists → fetch blog by ID
-      course = await Course.findOne({ _id: seoData.course_id });
+    // 1️⃣ Try SEO lookup first
+    const seoData = await AllSeo.findOne({
+      slug,
+      type: "course",
+    }).lean();
+
+    let course = null;
+
+    if (seoData?.course_id) {
+      course = await Course.findById(seoData.course_id).lean();
     } else {
-      const allcourse = await Course.find();
-      course = allcourse.find(
-        (item) => generateSlug(item.course_name) === slug
-      );
+      // 2️⃣ Fallback: find course by slug (NO full scan)
+      course = await Course.findOne({ course_slug: slug }).lean();
     }
 
     if (!course) {
-      return res.status(404).json({ error: "Blog not found" });
+      return res.status(404).json({ error: "Course not found" });
     }
 
-    // Return only blog if SEO is missing
-    const finalCourse = seoData
-      ? { ...course.toObject(), seo: seoData }
-      : course.toObject();
-
-    return res.status(200).json(finalCourse);
+    return res.status(200).json({
+      ...course,
+      ...(seoData && { seo: seoData }),
+    });
   } catch (error) {
-    console.error(error);
+    console.error("getCourseWithSeoBySlug error:", error);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };

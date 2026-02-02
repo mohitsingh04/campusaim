@@ -118,7 +118,7 @@ export default function PopularCourses({
       <div className="flex flex-col md:flex-row justify-between sm:items-end items-start mb-10 gap-6">
         <div className="w-full md:w-2/3">
           <HeadingProps
-            tag="Next Level Yoga"
+            tag="Next Level Courses"
             title="Featured "
             activetitle="Courses"
             subtitle=" Discover sought-after, accredited programs. Train, master, and certify your practice with us"

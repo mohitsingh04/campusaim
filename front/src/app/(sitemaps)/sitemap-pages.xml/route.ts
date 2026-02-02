@@ -1,11 +1,11 @@
 export async function GET() {
   const baseUrl =
     process.env.NEXT_PUBLIC_BASE_URL?.trim().replace(/\/$/, "") ||
-    "https://yogprerna.com";
+    "https://campusaim.com";
 
   const staticRoutes = [
     { path: "/", priority: 1.0, changefreq: "weekly" },
-    { path: "/yoga-institutes", priority: 0.9, changefreq: "weekly" },
+    { path: "/colleges", priority: 0.9, changefreq: "weekly" },
     { path: "/courses", priority: 0.8, changefreq: "weekly" },
     { path: "/blog", priority: 0.8, changefreq: "weekly" },
     { path: "/events", priority: 0.8, changefreq: "weekly" },

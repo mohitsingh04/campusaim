@@ -34,7 +34,7 @@ export default function FooterNoLinks() {
             <p className="mb-10 md:mb-2">
               © {new Date().getFullYear()}{" "}
               <Link href="/" className="font-medium">
-                Yogprerna
+                Campusaim
               </Link>{" "}
               , Inc. All Rights Reserved.
             </p>

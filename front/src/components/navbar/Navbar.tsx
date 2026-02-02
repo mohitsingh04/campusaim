@@ -87,7 +87,7 @@ export default function Navbar() {
 	const universityMenu = usePropertyMenuData({
 		category,
 		academicType: "university",
-		basePath: "/universities",
+		basePath: "/colleges",
 	});
 	const [token, setToken] = useState("");
 	const [profile, setProfile] = useState<UserProps | null>(null);
@@ -125,7 +125,7 @@ export default function Navbar() {
 		},
 		{
 			name: "Universities",
-			href: "/universities",
+			href: "/colleges",
 			menuType: "property",
 			dropdownContent: universityMenu.propertyMenuData,
 		},

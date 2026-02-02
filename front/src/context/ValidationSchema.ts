@@ -117,44 +117,6 @@ export const getValidEmail = (field: string, required = true) => {
   return schema;
 };
 
-const getValidNumber = (
-  field: string,
-  required: boolean = true,
-  minLen: number = 1,
-  maxLen: number = 10
-) => {
-  let schema = Yup.string()
-    .matches(/^\d+$/, `${field} must contain digits only`)
-    .min(minLen, `${field} must be at least ${minLen} digits`)
-    .max(maxLen, `${field} cannot be more than ${maxLen} digits`);
-  if (required) {
-    schema = schema.required(`${field} is required`);
-  } else {
-    schema = schema.optional();
-  }
-  return schema;
-};
-
-const getValidDate = (
-  field: string,
-  required: boolean = true,
-  allowPast: boolean = false
-) => {
-  let schema = Yup.date().typeError(`${field} must be a valid date`).nullable();
-
-  if (!allowPast) {
-    schema = schema.min(new Date(), `${field} cannot be in the past`);
-  }
-
-  if (required) {
-    schema = schema.required(`${field} is required`);
-  } else {
-    schema = schema.optional();
-  }
-
-  return schema;
-};
-
 const getValidBool = (field: string, required: boolean = true) => {
   let schema = Yup.boolean().typeError(`${field} must be a boolean`);
 
@@ -195,8 +157,6 @@ export const enquirySchema = Yup.object({
   name: getValidString("Full Name"),
   email: getValidEmail("Email"),
   contact: getValidPhone("Contact Number"),
-  people: getValidNumber("People"),
-  date: getValidDate("Arrival Date"),
   city: getValidString("Your City"),
   message:getValidContent("Message")
 });

@@ -5,26 +5,26 @@ export const socailLinks = [
   {
     name: "Facebook",
     icon: FaFacebook,
-    href: "https://www.facebook.com/yogprernaofficial",
+    href: "https://www.facebook.com/campusaim",
   },
   {
     name: "Instagraom",
     icon: BsInstagram,
-    href: "https://www.instagram.com/yog_prerna",
+    href: "https://www.instagram.com/campusaim",
   },
   {
     name: "X",
     icon: BsTwitterX,
-    href: "https://x.com/PrernaYog40326",
+    href: "https://x.com/campusaim",
   },
   {
     name: "You Tube",
     icon: BsYoutube,
-    href: "https://www.youtube.com/@yogprerna108",
+    href: "https://www.youtube.com/@campusaim",
   },
   {
     name: "Linkedin",
     icon: FaLinkedinIn,
-    href: "https://www.linkedin.com/company/yogprerna",
+    href: "https://www.linkedin.com/company/campusaim",
   },
 ];
