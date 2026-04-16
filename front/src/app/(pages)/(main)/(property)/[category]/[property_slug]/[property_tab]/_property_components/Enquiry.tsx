@@ -24,6 +24,7 @@ import EnquirySubmitted from "@/ui/submits/EnquirySubmitted";
 import { UserProps } from "@/types/UserTypes";
 import { getProfile } from "@/context/getAssets";
 import EnquiryFormSkeleton from "@/ui/loader/ui/EnquiryFormSkeleton";
+import { toast } from "react-toastify";
 
 const EnquiryForm = ({ property }: { property: PropertyProps }) => {
 	const [submitted, setSubmitted] = useState(false);
@@ -61,10 +62,31 @@ const EnquiryForm = ({ property }: { property: PropertyProps }) => {
 		enableReinitialize: true,
 		onSubmit: async (values, { setSubmitting, resetForm }) => {
 			try {
-				const response = await API.post(`/add/enquiry`, values);
-				getSuccessResponse(response);
-				setSubmitted(true);
-				resetForm();
+				const selectedCourse = property?.courses?.find(
+					(c) => c.course_name === values.preferred_course,
+				);
+
+				const payload = {
+					...values,
+					course_id: selectedCourse?._id || null,
+				};
+				
+				// const response = await API.post(`/add/enquiry`, values);
+				const response = await API.post(
+					`${process.env.NEXT_PUBLIC_LEAD_API_URL}/api/external/leads`,
+					payload,
+				);
+				if (response?.data?.success === false) {
+					toast.error(response?.data?.error);
+					console.log(response);
+				} else {
+					toast.success(response?.data?.message);
+					console.log(response);
+					resetForm();
+				}
+				// getSuccessResponse(response);
+				// setSubmitted(true);
+				// resetForm();
 			} catch (error) {
 				getErrorResponse(error);
 			} finally {

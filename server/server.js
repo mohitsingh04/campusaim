@@ -24,28 +24,40 @@ const allowedOrigins = [
   process.env.FRONTEND_DASHBOARD_URL,
   process.env.FRONTEND_CAREER_URL,
   process.env.FRONTEND_ASK_URL,
-];
+  process.env.LMS_FRONT_URL,
+  process.env.LMS_BACKEND_URL
+].filter(Boolean);
 
 app.use(cookieParser());
 app.use(helmet());
-app.use(
-  cors({
-    origin: allowedOrigins,
-    credentials: true,
-  })
-);
+// app.use(
+//   cors({
+//     origin: allowedOrigins,
+//     credentials: true,
+//   })
+// );
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true); // allow Postman / server calls
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error("CORS not allowed"));
+  },
+  credentials: true,
+}));
 
 export function originGuard(req, res, next) {
   const origin = req.headers.origin;
   if (!origin || !allowedOrigins.includes(origin)) {
-    return res.redirect(process.env.FRONTEND_URL);
+    return;
   }
   next();
 }
 
-app.get("/", (req, res) => {
-  return res.redirect(process.env.FRONTEND_URL);
-});
+app.get("/", (req, res) => res.json("API is running!"));
 function getFolderSize(directoryPath) {
   let totalSize = 0;
 
@@ -101,7 +113,7 @@ app.get("/api/folder-size", (req, res) => {
 app.get("/api", (req, res) => {
   return res.redirect(process.env.FRONTEND_URL);
 });
-app.use("/api/", originGuard, router);
+app.use("/api/", router);
 app.use("/api/", originGuard, analyticRouter);
 app.use("/api/", originGuard, profileRoutes);
 app.use("/api/", originGuard, AiRoutes);

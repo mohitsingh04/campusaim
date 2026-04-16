@@ -1,0 +1,67 @@
+export const CollegeList = [
+    {
+        _id: "665a1c9c8c3b1a1a11111111",
+        name: "Uttaranchal University",
+        shortName: "UU",
+        city: "Dehradun",
+        state: "Uttarakhand",
+        type: "Private",
+        courses: {
+            UG: ["B.Tech", "BCA", "BBA", "BA LLB", "B.Com", "B.Sc IT", "B.Pharm"],
+            PG: ["MBA", "MCA", "M.Tech", "LLM", "M.Sc IT"],
+            Diploma: ["Diploma in Engineering", "Diploma in Pharmacy"],
+        },
+    },
+    {
+        _id: "665a1c9c8c3b1a1a22222222",
+        name: "Graphic Era University",
+        shortName: "GEU",
+        city: "Dehradun",
+        state: "Uttarakhand",
+        type: "Deemed",
+        courses: {
+            UG: ["B.Tech", "BCA", "BBA", "B.Com", "B.Sc Computer Science", "BA Journalism"],
+            PG: ["MBA", "MCA", "M.Tech", "M.Sc Computer Science"],
+            Diploma: [],
+        },
+    },
+    {
+        _id: "665a1c9c8c3b1a1a33333333",
+        name: "DIT University",
+        shortName: "DIT",
+        city: "Dehradun",
+        state: "Uttarakhand",
+        type: "Private",
+        courses: {
+            UG: ["B.Tech", "BCA", "BBA", "B.Pharm", "B.Arch"],
+            PG: ["MBA", "MCA", "M.Tech", "M.Pharm"],
+            Diploma: ["Diploma in Engineering"],
+        },
+    },
+    {
+        _id: "665a1c9c8c3b1a1a44444444",
+        name: "Dev Bhoomi Uttarakhand University",
+        shortName: "DBUU",
+        city: "Dehradun",
+        state: "Uttarakhand",
+        type: "Private",
+        courses: {
+            UG: ["B.Tech", "BCA", "BBA", "B.Com", "B.Sc Agriculture", "BHM"],
+            PG: ["MBA", "MCA", "M.Tech", "M.Sc Agriculture"],
+            Diploma: ["Diploma in Hotel Management"],
+        },
+    },
+    {
+        _id: "665a1c9c8c3b1a1a55555555",
+        name: "UPES University",
+        shortName: "UPES",
+        city: "Dehradun",
+        state: "Uttarakhand",
+        type: "Private",
+        courses: {
+            UG: ["B.Tech", "BBA", "BCA", "BA LLB", "B.Com", "B.Sc Economics"],
+            PG: ["MBA", "MCA", "LLM", "M.Tech"],
+            Diploma: [],
+        },
+    },
+];

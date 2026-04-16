@@ -1,0 +1,116 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.react-select__control {
+    @apply border rounded min-h-[42px];
+}
+
+.react-select__control--is-focused {
+    @apply border-blue-500 ring-1 ring-blue-500;
+}
+
+:root {
+    --yp-primary: #ffffff;
+    --yp-secondary: #f9fafb;
+    --yp-tertiary: #f9f9f9;
+    --yp-input-primary: #ffffff;
+    --yp-text-primary: #111827;
+    --yp-text-secondary: #1f2937;
+    --yp-main-emphasis: #000963;
+    --yp-main: #3b82f6;
+    --yp-main-subtle: #dbeafe;
+    --yp-blog-heading: #000963;
+    --yp-border-primary: #e7e7e7;
+    --yp-blog-heading: #000963;
+    --yp-muted: #4b5563;
+    --yp-success-subtle: #d1fae5;
+    --yp-success: #22c55e;
+    --yp-success-emphasis: #065f46;
+    --yp-danger-subtle: #fee2e2;
+    --yp-danger: #eb3535;
+    --yp-danger-emphasis: #991b1b;
+    --yp-blue-subtle: #e0f2fe;
+    --yp-blue: #3b82f6;
+    --yp-blue-emphasis: #1e3a8a;
+    --yp-warning-subtle: #fef3c7;
+    --yp-warning: #f59e0b;
+    --yp-warning-emphasis: #92400e;
+    --yp-gray-subtle: #f3f4f6;
+    --yp-gray: #6b7280;
+    --yp-gray-emphasis: #111827;
+}
+
+[data-theme="dark"] {
+    --yp-primary: #1f2937;
+    --yp-secondary: #111827;
+    --yp-tertiary: #374151;
+    --yp-input-primary: #111827;
+    --yp-text-primary: #ffffff;
+    --yp-text-secondary: #f9fafb;
+    --yp-main-emphasis: #212870;
+    --yp-main: #3b82f6;
+    --yp-main-subtle: #dbeafe;
+    --yp-blog-heading: #000963;
+    --yp-border-primary: #374151;
+    --yp-blog-heading: #96a0ff;
+    --yp-muted: #9ca3af;
+    --yp-success-subtle: #d1fae5;
+    --yp-success: #22c55e;
+    --yp-success-emphasis: #065f46;
+    --yp-danger-subtle: #fee2e2;
+    --yp-danger: #eb3535;
+    --yp-danger-emphasis: #991b1b;
+    --yp-blue-subtle: #e0f2fe;
+    --yp-blue: #3b82f6;
+    --yp-blue-emphasis: #1e3a8a;
+    --yp-warning-subtle: #fef3c7;
+    --yp-warning: #f59e0b;
+    --yp-warning-emphasis: #92400e;
+    --yp-gray-subtle: #f3f4f6;
+    --yp-gray: #6b7280;
+    --yp-gray-emphasis: #111827;
+}
+
+.non-auth-logo {
+    width: 200px;
+    height: auto;
+}
+
+.swal2-small {
+    font-size: 12px !important;
+    width: 350px !important;
+}
+
+/* Add in your global CSS or tailwind config */
+.input {
+    @apply border border-gray-300 rounded-md px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500;
+}
+
+.btn-primary {
+    @apply bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition;
+}
+
+.btn-secondary {
+    @apply bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 transition;
+}
+
+/* global.css */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* global.css */
+
+.input {
+    @apply w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition;
+}
+
+.error {
+    @apply text-xs text-red-500 mt-1;
+}
