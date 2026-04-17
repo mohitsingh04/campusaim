@@ -34,7 +34,7 @@ import LoanProcess from "../models/LoanProcess.js";
 import AdmissionProcess from "../models/AdmissionProcess.js";
 import Ranking from "../models/Ranking.js";
 import Announcement from "../models/Announcement.js";
-import QnA from "../models/QnA.js";
+import QnA from "../models/qna.js";
 
 function normalizeAffiliatedBy(affiliated_by) {
   let affiliatedByArray = [];

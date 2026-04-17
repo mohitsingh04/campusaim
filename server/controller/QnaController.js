@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { addPropertyScore } from "../analytic-controller/PropertyScoreController.js";
 import { downloadImageAndReplaceSrc } from "../helper/folder-cleaners/EditorImagesController.js";
-import QnA from "../models/QnA.js";
+import QnA from "../models/qna.js";
 
 const toObjectId = (id) => {
     if (!id) return null;
