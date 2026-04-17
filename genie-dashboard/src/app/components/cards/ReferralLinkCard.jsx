@@ -1,9 +1,7 @@
 import React, { useRef, useState, useMemo, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { Copy, Share2, Trash2, Check, Plus } from "lucide-react";
+import { Copy, Share2, Trash2, Check } from "lucide-react";
 import QRCode from "react-qr-code";
-import Select, { components } from "react-select";
-import { API } from "../../services/API";
 
 const CustomOption = (props) => {
     return (
@@ -33,40 +31,14 @@ export default function ReferralLinkCard() {
     const { authUser } = useAuth();
     const qrRef = useRef(null);
     const referralCode = authUser?.ref_code || "";
-    const [organization, setOrganization] = useState(null);
 
-    const orgWebsite = organization?.website;
     const fallbackWebsite = import.meta.env.VITE_REFERRAL_URL || window.location.origin;
     const defaultWebsite = fallbackWebsite;
-    // const defaultWebsite = orgWebsite || fallbackWebsite;
 
     const [customWebsites, setCustomWebsites] = useState([]);
     const [selectedWebsite, setSelectedWebsite] = useState(defaultWebsite);
     const [newWebsite, setNewWebsite] = useState("");
     const [copied, setCopied] = useState(false);
-
-    const organizationId = authUser?.organizationId;
-
-    useEffect(() => {
-        if (!organizationId) return; // guard
-
-        const fetchOrg = async () => {
-            try {
-                const { data } = await API.get(`/organization/${organizationId}`);
-                setOrganization(data?.data);
-            } catch (error) {
-                console.error("Failed to fetch organization:", error);
-            }
-        };
-
-        fetchOrg();
-    }, [organizationId]);
-
-    // useEffect(() => {
-    //     if (orgWebsite) {
-    //         setSelectedWebsite(orgWebsite);
-    //     }
-    // }, [orgWebsite]);
 
     useEffect(() => {
         try {
@@ -127,8 +99,10 @@ export default function ReferralLinkCard() {
 
     const referralLink = useMemo(() => {
         if (!referralCode) return "";
-        const baseToUse = newWebsite.trim() ? newWebsite : selectedWebsite;
+
+        const baseToUse = newWebsite.trim() || selectedWebsite;
         const base = normalizeUrl(baseToUse);
+
         return `${base}?ref=${encodeURIComponent(referralCode)}`;
     }, [selectedWebsite, newWebsite, referralCode]);
 

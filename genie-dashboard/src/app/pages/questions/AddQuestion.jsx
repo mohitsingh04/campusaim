@@ -49,9 +49,8 @@ const validationSchema = Yup.object({
 
 export default function AddQuestion() {
     const navigate = useNavigate();
-    const { authUser, authLoading } = useAuth();
+    const { authUser } = useAuth();
     const nicheId = authUser?.nicheId;
-    const organizationId = authUser?.organizationId;
     const [QuestionSet, setQuestionSet] = useState([]);
     const [Questions, setQuestions] = useState([]);
 
@@ -71,7 +70,7 @@ export default function AddQuestion() {
 
     const fetchQuestions = async () => {
         try {
-            const { data } = await API.get(`/questions/organization/${organizationId}`);
+            const { data } = await API.get(`/questions/niche/${nicheId}`);
             const activeQues = data?.data.filter((q) => q.status === "active");
             setQuestions(activeQues);
         } catch (error) {
@@ -86,9 +85,9 @@ export default function AddQuestion() {
     }, [nicheId]);
 
     useEffect(() => {
-        if (!organizationId) return;
+        if (!nicheId) return;
         fetchQuestions();
-    }, [organizationId]);
+    }, [nicheId]);
 
     // Build slug set from DB questions
     const existingQuestionSlugs = useMemo(() => {

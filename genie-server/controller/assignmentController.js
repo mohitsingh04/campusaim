@@ -29,11 +29,11 @@ export const assignLeads = async (req, res) => {
 
         const authUser = await User
             .findById(authUserId)
-            .select("_id name role organizationId");
+            .select("_id name role");
 
         const assignToUser = await User
             .findById(assignToId)
-            .select("_id role teamLeader organizationId");
+            .select("_id role teamLeader");
 
         if (!authUser || !assignToUser) {
             return res.status(404).json({ error: "User not found" });
@@ -101,7 +101,6 @@ export const assignLeads = async (req, res) => {
 
             /* -------- SEND NOTIFICATION -------- */
             await notifyLeadAssignment({
-                organizationId: assignToUser.organizationId || null,
                 assignToUser,
                 authUser,
                 leadIds: validLeadIds
@@ -163,7 +162,6 @@ export const assignLeads = async (req, res) => {
             /* -------- SEND NOTIFICATION -------- */
 
             await notifyLeadAssignment({
-                organizationId: assignToUser.organizationId || null,
                 assignToUser,
                 authUser,
                 leadIds: validLeadIds
@@ -248,7 +246,7 @@ export const assignCounselorToTeamLeader = async (req, res) => {
         const authUserId = await getDataFromToken(req);
 
         const authUser = await User.findById(authUserId)
-            .select("_id role organizationId name");
+            .select("_id role name");
 
         if (!authUser) {
             return res.status(401).json({ error: "Unauthorized" });
@@ -268,8 +266,7 @@ export const assignCounselorToTeamLeader = async (req, res) => {
         const counselor = await User.findOne({
             _id: counselorId,
             role: "counselor",
-            organizationId: authUser.organizationId
-        }).select("_id name teamLeader organizationId");
+        }).select("_id name teamLeader");
 
         if (!counselor) {
             return res.status(404).json({ error: "Counselor not found" });
@@ -293,8 +290,7 @@ export const assignCounselorToTeamLeader = async (req, res) => {
         const teamLeader = await User.findOne({
             _id: teamLeaderId,
             role: "teamleader",
-            organizationId: authUser.organizationId
-        }).select("_id name organizationId");
+        }).select("_id name");
 
         if (!teamLeader) {
             return res.status(404).json({ error: "TeamLeader not found" });
@@ -311,7 +307,6 @@ export const assignCounselorToTeamLeader = async (req, res) => {
 
         /* ------------------ NOTIFICATION ------------------ */
         notifyCounselorAssignment({
-            organizationId: authUser.organizationId,
             counselor,
             teamLeader,
             authUser

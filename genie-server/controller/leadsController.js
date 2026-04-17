@@ -222,9 +222,14 @@ export const getLeads = async (req, res) => {
 export const getUserLeads = async (req, res) => {
     try {
         const authUserId = await getDataFromToken(req);
-        const authUser = await User.findById(authUserId).select(
-            "_id role organizationId"
-        );
+
+        if (!mongoose.Types.ObjectId.isValid(authUserId)) {
+            return res.status(400).json({ error: "Invalid auth user ID" });
+        }
+
+        const authUser = await User.findById(authUserId)
+            .select("_id role")
+            .lean();
 
         if (!authUser) {
             return res.status(404).json({ error: "Auth user not found" });
@@ -236,25 +241,18 @@ export const getUserLeads = async (req, res) => {
             return res.status(400).json({ error: "Invalid userId" });
         }
 
-        const targetUser = await User.findById(userId).select(
-            "_id role organizationId teamLeader createdBy"
-        );
+        const targetUser = await User.findById(userId)
+            .select("_id role teamLeader createdBy")
+            .lean();
 
         if (!targetUser) {
             return res.status(404).json({ error: "Target user not found" });
         }
 
-        // 🔐 Organization boundary
-        if (
-            authUser.organizationId.toString() !==
-            targetUser.organizationId.toString()
-        ) {
-            return res.status(403).json({ error: "Access denied" });
-        }
-
-        /* ---------------- PERMISSION RULES ---------------- */
+        /* ---------------- PERMISSION RULES (ROLE BASED) ---------------- */
 
         const isAdmin = authUser.role === "admin";
+
         const isPartner =
             authUser.role === "partner" &&
             targetUser.createdBy?.toString() === authUser._id.toString();
@@ -263,19 +261,16 @@ export const getUserLeads = async (req, res) => {
             authUser.role === "teamleader" &&
             targetUser.teamLeader?.toString() === authUser._id.toString();
 
-        if (
-            !isAdmin &&
-            !isPartner &&
-            !isTeamLeader &&
-            authUser._id.toString() !== targetUser._id.toString()
-        ) {
+        const isSelf =
+            authUser._id.toString() === targetUser._id.toString();
+
+        if (!isAdmin && !isPartner && !isTeamLeader && !isSelf) {
             return res.status(403).json({ error: "Not allowed to view leads" });
         }
 
         /* ---------------- FETCH LEADS ---------------- */
 
         const leads = await Lead.find({
-            organizationId: authUser.organizationId,
             $or: [
                 { createdBy: targetUser._id },
                 { assignedTo: targetUser._id }
@@ -283,13 +278,14 @@ export const getUserLeads = async (req, res) => {
         })
             .sort({ createdAt: -1 })
             .populate("createdBy", "name role")
-            .populate("assignedTo", "name role");
+            .populate("assignedTo", "name role")
+            .lean();
 
         return res.status(200).json({
             success: true,
+            count: leads.length,
             data: leads
         });
-
     } catch (error) {
         console.error("Error fetching user leads:", error);
         return res.status(500).json({ error: "Internal Server Error" });
@@ -431,8 +427,13 @@ export const getLeadTimeline = async (req, res) => {
 export const addLead = async (req, res) => {
     try {
         const authUserId = await getDataFromToken(req);
+
+        if (!mongoose.Types.ObjectId.isValid(authUserId)) {
+            return res.status(401).json({ error: "Unauthorized user" });
+        }
+
         const authUser = await User.findById(authUserId)
-            .select("_id name role organizationId")
+            .select("_id name role")
             .lean();
 
         const marketingData = detectLeadSource(req);
@@ -447,11 +448,10 @@ export const addLead = async (req, res) => {
             pincode = "",
             academics = {},
             preferences = {},
-            marketing = {},
             ref_code,
         } = req.body || {};
 
-        /* ------------------ Basic Validation ------------------ */
+        /* ------------------ Validation ------------------ */
         if (!name || !email || !contact) {
             return res.status(400).json({
                 error: "Name, email and contact are required",
@@ -462,23 +462,20 @@ export const addLead = async (req, res) => {
         const sanitizedEmail = String(email).trim().toLowerCase();
         const sanitizedContact = String(contact).replace(/\s/g, "");
 
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const contactRegex = /^(\+91|0)?[6-9][0-9]{9}$/;
-
-        if (!emailRegex.test(sanitizedEmail)) {
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(sanitizedEmail)) {
             return res.status(400).json({ error: "Invalid email format" });
         }
 
-        if (!contactRegex.test(sanitizedContact)) {
+        if (!/^(\+91|0)?[6-9][0-9]{9}$/.test(sanitizedContact)) {
             return res.status(400).json({ error: "Invalid contact number" });
         }
 
         /* ------------------ Resolve Creator ------------------ */
-        let userId;
+        let userId = authUser._id;
 
         if (ref_code) {
             const refUser = await User.findOne({ ref_code })
-                .select("_id role organizationId")
+                .select("_id role")
                 .lean();
 
             if (!refUser || refUser.role !== "partner") {
@@ -488,25 +485,9 @@ export const addLead = async (req, res) => {
             }
 
             userId = refUser._id;
-        } else {
-            userId = await getDataFromToken(req);
         }
 
-        if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
-            return res.status(401).json({ error: "Unauthorized user" });
-        }
-
-        const user = await User.findById(userId)
-            .select("_id organizationId")
-            .lean();
-
-        if (!user?.organizationId) {
-            return res.status(403).json({
-                error: "Please create an organization before adding lead.",
-            });
-        }
-
-        /* ------------------ Duplicate Checks ------------------ */
+        /* ------------------ Duplicate Check ------------------ */
         const [emailExists, contactExists] = await Promise.all([
             Lead.exists({ email: sanitizedEmail }),
             Lead.exists({ contact: sanitizedContact }),
@@ -522,8 +503,8 @@ export const addLead = async (req, res) => {
 
         /* ------------------ Payload ------------------ */
         const leadPayload = {
-            organizationId: user.organizationId,
-            createdBy: user._id,
+            createdBy: userId,
+            assignedTo: null, // optional: can auto-assign later
 
             name: sanitizedName,
             email: sanitizedEmail,
@@ -543,17 +524,12 @@ export const addLead = async (req, res) => {
 
             preferences: {
                 courseName: preferences?.courseName?.trim() || undefined,
-                courseType: sanitizeEnum(
-                    preferences?.courseType,
-                    COURSE_TYPES
-                ),
+                courseType: sanitizeEnum(preferences?.courseType, COURSE_TYPES),
                 specialization: preferences?.specialization?.trim() || undefined,
                 preferredState: preferences?.preferredState?.trim() || undefined,
                 preferredCity: preferences?.preferredCity?.trim() || undefined,
-                collegeType: sanitizeEnum(
-                    preferences?.collegeType,
-                    COLLEGE_TYPES
-                ) || "Any",
+                collegeType:
+                    sanitizeEnum(preferences?.collegeType, COLLEGE_TYPES) || "Any",
             },
 
             marketing: marketingData,
@@ -564,8 +540,8 @@ export const addLead = async (req, res) => {
         /* ------------------ Create Lead ------------------ */
         const newLead = await Lead.create(leadPayload);
 
+        /* ------------------ Notification ------------------ */
         await notifyLeadCreated({
-            organizationId: user.organizationId,
             authUser,
             leadIds: [newLead._id],
             leadName: newLead.name
@@ -575,6 +551,7 @@ export const addLead = async (req, res) => {
             message: "Lead created successfully",
             lead: newLead,
         });
+
     } catch (err) {
         console.error("Add Lead Error:", err);
         return res.status(500).json({ error: "Internal server error" });
@@ -590,7 +567,7 @@ export const updateLead = async (req, res) => {
         }
 
         const actor = await User.findById(senderId)
-            .select("_id name role organizationId")
+            .select("_id name role")
             .lean();
 
         if (!actor) {
@@ -619,7 +596,6 @@ export const updateLead = async (req, res) => {
             pincode,
             academics,
             preferences
-            // ❌ removed: status, convertedBy, applicationDoneBy, courseId
         } = req.body;
 
         // ---------------- CORE FIELDS ----------------
@@ -890,7 +866,7 @@ export const deleteMultiLeads = async (req, res) => {
 export const addbulkLeads = async (req, res) => {
     try {
         const userId = await getDataFromToken(req);
-        const user = await User.findById(userId).select("_id organizationId role name");
+        const user = await User.findById(userId).select("_id role name");
         if (!user) return res.status(404).json({ error: "User not found." });
 
         if (!req.file) return res.status(400).json({ error: "No file uploaded." });
@@ -943,7 +919,6 @@ export const addbulkLeads = async (req, res) => {
 
         if (insertedLeads.length) {
             await notifyLeadCreated({
-                organizationId: user.organizationId,
                 authUser: user,
                 leadIds: insertedLeads.map(l => l._id)
             });
@@ -964,9 +939,8 @@ export const addbulkLeads = async (req, res) => {
 
 export const createPublicLead = async (req, res) => {
     try {
-        const { name, email, contact, course, ref_code, organizationId: payloadOrgId } = req.body || {};
+        const { name, email, contact, course, ref_code } = req.body || {};
 
-        // 🔒 Validation
         if (!name || !email || !contact) {
             return res.status(400).json({ error: "Required fields missing" });
         }
@@ -975,14 +949,11 @@ export const createPublicLead = async (req, res) => {
         const sanitizedEmail = String(email).trim().toLowerCase();
         const sanitizedContact = String(contact).replace(/\s/g, "");
 
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const contactRegex = /^(\+91|0)?[6-9][0-9]{9}$/;
-
-        if (!emailRegex.test(sanitizedEmail)) {
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(sanitizedEmail)) {
             return res.status(400).json({ error: "Invalid email" });
         }
 
-        if (!contactRegex.test(sanitizedContact)) {
+        if (!/^(\+91|0)?[6-9][0-9]{9}$/.test(sanitizedContact)) {
             return res.status(400).json({ error: "Invalid contact" });
         }
 
@@ -992,7 +963,7 @@ export const createPublicLead = async (req, res) => {
 
         if (ref_code) {
             user = await User.findOne({ ref_code, role: "partner" })
-                .select("_id name organizationId")
+                .select("_id name")
                 .lean();
 
             if (user) refApplied = true;
@@ -1010,47 +981,32 @@ export const createPublicLead = async (req, res) => {
             });
         }
 
-        /* ------------------ Resolve Organization ------------------ */
-        let organizationId = null;
+        /* ------------------ Resolve Owner ------------------ */
         let createdBy = null;
 
         if (refApplied && user) {
-            // ✅ Partner flow
-            organizationId = user.organizationId;
             createdBy = user._id;
-        } else if (payloadOrgId) {
-            // ✅ Fallback flow (expired or no ref)
-            if (!mongoose.Types.ObjectId.isValid(payloadOrgId)) {
-                return res.status(400).json({ error: "Invalid organizationId" });
-            }
-
-            organizationId = payloadOrgId;
-
-            // ✅ STRICT: fetch ONLY admin
-            const admin = await User.findOne({
-                organizationId,
-                role: "admin"
-            })
+        } else {
+            // fallback → assign to admin
+            const admin = await User.findOne({ role: "admin" })
                 .select("_id")
                 .lean();
 
-            if (!admin) {
-                return res.status(400).json({ error: "Admin not found for organization" });
-            }
-
-            createdBy = admin._id; // ✅ FIXED
+            createdBy = admin?._id || null;
         }
 
         /* ------------------ Create Lead ------------------ */
         const lead = await Lead.create({
-            organizationId,
             createdBy,
+            assignedTo: null,
+
             name: sanitizedName,
             email: sanitizedEmail,
             contact: sanitizedContact,
             preferences: {
                 courseName: course?.trim()
             },
+
             leadType: refApplied ? "partner" : "external",
             source: "external_form",
             lastActivity: new Date(),
@@ -1083,67 +1039,43 @@ export const addExternalLead = async (req, res) => {
             preferences = {},
             marketing = {},
             source = "external",
-            organizationId, // MUST be passed OR mapped
             property_id,
             course_id,
         } = req.body || {};
 
-        /* ------------------ VALIDATION ------------------ */
-        if (!name || !email || !contact || !organizationId) {
+        if (!name || !email || !contact) {
             return res.status(400).json({
-                error: "name, email, contact, organizationId are required",
+                error: "name, email, contact are required",
             });
         }
-
-        if (!mongoose.Types.ObjectId.isValid(organizationId)) {
-            return res.status(400).json({ error: "Invalid organizationId" });
-        }
-
-        const admin = await User.findOne({ organizationId });
-        const adminId = admin?._id;
 
         const sanitizedName = String(name).trim();
         const sanitizedEmail = String(email).trim().toLowerCase();
         const sanitizedContact = normalizeIndianPhone(contact);
 
         if (!sanitizedContact) {
-            return res.status(400).json({
-                error: "Invalid contact number",
-            });
-        }
-
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const contactRegex = /^(\+91|0)?[6-9][0-9]{9}$/;
-
-        if (!emailRegex.test(sanitizedEmail)) {
-            return res.status(400).json({ error: "Invalid email format" });
-        }
-
-        if (!contactRegex.test(sanitizedContact)) {
             return res.status(400).json({ error: "Invalid contact number" });
         }
 
-        /* ------------------ VERIFY ORGANIZATION ------------------ */
-        const orgUser = await User.findOne({ organizationId })
-            .select("_id organizationId")
-            .lean();
-
-        if (!orgUser) {
-            return res.status(404).json({
-                error: "Organization not found",
-            });
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(sanitizedEmail)) {
+            return res.status(400).json({ error: "Invalid email format" });
         }
 
-        /* ------------------ MARKETING SOURCE ------------------ */
+        /* ------------------ Resolve Owner ------------------ */
+        const admin = await User.findOne({ role: "admin" })
+            .select("_id")
+            .lean();
+
+        const adminId = admin?._id || null;
+
+        /* ------------------ Marketing ------------------ */
         const detectedMarketing = detectLeadSource(req);
 
-        /* ------------------ PAYLOAD ------------------ */
+        /* ------------------ Payload ------------------ */
         const leadPayload = {
-            organizationId,
             property_id,
             course_id,
 
-            // 🔥 IMPORTANT: external leads don't have auth user
             createdBy: adminId,
             assignedTo: null,
 
@@ -1176,22 +1108,20 @@ export const addExternalLead = async (req, res) => {
             marketing: {
                 ...detectedMarketing,
                 ...marketing,
-                source, // 🔥 external source tagging
+                source,
             },
 
             leadType: "external",
             isExternal: true,
-
             lastActivity: new Date(),
         };
 
-        /* ------------------ CREATE ------------------ */
+        /* ------------------ Create ------------------ */
         const newLead = await Lead.create(leadPayload);
 
-        /* ------------------ NOTIFICATION ------------------ */
+        /* ------------------ Notification ------------------ */
         await notifyLeadCreated({
-            organizationId,
-            authUser: null, // external
+            authUser: null,
             leadIds: [newLead._id],
             leadName: newLead.name,
         });
@@ -1201,6 +1131,7 @@ export const addExternalLead = async (req, res) => {
             message: "External lead created successfully",
             leadId: newLead._id,
         });
+
     } catch (err) {
         console.error("External Lead Error:", err);
         return res.status(500).json({ error: "Internal server error" });

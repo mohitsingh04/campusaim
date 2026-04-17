@@ -10,7 +10,6 @@ export const initSocket = (user) => {
             withCredentials: true,
             auth: {
                 userId: user._id,
-                organizationId: user.organizationId
             }
         });
 

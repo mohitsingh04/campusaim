@@ -8,7 +8,7 @@ export const getQuestionById = async (req, res) => {
     try {
         const { questionId } = req.params;
 
-        // Validate ObjectId to prevent malformed queries / injection
+        // ---------------- VALIDATION ----------------
         if (!mongoose.Types.ObjectId.isValid(questionId)) {
             return res.status(400).json({
                 success: false,
@@ -16,7 +16,7 @@ export const getQuestionById = async (req, res) => {
             });
         }
 
-        // Auth check
+        // ---------------- AUTH ----------------
         const userId = await getDataFromToken(req);
         if (!userId) {
             return res.status(401).json({
@@ -25,23 +25,8 @@ export const getQuestionById = async (req, res) => {
             });
         }
 
-        // Fetch user's organization securely (never trust client orgId)
-        const user = await User.findById(userId)
-            .select("organizationId")
-            .lean();
-
-        if (!user?.organizationId) {
-            return res.status(403).json({
-                success: false,
-                message: "Organization not found for user",
-            });
-        }
-
-        // Fetch only if question belongs to same organization (multi-tenant isolation)
-        const question = await Question.findOne({
-            _id: questionId,
-            organizationId: user.organizationId,
-        })
+        // ---------------- FETCH ----------------
+        const question = await Question.findById(questionId)
             .select("-__v")
             .lean();
 
@@ -65,22 +50,23 @@ export const getQuestionById = async (req, res) => {
     }
 };
 
-export const getQuestionsByOrganizationId = async (req, res) => {
+export const getQuestionsByNicheId = async (req, res) => {
     try {
-        const { organizationId } = req.params;
+        const { nicheId } = req.params;
 
-        if (!mongoose.Types.ObjectId.isValid(organizationId)) {
+        if (!mongoose.Types.ObjectId.isValid(nicheId)) {
             return res.status(400).json({
                 success: false,
-                message: "Invalid organization id"
+                message: "Invalid niche id"
             });
         }
 
-        const filter = { organizationId };
+        const filter = {
+            nicheId: new mongoose.Types.ObjectId(nicheId)
+        };
 
         const search = String(req.query.search || "").trim();
 
-        // Security: limit search length (DoS protection)
         if (search.length > 100) {
             return res.status(400).json({
                 success: false,
@@ -109,54 +95,10 @@ export const getQuestionsByOrganizationId = async (req, res) => {
         });
 
     } catch (error) {
-        console.error("getQuestionsByOrganizationId:", error);
-
+        console.error("getQuestionsByNicheId:", error);
         return res.status(500).json({
             success: false,
             message: "Failed to fetch questions"
-        });
-    }
-};
-
-export const getAddedQuestions = async (req, res) => {
-    try {
-        const { organizationId, nicheId } = req.query;
-
-        // ---------- Validation ----------
-        if (!organizationId || !nicheId) {
-            return res.status(400).json({
-                error: "organizationId and nicheId are required",
-            });
-        }
-
-        if (
-            !mongoose.Types.ObjectId.isValid(organizationId) ||
-            !mongoose.Types.ObjectId.isValid(nicheId)
-        ) {
-            return res.status(400).json({
-                error: "Invalid organizationId or nicheId",
-            });
-        }
-
-        // ---------- Query ----------
-        const questions = await Question.find(
-            {
-                organizationId: new mongoose.Types.ObjectId(organizationId),
-                nicheId: new mongoose.Types.ObjectId(nicheId),
-            },
-            { slug: 1, _id: 0 } // projection → only slug
-        )
-            .lean()
-            .exec();
-
-        // Transform to array of slugs
-        const slugs = questions.map((q) => q.slug);
-
-        return res.status(200).json(slugs);
-    } catch (error) {
-        console.error("getAddedQuestions error:", error);
-        return res.status(500).json({
-            error: "Failed to fetch added questions",
         });
     }
 };
@@ -170,34 +112,22 @@ export const addQuestions = async (req, res) => {
             return res.status(401).json({ success: false, message: "Unauthorized" });
         }
 
-        const user = await User.findById(userId).select("organizationId").lean();
-        if (!user?.organizationId) {
-            return res.status(403).json({
-                success: false,
-                message: "User is not associated with any organization",
-            });
-        }
-
-        const organizationId = user.organizationId;
-
         if (!mongoose.Types.ObjectId.isValid(nicheId)) {
-            return res.status(400).json({ success: false, message: "Invalid nicheId" });
+            return res.status(400).json({
+                success: false,
+                message: "Invalid nicheId"
+            });
         }
 
         if (!Array.isArray(questions) || questions.length === 0) {
             return res.status(400).json({
                 success: false,
-                message: "Questions array is required",
+                message: "Questions array is required"
             });
         }
 
-        /* -------------------------------------------------- */
-        /* Get current max order (per niche + org)            */
-        /* -------------------------------------------------- */
-        const lastQuestion = await Question.findOne({
-            nicheId,
-            organizationId,
-        })
+        /* ---------------- GET LAST ORDER ---------------- */
+        const lastQuestion = await Question.findOne({ nicheId })
             .sort({ order: -1 })
             .select("order")
             .lean();
@@ -212,46 +142,40 @@ export const addQuestions = async (req, res) => {
             if (!q.title || typeof q.title !== "string") {
                 return res.status(400).json({
                     success: false,
-                    message: `Invalid title at index ${index}`,
+                    message: `Invalid title at index ${index}`
                 });
             }
 
             if (!q.questionText || typeof q.questionText !== "string") {
                 return res.status(400).json({
                     success: false,
-                    message: `Invalid questionText at index ${index}`,
+                    message: `Invalid questionText at index ${index}`
                 });
             }
 
             if (!Array.isArray(q.options) || q.options.length < 2) {
                 return res.status(400).json({
                     success: false,
-                    message: `At least 2 options required at index ${index}`,
+                    message: `At least 2 options required at index ${index}`
                 });
             }
 
             const slug = generateSlug(q.title);
 
-            // Duplicate slug check
+            // ✅ DUPLICATE SLUG (per niche)
             const exists = await Question.exists({
                 nicheId,
-                organizationId,
-                slug,
+                slug
             });
 
             if (exists) {
                 return res.status(409).json({
                     success: false,
-                    message: `Question "${q.title}" already exists`,
+                    message: `Question "${q.title}" already exists`
                 });
             }
 
-            /* -------------------------------------------------- */
-            /* ORDER HANDLING (Frontend > Auto Increment)         */
-            /* -------------------------------------------------- */
-            /* -------------------------------------------------- */
-            /* ORDER HANDLING (Strict - No Reordering Allowed)    */
-            /* -------------------------------------------------- */
+            /* ---------------- ORDER HANDLING ---------------- */
             let finalOrder;
 
             if (Number.isInteger(q.order) && q.order > 0) {
@@ -259,25 +183,22 @@ export const addQuestions = async (req, res) => {
 
                 const orderExists = await Question.exists({
                     nicheId,
-                    organizationId,
-                    order: finalOrder,
+                    order: finalOrder
                 });
 
                 if (orderExists) {
                     return res.status(409).json({
                         success: false,
-                        message: `Order ${finalOrder} already exists. Please choose a different order.`,
+                        message: `Order ${finalOrder} already exists`,
                         conflictField: "order",
-                        conflictValue: finalOrder,
+                        conflictValue: finalOrder
                     });
                 }
             } else {
                 finalOrder = nextOrder++;
             }
 
-            /* -------------------------------------------------- */
-            /* Sanitize Options                                   */
-            /* -------------------------------------------------- */
+            /* ---------------- OPTIONS ---------------- */
             const finalOptions = q.options.map((opt, i) => {
                 if (!opt?.label || !opt?.value) {
                     throw new Error(`Invalid option at question ${index}, option ${i}`);
@@ -297,38 +218,38 @@ export const addQuestions = async (req, res) => {
 
             sanitizedQuestions.push({
                 nicheId,
-                organizationId,
-                order: finalOrder, // ⭐ USE FRONTEND OR AUTO
+                order: finalOrder,
                 title: q.title.trim(),
                 questionText: q.questionText.trim(),
                 slug,
                 options: finalOptions,
-                createdBy: userId,
+                createdBy: userId
             });
         }
 
         const inserted = await Question.insertMany(sanitizedQuestions, {
-            ordered: true,
+            ordered: true
         });
 
         return res.status(201).json({
             success: true,
             count: inserted.length,
-            data: inserted,
+            data: inserted
         });
+
     } catch (error) {
         console.error("addQuestions:", error);
 
         if (error.code === 11000) {
             return res.status(409).json({
                 success: false,
-                message: "Duplicate question order or slug conflict",
+                message: "Duplicate question order or slug conflict"
             });
         }
 
         return res.status(500).json({
             success: false,
-            message: error.message || "Failed to add questions",
+            message: error.message || "Failed to add questions"
         });
     }
 };
@@ -350,17 +271,6 @@ export const updateQuestions = async (req, res) => {
             return res.status(401).json({
                 success: false,
                 message: "Unauthorized",
-            });
-        }
-
-        const user = await User.findById(userId)
-            .select("organizationId")
-            .lean();
-
-        if (!user?.organizationId) {
-            return res.status(403).json({
-                success: false,
-                message: "Organization not found",
             });
         }
 
@@ -434,7 +344,6 @@ export const updateQuestions = async (req, res) => {
         const updated = await Question.findOneAndUpdate(
             {
                 _id: questionId,
-                organizationId: user.organizationId,
                 createdBy: userId,
             },
             { $set: updateData },

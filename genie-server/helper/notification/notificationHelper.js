@@ -2,16 +2,9 @@ import User from "../../models/userModel.js";
 import { createNotification } from "../../services/notification.service.js";
 
 // ---------------- Notify Lead has been added ---------------- //
-export const notifyLeadCreated = async ({
-    organizationId = null,
-    authUser,
-    leadIds,
-    leadName
-}) => {
+export const notifyLeadCreated = async ({ authUser, leadIds, leadName }) => {
     try {
-        // Fetch all admins in the organization to notify them
         const admins = await User.find({
-            organizationId,
             role: "admin"
         }).select("_id").lean();
 
@@ -32,7 +25,6 @@ export const notifyLeadCreated = async ({
         await Promise.all(
             admins.map(admin =>
                 createNotification({
-                    organizationId,
                     receiverId: admin._id, // Updated field name
                     senderId: authUser._id,
                     type: "lead_created",
@@ -53,12 +45,7 @@ export const notifyLeadCreated = async ({
 };
 
 // ---------------- Notify Lead was assigned ---------------- //
-export const notifyLeadAssignment = async ({
-    organizationId = null,
-    assignToUser,
-    authUser,
-    leadIds
-}) => {
+export const notifyLeadAssignment = async ({ assignToUser, authUser, leadIds }) => {
     try {
         const count = leadIds.length;
         const isMultiple = count > 1;
@@ -74,7 +61,6 @@ export const notifyLeadAssignment = async ({
             : `${authUser.name} (${authUser.role}) assigned a new lead to you.`;
 
         await createNotification({
-            organizationId,
             receiverId: assignToUser._id,
             senderId: authUser._id,
             type: "lead_assigned",
@@ -94,16 +80,10 @@ export const notifyLeadAssignment = async ({
 };
 
 // ---------------- Notity Counselor assigned to temaleader ---------------- //
-export const notifyCounselorAssignment = async ({
-    organizationId,
-    counselor,
-    teamLeader,
-    authUser
-}) => {
+export const notifyCounselorAssignment = async ({ counselor, teamLeader, authUser }) => {
     try {
         // 🔔 Notify the Team Leader
         await createNotification({
-            organizationId,
             receiverId: teamLeader._id,
             senderId: authUser._id,
             type: "team_member_added",
@@ -115,7 +95,6 @@ export const notifyCounselorAssignment = async ({
 
         // 🔔 Notify the Counselor
         await createNotification({
-            organizationId,
             receiverId: counselor._id,
             senderId: authUser._id,
             type: "counselor_assigned", // Using your existing enum type

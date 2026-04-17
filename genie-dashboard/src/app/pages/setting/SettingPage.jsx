@@ -5,7 +5,6 @@ import Security from "./security/Security.jsx";
 import Location from "./location/Location.jsx";
 import Documents from "./documents/Documents.jsx";
 import BankDetails from "./bank_details/BankDetails.jsx";
-import Organization from "./organization/Organization.jsx";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
 import Breadcrumbs from "../../components/ui/BreadCrumb/Breadcrumbs.jsx";
@@ -14,7 +13,6 @@ import Breadcrumbs from "../../components/ui/BreadCrumb/Breadcrumbs.jsx";
 
 const TAB_DEFS = {
   profile: { id: "profile", label: "Profile", icon: User },
-  organization: { id: "organization", label: "Organization", icon: Building2 },
   location: { id: "location", label: "Location", icon: Locate },
   documents: { id: "documents", label: "Documents", icon: FileText },
   bankDetails: { id: "bankDetails", label: "Bank Details", icon: DollarSign },
@@ -32,7 +30,6 @@ const ROLE_TABS = {
   ],
   admin: [
     TAB_DEFS.profile,
-    TAB_DEFS.organization,
     TAB_DEFS.location,
     TAB_DEFS.questions,
     TAB_DEFS.security,
@@ -93,8 +90,6 @@ function SettingPage() {
     switch (activeTab) {
       case "profile":
         return <Profile />;
-      case "organization":
-        return <Organization />;
       case "location":
         return <Location />;
       case "security":

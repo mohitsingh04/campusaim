@@ -40,7 +40,6 @@ import ViewSupport from "../../pages/support/ViewSupport";
 
 /* ===== SETTINGS & MORE ===== */
 import SettingPage from "../../pages/setting/SettingPage";
-// import OrganizationGuard from "../../components/common/OrganizationGuard/OrganizationGuard";
 import NotificationsPage from "../../pages/notification/NotificationsPage";
 import AssignedGoals from "../../pages/goals/AssignedGoals";
 import WithdrawRequest from "../../pages/incentive/WithdrawRequest";

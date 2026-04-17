@@ -68,7 +68,7 @@ export default function BecomeAPartner() {
                 <img src={Logo} alt="logo" className="h-16 mb-6" />
                 <h1 className="text-3xl font-bold mb-4">Partner Onboarding</h1>
                 <p className="text-lg text-blue-100 text-center max-w-md">
-                    Join the organization as a partner.
+                    Join as a partner.
                 </p>
                 <img
                     src={WelcomeImage}

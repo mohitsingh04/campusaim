@@ -10,7 +10,7 @@ import sharp from 'sharp';
 import { googleClient } from "../config/googleClient.js";
 import { createNotification } from "../services/notification.service.js";
 import { normalizeIndianPhone } from "../utils/normalizePhone.js";
-import Organization from "../models/Organization.js";
+import Niche from "../models/niche.js";
 
 const ensureDirectoryExistence = (dir) => {
     if (!fs.existsSync(dir)) {
@@ -128,12 +128,8 @@ export const googleAuth = async (req, res) => {
 
 export const register = async (req, res) => {
     try {
-        const organization = await Organization.findOne()
-            .select("_id organization_name nicheId")
-            .lean();
-
-        const organizationId = organization?._id;
-        const nicheId = organization?.nicheId;
+        const niche = await Niche.findOne();
+        const nicheId = niche?._id;
 
         const { name, email, contact, password } = req.body || {};
 
@@ -182,8 +178,7 @@ export const register = async (req, res) => {
 
         // ✅ Create user
         const user = await User.create({
-            organizationId: organizationId ? organizationId : null,
-            nicheId: nicheId ? nicheId : null,
+            nicheId: niche ? nicheId : null,
             name: String(name).trim(),
             email: normalizedEmail,
             contact: normalizedContact,
@@ -201,7 +196,6 @@ export const register = async (req, res) => {
                 await Promise.all(
                     superadmins.map((sa) =>
                         createNotification({
-                            organizationId: null,
                             receiverId: sa._id,
                             senderId: user._id,
                             type: "admin_registered",
@@ -226,7 +220,6 @@ export const register = async (req, res) => {
                 ? "Superadmin created successfully. Please verify your email."
                 : "Registered successfully. Please verify your email.",
         });
-
     } catch (error) {
         console.error("Register Error:", error);
         return res.status(500).json({
@@ -610,26 +603,13 @@ export const changePassword = async (req, res) => {
     }
 };
 
-// export const myProfile = async (req, res) => {
-//     try {
-//         const userId = await getDataFromToken(req);
-//         const user = await User.findOne({ _id: userId }).select("-password");
-//         if (!user) {
-//             return res.status(404).json({ error: "User not found" });
-//         }
-//         return res.status(200).json({ message: "User Found", data: user });
-//     } catch (error) {
-//         return res.status(500).json({ error: error.message });
-//     }
-// };
-
 export const myProfile = async (req, res) => {
     try {
         const userId = await getDataFromToken(req);
         if (!userId) return res.status(401).json({ error: "Unauthorized" });
 
         const user = await User.findById(userId)
-            .select("_id name email role ref_code organizationId profile_image nicheId contact bio provider")
+            .select("_id name email role ref_code profile_image nicheId contact bio provider")
             .lean();
 
         if (!user) return res.status(404).json({ error: "User not found" });

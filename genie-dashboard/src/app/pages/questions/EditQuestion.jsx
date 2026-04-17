@@ -41,20 +41,20 @@ export default function EditQuestion() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { authUser } = useAuth();
-  const organizationId = authUser?.organizationId;
+  const nicheId = authUser?.nicheId;
   const [isLoading, setIsLoading] = useState(true);
 
   const [initialValues, setInitialValues] = useState(null);
 
   /* ---------------- Fetch Question ---------------- */
   useEffect(() => {
-    if (!organizationId || !id) return;
+    if (!nicheId || !id) return;
 
     (async () => {
       try {
         setIsLoading(true);
         const res = await API.get(
-          `/questions/organization/${organizationId}`
+          `/questions/niche/${nicheId}`
         );
 
         const question = res.data?.data?.find((q) => q._id === id);
@@ -87,7 +87,7 @@ export default function EditQuestion() {
         setIsLoading(false);
       }
     })();
-  }, [id, organizationId, navigate]);
+  }, [id, nicheId, navigate]);
 
   // if (!initialValues) return null;
   if (isLoading) {

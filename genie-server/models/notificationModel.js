@@ -3,12 +3,6 @@ import { db } from "../mongoose/index.js";
 
 const notificationSchema = new mongoose.Schema(
     {
-        organizationId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "organization",
-            default: null,
-        },
-
         // The Recipient (User receiving the notification)
         receiverId: {
             type: mongoose.Schema.Types.ObjectId,

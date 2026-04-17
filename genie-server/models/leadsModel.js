@@ -160,12 +160,6 @@ const MarketingSchema = new Schema(
 /* -------------------------------------------------- */
 const LeadSchema = new Schema(
     {
-        organizationId: {
-            type: Schema.Types.ObjectId,
-            ref: "Organization",
-            default: null,
-        },
-
         teamLeader: {
             type: Schema.Types.ObjectId,
             ref: "User",

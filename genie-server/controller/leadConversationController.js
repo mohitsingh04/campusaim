@@ -35,7 +35,7 @@ export const addOrUpdateLeadConversation = async (req, res) => {
         }
 
         const user = await User.findById(userId)
-            .select("_id name role organizationId")
+            .select("_id name role")
             .lean();
 
         if (!user) {
@@ -91,7 +91,7 @@ export const addOrUpdateLeadConversation = async (req, res) => {
 
         // ---------------- FETCH LEAD ----------------
         const lead = await Lead.findById(lead_id)
-            .select("_id name assignedTo teamLeader organizationId status");
+            .select("_id name assignedTo teamLeader status");
 
         if (!lead) {
             return res.status(404).json({ error: "Lead not found." });
@@ -105,7 +105,6 @@ export const addOrUpdateLeadConversation = async (req, res) => {
 
         const admins = await User.find({
             role: { $in: ["admin", "superadmin"] },
-            organizationId: lead.organizationId
         }).select("_id").lean();
 
         admins.forEach(a => recipients.add(a._id.toString()));
@@ -290,7 +289,6 @@ export const addOrUpdateLeadConversation = async (req, res) => {
         if (recipientIds.length) {
             const payloads = recipientIds.map(uid =>
                 createNotification({
-                    organizationId: lead.organizationId,
                     receiverId: uid,
                     senderId: userId,
                     type: "lead_activity",

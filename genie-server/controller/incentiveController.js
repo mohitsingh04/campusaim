@@ -70,7 +70,7 @@ export const getIncentiveWithCourses = async (req, res) => {
 
         const incentive = await Incentive.findOne({ userId });
 
-        const { data } = await axios.get(`${process.env.CAMPUSAIM_MAIN_URL}/course`);
+        const { data } = await axios.get(`${process.env.CAMPUSAIM_MAIN_URL}/api/course`);
 
         const courses = data;
 

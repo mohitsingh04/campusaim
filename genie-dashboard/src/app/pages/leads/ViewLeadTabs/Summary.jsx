@@ -4,7 +4,7 @@ import { useAuth } from "../../../context/AuthContext";
 
 export default function Summary({ leadId }) {
     const { authUser } = useAuth();
-    const organizationId = authUser?.organizationId;
+    const nicheId = authUser?.nicheId;
 
     const [questions, setQuestions] = useState([]);
     const [conversation, setConversation] = useState(null);
@@ -18,13 +18,13 @@ export default function Summary({ leadId }) {
     /* Fetch Questions (normalize _id → id)               */
     /* -------------------------------------------------- */
     const fetchQuestions = useCallback(async () => {
-        if (!organizationId) return;
+        if (!nicheId) return;
 
         try {
             setLoadingQuestions(true);
 
             const response = await API.get(
-                `/questions/organization/${organizationId}`
+                `/questions/niche/${nicheId}`
             );
 
             const questionList = (response?.data?.data || []).map((q) => ({
@@ -43,7 +43,7 @@ export default function Summary({ leadId }) {
         } finally {
             setLoadingQuestions(false);
         }
-    }, [organizationId]);
+    }, [nicheId]);
 
     /* -------------------------------------------------- */
     /* Fetch Conversation                                 */

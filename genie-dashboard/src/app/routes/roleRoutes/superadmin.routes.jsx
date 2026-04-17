@@ -21,9 +21,6 @@ import ViewQuestionSet from "../../pages/questionSets/question-set/ViewQuestionS
 import AllSupport from "../../pages/support/AllSupport";
 import ViewSupport from "../../pages/support/ViewSupport";
 
-/* ===== ORGANIZATION ===== */
-import AllOrganization from "../../pages/organization/AllOrganization";
-
 /* ===== NOTIFICATION ===== */
 import NotificationsPage from "../../pages/notification/NotificationsPage";
 
@@ -58,9 +55,6 @@ export const superadminRoutes = [
     /* ===== SUPPORT ===== */
     { path: "support", element: <AllSupport /> },
     { path: "support/view/:id", element: <ViewSupport /> },
-
-    /* ===== ORGANIZATION ===== */
-    { path: "organizations", element: <AllOrganization /> },
     
     /* ===== NOTIFICATION ===== */
     { path: "notifications", element: <NotificationsPage /> },

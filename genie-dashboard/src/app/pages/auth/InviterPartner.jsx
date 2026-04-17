@@ -73,7 +73,7 @@ export default function InviterPartner() {
                 <img src={Logo} alt="logo" className="h-16 mb-6" />
                 <h1 className="text-3xl font-bold mb-4">Partner Onboarding</h1>
                 <p className="text-lg text-blue-100 text-center max-w-md">
-                    Join the organization as a partner using your secure invite link.
+                    Join as a partner using your secure invite link.
                 </p>
                 <img
                     src={WelcomeImage}

@@ -17,7 +17,6 @@ export const NAVIGATION = {
         { icon: Home, label: "Dashboard", path: "/dashboard" },
         { icon: Users, label: "Admins", path: "/dashboard/admins", activePrefix: "/dashboard/admins" },
         { icon: FileQuestion, label: "Niche", path: "/dashboard/niche/all", activePrefix: "/dashboard/niche" },
-        { icon: Building2, label: "Organizations", path: "/dashboard/organizations", activePrefix: "/dashboard/organizations" },
         {
             icon: HelpCircle,
             label: "Question Set",

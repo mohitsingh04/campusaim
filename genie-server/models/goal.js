@@ -7,12 +7,6 @@ const ProgressLogSchema = new mongoose.Schema({
 });
 
 const GoalSchema = new mongoose.Schema({
-    organizationId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "organization",
-        default: null,
-    },
-
     counselorId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
@@ -87,7 +81,6 @@ GoalSchema.pre("save", async function (next) {
         // ---------------- OVERLAP CHECK ----------------
         if (this.isNew) {
             const existing = await this.constructor.findOne({
-                organizationId: this.organizationId, // ✅ FIX
                 counselorId: this.counselorId,
                 goalType: this.goalType,
                 status: "active",

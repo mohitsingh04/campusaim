@@ -95,7 +95,6 @@ leadsRouter.post("/leads", authMiddleware, addLead);
 leadsRouter.post("/add/test/leads", createPublicLead);
 leadsRouter.post("/external/leads", addExternalLead);
 
-
 /* ================= USER-SCOPED LEADS ================= */
 
 // Leads of a specific user (admin / partner / teamleader)

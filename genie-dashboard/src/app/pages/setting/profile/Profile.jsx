@@ -5,15 +5,14 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useNavigate } from 'react-router-dom';
 import ProfileSkeleton from './ProfileSkeleton.jsx';
-import NotFound from "../../../assets/images/No_Image_Available.jpg";
 import Button from '../../../components/ui/Button/Button.jsx';
-import { Save } from 'lucide-react';
 import ProfileImageCropper from '../../../components/common/ImageCropper/ProfileImageCropper.jsx';
 import Avatar from '../../../components/common/Avatar/Avatar.jsx';
 import FormInput from '../../../components/ui/Form/FormInput.jsx';
 import { capitalizeWords } from '../../../utils/format.js';
 import FormPhoneInput from '../../../components/ui/Form/FormPhoneInput.jsx';
 import FormTextarea from '../../../components/ui/Form/FormTextarea.jsx';
+import Select from "react-select";
 
 const MAX_BIO = 2000;
 
@@ -22,18 +21,30 @@ function Profile() {
     const [authUser, setAuthUser] = useState(null);
     const [previewProfile, setPreviewProfile] = useState(null);
     const [cropImageSrc, setCropImageSrc] = useState(null);
+    const [niche, setNiche] = useState([]);
+
+    const getAuthUserData = async () => {
+        try {
+            const { data } = await API.get("/profile");
+            setAuthUser(data?.data);
+        } catch (error) {
+            toast.error(error.message || "Failed to fetch profile");
+        }
+    };
+
+    const fetchNiche = async () => {
+        try {
+            const { data } = await API.get("/niche/options");
+            setNiche(data?.data);
+        } catch (error) {
+            console.error(error)
+            toast.error("Something went wrong.");
+        }
+    };
 
     useEffect(() => {
-        const getAuthUserData = async () => {
-            try {
-                const { data } = await API.get("/profile");
-                setAuthUser(data?.data);
-            } catch (error) {
-                toast.error(error.message || "Failed to fetch profile");
-            }
-        };
-
         getAuthUserData();
+        fetchNiche();
     }, []);
 
     const validationSchema = Yup.object({
@@ -49,6 +60,7 @@ function Profile() {
             .transform(value => value.replace(/\s/g, ""))
             .matches(/^(\+91|0)?[6-9][0-9]{9}$/, "Please enter a valid Indian contact number"),
         bio: Yup.string().max(MAX_BIO, `Max ${MAX_BIO} characters`),
+        nicheId: Yup.string().required("Niche is required."),
     });
 
     const initialValues = {
@@ -56,6 +68,7 @@ function Profile() {
         name: authUser?.name || "",
         email: authUser?.email || "",
         contact: authUser?.contact || "",
+        nicheId: authUser?.nicheId ? String(authUser.nicheId) : "",
         bio: authUser?.bio || "",
     }
 
@@ -65,6 +78,7 @@ function Profile() {
         formData.append("name", values.name);
         formData.append("email", values.email);
         formData.append("contact", values.contact);
+        formData.append("nicheId", values.nicheId);
         formData.append("bio", values.bio);
         formData.append("profile_image", values.profile_image);
 
@@ -198,6 +212,26 @@ function Profile() {
                                 formik={formik}
                                 disabled={!!authUser?.contact}
                             />
+
+                            <div className="flex flex-col gap-1">
+                                <label className="text-sm font-medium text-gray-700">Niche</label>
+                                <Select
+                                    name="nicheId"
+                                    options={niche?.map(n => ({ value: n.id || n._id, label: n.name }))}
+                                    value={niche
+                                        ?.map(n => ({ value: n.id || n._id, label: n.name }))
+                                        .find(option => String(option.value) === String(formik.values.nicheId)) || null
+                                    }
+                                    onChange={(option) => formik.setFieldValue("nicheId", option ? option.value : "")}
+                                    onBlur={() => formik.setFieldTouched("nicheId", true)}
+                                    placeholder="Select a niche"
+                                    classNamePrefix="react-select"
+                                    className={formik.touched.nicheId && formik.errors.nicheId ? "border border-red-500 rounded" : ""}
+                                />
+                                {formik.touched.nicheId && formik.errors.nicheId && (
+                                    <span className="text-red-500 text-xs">{formik.errors.nicheId}</span>
+                                )}
+                            </div>
                         </div>
 
                         {/* Bio */}

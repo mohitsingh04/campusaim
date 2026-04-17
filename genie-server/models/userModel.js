@@ -2,12 +2,6 @@ import mongoose from "mongoose";
 import { db } from "../mongoose/index.js";
 
 const userSchema = new mongoose.Schema({
-    organizationId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "organization",
-        default: null,
-    },
-
     nicheId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "niche",

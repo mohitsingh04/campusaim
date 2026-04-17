@@ -24,9 +24,9 @@ const ITEMS_PER_PAGE = 10;
 /* =============================
    API FETCH (NO PAGINATION)
 ============================= */
-const fetchQuestions = async ({ organizationId }) => {
+const fetchQuestions = async ({ nicheId }) => {
     try {
-        const res = await API.get(`/questions/organization/${organizationId}`);
+        const res = await API.get(`/questions/niche/${nicheId}`);
         return res.data;
     } catch (error) {
         throw new Error(error?.response?.data?.message || "Failed to fetch");
@@ -37,7 +37,7 @@ export default function QuestionList() {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const { authUser } = useAuth();
-    const organizationId = authUser?.organizationId;
+    const nicheId = authUser?.nicheId;
 
     const [searchTerm, setSearchTerm] = useState("");
     const [selected, setSelected] = useState(new Set());
@@ -62,9 +62,9 @@ export default function QuestionList() {
        FETCH DATA
     ============================= */
     const { data, isLoading } = useQuery({
-        queryKey: ["questions", organizationId],
-        queryFn: () => fetchQuestions({ organizationId }),
-        enabled: !!organizationId,
+        queryKey: ["questions", nicheId],
+        queryFn: () => fetchQuestions({ nicheId }),
+        enabled: !!nicheId,
         staleTime: 1000 * 60 * 5
     });
 
@@ -179,7 +179,7 @@ export default function QuestionList() {
             toast.success("Deleted");
 
             queryClient.invalidateQueries({
-                queryKey: ["questions", organizationId]
+                queryKey: ["questions", nicheId]
             });
 
         } catch {
@@ -208,7 +208,7 @@ export default function QuestionList() {
             setSelected(new Set());
 
             queryClient.invalidateQueries({
-                queryKey: ["questions", organizationId]
+                queryKey: ["questions", nicheId]
             });
 
         } catch {
@@ -294,8 +294,8 @@ export default function QuestionList() {
         }
     ], [navigate]);
 
-    if (!organizationId) {
-        return <p>Add Organization first.</p>
+    if (!nicheId) {
+        return <p>Add Niche first.</p>
     }
 
     return (

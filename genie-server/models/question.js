@@ -49,12 +49,6 @@ const QuestionSchema = new mongoose.Schema(
             required: true,
         },
 
-        organizationId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "organization",
-            default: null,
-        },
-
         order: {
             type: Number,
             required: true,

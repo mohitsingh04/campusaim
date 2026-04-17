@@ -106,8 +106,6 @@ export default function AdminDashboard() {
   const [range, setRange] = useState("30d");
   const [isZoomed, setIsZoomed] = useState(false);
   const { authUser } = useAuth();
-  const organizationId =
-    authUser?.organizationId || authUser?.organzationId;
 
   /* ---------------- FETCH DASHBOARD ---------------- */
   const { data, isLoading, isError } = useQuery({
@@ -115,7 +113,7 @@ export default function AdminDashboard() {
     queryFn: () => fetchAdminDashboard(range),
 
     // ✅ THIS FIXES YOUR ERROR
-    enabled: !!organizationId,
+    enabled: !!authUser,
 
     staleTime: 1000 * 60 * 5,
     placeholderData: keepPreviousData,
@@ -400,10 +398,6 @@ export default function AdminDashboard() {
       },
     },
   };
-
-  if (!organizationId) {
-    return null; // OrganizationGuard will handle modal
-  }
 
   return (
     <div className="space-y-6">

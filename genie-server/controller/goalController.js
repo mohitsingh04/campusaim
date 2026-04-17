@@ -100,7 +100,7 @@ export const getAssignedGoals = async (req, res) => {
         }
 
         const user = await User.findById(userId)
-            .select("_id role organizationId")
+            .select("_id role")
             .lean();
 
         if (!user || !["admin", "teamleader", "superadmin"].includes(user.role)) {
@@ -120,12 +120,29 @@ export const getAssignedGoals = async (req, res) => {
         const searchRegex = new RegExp(search, "i");
 
         // ---------------- MATCH ----------------
-        const matchStage = {
-            organizationId: user.organizationId
-        };
+        const matchStage = {};
+
+        // 👉 ROLE-BASED ACCESS CONTROL
+        if (user.role === "teamleader") {
+            // Only goals assigned by this TL OR to their counselors
+            const counselors = await User.find({
+                role: "counselor",
+                teamLeader: user._id
+            }).select("_id").lean();
+
+            const counselorIds = counselors.map(c => c._id);
+
+            matchStage.$or = [
+                { assignedBy: user._id },
+                { counselorId: { $in: counselorIds } }
+            ];
+        }
+
+        // admin / superadmin → see all (no restriction)
 
         if (status) matchStage.status = status;
         if (goalType) matchStage.goalType = goalType;
+
         if (counselorId && mongoose.Types.ObjectId.isValid(counselorId)) {
             matchStage.counselorId = new mongoose.Types.ObjectId(counselorId);
         }
@@ -164,7 +181,7 @@ export const getAssignedGoals = async (req, res) => {
                         { "counselorId.name": searchRegex },
                         { "counselorId.email": searchRegex },
                         { "assignedBy.name": searchRegex },
-                        { "goalType": searchRegex }
+                        { goalType: searchRegex }
                     ]
                 }
             }] : []),
@@ -216,15 +233,23 @@ export const assignGoal = async (req, res) => {
     try {
         const userId = await getDataFromToken(req);
 
-        const user = await User.findById(userId).select("_id name role organizationId");
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            return res.status(401).json({
+                success: false,
+                message: "Unauthorized"
+            });
+        }
+
+        const user = await User.findById(userId)
+            .select("_id name role")
+            .lean();
+
         if (!user || !["admin", "teamleader"].includes(user.role)) {
             return res.status(403).json({
                 success: false,
                 message: "Unauthorized"
             });
         }
-
-        const orgId = user.organizationId;
 
         const {
             counselorId,
@@ -234,7 +259,7 @@ export const assignGoal = async (req, res) => {
             goals
         } = req.body;
 
-        // ✅ Basic validation
+        // ---------------- VALIDATION ----------------
         if (
             !mongoose.Types.ObjectId.isValid(counselorId) ||
             !goalPeriod ||
@@ -259,8 +284,11 @@ export const assignGoal = async (req, res) => {
             });
         }
 
-        // ✅ Validate counselor
-        const counselor = await User.findById(counselorId).select("role");
+        // ---------------- VALIDATE COUNSELOR ----------------
+        const counselor = await User.findById(counselorId)
+            .select("_id role teamLeader")
+            .lean();
+
         if (!counselor || counselor.role !== "counselor") {
             return res.status(400).json({
                 success: false,
@@ -268,21 +296,30 @@ export const assignGoal = async (req, res) => {
             });
         }
 
+        // 🔐 TEAMLEADER RESTRICTION (IMPORTANT)
+        if (
+            user.role === "teamleader" &&
+            counselor.teamLeader?.toString() !== user._id.toString()
+        ) {
+            return res.status(403).json({
+                success: false,
+                message: "You can only assign goals to your counselors"
+            });
+        }
+
         const createdGoals = [];
 
-        // ✅ Loop through goals
+        // ---------------- LOOP ----------------
         for (const item of goals) {
             const { goalType, targetValue } = item;
 
-            // Skip invalid entries safely
             if (!goalType || !targetValue || Number(targetValue) <= 0) continue;
 
-            // ✅ Overlap check (per goalType)
+            // ✅ OVERLAP CHECK (NO ORG)
             const overlap = await Goal.findOne({
-                organizationId: orgId,
                 counselorId,
                 goalType,
-                status: { $in: ["active", "not_started"] }, // ✅ FIX
+                status: { $in: ["active", "not_started"] },
                 startDate: { $lte: end },
                 endDate: { $gte: start }
             });
@@ -290,24 +327,19 @@ export const assignGoal = async (req, res) => {
             if (overlap) {
                 return res.status(400).json({
                     success: false,
-                    message: "This goal is already exists for this period"
+                    message: "This goal already exists for this period"
                 });
             }
 
-            // ✅ Create goal
+            // ---------------- STATUS LOGIC ----------------
             const now = new Date();
 
-            // decide status at creation time
             let status = "active";
+            if (start > now) status = "not_started";
+            else if (end < now) status = "expired";
 
-            if (start > now) {
-                status = "not_started";
-            } else if (end < now) {
-                status = "expired";
-            }
-
+            // ---------------- CREATE ----------------
             const goal = await Goal.create({
-                organizationId: orgId,
                 counselorId,
                 assignedBy: userId,
                 goalType,
@@ -315,13 +347,12 @@ export const assignGoal = async (req, res) => {
                 targetValue: Number(targetValue),
                 startDate: start,
                 endDate: end,
-                status // ✅ FIX
+                status
             });
 
             createdGoals.push(goal);
         }
 
-        // ❗ Safety: if nothing created
         if (createdGoals.length === 0) {
             return res.status(400).json({
                 success: false,
@@ -329,9 +360,8 @@ export const assignGoal = async (req, res) => {
             });
         }
 
-        // ✅ Notification (supports multiple goals)
-        createNotification({
-            organizationId: orgId || null,
+        // ---------------- NOTIFICATION ----------------
+        await createNotification({
             receiverId: counselorId,
             senderId: userId,
             type: "assigned_goal",

@@ -39,10 +39,8 @@ export const initSocket = (server) => {
         console.log("WS Connected:", socket.id);
 
         const userId = socket.handshake.auth?.userId;
-        const orgId = socket.handshake.auth?.organizationId;
 
-        if (userId) socket.join(userId);         // personal room
-        if (orgId) socket.join(orgId);           // org room
+        if (userId) socket.join(userId);
 
         socket.on("disconnect", () => {
             console.log("WS Disconnected:", socket.id);

@@ -241,21 +241,14 @@ export const getAdminDashboard = async (req, res) => {
         }
 
         const admin = await User.findById(adminId)
-            .select("organizationId")
+            .select("_id role")
             .lean();
 
-        if (!admin) {
-            return res.status(404).json({ message: "Admin not found" });
+        if (!admin || admin.role !== "admin") {
+            return res.status(403).json({ message: "Access denied" });
         }
 
-        if (!admin.organizationId) {
-            return res.status(400).json({ message: "Organization not found" });
-        }
-
-        const orgId = new mongoose.Types.ObjectId(admin.organizationId);
-
-        /* ---------- DATE RANGES ---------- */
-
+        /* ---------- DATE RANGE ---------- */
         let start, end;
         try {
             ({ start, end } = getDateRange(req.query));
@@ -263,142 +256,68 @@ export const getAdminDashboard = async (req, res) => {
             return res.status(400).json({ message: err.message });
         }
 
-        const todayStart = new Date();
-        todayStart.setHours(0, 0, 0, 0);
+        const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
+        const todayEnd = new Date(); todayEnd.setHours(23, 59, 59, 999);
 
-        const todayEnd = new Date();
-        todayEnd.setHours(23, 59, 59, 999);
-
-        const activeSince = new Date();
-        activeSince.setDate(activeSince.getDate() - 7);
-
-        const staleThreshold = new Date();
-        staleThreshold.setDate(staleThreshold.getDate() - 7);
+        const activeSince = new Date(); activeSince.setDate(activeSince.getDate() - 7);
+        const staleThreshold = new Date(); staleThreshold.setDate(staleThreshold.getDate() - 7);
 
         /* ---------- PARALLEL QUERIES ---------- */
-
         const [
-            // TEAM TOTAL
-            partners,
-            teamLeaders,
-            counselors,
-
-            // TEAM ACTIVE
-            activePartners,
-            activeTeamLeaders,
-            activeCounselors,
-
-            // LEADS (RANGE)
-            totalLeads,
-            newLeads,
-            convertedLeads,
-            contactedLeads,
-            lostLeads,
-
-            // LEADS (TODAY)
+            partners, teamLeaders, counselors,
+            activePartners, activeTeamLeaders, activeCounselors,
+            totalLeads, newLeads, convertedLeads, contactedLeads, lostLeads,
             todayLeads,
-
-            // ALERTS
-            unassignedLeads,
-            staleLeads,
-
-            // PIPELINE
-            pipelineLeads,
-            assignedLeads,
-
-            // FOLLOWUPS (RAW)
-            followUpsTodayRaw,
+            unassignedLeads, staleLeads,
+            pipelineLeads, assignedLeads,
+            followUpsTodayRaw
         ] = await Promise.all([
-            /* ---------- TEAM TOTAL ---------- */
-            // Partners
-            User.countDocuments({ role: "partner", organizationId: orgId }),
-            // Team Leaders
-            User.countDocuments({ role: "teamleader", organizationId: orgId }),
-            // Counselors
-            User.countDocuments({ role: "counselor", organizationId: orgId }),
 
-            /* ---------- TEAM ACTIVE ---------- */
-            // Active Partners            
+            /* TEAM */
+            User.countDocuments({ role: "partner" }),
+            User.countDocuments({ role: "teamleader" }),
+            User.countDocuments({ role: "counselor" }),
+
+            /* ACTIVE */
             User.countDocuments({
                 role: "partner",
-                organizationId: orgId,
                 $or: [
                     { lastLoginAt: { $gte: activeSince } },
-                    { updatedAt: { $gte: activeSince } },
-                ],
+                    { updatedAt: { $gte: activeSince } }
+                ]
             }),
-            // Active TeamLeaders
             User.countDocuments({
                 role: "teamleader",
-                organizationId: orgId,
                 $or: [
                     { lastLoginAt: { $gte: activeSince } },
-                    { updatedAt: { $gte: activeSince } },
-                ],
+                    { updatedAt: { $gte: activeSince } }
+                ]
             }),
-            // Active Counselors
             User.countDocuments({
                 role: "counselor",
-                organizationId: orgId,
                 $or: [
                     { lastLoginAt: { $gte: activeSince } },
-                    { updatedAt: { $gte: activeSince } },
-                ],
+                    { updatedAt: { $gte: activeSince } }
+                ]
             }),
 
-            /* ---------- LEADS (RANGE) ---------- */
-            // Total Leads            
-            Lead.countDocuments({
-                organizationId: orgId,
-                createdAt: { $gte: start, $lte: end },
-            }),
+            /* LEADS */
+            Lead.countDocuments({ createdAt: { $gte: start, $lte: end } }),
+            Lead.countDocuments({ status: "new", createdAt: { $gte: start, $lte: end } }),
+            Lead.countDocuments({ status: "converted", createdAt: { $gte: start, $lte: end } }),
+            Lead.countDocuments({ status: "contacted", createdAt: { $gte: start, $lte: end } }),
+            Lead.countDocuments({ status: "lost", createdAt: { $gte: start, $lte: end } }),
 
-            // New Leads
-            Lead.countDocuments({
-                organizationId: orgId,
-                status: "new",
-                createdAt: { $gte: start, $lte: end },
-            }),
+            /* TODAY */
+            Lead.countDocuments({ createdAt: { $gte: todayStart, $lte: todayEnd } }),
 
-            // Converted Leads            
+            /* ALERTS */
             Lead.countDocuments({
-                organizationId: orgId,
-                status: "converted",
-                createdAt: { $gte: start, $lte: end },
-            }),
-
-            // Contacted Leads
-            Lead.countDocuments({
-                organizationId: orgId,
-                status: "contacted",
-                createdAt: { $gte: start, $lte: end }
-            }),
-
-            // Lost Leads
-            Lead.countDocuments({
-                organizationId: orgId,
-                status: "lost",
-                createdAt: { $gte: start, $lte: end }
-            }),
-
-            /* ---------- LEADS (TODAY) ---------- */
-            // Today Leads            
-            Lead.countDocuments({
-                organizationId: orgId,
-                createdAt: { $gte: todayStart, $lte: todayEnd },
-            }),
-
-            /* ---------- ALERTS ---------- */
-            // Unassigned Leads
-            Lead.countDocuments({
-                organizationId: orgId,
                 $or: [{ assignedTo: null }, { assignedTo: { $exists: false } }],
-                status: { $nin: ["converted", "contacted", "lost"] },
+                status: { $nin: ["converted", "contacted", "lost"] }
             }),
 
-            // Stale Leads
             Lead.countDocuments({
-                organizationId: orgId,
                 status: { $nin: ["converted", "lost"] },
                 $or: [
                     { lastActivity: { $lt: staleThreshold } },
@@ -406,38 +325,28 @@ export const getAdminDashboard = async (req, res) => {
                 ]
             }),
 
-            /* ---------- PIPELINE ---------- */
-            // Pipeline Leads
+            /* PIPELINE */
             Lead.countDocuments({
-                organizationId: orgId,
-                status: { $nin: ["converted", "lost"] },
+                status: { $nin: ["converted", "lost"] }
             }),
 
-            // Assigned Leads
             Lead.countDocuments({
-                organizationId: orgId,
                 assignedTo: { $ne: null },
-                createdAt: { $gte: start, $lte: end }, // ✅ FIX
+                createdAt: { $gte: start, $lte: end }
             }),
 
-            /* ---------- FOLLOWUPS (WITH STATUS FILTER) ---------- */
-            // FOLLOWUPS
+            /* FOLLOWUPS */
             db.collection("leadconversations").aggregate([
-                // 1. Expand sessions array
                 { $unwind: "$sessions" },
-
-                // 2. Match today's follow-ups
                 {
                     $match: {
                         "sessions.next_follow_up_date": {
                             $gte: todayStart,
                             $lte: todayEnd,
                         },
-                        "sessions.follow_up_completed": false // ✅ CRITICAL FIX
+                        "sessions.follow_up_completed": false
                     },
                 },
-
-                // 3. Join with leads
                 {
                     $lookup: {
                         from: "leads",
@@ -446,35 +355,20 @@ export const getAdminDashboard = async (req, res) => {
                         as: "lead",
                     },
                 },
-
                 { $unwind: "$lead" },
-
-                // 4. Filter active leads only
                 {
                     $match: {
-                        "lead.organizationId": orgId,
-                        "lead.status": { $nin: ["converted", "lost"] },
+                        "lead.status": { $nin: ["converted", "lost"] }
                     },
                 },
-
-                // 5. OPTIONAL (recommended) → unique leads
-                {
-                    $group: {
-                        _id: "$lead_id",
-                    },
-                },
-
-                // 6. Count
+                { $group: { _id: "$lead_id" } },
                 { $count: "count" },
-            ]).toArray(),
+            ]).toArray()
         ]);
-
-        /* ---------- SAFE EXTRACTION ---------- */
 
         const followUpsToday = followUpsTodayRaw[0]?.count || 0;
 
-        /* ---------- PERFORMANCE ---------- */
-
+        /* PERFORMANCE */
         const conversionRate = totalLeads
             ? Number(((convertedLeads / totalLeads) * 100).toFixed(2))
             : 0;
@@ -483,14 +377,9 @@ export const getAdminDashboard = async (req, res) => {
             ? Number(((assignedLeads / totalLeads) * 100).toFixed(2))
             : 0;
 
-        /* ---------------- TREND ---------------- */
+        /* TREND */
         const trendRaw = await Lead.aggregate([
-            {
-                $match: {
-                    organizationId: orgId,
-                    createdAt: { $gte: start, $lte: end }
-                }
-            },
+            { $match: { createdAt: { $gte: start, $lte: end } } },
             {
                 $group: {
                     _id: {
@@ -512,17 +401,12 @@ export const getAdminDashboard = async (req, res) => {
 
         while (cur <= end) {
             const d = cur.toLocaleDateString("en-CA");
-            trends.push({
-                date: d,
-                count: map.get(d) || 0
-            });
+            trends.push({ date: d, count: map.get(d) || 0 });
             cur.setDate(cur.getDate() + 1);
         }
 
-        /* ---------- RESPONSE ---------- */
         return res.status(200).json({
             success: true,
-
             range: { start, end },
 
             team: {
@@ -536,10 +420,8 @@ export const getAdminDashboard = async (req, res) => {
 
             leads: {
                 total: totalLeads,
-
                 new: newLeads,
                 addedToday: todayLeads,
-
                 converted: convertedLeads,
                 contacted: contactedLeads,
                 lost: lostLeads,
@@ -559,9 +441,9 @@ export const getAdminDashboard = async (req, res) => {
 
             trends,
         });
+
     } catch (error) {
         console.error("Admin dashboard error:", error);
-
         return res.status(500).json({
             success: false,
             message: "Internal Server Error",
@@ -574,13 +456,12 @@ export const getCounselorDashboard = async (req, res) => {
     try {
         const counselorId = await getDataFromToken(req);
 
-        // ---------------- VALIDATION ----------------
         if (!mongoose.Types.ObjectId.isValid(counselorId)) {
             return res.status(400).json({ message: "Invalid user token" });
         }
 
         const counselor = await User.findById(counselorId)
-            .select("_id role organizationId")
+            .select("_id role")
             .lean();
 
         if (!counselor) {
@@ -591,25 +472,17 @@ export const getCounselorDashboard = async (req, res) => {
             return res.status(403).json({ message: "Access denied" });
         }
 
-        if (!counselor.organizationId) {
-            return res.status(400).json({ message: "Organization context missing" });
-        }
-
-        const orgId = new mongoose.Types.ObjectId(counselor.organizationId);
         const userId = new mongoose.Types.ObjectId(counselor._id);
 
         const { start, end } = getDateRange(req.query);
 
-        const startOfToday = new Date();
-        startOfToday.setUTCHours(0, 0, 0, 0);
-
-        const endOfToday = new Date();
-        endOfToday.setUTCHours(23, 59, 59, 999);
+        const startOfToday = new Date(); startOfToday.setUTCHours(0, 0, 0, 0);
+        const endOfToday = new Date(); endOfToday.setUTCHours(23, 59, 59, 999);
 
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
 
-        // ---------------- BASE FILTER (SINGLE SOURCE OF TRUTH) ----------------
+        /* ---------------- OWNERSHIP FILTER ---------------- */
         const ownershipMatch = {
             $or: [
                 { assignedTo: userId },
@@ -618,14 +491,12 @@ export const getCounselorDashboard = async (req, res) => {
         };
 
         const baseFilter = {
-            organizationId: orgId,
             ...ownershipMatch
         };
 
         const [result] = await Lead.aggregate([
             { $match: baseFilter },
 
-            // 🔗 Join Conversations
             {
                 $lookup: {
                     from: "leadconversations",
@@ -644,10 +515,8 @@ export const getCounselorDashboard = async (req, res) => {
 
             {
                 $facet: {
-                    // ✅ TOTAL LEADS
                     totalLeads: [{ $count: "count" }],
 
-                    // ✅ TOTAL ASSIGNED LEADS (for UI only)
                     totalAssignedLeads: [
                         {
                             $match: {
@@ -658,13 +527,11 @@ export const getCounselorDashboard = async (req, res) => {
                         { $count: "count" }
                     ],
 
-                    // ✅ TOTAL ADDED LEADS
                     totalAddedLeads: [
                         { $match: { createdBy: userId } },
                         { $count: "count" }
                     ],
 
-                    // 📊 FUNNEL
                     statusFunnel: [
                         {
                             $group: {
@@ -674,7 +541,6 @@ export const getCounselorDashboard = async (req, res) => {
                         }
                     ],
 
-                    // 🔔 FOLLOW UPS TODAY
                     followUpsToday: [
                         {
                             $match: {
@@ -696,7 +562,6 @@ export const getCounselorDashboard = async (req, res) => {
                         { $limit: 5 }
                     ],
 
-                    // ⏭ UPCOMING FOLLOW UPS (FIXED)
                     upcomingFollowUps: [
                         {
                             $match: {
@@ -718,7 +583,6 @@ export const getCounselorDashboard = async (req, res) => {
                         { $limit: 5 }
                     ],
 
-                    // ❌ MISSED FOLLOW UPS
                     missedFollowUps: [
                         {
                             $match: {
@@ -729,7 +593,6 @@ export const getCounselorDashboard = async (req, res) => {
                         { $count: "count" }
                     ],
 
-                    // 🆕 NEW LEADS
                     newAssignedLeads: [
                         {
                             $match: {
@@ -747,7 +610,6 @@ export const getCounselorDashboard = async (req, res) => {
                         { $limit: 5 }
                     ],
 
-                    // 📋 LEADS TABLE
                     assignedLeads: [
                         { $sort: { createdAt: -1 } },
                         {
@@ -761,7 +623,6 @@ export const getCounselorDashboard = async (req, res) => {
                         { $limit: 5 }
                     ],
 
-                    // 🕒 ACTIVITY
                     activities: [
                         { $sort: { updatedAt: -1 } },
                         {
@@ -779,7 +640,6 @@ export const getCounselorDashboard = async (req, res) => {
                         { $limit: 5 }
                     ],
 
-                    // 🧊 STALE LEADS (FIXED)
                     staleLeads: [
                         {
                             $match: {
@@ -791,7 +651,6 @@ export const getCounselorDashboard = async (req, res) => {
                         { $count: "count" }
                     ],
 
-                    // 🎯 CONVERTED (FIXED)
                     convertedLeads: [
                         {
                             $match: {
@@ -803,7 +662,6 @@ export const getCounselorDashboard = async (req, res) => {
                         { $count: "count" }
                     ],
 
-                    // 🎯 CONTACTED (FIXED)
                     contactedLeads: [
                         {
                             $match: {
@@ -818,7 +676,6 @@ export const getCounselorDashboard = async (req, res) => {
             }
         ]);
 
-        // ---------------- SAFE EXTRACTION ----------------
         const totalLeads = result?.totalLeads?.[0]?.count || 0;
         const totalAssignedLeads = result?.totalAssignedLeads?.[0]?.count || 0;
         const totalAddedLeads = result?.totalAddedLeads?.[0]?.count || 0;
@@ -827,13 +684,7 @@ export const getCounselorDashboard = async (req, res) => {
         const staleLeads = result?.staleLeads?.[0]?.count || 0;
         const convertedLeads = result?.convertedLeads?.[0]?.count || 0;
 
-        // ---------------- FUNNEL MAP ----------------
-        const funnelMap = {
-            new: 0,
-            contacted: 0,
-            converted: 0,
-            lost: 0
-        };
+        const funnelMap = { new: 0, contacted: 0, converted: 0, lost: 0 };
 
         (result?.statusFunnel || []).forEach((s) => {
             if (funnelMap[s._id] !== undefined) {
@@ -841,21 +692,13 @@ export const getCounselorDashboard = async (req, res) => {
             }
         });
 
-        // ---------------- METRICS ----------------
         const conversionRate = totalLeads
             ? Number(((convertedLeads / totalLeads) * 100).toFixed(2))
             : 0;
 
-        const performance = {
-            callsToday: result?.followUpsToday?.length || 0,
-            conversionRate,
-            missedFollowUps
-        };
-
-        // ---------------- RESPONSE ----------------
         return res.status(200).json({
             success: true,
-            totalLeads, // ✅ added
+            totalLeads,
             totalAssignedLeads,
             totalAddedLeads,
             followUpsToday: result?.followUpsToday || [],
@@ -868,7 +711,11 @@ export const getCounselorDashboard = async (req, res) => {
                 missedFollowUps,
                 staleLeads
             },
-            performance
+            performance: {
+                callsToday: result?.followUpsToday?.length || 0,
+                conversionRate,
+                missedFollowUps
+            }
         });
 
     } catch (error) {
@@ -887,43 +734,29 @@ export const getPartnerDashboard = async (req, res) => {
         }
 
         const partner = await User.findById(partnerId)
-            .select("_id role organizationId")
+            .select("_id role")
             .lean();
 
         if (!partner || partner.role !== "partner") {
             return res.status(403).json({ message: "Access denied or user not found" });
         }
 
-        if (!partner.organizationId) {
-            return res.status(400).json({ message: "Organization context missing" });
-        }
-
-        const orgId = new mongoose.Types.ObjectId(partner.organizationId);
         const userId = new mongoose.Types.ObjectId(partner._id);
 
-        // 2. Extract date range from query parameters
         const { start, end } = getDateRange(req.query);
 
-        /* -------------------------------------------------- */
-        /* Filter Architecture                                */
-        /* -------------------------------------------------- */
-
-        // BASE FILTER: Guarantees the partner only sees their own leads
+        /* ---------------- BASE FILTER ---------------- */
         const baseFilter = {
-            organizationId: orgId,
             leadType: "partner",
-            createdBy: userId
+            createdBy: userId // ✅ ownership only
         };
 
-        // RANGE FILTER: Applies the user's dropdown selection
         const rangeFilter = {
             ...baseFilter,
             createdAt: { $gte: start, $lte: end },
         };
 
-        /* -------------------------------------------------- */
-        /* Parallel Aggregations                              */
-        /* -------------------------------------------------- */
+        /* ---------------- PARALLEL QUERIES ---------------- */
         const [
             totalLeads,
             convertedLeads,
@@ -932,31 +765,27 @@ export const getPartnerDashboard = async (req, res) => {
             monthlyTrend,
             cityBreakdown,
         ] = await Promise.all([
-            // Total Leads (Respects Range)
+
             Lead.countDocuments(rangeFilter),
 
-            // Converted Leads (Pro-tip: Use updatedAt for status changes)
             Lead.countDocuments({
                 ...baseFilter,
                 status: "converted",
                 updatedAt: { $gte: start, $lte: end },
             }),
 
-            // Lost Leads (Pro-tip: Use updatedAt for status changes)
             Lead.countDocuments({
                 ...baseFilter,
                 status: "lost",
                 updatedAt: { $gte: start, $lte: end },
             }),
 
-            // Latest 5 Leads (Respects Range)
             Lead.find(rangeFilter)
                 .select("name contact email city status createdAt")
                 .sort({ createdAt: -1 })
                 .limit(5)
                 .lean(),
 
-            // Monthly Trend (Bypasses Range, uses Base Filter for historical view)
             Lead.aggregate([
                 {
                     $match: {
@@ -978,7 +807,6 @@ export const getPartnerDashboard = async (req, res) => {
                 { $sort: { "_id.year": 1, "_id.month": 1 } },
             ]),
 
-            // Top Cities Breakdown (Respects Range)
             Lead.aggregate([
                 {
                     $match: {
@@ -997,18 +825,12 @@ export const getPartnerDashboard = async (req, res) => {
             ]),
         ]);
 
-        /* -------------------------------------------------- */
-        /* Derived Metrics                                    */
-        /* -------------------------------------------------- */
+        /* ---------------- METRICS ---------------- */
         const conversionRate = totalLeads
             ? Number(((convertedLeads / totalLeads) * 100).toFixed(2))
             : 0;
 
-        /* -------------------------------------------------- */
-        /* Response Payload                                   */
-        /* -------------------------------------------------- */
-
-        // 3. Flattened response to match architectural standards
+        /* ---------------- RESPONSE ---------------- */
         return res.status(200).json({
             stats: {
                 totalLeads,
@@ -1028,6 +850,7 @@ export const getPartnerDashboard = async (req, res) => {
                 })),
             },
         });
+
     } catch (error) {
         console.error("Partner dashboard error:", error);
         return res.status(500).json({ message: "Internal Server Error" });
@@ -1039,8 +862,8 @@ export const getTeamLeaderDashboard = async (req, res) => {
     try {
         const currentYear = new Date().getFullYear();
 
-        const yearStart = new Date(currentYear, 0, 1); // Jan 1
-        const yearEnd = new Date(currentYear, 11, 31, 23, 59, 59); // Dec 31
+        const yearStart = new Date(currentYear, 0, 1);
+        const yearEnd = new Date(currentYear, 11, 31, 23, 59, 59);
 
         const teamLeaderId = await getDataFromToken(req);
 
@@ -1049,18 +872,13 @@ export const getTeamLeaderDashboard = async (req, res) => {
         }
 
         const teamleader = await User.findById(teamLeaderId)
-            .select("_id role organizationId")
+            .select("_id role")
             .lean();
 
         if (!teamleader || teamleader.role !== "teamleader") {
             return res.status(403).json({ message: "Access denied" });
         }
 
-        if (!teamleader.organizationId) {
-            return res.status(400).json({ message: "Organization missing" });
-        }
-
-        const orgId = new mongoose.Types.ObjectId(teamleader.organizationId);
         const tlId = new mongoose.Types.ObjectId(teamleader._id);
 
         const { start, end, groupBy = "month" } = {
@@ -1068,28 +886,26 @@ export const getTeamLeaderDashboard = async (req, res) => {
             groupBy: req.query.groupBy || "month",
         };
 
-        if (!start || !end || isNaN(new Date(start)) || isNaN(new Date(end))) {
+        if (!start || !end) {
             return res.status(400).json({ message: "Invalid date range" });
         }
 
         /* ---------------- Counselors ---------------- */
         const counselors = await User.find({
-            organizationId: orgId,
             role: "counselor",
             teamLeader: tlId,
         }).select("_id name").lean();
 
         const counselorIds = counselors.map(c => c._id);
+        const safeCounselorIds = counselorIds.length ? counselorIds : [null];
 
-        /* ---------------- Base Filters (SECURE) ---------------- */
+        /* ---------------- Base Filter ---------------- */
         const baseFilter = {
-            organizationId: orgId,
             $or: [
-                { teamLeader: tlId },              // admin assigned with TL
-                { assignedTo: tlId },              // directly assigned to TL
-                { createdBy: tlId },               // TL created
-                { assignedTo: { $in: counselorIds } } // ✅ counselor leads
-            ],
+                { assignedTo: tlId },
+                { createdBy: tlId },
+                { assignedTo: { $in: counselorIds } }
+            ]
         };
 
         const teamRangeFilter = {
@@ -1098,28 +914,18 @@ export const getTeamLeaderDashboard = async (req, res) => {
         };
 
         const myRangeFilter = {
-            organizationId: orgId,
-            $or: [
-                { createdBy: tlId },
-            ],
+            createdBy: tlId,
             createdAt: { $gte: start, $lte: end },
         };
 
         const todayStart = new Date();
         todayStart.setHours(0, 0, 0, 0);
 
-        const safeCounselorIds = counselorIds.length ? counselorIds : [null];
-
+        /* ---------------- Trend ---------------- */
         const trendAggregation =
             groupBy === "week"
                 ? [
-                    {
-                        $match: {
-                            ...baseFilter,
-                            // Use yearStart/End for consistency, or the range if explicitly requested
-                            createdAt: { $gte: start, $lte: end },
-                        },
-                    },
+                    { $match: teamRangeFilter },
                     {
                         $group: {
                             _id: {
@@ -1160,32 +966,26 @@ export const getTeamLeaderDashboard = async (req, res) => {
             trendData,
             counselorPerformance,
         ] = await Promise.all([
-            // Total Team Leads
+
             Lead.countDocuments(teamRangeFilter),
 
-            // My Leads
             Lead.countDocuments(myRangeFilter),
 
-            //   Assigned Today
             Lead.countDocuments({
-                organizationId: orgId,
                 assignedAt: { $gte: todayStart, $lte: new Date() },
                 $or: [
-                    { teamLeader: tlId },
                     { assignedTo: tlId },
-                    { createdBy: tlId }, // ✅ add this
+                    { createdBy: tlId },
                     { assignedTo: { $in: safeCounselorIds } },
                 ],
             }),
 
-            // Recent Leads
             Lead.find(teamRangeFilter)
                 .select("name contact email city status createdAt")
                 .sort({ createdAt: -1 })
                 .limit(5)
                 .lean(),
 
-            // Funnel Stats
             Lead.aggregate([
                 { $match: teamRangeFilter },
                 {
@@ -1196,14 +996,11 @@ export const getTeamLeaderDashboard = async (req, res) => {
                 },
             ]),
 
-            // Monthly Trend
             Lead.aggregate(trendAggregation),
 
-            // Counselor Performance
             Lead.aggregate([
                 {
                     $match: {
-                        organizationId: orgId,
                         assignedTo: { $in: counselorIds },
                         createdAt: { $gte: start, $lte: end },
                     },
@@ -1237,7 +1034,7 @@ export const getTeamLeaderDashboard = async (req, res) => {
             ? Number(((funnel.converted / totalLeads) * 100).toFixed(2))
             : 0;
 
-        /* ---------------- Fill Missing Months ---------------- */
+        /* ---------------- Trend Fill ---------------- */
         let filledTrend = [];
 
         if (groupBy === "week") {
@@ -1260,7 +1057,7 @@ export const getTeamLeaderDashboard = async (req, res) => {
             }
         }
 
-        /* ---------------- Counselors ---------------- */
+        /* ---------------- Counselor Stats ---------------- */
         const perfMap = new Map(
             counselorPerformance.map(c => [String(c._id), c])
         );
@@ -1281,14 +1078,13 @@ export const getTeamLeaderDashboard = async (req, res) => {
             };
         });
 
-        /* ---------------- Response ---------------- */
         return res.status(200).json({
             stats: {
                 totalTeamLeads,
                 myLeads,
                 assignedToday,
                 activeCounselors: counselors.length,
-                conversionRate, // ✅ NEW
+                conversionRate,
             },
             funnel,
             recentLeads,
@@ -1316,23 +1112,18 @@ export const getAdminAnalytics = async (req, res) => {
         }
 
         const admin = await User.findOne(
-            { _id: id, role: "admin" },
-            { organizationId: 1 }
+            { _id: id, role: "admin" }
         ).lean();
 
         if (!admin) {
             return res.status(404).json({ error: "Admin not found" });
         }
 
-        const orgId = admin.organizationId;
-
-        /* -------------------------------------------------- */
-        /*                  PEOPLE METRICS                   */
-        /* -------------------------------------------------- */
+        /* ---------------- PEOPLE METRICS ---------------- */
 
         const [agentStats, counselorStats] = await Promise.all([
             User.aggregate([
-                { $match: { role: "agent", organizationId: orgId } },
+                { $match: { role: "agent" } },
                 {
                     $group: {
                         _id: null,
@@ -1346,7 +1137,7 @@ export const getAdminAnalytics = async (req, res) => {
                 }
             ]),
             User.aggregate([
-                { $match: { role: "counselor", organizationId: orgId } },
+                { $match: { role: "counselor" } },
                 {
                     $group: {
                         _id: null,
@@ -1361,16 +1152,13 @@ export const getAdminAnalytics = async (req, res) => {
             ])
         ]);
 
-        /* -------------------------------------------------- */
-        /*                  LEAD METRICS                     */
-        /* -------------------------------------------------- */
+        /* ---------------- LEAD METRICS ---------------- */
 
         const now = new Date();
         const last7Days = new Date(now);
         last7Days.setDate(now.getDate() - 7);
 
         const leadStats = await Lead.aggregate([
-            { $match: { organizationId: orgId } },
             {
                 $group: {
                     _id: null,
@@ -1395,18 +1183,14 @@ export const getAdminAnalytics = async (req, res) => {
         ]);
 
         const newLeadsLast7Days = await Lead.countDocuments({
-            organizationId: orgId,
             createdAt: { $gte: last7Days }
         });
 
-        /* -------------------------------------------------- */
-        /*                TREND (LAST 7 DAYS)                */
-        /* -------------------------------------------------- */
+        /* ---------------- TREND ---------------- */
 
         const dailyLeads = await Lead.aggregate([
             {
                 $match: {
-                    organizationId: orgId,
                     createdAt: { $gte: last7Days }
                 }
             },
@@ -1421,9 +1205,7 @@ export const getAdminAnalytics = async (req, res) => {
             { $sort: { _id: 1 } }
         ]);
 
-        /* -------------------------------------------------- */
-        /*                 SAFE FALLBACKS                    */
-        /* -------------------------------------------------- */
+        /* ---------------- SAFE FALLBACKS ---------------- */
 
         const agents = agentStats[0] || { total: 0, active: 0 };
         const counselors = counselorStats[0] || { total: 0, active: 0 };
@@ -1438,9 +1220,7 @@ export const getAdminAnalytics = async (req, res) => {
             ? Number(((leads.converted / leads.total) * 100).toFixed(2))
             : 0;
 
-        /* -------------------------------------------------- */
-        /*                 FINAL RESPONSE                    */
-        /* -------------------------------------------------- */
+        /* ---------------- RESPONSE ---------------- */
 
         return res.status(200).json({
             people: {
@@ -1470,6 +1250,7 @@ export const getAdminAnalytics = async (req, res) => {
                 }))
             }
         });
+
     } catch (error) {
         console.error("Admin analytics error:", error);
         return res.status(500).json({ error: "Internal Server Error" });
@@ -1483,8 +1264,13 @@ export const getTeamLeaderAnalytics = async (req, res) => {
         const { teamLeaderId } = req.params;
 
         // ===== AUTH USER =====
+        if (!mongoose.Types.ObjectId.isValid(authUserId)) {
+            return res.status(401).json({ success: false, error: "Unauthorized" });
+        }
+
         const authUser = await User.findById(authUserId)
-            .select("_id role organizationId");
+            .select("_id role")
+            .lean();
 
         if (!authUser) {
             return res.status(401).json({ success: false, error: "Unauthorized" });
@@ -1495,32 +1281,41 @@ export const getTeamLeaderAnalytics = async (req, res) => {
         // ===== ROLE RESOLUTION =====
         if (authUser.role === "teamleader") {
             targetTeamLeaderId = authUser._id;
-        } else if (authUser.role === "admin") {
+        }
+        else if (authUser.role === "admin") {
             if (!mongoose.Types.ObjectId.isValid(teamLeaderId)) {
-                return res.status(400).json({ success: false, error: "Valid TeamLeader ID required" });
+                return res.status(400).json({
+                    success: false,
+                    error: "Valid TeamLeader ID required"
+                });
             }
 
             const tl = await User.findOne({
                 _id: teamLeaderId,
-                role: "teamleader",
-                organizationId: authUser.organizationId // 🔐 boundary
+                role: "teamleader"
             }).select("_id");
 
             if (!tl) {
-                return res.status(404).json({ success: false, error: "TeamLeader not found" });
+                return res.status(404).json({
+                    success: false,
+                    error: "TeamLeader not found"
+                });
             }
 
             targetTeamLeaderId = tl._id;
-        } else {
-            return res.status(403).json({ success: false, error: "Access denied" });
+        }
+        else {
+            return res.status(403).json({
+                success: false,
+                error: "Access denied"
+            });
         }
 
-        // ===== COUNSELORS =====
+        // ===== COUNSELORS (Hierarchy-based) =====
         const counselors = await User.find({
             role: "counselor",
-            teamLeader: targetTeamLeaderId,
-            organizationId: authUser.organizationId
-        }).select("_id");
+            teamLeader: targetTeamLeaderId
+        }).select("_id").lean();
 
         const counselorIds = counselors.map(c => c._id);
 
@@ -1535,12 +1330,11 @@ export const getTeamLeaderAnalytics = async (req, res) => {
             });
         }
 
-        // ===== LEADS AGGREGATION =====
+        // ===== LEADS AGGREGATION (Ownership-based) =====
         const [leadStats] = await Lead.aggregate([
             {
                 $match: {
-                    assignedTo: { $in: counselorIds },
-                    organizationId: authUser.organizationId // 🔐 critical
+                    assignedTo: { $in: counselorIds }
                 }
             },
             {

@@ -20,7 +20,6 @@ const headerMap = {
 export const mapRowToLead = (row, user) => {
     try {
         const lead = {
-            organizationId: user.organizationId,
             createdBy: user._id,
             source: "import",
             lastActivity: new Date(),

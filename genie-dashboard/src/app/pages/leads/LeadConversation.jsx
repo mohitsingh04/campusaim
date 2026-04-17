@@ -44,7 +44,7 @@ export default function LeadConversation() {
 
     const [isConversationStopped, setIsConversationStopped] = useState(false);
 
-    const organizationId = authUser?.organizationId;
+    const nicheId = authUser?.nicheId;
 
     const [searchParams] = useSearchParams();
     // const isNewSession = searchParams.get("newSession") === "true";
@@ -56,12 +56,12 @@ export default function LeadConversation() {
     /* Fetch Questions (API ONLY)                          */
     /* -------------------------------------------------- */
     const fetchQuestions = useCallback(async () => {
-        if (!organizationId) return;
+        if (!nicheId) return;
 
         try {
             setIsLoadingQuestions(true);
 
-            const res = await API.get(`/questions/organization/${organizationId}`);
+            const res = await API.get(`/questions/niche/${nicheId}`);
             const questions = (res?.data?.data || [])
                 .filter(q => q.status === "active")
                 .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
@@ -81,7 +81,7 @@ export default function LeadConversation() {
         } finally {
             setIsLoadingQuestions(false);
         }
-    }, [organizationId]);
+    }, [nicheId]);
 
     useEffect(() => {
         fetchQuestions();
@@ -358,7 +358,7 @@ export default function LeadConversation() {
     if (!questionsQueue.length) {
         return (
             <div className="p-10 text-center text-[var(--yp-muted)]">
-                No questions configured for this organization. {" "}
+                No questions configured for this niche. {" "}
                 <Link to="/dashboard/questions/add" className="text-blue-500">
                     First Add questions.
                 </Link>

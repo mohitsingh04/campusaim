@@ -55,7 +55,6 @@ export default function Apply() {
                         preferredCity: values.city?.trim() || "",
                     },
                     ref_code: refCode || null,
-                    organizationId: refCode ? null : import.meta.env.VITE_REFERRAL_URL, // ✅ KEY FIX
                 };
 
                 const res = await API.post("/add/test/leads", payload);

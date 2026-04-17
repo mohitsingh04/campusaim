@@ -644,64 +644,180 @@ export const aiChatBot = async (req, res) => {
     try {
         const { message } = req.body;
 
-        // Try to guess a simple filter based on the message (basic example)
-        // You can make this more advanced by using NLP or regex matching
+        if (!message || typeof message !== "string") {
+            return res.status(400).json({ error: "Valid message required" });
+        }
+
+        if (!process.env.GEMINI_API_KEY) {
+            return res.status(500).json({ error: "Missing GEMINI_API_KEY" });
+        }
+
+        const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+        const normalized = message.toLowerCase().trim();
+
+        // ---------- GREETING ----------
+        if (["hi", "hello", "hey"].includes(normalized)) {
+            return res.json({
+                reply: "Hello 👋 Ask me about leads, users, applications or insights."
+            });
+        }
+
+        // ---------- DEFAULT PARSED ----------
+        let parsed = {
+            entity: "leads",
+            intent: "list",
+            filters: {}
+        };
+
+        // ---------- RULE-BASED INTENT ----------
+        if (normalized.includes("how many") || normalized.includes("count")) {
+            parsed.intent = "count";
+        }
+
+        if (normalized.includes("user") || normalized.includes("admin")) {
+            parsed.entity = "users";
+        }
+
+        if (normalized.includes("conversation")) {
+            parsed.entity = "conversations";
+        }
+
+        if (normalized.includes("application")) {
+            parsed.entity = "applications";
+        }
+
+        if (normalized.includes("trend")) {
+            parsed.intent = "trend";
+        }
+
+        if (normalized.includes("recent") || normalized.includes("latest")) {
+            parsed.filters.days = 7;
+        }
+
+        // ---------- STATUS MAPPING ----------
+        const statusMap = {
+            contacted: "contacted",
+            converted: "application_done",
+            completed: "application_done",
+            new: "new",
+            lost: "lost"
+        };
+
+        Object.entries(statusMap).forEach(([key, value]) => {
+            if (normalized.includes(key)) {
+                parsed.filters.status = value;
+            }
+        });
+
+        const { entity, intent, filters } = parsed;
+
+        // ---------- BUILD QUERY ----------
         const query = {};
 
-        // Example: detect city in message
-        const cityMatch = message.match(/from\s+([a-zA-Z]+)/i);
-        if (cityMatch) {
-            query.city = new RegExp(cityMatch[1], "i");
+        if (filters.status) query.status = filters.status;
+
+        if (filters.days) {
+            query.createdAt = {
+                $gte: new Date(Date.now() - filters.days * 86400000)
+            };
         }
 
-        // Example: detect recent time frame
-        if (/last\s+(\d+)\s+days?/i.test(message)) {
-            const days = parseInt(message.match(/last\s+(\d+)\s+days?/i)[1]);
-            query.createdAt = { $gte: new Date(Date.now() - days * 24 * 60 * 60 * 1000) };
+        let data = [];
+
+        // ---------- FETCH ----------
+        switch (entity) {
+            case "users":
+                data = await User.find(query)
+                    .select("name role createdAt")
+                    .limit(50)
+                    .lean();
+                break;
+
+            case "applications":
+                data = await Application.find(query)
+                    .select("studentId status createdAt")
+                    .limit(50)
+                    .lean();
+                break;
+
+            case "conversations":
+                data = await Conversation.find(query)
+                    .select("leadId message createdAt")
+                    .limit(50)
+                    .lean();
+                break;
+
+            default:
+                data = await StudentLead.find(query)
+                    .select("name city status createdAt")
+                    .sort({ createdAt: -1 })
+                    .limit(50)
+                    .lean();
         }
 
-        // Fetch filtered leads (limit 20 for safety)
-        const leads = await StudentLead.find(query)
-            .select("name email phone city createdAt") // only essential fields
-            .limit(1000)
-            .lean();
+        // ---------- COUNT ----------
+        if (intent === "count") {
+            let total = 0;
 
-        const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-        const model = "gemini-1.5-flash";
-
-        // Create concise prompt
-        const prompt = `
-You are a helpful assistant.
-The following is a list of student leads from the database:
-
-${JSON.stringify(leads, null, 2)}
-
-User query: "${message}"
-
-Answer the user's query using only the data above.
-If the answer is not in the data, say "I couldn't find relevant lead information."
-        `;
-
-        // Call Gemini API
-        const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
-            {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    contents: [{ role: "user", parts: [{ text: prompt }] }]
-                })
+            switch (entity) {
+                case "users":
+                    total = await User.countDocuments(query);
+                    break;
+                case "applications":
+                    total = await Application.countDocuments(query);
+                    break;
+                case "conversations":
+                    total = await Conversation.countDocuments(query);
+                    break;
+                default:
+                    total = await StudentLead.countDocuments(query);
             }
-        );
 
-        const data = await response.json();
-        const reply =
-            data.candidates?.[0]?.content?.parts?.[0]?.text ||
-            "Sorry, I couldn't generate a response.";
+            return res.json({
+                reply: `Total ${filters.status ? filters.status + " " : ""}${entity}: ${total}`
+            });
+        }
 
-        res.json({ reply, leads });
-    } catch (error) {
-        console.error("Error in Chat bot:", error);
+        // ---------- NO DATA ----------
+        if (!data.length) {
+            return res.json({ reply: "No matching data found." });
+        }
+
+        // ---------- TREND ----------
+        if (intent === "trend" && entity === "leads") {
+            const trends = await StudentLead.aggregate([
+                { $match: query },
+                { $group: { _id: "$city", count: { $sum: 1 } } },
+                { $sort: { count: -1 } }
+            ]);
+
+            const reply = trends
+                .map(t => `${t._id}: ${t.count}`)
+                .join("\n");
+
+            return res.json({ reply });
+        }
+
+        // ---------- CLEAN FORMAT (NO AI NEEDED 🔥) ----------
+        const reply = data
+            .slice(0, 10)
+            .map((item) => {
+                if (entity === "users") {
+                    return `• ${item.name} (${item.role})`;
+                }
+
+                if (entity === "applications") {
+                    return `• ${item.studentId} - ${item.status}`;
+                }
+
+                return `• ${item.name} - ${item.city || ""} - ${item.status || ""}`;
+            })
+            .join("\n");
+
+        return res.json({ reply });
+
+    } catch (err) {
+        console.error("AI ERROR:", err);
         return res.status(500).json({ error: "Internal Server Error" });
     }
 };
@@ -778,7 +894,7 @@ export const getAssignableUsers = async (req, res) => {
             return res.status(403).json({ error: "Access denied" });
         }
 
-        // ✅ NO organizationId dependency
+        // ✅ NO dependency
         const users = await User.find({
             role: { $in: ["teamleader", "counselor"] }
         })
@@ -826,12 +942,6 @@ export const getPartnerInvite = async (req, res) => {
 
         const admin = await User.findById(adminId).lean();
 
-        if (!admin || !admin.organizationId) {
-            return res.status(403).json({
-                error: "Invalid organization context"
-            });
-        }
-
         if (!["admin", "superadmin"].includes(admin.role)) {
             return res.status(403).json({
                 error: "Unauthorized"
@@ -839,7 +949,6 @@ export const getPartnerInvite = async (req, res) => {
         }
 
         const invite = await UserInvite.findOne({
-            organizationId: admin.organizationId,
             role: "partner",
             createdBy: adminId,
             expiresAt: { $gt: new Date() }
@@ -874,12 +983,6 @@ export const generatePartnerInvite = async (req, res) => {
 
         const admin = await User.findById(adminId).lean();
 
-        if (!admin || !admin.organizationId) {
-            return res.status(403).json({
-                error: "Invalid organization context",
-            });
-        }
-
         if (!["admin", "superadmin"].includes(admin.role)) {
             return res.status(403).json({
                 error: "Unauthorized",
@@ -890,7 +993,6 @@ export const generatePartnerInvite = async (req, res) => {
 
         // check existing non-expired invite
         const existingInvite = await UserInvite.findOne({
-            organizationId: admin.organizationId,
             role: "partner",
             createdBy: adminId,
             expiresAt: { $gt: now },
@@ -911,7 +1013,6 @@ export const generatePartnerInvite = async (req, res) => {
         const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 3); // 3 days
 
         await UserInvite.create({
-            organizationId: admin.organizationId,
             role: "partner",
             token,
             expiresAt,
@@ -981,7 +1082,6 @@ export const registerPartnerViaInvite = async (req, res) => {
         const ref_code = await generateRefCode();
 
         const newUser = await User.create({
-            organizationId: invite.organizationId,
             name,
             email,
             contact,
@@ -996,7 +1096,6 @@ export const registerPartnerViaInvite = async (req, res) => {
         /* ------------------ NOTIFICATION ------------------ */
         try {
             const admins = await User.find({
-                organizationId: invite.organizationId,
                 role: "admin",
             }).select("_id");
 
@@ -1004,7 +1103,6 @@ export const registerPartnerViaInvite = async (req, res) => {
                 await Promise.all(
                     admins.map((admin) =>
                         createNotification({
-                            organizationId: invite.organizationId, // Scoped to org
                             receiverId: admin._id,                // New field name
                             senderId: newUser._id,               // The new partner
                             type: "partner_registered",
@@ -1039,9 +1137,8 @@ export const becomeAPartner = async (req, res) => {
         const { name, email, contact, password } = req.body;
 
         const admin = await User.findOne({ role: "admin" })
-            .select("name role organizationId")
+            .select("name role")
             .lean();
-        const organizationId = admin?.organizationId;
 
         // uniqueness checks
         if (await User.exists({ email })) {
@@ -1071,7 +1168,6 @@ export const becomeAPartner = async (req, res) => {
         const ref_code = await generateRefCode();
 
         const newUser = await User.create({
-            organizationId: organizationId,
             name,
             email,
             contact,
@@ -1083,7 +1179,6 @@ export const becomeAPartner = async (req, res) => {
         /* ------------------ NOTIFICATION ------------------ */
         try {
             const admins = await User.find({
-                organizationId: organizationId,
                 role: "admin",
             }).select("_id");
 
@@ -1091,7 +1186,6 @@ export const becomeAPartner = async (req, res) => {
                 await Promise.all(
                     admins.map((admin) =>
                         createNotification({
-                            organizationId: organizationId, // Scoped to org
                             receiverId: admin._id,                // New field name
                             senderId: newUser._id,               // The new partner
                             type: "partner_registered",

@@ -56,7 +56,7 @@ export const getPartnerComission = async (req, res) => {
         let courseMap = {};
 
         try {
-            const { data: courseRes } = await axios.get(`${process.env.CAMPUSAIM_MAIN_URL}/course`);
+            const { data: courseRes } = await axios.get(`${process.env.CAMPUSAIM_MAIN_URL}/api/course`);
 
             (courseRes || []).forEach((c) => {
                 courseMap[c._id] = c.course_name;

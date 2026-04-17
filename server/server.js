@@ -30,12 +30,6 @@ const allowedOrigins = [
 
 app.use(cookieParser());
 app.use(helmet());
-// app.use(
-//   cors({
-//     origin: allowedOrigins,
-//     credentials: true,
-//   })
-// );
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin) return callback(null, true); // allow Postman / server calls

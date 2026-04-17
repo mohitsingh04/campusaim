@@ -84,9 +84,9 @@ const EnquiryForm = ({ property }: { property: PropertyProps }) => {
 					console.log(response);
 					resetForm();
 				}
-				// getSuccessResponse(response);
-				// setSubmitted(true);
-				// resetForm();
+				getSuccessResponse(response);
+				setSubmitted(true);
+				resetForm();
 			} catch (error) {
 				getErrorResponse(error);
 			} finally {
