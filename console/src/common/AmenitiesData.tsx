@@ -66,7 +66,6 @@ export const AmenitiesData: AmenitiesType = {
 		"Table Tennis",
 		"Swimming Pool",
 		"Athletics Track",
-		"Yoga Center",
 	],
 
 	"Health & Wellness": [
@@ -76,7 +75,6 @@ export const AmenitiesData: AmenitiesType = {
 		"Counseling / Mental Health Support",
 		"Health Check-up Camps",
 		"Meditation Hall",
-		"Yoga Studio",
 	],
 
 	"Food & Dining": [

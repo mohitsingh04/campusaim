@@ -7,7 +7,7 @@ const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://www.campusaim.com";
 export const metadata: Metadata = {
   title: "Colleges",
   description:
-    "Discover top Yoga Institutes worldwide. Find, compare, and explore the best yoga institutes near you for authentic training and certification.",
+    "Discover top Colleges / Universities worldwide. Find, compare, and explore the best Colleges / Universities near you for authentic training and certification.",
   keywords: [
     "Colleges",
     "University",

@@ -15,7 +15,7 @@ export async function generateMetadata({
 	const { compare_slug } = await params;
 
 	if (!compare_slug || compare_slug === "select") {
-		return { title: "Compare Yoga Institutes" };
+		return { title: "Compare Colleges/Universities" };
 	}
 
 	const slugsArray = compare_slug.split("-vs-");
@@ -42,7 +42,7 @@ export async function generateMetadata({
 
 	// No valid property found
 	if (properties.length === 0) {
-		return { title: "Compare Yoga Institutes" };
+		return { title: "Compare Colleges / Universities" };
 	}
 
 	// 🏷️ Title

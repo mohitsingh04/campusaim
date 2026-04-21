@@ -185,12 +185,12 @@ const LoginForm = () => {
                 Create one
               </Link>
             </div> */}
-            <div className="text-center text-sm text-gray-600">
+            {/* <div className="text-center text-sm text-gray-600">
               Become a Partner?{" "}
               <Link to="/become-a-partner" className="text-blue-600 hover:underline">
                 Create one
               </Link>
-            </div>
+            </div> */}
           </form>
         </div>
       </div>

@@ -8,7 +8,7 @@ import {
 } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import Badge from "../../../components/ui/badge/Badge";
+import Badge from "../../../components/ui/Badge/Badge";
 import { useAuth } from "../../../context/AuthContext";
 import { API } from "../../../services/API";
 import { FeedbackData } from "../../../common/FeedbackData/FeedbackData";

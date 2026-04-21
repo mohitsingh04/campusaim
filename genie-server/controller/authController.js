@@ -655,7 +655,7 @@ export const updateProfile = async (req, res) => {
 
         if (req.files && req.files.profile_image) {
             const objectId = user._id;
-            const profilePath = `../genie-media/profile/${objectId}/`;
+            const profilePath = `../media/profile/${objectId}/`;
 
             ensureDirectoryExistence(profilePath);
 

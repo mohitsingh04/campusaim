@@ -48,7 +48,7 @@ export const updateBankDetails = async (req, res) => {
 
         const existing = await BankDetails.findOne({ userId });
 
-        const docsPath = `../genie-media/bank-details/${userId}/`;
+        const docsPath = `../media/bank-details/${userId}/`;
         ensureDirectoryExistence(docsPath);
 
         let passbookImagePath = existing?.passbookOrCancelCheckbookImg || null;

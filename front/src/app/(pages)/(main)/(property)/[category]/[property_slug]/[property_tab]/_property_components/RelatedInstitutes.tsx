@@ -62,7 +62,7 @@ const RelatedInstitute = ({
 
 	return (
 		<section className="relative p-5 bg-(--primary-bg) text-(--text-color) rounded-custom overflow-hidden shadow-custom">
-			<HeadingLine title="Explore Related Yoga Institutes" />
+			<HeadingLine title="Explore Related Colleges" />
 
 			<Swiper
 				modules={[Autoplay]}

@@ -12,7 +12,7 @@ const ensureDirectoryExistence = (dir) => {
     }
 };
 
-const tempStoragePath = "../genie-media/temp/";
+const tempStoragePath = "../media/temp/";
 ensureDirectoryExistence(tempStoragePath)
 
 const storage = multer.diskStorage({

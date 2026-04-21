@@ -51,7 +51,7 @@ app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 
 // Static folders
 app.use(express.static(path.join(__dirname, "../public")));
-app.use("/genie-media", express.static(path.join(__dirname, "../genie-media")));
+app.use("/media", express.static(path.join(__dirname, "../media")));
 
 // Allowed origins
 const allowedOrigins = [

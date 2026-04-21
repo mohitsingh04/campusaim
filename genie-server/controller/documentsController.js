@@ -43,7 +43,7 @@ export const updateDocuments = async (req, res) => {
 
         const existing = await Documents.findOne({ userId });
 
-        const docsPath = `../genie-media/documents/${userId}/`;
+        const docsPath = `../media/documents/${userId}/`;
         ensureDirectoryExistence(docsPath);
 
         // AADHAAR FRONT

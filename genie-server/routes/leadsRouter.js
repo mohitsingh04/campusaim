@@ -30,7 +30,7 @@ import {
 const leadsRouter = express.Router();
 
 /* ---------------- TEMP DIR ---------------- */
-const tempStoragePath = path.resolve("../genie-media/temp");
+const tempStoragePath = path.resolve("../media/temp");
 if (!fs.existsSync(tempStoragePath)) {
     fs.mkdirSync(tempStoragePath, { recursive: true });
 }

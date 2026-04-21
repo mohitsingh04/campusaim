@@ -45,7 +45,7 @@ Produce the HTML snippet now.
   let contextMsg = await GeminiResponse(prompt, contextPrompt, "");
   return (
     contextMsg?.replace("```html", "")?.replace("```", "") ||
-    "Here are some yoga institutes you might like."
+    "Here are some colleges / universities you might like."
   ).trim();
 };
 

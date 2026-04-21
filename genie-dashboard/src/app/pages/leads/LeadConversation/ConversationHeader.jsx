@@ -1,7 +1,7 @@
 import { FaUser } from "react-icons/fa";
 import { GiPhone } from "react-icons/gi";
 import { LuEye } from "react-icons/lu";
-import Badge from "../../../components/ui/badge/Badge";
+import Badge from "../../../components/ui/Badge/Badge";
 import { getStatusColor } from "../../../context/Callbacks";
 
 export default function ConversationHeader({
