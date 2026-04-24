@@ -1,15 +1,33 @@
 import mongoose from "mongoose";
 import User from "../models/userModel.js";
+import RegularUser from "../models/regularUser.js";
+import Role from "../models/role.js";
 import Lead from "../models/leadsModel.js";
 import { getDataFromToken } from "../helper/getDataFromToken.js";
 import { getDateRange } from "../helper/dateRange.js";
 import { db } from '../mongoose/index.js';
+import { mapRoleForApp, getDbRoleKey } from "../utils/roleMapper.js";
 
 function getISOWeeksInYear(year) {
     const d = new Date(year, 11, 31);
     const week = getISOWeek(d);
     return week === 1 ? 52 : week;
 }
+
+let roleCache = null;
+
+const getRoleMap = async () => {
+    if (roleCache) return roleCache;
+
+    const roles = await Role.find().lean();
+    roleCache = {};
+
+    roles.forEach(r => {
+        roleCache[r.role.toLowerCase()] = r._id;
+    });
+
+    return roleCache;
+};
 
 // Shared Aggregation Stage
 const conversationPipeline = [
@@ -44,6 +62,8 @@ export const getSuperadminDashboard = async (req, res) => {
 
         const now = new Date();
 
+        const roleIdMap = await getRoleMap();
+
         /* ---------------- PLATFORM ---------------- */
         const [
             totalAdmins,
@@ -51,21 +71,21 @@ export const getSuperadminDashboard = async (req, res) => {
             newAdmins,
             unverifiedAdmins,
         ] = await Promise.all([
-            User.countDocuments({ role: "admin" }),
+            RegularUser.countDocuments({ role: roleIdMap[getDbRoleKey("admin")] }),
 
-            User.countDocuments({
-                role: "admin",
+            RegularUser.countDocuments({
+                role: roleIdMap[getDbRoleKey("admin")],
                 lastLoginAt: { $gte: start, $lte: end }
             }),
 
-            User.countDocuments({
-                role: "admin",
+            RegularUser.countDocuments({
+                role: roleIdMap[getDbRoleKey("admin")],
                 createdAt: { $gte: start, $lte: end }
             }),
 
-            User.countDocuments({
-                role: "admin",
-                isVerified: false
+            RegularUser.countDocuments({
+                role: roleIdMap[getDbRoleKey("admin")],
+                verified: false
             }),
         ]);
 
@@ -79,17 +99,17 @@ export const getSuperadminDashboard = async (req, res) => {
             activePartners,
             activeCounselors,
         ] = await Promise.all([
-            User.countDocuments({ role: "partner" }),
-            User.countDocuments({ role: "counselor" }),
-            User.countDocuments({ role: "teamleader" }),
+            RegularUser.countDocuments({ role: roleIdMap["partner"] }),
+            RegularUser.countDocuments({ role: roleIdMap["counselor"] }),
+            RegularUser.countDocuments({ role: roleIdMap["teamleader"] }),
 
-            User.countDocuments({
-                role: "partner",
+            RegularUser.countDocuments({
+                role: roleIdMap["partner"],
                 lastLoginAt: { $gte: start, $lte: end }
             }),
 
-            User.countDocuments({
-                role: "counselor",
+            RegularUser.countDocuments({
+                role: roleIdMap["counselor"],
                 lastLoginAt: { $gte: start, $lte: end }
             }),
         ]);
@@ -240,13 +260,22 @@ export const getAdminDashboard = async (req, res) => {
             return res.status(400).json({ message: "Invalid admin id" });
         }
 
-        const admin = await User.findById(adminId)
-            .select("_id role")
+        const admin = await RegularUser.findById(adminId)
+            .populate("role", "role")
             .lean();
 
-        if (!admin || admin.role !== "admin") {
+        if (!admin) {
             return res.status(403).json({ message: "Access denied" });
         }
+
+        const roleName = admin.role?.role;
+        const appRole = mapRoleForApp(roleName);
+
+        if (!["admin", "superadmin"].includes(appRole)) {
+            return res.status(403).json({ message: "Access denied" });
+        }
+
+        const roleIdMap = await getRoleMap();
 
         /* ---------- DATE RANGE ---------- */
         let start, end;
@@ -274,27 +303,27 @@ export const getAdminDashboard = async (req, res) => {
         ] = await Promise.all([
 
             /* TEAM */
-            User.countDocuments({ role: "partner" }),
-            User.countDocuments({ role: "teamleader" }),
-            User.countDocuments({ role: "counselor" }),
+            User.countDocuments({ role: roleIdMap["partner"] }),
+            User.countDocuments({ role: roleIdMap["teamleader"] }),
+            User.countDocuments({ role: roleIdMap["counselor"] }),
 
             /* ACTIVE */
             User.countDocuments({
-                role: "partner",
+                role: roleIdMap["partner"],
                 $or: [
                     { lastLoginAt: { $gte: activeSince } },
                     { updatedAt: { $gte: activeSince } }
                 ]
             }),
             User.countDocuments({
-                role: "teamleader",
+                role: roleIdMap["teamleader"],
                 $or: [
                     { lastLoginAt: { $gte: activeSince } },
                     { updatedAt: { $gte: activeSince } }
                 ]
             }),
             User.countDocuments({
-                role: "counselor",
+                role: roleIdMap["counselor"],
                 $or: [
                     { lastLoginAt: { $gte: activeSince } },
                     { updatedAt: { $gte: activeSince } }

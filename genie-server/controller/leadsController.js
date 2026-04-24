@@ -18,6 +18,8 @@ import { handleAdmission } from "../utils/handleAdmission.js";
 import { handleCommission } from "../utils/handleCommission.js";
 import IncentiveEarning from "../models/incentiveEarning.js";
 import { db } from '../mongoose/index.js';
+import { getRoleMap, mapRoleForApp } from "../utils/roleMapper.js";
+import RegularUser from "../models/regularUser.js";
 
 const COURSE_TYPES = ["UG", "PG", "Diploma", "Certificate", "PhD", "Other"];
 const COLLEGE_TYPES = ["Government", "Private", "Deemed", "Autonomous", "Any"];
@@ -70,13 +72,15 @@ export const getLeads = async (req, res) => {
             return res.status(400).json({ error: "Invalid user ID" });
         }
 
-        const user = await User.findById(authUserId)
-            .select("_id role")
+        const user = await RegularUser.findById(authUserId)
+            .populate("role", "role")
             .lean();
 
         if (!user) {
             return res.status(404).json({ error: "Auth user not found." });
         }
+        const roleName = user.role?.role;
+        const appRole = mapRoleForApp(roleName);
 
         const { _id, role } = user;
 
@@ -104,7 +108,10 @@ export const getLeads = async (req, res) => {
                 { assignedTo: { $in: counselorIds } }
             );
         }
-        else if (role !== "admin") {
+        else if (appRole === "superadmin") {
+            roleConditions.push();
+        }
+        else if (appRole !== "admin") {
             roleConditions.push(
                 { createdBy: _id },
                 { assignedTo: _id }
@@ -1128,7 +1135,7 @@ export const addExternalLead = async (req, res) => {
 
         return res.status(201).json({
             success: true,
-            message: "External lead created successfully",
+            message: "Your enquiry has been submitted.",
             leadId: newLead._id,
         });
 

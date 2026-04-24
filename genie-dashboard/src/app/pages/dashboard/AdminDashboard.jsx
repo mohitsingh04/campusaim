@@ -144,7 +144,6 @@ export default function AdminDashboard() {
   }
 
   /* ---------------- KPI CARDS ---------------- */
-  console.log(data)
   const statsData = useMemo(() => {
     if (!data) return {};
 

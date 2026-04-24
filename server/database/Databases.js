@@ -8,11 +8,12 @@ const connections = {
   profileDatabase: mongoose.createConnection(process.env.MONGODB_PROFILE_URL),
   analyticDatabase: mongoose.createConnection(process.env.MONGODB_ANALYTIC_URL),
   askDatabase: mongoose.createConnection(process.env.MONGODB_ASK_URL),
+  leadsDatabase: mongoose.createConnection(process.env.MONGODB_LEADS_URL),
 };
 
 // Listen for connection errors
 for (const [name, conn] of Object.entries(connections)) {
-  conn.on("connected", () => {});
+  conn.on("connected", () => { });
 
   conn.on("error", (err) => {
     console.error(`${name} failed to connect:`, err.message);
@@ -28,4 +29,5 @@ export const {
   profileDatabase,
   analyticDatabase,
   askDatabase,
+  leadsDatabase,
 } = connections;

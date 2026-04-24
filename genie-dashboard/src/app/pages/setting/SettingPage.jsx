@@ -62,7 +62,7 @@ function SettingPage() {
   const { authUser } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const role = authUser?.role;
+  const role = authUser?.appRole;
   const tabs = ROLE_TABS[role] || ROLE_TABS.partner;
 
   const urlTab = searchParams.get("tab");

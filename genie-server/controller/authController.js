@@ -19,7 +19,7 @@ const ensureDirectoryExistence = (dir) => {
 };
 
 const signToken = (userId) =>
-    jwt.sign({ id: userId }, process.env.SECRET_TOKEN, {
+    jwt.sign({ id: userId }, process.env.JWT_SECRET_VALUE, {
         expiresIn: "7d",
     });
 
@@ -311,7 +311,7 @@ export const login = async (req, res) => {
 
         const token = jwt.sign(
             { id: user._id },
-            process.env.SECRET_TOKEN,
+            process.env.JWT_SECRET_VALUE,
             { expiresIn: "7d" }
         );
 

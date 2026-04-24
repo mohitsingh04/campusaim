@@ -13,13 +13,26 @@ import UserInvite from "../models/userInviteModel.js";
 import crypto from 'crypto';
 import Lead from "../models/leadsModel.js";
 import { createNotification } from "../services/notification.service.js";
+import { getRoleId } from "../utils/roleMapper.js";
+import RegularUser from "../models/regularUser.js";
 
 // Utility to fetch users with role filtering
 export const getUsersByRole = async ({ role = null, search = "" }) => {
     try {
         const query = {};
 
-        if (role) query.role = role;
+        if (role) {
+            const roleId = await getRoleId(role);
+
+            if (!roleId) {
+                return {
+                    users: [],
+                    total: 0
+                };
+            }
+
+            query.role = roleId;
+        }
 
         /* ================= SECURITY: ReDoS Mitigation ================= */
         const sanitizedSearch = String(search || "").trim();
@@ -29,11 +42,11 @@ export const getUsersByRole = async ({ role = null, search = "" }) => {
             query.$or = [
                 { name: { $regex: safeSearch, $options: "i" } },
                 { email: { $regex: safeSearch, $options: "i" } },
-                { contact: { $regex: safeSearch, $options: "i" } }
+                { mobile_no: { $regex: safeSearch, $options: "i" } }
             ];
         }
 
-        const users = await User.find(query)
+        const users = await RegularUser.find(query)
             .select("-password -forgotOrResetPasswordToken -forgotOrResetPasswordTokenExpiry")
             .lean();
 

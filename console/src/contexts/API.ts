@@ -7,3 +7,11 @@ export const API = axios.create({
 		withCredentials: true,
 	},
 });
+
+export const GenieAPI = axios.create({
+  baseURL: `${import.meta.env.VITE_GENIE_API_URL}/api/`,
+  withCredentials: true,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});

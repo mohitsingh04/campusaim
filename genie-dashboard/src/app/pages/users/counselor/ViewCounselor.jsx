@@ -50,6 +50,7 @@ export default function ViewCounselor() {
 
             try {
                 const counselorRes = await API.get(`/fetch-counselor/${id}`);
+                console.log(counselorRes);
                 const counselor = counselorRes?.data?.data;
 
                 setCounselorData(counselor);

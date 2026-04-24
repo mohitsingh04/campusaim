@@ -27,10 +27,29 @@ import { ProfileRoles } from "../profile-model/ProfileRoles.js";
 dotenv.config();
 const saltRounds = 10;
 
+const ROLE_MAP = {
+  "super admin": "superadmin",
+  "property manager": "admin",
+
+  // ✅ future roles
+  "admin": "admin",
+  "partner": "partner",
+  "counselor": "counselor",
+  "team leader": "teamleader",
+  "teamleader": "teamleader"
+};
+
+export const mapRoleForApp = (roleName) => {
+  if (!roleName) return "user";
+
+  const normalized = roleName.toLowerCase().trim();
+
+  return ROLE_MAP[normalized] || "user";
+};
+
 export const profileRegister = async (req, res) => {
   try {
-    let { username, name, email, mobile_no, password, confirm_password, role } =
-      req.body;
+    let { username, name, email, mobile_no, password, confirm_password, role } = req.body;
 
     if (
       !username ||
@@ -236,6 +255,29 @@ export const profileLogin = async (req, res) => {
       });
     }
 
+    const userRole = user?.role;
+
+    // Role resolve
+    let roleDoc = null;
+    if (userRole) {
+      roleDoc = await ProfileRoles.findOne({ _id: userRole });
+      if (!roleDoc) {
+        return res.status(400).json({ error: "Invalid Role Provided" });
+      }
+    } else {
+      roleDoc = await ProfileRoles.findOne({ role: "User" });
+      if (!roleDoc) {
+        return res.status(400).json({ error: "Invalid Role Provided" });
+      }
+    }
+
+    if (roleDoc?.role === "User") {
+      return res.status(403).json({ error: "Access denied. You are not allowed to login to LMS." });
+    }
+
+    user.lastLoginAt = new Date();
+    await user.save();
+
     const accessToken = jwt.sign(
       { id: user._id, email: user.email },
       process.env.JWT_SECRET_VALUE
@@ -246,7 +288,6 @@ export const profileLogin = async (req, res) => {
       secure: process.env.NODE_ENV === "production",
       maxAge: 10 * 24 * 60 * 60 * 1000 * 365,
     });
-
     return res.status(200).json({ message: "Logged in successfully." });
   } catch (error) {
     console.log(error);
@@ -263,7 +304,11 @@ export const profileDetails = async (req, res) => {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET_VALUE);
 
-    const userDoc = await RegularUser.findById(decoded.id);
+    const userDoc = await RegularUser.findById(decoded.id)
+      .populate({
+        path: "role",
+        select: "role" // 🔥 IMPORTANT (your field name)
+      });
 
     if (!userDoc) {
       await removeToken(res);
@@ -284,6 +329,14 @@ export const profileDetails = async (req, res) => {
 
     const finalData = {
       ...user,
+
+      // ✅ KEEP ORIGINAL
+      role: user.role?._id,
+      roleName: user.role?.role,
+
+      // ✅ FOR APP
+      appRole: mapRoleForApp(user.role?.role),
+
       ...(location && {
         address: location.address,
         pincode: location.pincode,

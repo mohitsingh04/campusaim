@@ -42,7 +42,7 @@ function ViewLead() {
     const [searchParams, setSearchParams] = useSearchParams();
     const [hasConversation, setHasConversation] = useState(false);
     const [isOwner, setIsOwner] = useState(false);
-    const role = authUser?.role;
+    const role = authUser?.appRole;
 
     const [leadData, setLeadData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);

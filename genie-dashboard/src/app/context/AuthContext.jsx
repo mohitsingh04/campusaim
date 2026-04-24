@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { API } from "../services/API";
+import { CampusaimAPI } from "../services/API";
 
 const AuthContext = createContext();
 
@@ -10,8 +10,8 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const fetchAuthUser = async () => {
       try {
-        const res = await API.get("/profile");
-        setAuthUser(res?.data?.data);
+        const res = await CampusaimAPI.get("/profile/detail");
+        setAuthUser(res?.data);
       } catch (err) {
         setAuthUser(null);
       } finally {

@@ -101,6 +101,14 @@ export default function SettingsOffcanvas({
 			external: true,
 			hide: getRoleById(profile?.role || "") !== "User" ? false : true,
 		},
+		{
+			icon: FiShield,
+			label: "APP",
+			subLabel: "Manage Your Enquiry/Leads",
+			href: process.env.NEXT_PUBLIC_LEAD_API_URL!,
+			external: true,
+			hide: getRoleById(profile?.role || "") !== "User" ? false : true,
+		},
 	];
 
 	const settingsItems: SettingsItemType[] = [

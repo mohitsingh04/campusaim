@@ -13,7 +13,7 @@ const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
 export default function AvatarCell({ user, role = "User" }) {
     if (!user) return null;
 
-    const isActive = user?.status === "active";
+    const isActive = user?.status === "Active";
 
     return (
         <div className="flex items-center">

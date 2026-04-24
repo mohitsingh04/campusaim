@@ -8,6 +8,7 @@ import { fileURLToPath } from "url";
 import compression from "compression";
 import http from "http";
 import { initSocket } from "./socket.js";
+import { db, connectDB } from "./mongoose/index.js";
 
 // Routers
 import authRouter from "./routes/authRouter.js";
@@ -30,6 +31,24 @@ import withdrawRouter from "./routes/withdrawRouter.js";
 import comissionRouter from "./routes/comissionRoutes.js";
 
 dotenv.config();
+
+(async () => {
+  try {
+    // ✅ Connect to MAIN DB (users, roles)
+    await connectDB();
+    console.log("Connected to CampusAim Main DB");
+
+    // ✅ Connect to GENIE DB (leads, etc.)
+    db.once("open", () => {
+      console.log("Connected to Genie DB");
+    });
+
+  } catch (err) {
+    console.error("DB Connection Error:", err);
+    process.exit(1);
+  }
+})();
+
 const app = express();
 const PORT = process.env.PORT;
 
@@ -58,11 +77,8 @@ const allowedOrigins = [
   process.env.DASHBOARD_URL,
   process.env.DASHBOARD_BUILD_URL,
   process.env.FRONTEND_URL,
-  "http://192.168.29.22:1002",
-  "http://10.170.120.123:1002",
-  "http://127.0.0.1:5500",
-  "http://10.60.55.47:1002",
-  "http://localhost:2001"
+  process.env.CAMPUSAIM_API_URL,
+  process.env.CAMPUSAIM_MANAGE_URL
 ];
 
 // API CORS setup

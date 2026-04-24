@@ -48,7 +48,7 @@ export default function ConversationHistory({ leadId }) {
                     return;
                 }
 
-                const role = authUser?.role;
+                const role = authUser?.appRole;
                 const userId = authUser?._id;
 
                 // 3. Modular filtering logic

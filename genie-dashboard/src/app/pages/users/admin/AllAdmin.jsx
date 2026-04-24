@@ -75,7 +75,7 @@ export default function AllAdmin() {
             admins.forEach(admin => {
                 if (admin?.status === "active") counts.active++;
                 else if (admin?.status === "suspended") counts.suspended++;
-                admin?.isVerified ? counts.verified++ : counts.unverified++;
+                admin?.verified ? counts.verified++ : counts.unverified++;
             });
 
             const stats = [
@@ -153,7 +153,7 @@ export default function AllAdmin() {
         if (!selectedAdmins.size) return toast.error("Select data first");
         const rows = adminData.admins
             .filter((a) => selectedAdmins.has(a._id))
-            .map((a) => ({ Name: a.name, Email: a.email, Phone: a.mobile || a.contact, City: a.city, Role: a.role, Status: a.status, Verified: a.isVerified, Provider: a.provider }));
+            .map((a) => ({ Name: a.name, Email: a.email, Phone: a.mobile || a.contact, City: a.city, Role: a.role, Status: a.status, Verified: a.verified, Provider: a.provider }));
 
         const worksheet = XLSX.utils.json_to_sheet(rows);
         const workbook = XLSX.utils.book_new();
@@ -169,8 +169,8 @@ export default function AllAdmin() {
             key: "status",
             label: "Status",
             render: (admin) => (
-                <span className={`px-2 py-1 text-xs rounded-full font-bold ${admin.isVerified ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
-                    {admin.isVerified ? "Verified" : "Unverified"}
+                <span className={`px-2 py-1 text-xs rounded-full font-bold ${admin.verified ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                    {admin.verified ? "Verified" : "Unverified"}
                 </span>
             )
         },

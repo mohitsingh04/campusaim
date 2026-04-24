@@ -25,7 +25,7 @@ export function Badge({ label, color = "gray", size = "sm" }: BadgeProps) {
 
   return (
     <span
-      className={`inline-flex items-center rounded-full font-bold ${sizes[size]}`}
+      className={`inline-flex items-center rounded-full font-bold capitalize ${sizes[size]}`}
       style={{
         backgroundColor: bgColor,
         color: textColor,

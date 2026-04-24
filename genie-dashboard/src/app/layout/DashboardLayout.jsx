@@ -27,7 +27,7 @@ export default function DashboardLayout({ title, children }) {
     }, []);
 
     return (
-        <div className="min-h-screen bg-slate-50 flex selection:bg-blue-100 selection:text-blue-900">
+        <div className="min-h-screen bg-slate-100 flex selection:bg-blue-100 selection:text-blue-900">
             <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
             <div

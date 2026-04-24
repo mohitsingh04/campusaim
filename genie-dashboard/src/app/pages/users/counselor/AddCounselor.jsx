@@ -4,7 +4,7 @@ import { useFormik } from 'formik';
 import * as Yup from "yup";
 import toast from 'react-hot-toast';
 import InputMask from 'react-input-mask';
-import { API } from '../../../services/API';
+import { API, CampusaimAPI } from '../../../services/API';
 import Breadcrumbs from "../../../components/ui/BreadCrumb/Breadcrumbs";
 import { ArrowLeft } from "lucide-react";
 import { capitalizeWords } from '../../../utils/format';
@@ -13,6 +13,23 @@ import FormPhoneInput from '../../../components/ui/Form/FormPhoneInput';
 
 export default function AddCounselor() {
     const navigate = useNavigate();
+    const [roles, setRoles] = useState([]);
+    const [counselor, setCounselor] = useState(null);
+
+    const fetchRoles = async () => {
+        try {
+            const { data } = await CampusaimAPI.get("/profile/role");
+            const counselor = data.filter((a) => (a.role === "Counselor"));
+            setCounselor(counselor[0]);
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to fetch roles.");
+        }
+    };
+
+    useEffect(() => {
+        fetchRoles();
+    }, []);
 
     const validationSchema = Yup.object({
         name: Yup.string()
@@ -22,18 +39,18 @@ export default function AddCounselor() {
         email: Yup.string()
             .email("Invalid email")
             .required("Email is required."),
-        contact: Yup.string()
-            .required("Contact number is required.")
+        mobile_no: Yup.string()
+            .required("Mobile number is required.")
             .transform(value => value.replace(/\s/g, ""))
-            .matches(/^[6-9][0-9]{9}$/, "Please enter a valid 10-digit contact number"),
+            .matches(/^[6-9][0-9]{9}$/, "Please enter a valid 10-digit mobile number"),
     });
 
     const initialValues = {
         name: "",
         email: "",
-        contact: "",
+        mobile_no: "",
         bio: "",
-        role: "counselor", // ✅ default value
+        role: counselor?._id, // ✅ default value
     };
 
 
@@ -116,11 +133,11 @@ export default function AddCounselor() {
                                     />
                                 </div>
 
-                                {/* Contact */}
+                                {/* Mobile no. */}
                                 <div className="space-y-1">
                                     <FormPhoneInput
-                                        label="Contact"
-                                        name="contact"
+                                        label="Mobile no."
+                                        name="mobile_no"
                                         formik={formik}
                                     />
                                 </div>

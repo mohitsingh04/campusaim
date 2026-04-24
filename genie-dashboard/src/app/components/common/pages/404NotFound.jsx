@@ -1,8 +1,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../context/AuthContext';
 
 const NotFound = () => {
     const navigate = useNavigate();
+    const { authUser } = useAuth();
 
     const handleRedirect = () => {
         navigate('/dashboard');
@@ -19,7 +21,7 @@ const NotFound = () => {
                 onClick={handleRedirect}
                 className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
             >
-                Go to Dashboard
+                {authUser ? "Go to Dashboard" : "Go Back"}
             </button>
         </div>
     );

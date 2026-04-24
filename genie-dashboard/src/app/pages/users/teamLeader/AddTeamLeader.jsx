@@ -4,7 +4,7 @@ import { useFormik } from 'formik';
 import * as Yup from "yup";
 import toast from 'react-hot-toast';
 import InputMask from 'react-input-mask';
-import { API } from '../../../services/API';
+import { API, CampusaimAPI } from '../../../services/API';
 import Breadcrumbs from "../../../components/ui/BreadCrumb/Breadcrumbs";
 import { ArrowLeft } from "lucide-react";
 import FormPhoneInput from '../../../components/ui/Form/FormPhoneInput';
@@ -13,6 +13,22 @@ import { capitalizeWords } from '../../../utils/format';
 
 export default function AddTeamLeader() {
   const navigate = useNavigate();
+  const [teamLeader, setTeamLeader] = useState(null);
+
+  const fetchRoles = async () => {
+    try {
+      const { data } = await CampusaimAPI.get("/profile/role");
+      const teamleader = data.filter((a) => (a.role === "Team Leader"));
+      setTeamLeader(teamleader[0]);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to fetch roles.");
+    }
+  };
+
+  useEffect(() => {
+    fetchRoles();
+  }, []);
 
   const validationSchema = Yup.object({
     name: Yup.string()
@@ -22,18 +38,18 @@ export default function AddTeamLeader() {
     email: Yup.string()
       .email("Invalid email")
       .required("Email is required."),
-    contact: Yup.string()
-      .required("Contact number is required.")
+    mobile_no: Yup.string()
+      .required("Mobile number is required.")
       .transform(value => value.replace(/\s/g, ""))
-      .matches(/^[6-9][0-9]{9}$/, "Please enter a valid 10-digit contact number"),
+      .matches(/^[6-9][0-9]{9}$/, "Please enter a valid 10-digit mobile number"),
   });
 
   const initialValues = {
     name: "",
     email: "",
-    contact: "",
+    mobile_no: "",
     bio: "",
-    role: "teamleader", // ✅ default value
+    role: teamLeader?._id, // ✅ default value
   };
 
 
@@ -116,11 +132,11 @@ export default function AddTeamLeader() {
                   />
                 </div>
 
-                {/* Contact */}
+                {/* Mobile no. */}
                 <div className="space-y-1">
                   <FormPhoneInput
-                    label="Contact"
-                    name="contact"
+                    label="Mobile no."
+                    name="mobile_no"
                     formik={formik}
                   />
                 </div>

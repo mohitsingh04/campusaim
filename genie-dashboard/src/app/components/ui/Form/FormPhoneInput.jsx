@@ -5,7 +5,7 @@ export default function FormPhoneInput({
     label,
     name,
     formik,
-    placeholder = "Enter contact number",
+    placeholder = "Enter number",
     prefix = "+91",
     disabled = false
 }) {

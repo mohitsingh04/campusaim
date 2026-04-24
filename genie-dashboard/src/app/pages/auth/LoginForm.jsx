@@ -6,7 +6,7 @@ import { toast } from 'react-hot-toast';
 import { Eye, Mail, Lock, AlertCircle, EyeOff } from 'lucide-react';
 import Logo from "../../assets/campusaim/logo/campusaim-logo.png";
 import WelcomeImage from "../../assets/images/welcome-image.png";
-import { API } from '../../services/API';
+import { API, CampusaimAPI } from '../../services/API';
 import Loader from '../../common/Loader/Loader';
 import GoogleAuthButton from '../../components/GoogleAuthButton/GoogleAuthButton';
 
@@ -31,7 +31,8 @@ const LoginForm = () => {
     setIsLoading(true);
 
     try {
-      const response = await API.post("/login", values, {
+      // const response = await API.post("/login", values, {
+      const response = await CampusaimAPI.post("/profile/login", values, {
         withCredentials: true
       });
 

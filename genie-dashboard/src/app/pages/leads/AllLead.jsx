@@ -37,7 +37,7 @@ const ITEMS_PER_PAGE = 10;
 export default function AllLead() {
     const navigate = useNavigate();
     const { authUser } = useAuth();
-    const role = authUser?.role;
+    const role = authUser?.appRole;
 
     // Stores the complete unpaginated dataset from the backend
     const [allLeads, setAllLeads] = useState([]);

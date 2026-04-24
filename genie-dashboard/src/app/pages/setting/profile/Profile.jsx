@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { API } from '../../../services/API';
+import { API, CampusaimAPI } from '../../../services/API';
 import toast from 'react-hot-toast';
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -16,6 +16,28 @@ import Select from "react-select";
 
 const MAX_BIO = 2000;
 
+const formatPhoneForUI = (phone = "") => {
+    if (!phone) return "";
+
+    // remove +91
+    const number = phone.replace(/^\+91/, "");
+
+    // format: 91863 04782
+    return number.replace(/(\d{5})(\d{5})/, "$1 $2");
+};
+
+const formatPhoneForDB = (phone = "") => {
+    if (!phone) return "";
+
+    // remove spaces + non-digits
+    const digits = phone.replace(/\D/g, "");
+
+    // ensure 10 digits
+    if (digits.length !== 10) return "";
+
+    return `+91${digits}`;
+};
+
 function Profile() {
     const navigate = useNavigate();
     const [authUser, setAuthUser] = useState(null);
@@ -25,8 +47,9 @@ function Profile() {
 
     const getAuthUserData = async () => {
         try {
-            const { data } = await API.get("/profile");
-            setAuthUser(data?.data);
+            const { data } = await CampusaimAPI.get("/profile/detail");
+            console.log("Data: ", data)
+            setAuthUser(data);
         } catch (error) {
             toast.error(error.message || "Failed to fetch profile");
         }
@@ -55,10 +78,10 @@ function Profile() {
         email: Yup.string()
             .email("Invalid email")
             .required("Email is required."),
-        contact: Yup.string()
-            .required("Contact number is required.")
+        mobile_no: Yup.string()
+            .required("Mobile number is required.")
             .transform(value => value.replace(/\s/g, ""))
-            .matches(/^(\+91|0)?[6-9][0-9]{9}$/, "Please enter a valid Indian contact number"),
+            .matches(/^(\+91|0)?[6-9][0-9]{9}$/, "Please enter a valid Indian mobile number"),
         bio: Yup.string().max(MAX_BIO, `Max ${MAX_BIO} characters`),
         nicheId: Yup.string().required("Niche is required."),
     });
@@ -67,7 +90,7 @@ function Profile() {
         profile_image: authUser?.profile_image || "",
         name: authUser?.name || "",
         email: authUser?.email || "",
-        contact: authUser?.contact || "",
+        mobile_no: formatPhoneForUI(authUser?.mobile_no) || "",
         nicheId: authUser?.nicheId ? String(authUser.nicheId) : "",
         bio: authUser?.bio || "",
     }
@@ -77,7 +100,7 @@ function Profile() {
         const formData = new FormData();
         formData.append("name", values.name);
         formData.append("email", values.email);
-        formData.append("contact", values.contact);
+        formData.append("mobile_no", formatPhoneForDB(values.mobile_no));
         formData.append("nicheId", values.nicheId);
         formData.append("bio", values.bio);
         formData.append("profile_image", values.profile_image);
@@ -205,12 +228,12 @@ function Profile() {
                                 disabled={true}
                             />
 
-                            {/* Contact */}
+                            {/* Mobile Number */}
                             <FormPhoneInput
-                                label="Contact"
-                                name="contact"
+                                label="Mobile Number"
+                                name="mobile_no"
                                 formik={formik}
-                                disabled={!!authUser?.contact}
+                                disabled={!!authUser?.mobile_no}
                             />
 
                             <div className="flex flex-col gap-1">

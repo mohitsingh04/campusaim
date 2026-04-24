@@ -16,8 +16,18 @@ const ROUTE_MAP = {
     teamleader: teamleaderRoutes
 };
 
-export default function DashboardRoutes({ role }) {
-    const routes = ROUTE_MAP[role] || [];
+export default function DashboardRoutes({ appRole }) {
+    const routes = ROUTE_MAP[appRole];
+
+    if (!routes) {
+        console.error("Invalid role:", appRole);
+
+        return (
+            <Routes>
+                <Route path="*" element={<NotFound />} />
+            </Routes>
+        );
+    }
 
     return (
         <Routes>

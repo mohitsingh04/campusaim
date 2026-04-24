@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { User, LogOut, ChevronDown } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { API } from "../../services/API";
+import { API, CampusaimAPI } from "../../services/API";
 import { useAuth } from "../../context/AuthContext";
 import Avatar from "../common/Avatar/Avatar";
 import Skeleton from "react-loading-skeleton";
@@ -15,7 +15,7 @@ export default function ProfileDropdown() {
 
     const handleLogout = async () => {
         try {
-            await API.post("/logout", {}, { withCredentials: true });
+            await CampusaimAPI.get("/profile/logout", {}, { withCredentials: true });
             navigate("/");
         } catch (error) {
             // MANDATORY: Surface errors to the user in production, do not just log.
@@ -67,10 +67,18 @@ export default function ProfileDropdown() {
                     src={authUser?.profile_image}
                     size={9}
                 />
-                <div className="hidden sm:flex items-center gap-1">
-                    <span className="text-sm font-medium text-slate-700">
-                        {authUser?.name || "Guest"}
-                    </span>
+                <div className="hidden sm:flex items-center gap-2">
+                    {/* Text block */}
+                    <div className="flex flex-col leading-tight">
+                        <span className="text-sm font-medium text-slate-700">
+                            {authUser?.username || "Guest"}
+                        </span>
+                        <span className="text-xs text-slate-500">
+                            {authUser?.appRole}
+                        </span>
+                    </div>
+
+                    {/* Icon */}
                     <ChevronDown
                         className={`w-4 h-4 text-slate-500 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
                     />

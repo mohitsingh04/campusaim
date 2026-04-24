@@ -11,7 +11,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
     const location = useLocation();
     const [expandedItem, setExpandedItem] = useState(null);
 
-    const items = authUser?.role ? NAVIGATION[authUser.role] || [] : [];
+    const items = authUser?.appRole ? NAVIGATION[authUser.appRole] || [] : [];
 
     // Helper to find which parent should be expanded based on current path
     // Inside Sidebar.jsx
