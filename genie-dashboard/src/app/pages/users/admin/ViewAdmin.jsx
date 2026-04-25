@@ -8,19 +8,19 @@ import ViewAdminSkeletonPage from './skeleton-page/ViewAdminSkeletonPage';
 import UserList from './admin-components/UserList';
 import Analytics from './admin-components/Analytics';
 import Details from './admin-components/Details';
-import { API } from '../../../services/API';
+import { API, CampusaimAPI } from '../../../services/API';
 import Breadcrumbs from '../../../components/ui/BreadCrumb/Breadcrumbs';
 import AdminProfileCard from './admin-components/AdminProfileCard';
 
 // ========================= API FUNCTIONS =========================
 
 const fetchAdminOverview = async (id) => {
-    const { data } = await API.get(`/admin/${id}/overview`);
-    return data;
+    const { data } = await CampusaimAPI.get(`/fetch-admins/${id}`);
+    return data?.data;
 };
 
 const toggleAdminStatus = async (id) => {
-    const { data } = await API.post(`/toggle-status/${id}`);
+    const { data } = await CampusaimAPI.post(`/toggle-status/${id}`);
     return data;
 };
 

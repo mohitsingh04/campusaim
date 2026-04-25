@@ -24,7 +24,7 @@ export default function SummaryCard({
             .filter(Boolean)
             .join(", ");
 
-    const isActive = status === "active";
+    const isActive = status === "Active";
 
     return (
         <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 sm:p-6 overflow-hidden">
@@ -72,7 +72,7 @@ export default function SummaryCard({
                                 <div className="flex items-start gap-2">
                                     <Phone className="w-4 h-4 text-gray-400 shrink-0 mt-0.5" />
                                     <span className="break-all">
-                                        {data?.contact || "N/A"}
+                                        {data?.mobile_no || "N/A"}
                                     </span>
                                 </div>
 

@@ -8,7 +8,6 @@ import EditCounselor from "../../pages/users/counselor/EditCounselor";
 
 /* ===== PARTNERS ===== */
 import AllPartner from "../../pages/users/partner/AllPartner";
-import AddPartner from "../../pages/users/partner/AddPartner";
 import EditPartner from "../../pages/users/partner/EditPartner";
 import ViewPartner from "../../pages/users/partner/ViewPartner";
 
@@ -56,7 +55,6 @@ export const adminRoutes = [
 
     /* ===== PARTNERS ===== */
     { path: "users/partners", element: <AllPartner /> },
-    { path: "users/partners/add", element: <AddPartner /> },
     { path: "users/partners/edit/:id", element: <EditPartner /> },
     { path: "users/partners/view/:id", element: <ViewPartner /> },
 

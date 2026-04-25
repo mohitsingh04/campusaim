@@ -5,7 +5,7 @@ import {
     ArrowLeft
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { API } from '../../../services/API';
+import { API, CampusaimAPI } from '../../../services/API';
 import LeadsTab from '../../../components/common/LeadsTab/LeadsTab';
 import AssignedCounselors from './components/AssignedCounselors';
 import Analytics from './components/Analytics';
@@ -45,8 +45,8 @@ export default function ViewTeamLeader() {
         const fetchData = async () => {
             setIsLoading(true);
             try {
-                const teamLeaderRes = await API.get(`/fetch-team-leader/${id}`);
-                const teamLeader = teamLeaderRes?.data;
+                const teamLeaderRes = await CampusaimAPI.get(`/fetch-teamleader/${id}`);
+                const teamLeader = teamLeaderRes?.data?.data;
                 setTeamLeaderData(teamLeader);
                 setStatus(teamLeader?.status);
 
@@ -90,12 +90,12 @@ export default function ViewTeamLeader() {
         setLoading(true);
 
         try {
-            const res = await API.post(`/toggle-status/${teamLeaderData._id}`);
+            const res = await CampusaimAPI.post(`/toggle-status/${teamLeaderData._id}`);
 
             if (res.data?.status) {
                 setStatus(res.data.status);
                 toast.success(
-                    `User is now ${res.data.status === "active" ? "Active" : "Suspended"}`
+                    `User is now ${res.data.status === "Active" ? "Active" : "Suspended"}`
                 );
             } else {
                 throw new Error("Invalid response");
@@ -128,7 +128,7 @@ export default function ViewTeamLeader() {
                 items={[
                     { label: "Dashboard", to: "/dashboard" },
                     { label: "Team Leader", to: "/dashboard/users/team-leaders" },
-                    { label: "Team Leader View" },
+                    { label: "View" },
                 ]}
                 actions={[
                     {

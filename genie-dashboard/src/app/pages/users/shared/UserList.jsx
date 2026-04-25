@@ -307,12 +307,12 @@ export default function UserList({
                 : []),
 
 
-            /* ================= IsVerified ================= */
+            /* ================= verified ================= */
             {
-                key: "isVerified",
+                key: "verified",
                 label: "Verified",
                 render: (u) => {
-                    const verified = Boolean(u.isVerified);
+                    const verified = Boolean(u.verified);
 
                     return (
                         <span
@@ -376,8 +376,8 @@ export default function UserList({
             if (item.status === "active") active++;
             else if (item.status === "suspended") suspended++;
 
-            if (item.isVerified === true) verified++;
-            else if (item.isVerified === false) notVerified++;
+            if (item.verified === true) verified++;
+            else if (item.verified === false) notVerified++;
         }
 
         const total = items?.length || 0;

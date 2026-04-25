@@ -2,6 +2,7 @@ import React, { useEffect, useState, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import 'react-loading-skeleton/dist/skeleton.css';
 import "sweetalert2/dist/sweetalert2.min.css";
+import "react-phone-input-2/lib/style.css";
 
 import ProtectedRoute from './app/routes/ProtectedRoute';
 import GuestRoute from './app/routes/GuestRoute';
@@ -24,6 +25,7 @@ const RegisterForm = lazy(() => import('../src/app/pages/auth/RegisterForm'));
 const ForgotPasswordForm = lazy(() => import('../src/app/pages/auth/ForgotPasswordForm'));
 const VerifyOtp = lazy(() => import('../src/app/pages/auth/VerifyOtp'));
 const VerifyEmail = lazy(() => import('../src/app/pages/auth/VerifyEmail'));
+const Verify = lazy(() => import('../src/app/pages/auth/Verify'));
 const VerifyEmailSuccess = lazy(() => import('../src/app/pages/auth/VerifyEmailSuccess'));
 const ResetPassword = lazy(() => import('../src/app/pages/auth/ResetPassword'));
 
@@ -43,6 +45,7 @@ function App() {
           <Route path="/reset-password" element={<GuestRoute><ResetPassword /></GuestRoute>} />
           <Route path="/verify-otp" element={<GuestRoute><VerifyOtp /></GuestRoute>} />
           <Route path="/verify-email" element={<GuestRoute><VerifyEmail /></GuestRoute>} />
+          <Route path="//auth/verify-email/confirm/:token" element={<GuestRoute><Verify /></GuestRoute>} />
           <Route path="/verify-email/success" element={<GuestRoute><VerifyEmailSuccess /></GuestRoute>} />
           <Route path="/partner/register/:token" element={<GuestRoute><InviterPartner /></GuestRoute>} />
           <Route path="/ref" element={<GuestRoute><Ref /></GuestRoute>} />

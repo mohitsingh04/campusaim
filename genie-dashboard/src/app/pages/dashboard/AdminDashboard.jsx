@@ -131,18 +131,6 @@ export default function AdminDashboard() {
     }
   };
 
-  useEffect(() => {
-    if (isError) toast.error("Failed to load dashboard");
-  }, [isError]);
-
-  if (isError) {
-    return (
-      <div className="p-6 text-center text-red-500 bg-red-50 rounded-xl">
-        Failed to load admin dashboard.
-      </div>
-    );
-  }
-
   /* ---------------- KPI CARDS ---------------- */
   const statsData = useMemo(() => {
     if (!data) return {};
@@ -397,6 +385,18 @@ export default function AdminDashboard() {
       },
     },
   };
+
+  useEffect(() => {
+    if (isError) toast.error("Failed to load dashboard");
+  }, [isError]);
+
+  if (isError) {
+    return (
+      <div className="p-6 text-center text-red-500 bg-red-50 rounded-xl">
+        Failed to load admin dashboard.
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

@@ -6,7 +6,7 @@ import WelcomeImage from "../../assets/images/welcome-image.png";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-hot-toast";
-import { API } from "../../services/API";
+import { API,CampusaimAPI } from "../../services/API";
 import InputMask from "react-input-mask";
 import { capitalizeWords, trimValue } from '../../utils/format';
 
@@ -18,13 +18,19 @@ export default function InviterPartner() {
     const [showPassword, setShowPassword] = useState(false);
 
     const validationSchema = Yup.object({
+        username: Yup.string()
+            .transform((value) => value?.toLowerCase().trim()) // force lowercase + trim
+            .matches(/^[a-z0-9]+$/, "Only lowercase letters and numbers allowed (no spaces).")
+            .min(2, "Username must contain at least 2 characters.")
+            .max(30, "Username cannot exceed 30 characters.")
+            .required("Username is required."),
         name: Yup.string()
             .required("Name is required.")
             .matches(/^(?!.*\s{2})[A-Za-z\s]+$/, "Only alphabets & single spaces allowed.")
             .min(2, "Minimum 2 characters"),
         email: Yup.string().email("Invalid email").required("Email is required."),
-        contact: Yup.string()
-            .required("Contact number is required.")
+        mobile_no: Yup.string()
+            .required("Mobile number is required.")
             .transform((v) => v.replace(/\s/g, ""))
             .matches(/^(\+91|0)?[6-9][0-9]{9}$/, "Enter valid Indian number"),
         password: Yup.string()
@@ -33,7 +39,7 @@ export default function InviterPartner() {
     });
 
     const formik = useFormik({
-        initialValues: { name: "", email: "", contact: "", password: "" },
+        initialValues: { username: "", name: "", email: "", mobile_no: "", password: "" },
         validationSchema,
         onSubmit: async (values, { setSubmitting }) => {
             if (!token) {
@@ -43,18 +49,20 @@ export default function InviterPartner() {
 
             const toastId = toast.loading("Creating your partner account...");
             try {
-                const cleanedContact = values.contact.replace(/\s/g, "");
+                const cleanedContact = values.mobile_no.replace(/\s/g, "");
 
-                const res = await API.post(`/auth/partner/register/${token}`, {
+                const res = await CampusaimAPI.post(`/auth/partner/register/${token}`, {
+                    username: values.username.trim(),
                     name: values.name.trim(),
                     email: values.email.trim().toLowerCase(),
-                    contact: cleanedContact,
+                    mobile_no: cleanedContact,
                     password: values.password,
                 });
 
                 toast.success(res.data?.message || "Registered successfully", { id: toastId });
                 navigate("/");
             } catch (err) {
+                console.log("ERRUR:", err)
                 const msg =
                     err.response?.data?.error ||
                     "Registration failed. Please try again.";
@@ -95,6 +103,28 @@ export default function InviterPartner() {
                     </div>
 
                     <form className="space-y-5" onSubmit={formik.handleSubmit}>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Username
+                            </label>
+                            <div className="relative">
+                                <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                                <input
+                                    type="text"
+                                    name="username"
+                                    placeholder="Enter your username"
+                                    value={formik.values.username}
+                                    onChange={formik.handleChange}
+                                    onBlur={formik.handleBlur}
+                                    className={`w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm ${formik.touched.username && formik.errors.username ? "border-red-500" : ""
+                                        }`}
+                                />
+                            </div>
+                            {formik.touched.username && formik.errors.username && (
+                                <small className="text-red-500">{formik.errors.username}</small>
+                            )}
+                        </div>
+
                         {/* Name */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -149,10 +179,10 @@ export default function InviterPartner() {
                             )}
                         </div>
 
-                        {/* Contact */}
+                        {/* Mobile */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Contact No.
+                                Mobile Number
                             </label>
                             <div className="relative flex rounded-lg shadow-sm">
                                 <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-100 text-gray-700 text-sm">
@@ -161,8 +191,8 @@ export default function InviterPartner() {
                                 <InputMask
                                     mask="99999 99999"
                                     maskChar=""
-                                    name="contact"
-                                    value={formik.values.contact}
+                                    name="mobile_no"
+                                    value={formik.values.mobile_no}
                                     onChange={formik.handleChange}
                                     onBlur={formik.handleBlur}
                                 >
@@ -171,7 +201,7 @@ export default function InviterPartner() {
                                             {...inputProps}
                                             type="text"
                                             placeholder="Enter your number"
-                                            className={`w-full pr-4 py-2.5 ps-3 border rounded-r-lg text-sm focus:ring-2 focus:ring-blue-500 ${formik.touched.contact && formik.errors.contact
+                                            className={`w-full pr-4 py-2.5 ps-3 border rounded-r-lg text-sm focus:ring-2 focus:ring-blue-500 ${formik.touched.mobile_no && formik.errors.mobile_no
                                                 ? "border-red-500"
                                                 : "border-gray-300"
                                                 }`}
@@ -179,8 +209,8 @@ export default function InviterPartner() {
                                     )}
                                 </InputMask>
                             </div>
-                            {formik.touched.contact && formik.errors.contact && (
-                                <small className="text-red-500">{formik.errors.contact}</small>
+                            {formik.touched.mobile_no && formik.errors.mobile_no && (
+                                <small className="text-red-500">{formik.errors.mobile_no}</small>
                             )}
                         </div>
 

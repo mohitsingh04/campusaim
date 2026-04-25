@@ -5,7 +5,7 @@ import {
     ArrowLeft
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { API } from '../../../services/API';
+import { API, CampusaimAPI } from '../../../services/API';
 import LeadsTab from '../../../components/common/LeadsTab/LeadsTab';
 import Breadcrumbs from '../../../components/ui/BreadCrumb/Breadcrumbs';
 import ViewUserSkeleton from '../shared/Skeleton/ViewUserSkeleton';
@@ -43,8 +43,8 @@ export default function ViewPartner() {
         const fetchData = async () => {
             setIsLoading(true);
             try {
-                const partnerRes = await API.get(`/fetch-partner/${id}`);
-                const partner = partnerRes?.data;
+                const partnerRes = await CampusaimAPI.get(`/fetch-partner/${id}`);
+                const partner = partnerRes?.data?.data;
                 setPartnerData(partner);
                 setStatus(partner?.status);
 

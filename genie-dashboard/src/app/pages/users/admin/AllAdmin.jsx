@@ -5,7 +5,7 @@ import * as XLSX from "xlsx";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 
-import { API } from "../../../services/API";
+import { API, CampusaimAPI } from "../../../services/API";
 import { useAuth } from "../../../context/AuthContext";
 import Breadcrumbs from "../../../components/ui/BreadCrumb/Breadcrumbs";
 import SearchFilter from "../../../components/common/SearchFilter/SearchFilter";
@@ -31,10 +31,8 @@ const timeAgo = (date) => {
 };
 
 // ========================= API SERVICES =========================
-const fetchAdmins = async ({ page, search }) => {
-    const { data } = await API.get(`/admins`, {
-        params: { page, limit: ITEMS_PER_PAGE, search }
-    });
+const fetchAdmins = async () => {
+    const { data } = await CampusaimAPI.get(`/fetch-admins`);
     return data;
 };
 
@@ -59,17 +57,14 @@ export default function AllAdmin() {
     const [selectedAdmins, setSelectedAdmins] = useState(new Set());
 
     // ========================= QUERY LOGIC =========================
-    const { data: adminData = { admins: [], stats: [], total: 0 }, isLoading, isError, error } = useQuery({
-        queryKey: ["admins", { page: currentPage, search: debouncedSearch }],
-        queryFn: () => fetchAdmins({
-            page: currentPage,
-            search: debouncedSearch.length >= 2 ? debouncedSearch : "",
-        }),
+    const { data: adminData = { admins: [], stats: [], total: 0 }, isLoading } = useQuery({
+        queryKey: ["admins"],
+        queryFn: fetchAdmins,
         enabled: !!authUser,
         staleTime: 1000 * 60 * 5,
-        placeholderData: (previousData) => previousData, // Modern TanStack replacement for keepPreviousData
         select: (data) => {
             const admins = data.users || [];
+
             let counts = { active: 0, suspended: 0, verified: 0, unverified: 0 };
 
             admins.forEach(admin => {
@@ -78,20 +73,21 @@ export default function AllAdmin() {
                 admin?.verified ? counts.verified++ : counts.unverified++;
             });
 
-            const stats = [
-                { label: "Total Admins", value: data.total, icon: Users, iconBg: "bg-blue-100", iconColor: "text-blue-600" },
-                { label: "Active Admins", value: counts.active, icon: ShieldCheck, iconBg: "bg-green-100", iconColor: "text-green-600" },
-                { label: "Suspended Admins", value: counts.suspended, icon: UserX, iconBg: "bg-red-100", iconColor: "text-red-600" },
-                { label: "Verified Admins", value: counts.verified, icon: UserCheck, iconBg: "bg-emerald-100", iconColor: "text-emerald-600" },
-                { label: "Unverified Admins", value: counts.unverified, icon: UserX, iconBg: "bg-yellow-100", iconColor: "text-yellow-600" },
-            ];
-
-            return { admins, stats, total: data.total };
-        },
+            return {
+                admins,
+                total: admins.length,
+                stats: [
+                    { label: "Total Admins", value: data.total, icon: Users, iconBg: "bg-blue-100", iconColor: "text-blue-600" },
+                    { label: "Active Admins", value: counts.active, icon: ShieldCheck, iconBg: "bg-green-100", iconColor: "text-green-600" },
+                    { label: "Suspended Admins", value: counts.suspended, icon: UserX, iconBg: "bg-red-100", iconColor: "text-red-600" },
+                    { label: "Verified Admins", value: counts.verified, icon: UserCheck, iconBg: "bg-emerald-100", iconColor: "text-emerald-600" },
+                    { label: "Unverified Admins", value: counts.unverified, icon: UserX, iconBg: "bg-yellow-100", iconColor: "text-yellow-600" },
+                ]
+            };
+        }
     });
 
     // ========================= MUTATIONS =========================
-
     const deleteMutation = useMutation({
         mutationFn: deleteAdmin,
         onSuccess: () => {
@@ -215,8 +211,6 @@ export default function AllAdmin() {
                 showSerial
                 startIndex={(currentPage - 1) * ITEMS_PER_PAGE}
             />
-
-            <Pagination currentPage={currentPage} totalItems={adminData.total} pageSize={ITEMS_PER_PAGE} onPageChange={handlePageChange} />
         </div>
     );
 }

@@ -105,7 +105,7 @@ export default function SettingsOffcanvas({
 			icon: FiShield,
 			label: "APP",
 			subLabel: "Manage Your Enquiry/Leads",
-			href: process.env.NEXT_PUBLIC_LEAD_API_URL!,
+			href: process.env.NEXT_PUBLIC_APP_URL!,
 			external: true,
 			hide: getRoleById(profile?.role || "") !== "User" ? false : true,
 		},

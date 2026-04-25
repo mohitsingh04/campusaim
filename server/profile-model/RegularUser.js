@@ -30,6 +30,7 @@ const regularUserSchema = mongoose.Schema({
     type: String,
   },
   ref_code: { type: String, unique: true, default: undefined },
+  ref_by: { type: String, default: undefined },
   password: {
     type: String,
   },

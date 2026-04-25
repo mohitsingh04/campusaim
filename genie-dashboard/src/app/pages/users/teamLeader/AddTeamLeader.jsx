@@ -57,7 +57,7 @@ export default function AddTeamLeader() {
     const toastId = toast.loading("Adding...");
 
     try {
-      const response = await API.post(`/add-user`, values);
+      const response = await CampusaimAPI.post(`/add-user`, values);
       toast.success(response.data.message || "Added successfully!", { id: toastId });
       navigate("/dashboard/users/team-leaders");
     } catch (error) {

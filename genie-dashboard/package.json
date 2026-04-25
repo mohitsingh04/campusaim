@@ -34,6 +34,7 @@
 		"react-input-mask": "^2.0.4",
 		"react-loading-skeleton": "^3.5.0",
 		"react-markdown": "^10.1.0",
+		"react-phone-input-2": "^2.15.1",
 		"react-qr-code": "^2.0.18",
 		"react-router-dom": "^7.6.3",
 		"react-select": "^5.10.2",

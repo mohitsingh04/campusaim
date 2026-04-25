@@ -5,7 +5,7 @@ import * as Yup from "yup";
 import toast from 'react-hot-toast';
 import InputMask from 'react-input-mask';
 import { ArrowBigLeft, ArrowLeft, Pencil } from 'lucide-react';
-import { API } from '../../../services/API';
+import { API, CampusaimAPI } from '../../../services/API';
 import Breadcrumbs from '../../../components/ui/BreadCrumb/Breadcrumbs';
 import Button from '../../../components/ui/Button/Button';
 
@@ -13,32 +13,36 @@ function EditCounselor() {
     const { id } = useParams();
     const navigate = useNavigate();
     const [counselorData, setCounselorData] = useState(null);
-    const [permissionsData, setPermissionsData] = useState([]);
+    const [roles, setRoles] = useState([]);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const counselorRes = await API.get(`/fetch-counselor/${id}`);
+                const counselorRes = await CampusaimAPI.get(`/fetch-counselor/${id}`);
                 const counselor = counselorRes?.data?.data;
                 setCounselorData(counselor);
             } catch (error) {
                 console.error("Error fetching counselor:", error.message);
             }
         };
-        const fetchPermissions = async () => {
+
+        const fetchRoles = async () => {
             try {
-                const permissionRes = await API.get(`/fetch-permissions`);
-                const permission = permissionRes?.data;
-                setPermissionsData(permission);
+                const roleRes = await CampusaimAPI.get(`/profile/role`);
+                const rolesData = Array.isArray(roleRes?.data)
+                    ? roleRes.data
+                    : roleRes?.data?.data || [];
+                setRoles(rolesData);
             } catch (error) {
-                console.error("Error fetching permissions:", error.message);
+                console.error("Error fetching role:", error.message);
+                setRoles([]);
             }
         };
 
-        fetchPermissions();
+        fetchRoles();
         fetchData();
     }, [id]);
-    
+
     const validationSchema = Yup.object({
         name: Yup.string()
             .required("Name is required.")
@@ -47,10 +51,10 @@ function EditCounselor() {
         email: Yup.string()
             .email("Invalid email")
             .required("Email is required."),
-        contact: Yup.string()
-            .required("Contact number is required.")
+        mobile_no: Yup.string()
+            .required("Mobile number is required.")
             .transform(value => value.replace(/\s/g, ""))
-            .matches(/^(\+91|0)?[6-9][0-9]{9}$/, "Please enter a valid Indian contact number"),
+            .matches(/^(\+91|0)?[6-9][0-9]{9}$/, "Please enter a valid Indian mobile number"),
         role: Yup.string()
             .required("Role is required.")
     });
@@ -58,11 +62,10 @@ function EditCounselor() {
     const initialValues = {
         name: counselorData?.name || "",
         email: counselorData?.email || "",
-        contact: counselorData?.contact || "",
+        mobile_no: counselorData?.mobile_no || "",
         bio: counselorData?.bio || "",
         role: counselorData?.role || "",
-        permission: counselorData?.permission || [],
-        isVerified: Boolean(counselorData?.isVerified),
+        verified: Boolean(counselorData?.verified),
     };
 
 
@@ -70,7 +73,7 @@ function EditCounselor() {
         const toastId = toast.loading("Saving...");
 
         try {
-            const response = await API.put(`/update-user/${counselorData?._id}`, values);
+            const response = await CampusaimAPI.put(`/update-user/${counselorData?._id}`, values);
             toast.success(response.data.message || "Updated successfully!", { id: toastId });
             navigate("/dashboard/users/counselors");
         } catch (error) {
@@ -94,7 +97,7 @@ function EditCounselor() {
                 items={[
                     { label: "Dashboard", to: "/dashboard" },
                     { label: "Counselor", to: "/dashboard/users/counselors" },
-                    { label: "Counselor View" },
+                    { label: "Edit" },
                 ]}
                 actions={
                     <div className="flex gap-2">
@@ -152,9 +155,9 @@ function EditCounselor() {
                                     }
                                 </div>
 
-                                {/* Contact */}
+                                {/* Mobile Number */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Contact</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Mobile Number</label>
                                     <div className="flex rounded-lg shadow-sm">
                                         <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-100 text-gray-700 text-sm select-none">
                                             +91
@@ -162,8 +165,8 @@ function EditCounselor() {
                                         <InputMask
                                             mask="99999 99999"
                                             maskChar=""
-                                            name="contact"
-                                            value={formik.values.contact}
+                                            name="mobile_no"
+                                            value={formik.values.mobile_no}
                                             onChange={formik.handleChange}
                                             onBlur={formik.handleBlur}
                                         >
@@ -171,9 +174,9 @@ function EditCounselor() {
                                                 <input
                                                     {...inputProps}
                                                     type="text"
-                                                    className={`w-full px-3 py-2 border border-gray-300 rounded-r-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${formik.touched.contact && formik.errors.contact ? "border-red-500" : ""
+                                                    className={`w-full px-3 py-2 border border-gray-300 rounded-r-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${formik.touched.mobile_no && formik.errors.mobile_no ? "border-red-500" : ""
                                                         }`}
-                                                    placeholder="Enter your contact number..."
+                                                    placeholder="Enter your mobile number..."
                                                 />
                                             )}
                                         </InputMask>
@@ -191,8 +194,12 @@ function EditCounselor() {
                                         onBlur={formik.handleBlur}
                                     >
                                         <option value="">Select Role</option>
-                                        <option value="teamleader">Team Leader</option>
-                                        <option value="counselor">Counselor</option>
+                                        {roles?.length > 0 &&
+                                            roles.map((item) => (
+                                                <option key={item._id} value={item._id}>
+                                                    {item.role}
+                                                </option>
+                                            ))}
                                     </select>
                                     {formik.errors.role && formik.touched.role
                                         ? <small className="text-red-500">{formik.errors.role}</small>
@@ -215,37 +222,6 @@ function EditCounselor() {
                                 />
                             </div>
 
-                            {/* Permission */}
-                            {/* <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Permissions</label>
-                                <div className="grid grid-cols-2 gap-2">
-                                    {permissionsData && permissionsData.map((item, index) => (
-                                        <div key={item.uniqueId} className="flex items-center space-x-2">
-                                            <input
-                                                type="checkbox"
-                                                id={`permission-${item.uniqueId}`}
-                                                name="permission"
-                                                value={item.name}
-                                                checked={formik.values.permission.includes(item.name)}
-                                                onChange={(e) => {
-                                                    const value = e.target.value;
-                                                    const checked = e.target.checked;
-                                                    const updatedPermissions = checked
-                                                        ? [...formik.values.permission, value]
-                                                        : formik.values.permission.filter((perm) => perm !== value);
-                                                    formik.setFieldValue("permission", updatedPermissions);
-                                                }}
-                                                onBlur={formik.handleBlur}
-                                                className="h-4 w-4 text-blue-600 border-gray-300 rounded"
-                                            />
-                                            <label htmlFor={`permission-${item.uniqueId}`} className="text-gray-700 text-sm">
-                                                {item.name}
-                                            </label>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div> */}
-
                             <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
                                 {/* Verify Toggle */}
                                 <div>
@@ -256,22 +232,22 @@ function EditCounselor() {
                                     <button
                                         type="button"
                                         role="switch"
-                                        aria-checked={formik.values.isVerified}
+                                        aria-checked={formik.values.verified}
                                         onClick={() =>
-                                            formik.setFieldValue("isVerified", !formik.values.isVerified)
+                                            formik.setFieldValue("verified", !formik.values.verified)
                                         }
                                         onBlur={formik.handleBlur}
                                         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500
-      ${formik.values.isVerified ? "bg-green-500" : "bg-red-400"}`}
+      ${formik.values.verified ? "bg-green-500" : "bg-red-400"}`}
                                     >
                                         <span
                                             className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform
-        ${formik.values.isVerified ? "translate-x-6" : "translate-x-1"}`}
+        ${formik.values.verified ? "translate-x-6" : "translate-x-1"}`}
                                         />
                                     </button>
 
                                     <p className="mt-1 text-sm text-gray-500">
-                                        {formik.values.isVerified ? "Verified" : "Suspended"}
+                                        {formik.values.verified ? "Verified" : "Suspended"}
                                     </p>
                                 </div>
 

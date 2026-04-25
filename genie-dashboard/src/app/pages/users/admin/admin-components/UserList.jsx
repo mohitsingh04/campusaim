@@ -20,7 +20,7 @@ export default function UserList({ users = [], role }) {
             (u) =>
                 u.name?.toLowerCase().includes(q) ||
                 u.email?.toLowerCase().includes(q) ||
-                String(u.contact || "").includes(q)
+                String(u.mobile_no || "").includes(q)
         );
     }, [users, searchTerm]);
 
@@ -50,7 +50,7 @@ export default function UserList({ users = [], role }) {
             .map((u) => ({
                 Name: u.name,
                 Email: u.email,
-                Phone: u.contact,
+                Phone: u.mobile_no,
                 Status: u.status === "active" ? "Active" : "Suspended",
                 Verified: u.isVerified ? "Yes" : "No",
                 ...(role === "partner" && { RefCode: u.ref_code }),
@@ -97,7 +97,7 @@ export default function UserList({ users = [], role }) {
             {
                 key: "contact",
                 label: "Phone",
-                render: (u) => u.contact || "—",
+                render: (u) => u.mobile_no || "—",
             },
         ];
 

@@ -7,7 +7,7 @@ import { ArrowLeft } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import EditAdminSkeletonPage from "./skeleton-page/EditAdminSkeletonPage";
-import { API } from "../../../services/API";
+import { API, CampusaimAPI } from "../../../services/API";
 import Breadcrumbs from "../../../components/ui/BreadCrumb/Breadcrumbs";
 import FormInput from "../../../components/ui/Form/FormInput";
 import { capitalizeWords } from "../../../utils/format";
@@ -16,11 +16,34 @@ import FormTextarea from "../../../components/ui/Form/FormTextarea";
 import FormPhoneInput from "../../../components/ui/Form/FormPhoneInput";
 import FormSwitch from "../../../components/ui/Form/FormSwitch";
 
-// ========================= CONSTANTS & VALIDATION =========================
-
 const MAX_BIO = 2000;
 
+const formatPhoneForUI = (phone = "") => {
+    if (!phone) return "";
+
+    // remove +91
+    const number = phone.replace(/^\+91/, "");
+
+    // format: 91863 04782
+    return number.replace(/(\d{5})(\d{5})/, "$1 $2");
+};
+
+const formatPhoneForDB = (phone = "") => {
+    if (!phone) return "";
+
+    // remove spaces + non-digits
+    const digits = phone.replace(/\D/g, "");
+
+    // ensure 10 digits
+    if (digits.length !== 10) return "";
+
+    return `+91${digits}`;
+};
+
 const validationSchema = Yup.object({
+    username: Yup.string()
+        .required("Username is required")
+        .min(2, "Minimum 2 characters"),
     name: Yup.string()
         .required("Name is required")
         .matches(/^(?!.*\s{2})[A-Za-z\s]+$/, "Only alphabets allowed")
@@ -28,21 +51,22 @@ const validationSchema = Yup.object({
     email: Yup.string()
         .email("Invalid email")
         .required("Email is required"),
-    contact: Yup.string()
-        .required("Contact number required")
+    mobile_no: Yup.string()
+        .required("Mobile number required")
         .transform(v => v ? v.replace(/\s/g, "") : "")
         .matches(/^(\+91|0)?[6-9][0-9]{9}$/, "Invalid Indian number"),
     role: Yup.string().required("Role required"),
     bio: Yup.string().max(MAX_BIO, `Max ${MAX_BIO} characters`),
-    isVerified: Yup.boolean()
+    verified: Yup.boolean()
 });
 
 // ========================= API SERVICES =========================
 
 const fetchAdmin = async (id) => {
     if (!id) throw new Error("Admin ID required");
-    const { data } = await API.get(`/fetch-admin/${id}`);
-    return data;
+    const { data } = await CampusaimAPI.get(`/fetch-admins/${id}`);
+    console.log(data)
+    return data?.data;
 };
 
 // ========================= COMPONENT =========================
@@ -64,7 +88,7 @@ export default function EditAdmin() {
     // ========================= MUTATION =========================
 
     const updateAdminMutation = useMutation({
-        mutationFn: (values) => API.put(`/update-user/${id}`, values),
+        mutationFn: (values) => CampusaimAPI.put(`/update-user/${id}`, values),
         onSuccess: (res) => {
             toast.success(res?.data?.message || "Admin updated successfully");
             // Invalidate both the list and specific admin cache
@@ -83,12 +107,13 @@ export default function EditAdmin() {
     const formik = useFormik({
         enableReinitialize: true,
         initialValues: {
+            username: adminData?.username || "",
             name: adminData?.name || "",
             email: adminData?.email || "",
-            contact: adminData?.contact || "",
+            mobile_no: formatPhoneForUI(adminData?.mobile_no) || "",
             bio: adminData?.bio || "",
             role: adminData?.role || "",
-            isVerified: !!adminData?.isVerified
+            verified: !!adminData?.verified
         },
         validationSchema,
         onSubmit: (values) => {
@@ -126,6 +151,13 @@ export default function EditAdmin() {
                     {/* SECTION: Personal Information */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                         <FormInput
+                            label="username"
+                            name="username"
+                            placeholder="johndoe"
+                            formik={formik}
+                            trimOnBlur
+                        />
+                        <FormInput
                             label="Full Name"
                             name="name"
                             placeholder="John Doe"
@@ -142,17 +174,9 @@ export default function EditAdmin() {
                         />
                         <FormPhoneInput
                             label="Mobile Number"
-                            name="contact"
+                            name="mobile_no"
                             formik={formik}
                         />
-                        {/* <FormSelect
-                            label="Administrative Role"
-                            name="role"
-                            formik={formik}
-                            options={[
-                                { value: "admin", label: "Admin" },
-                            ]}
-                        /> */}
                     </div>
 
                     {/* SECTION: Detailed Profile */}
@@ -169,7 +193,7 @@ export default function EditAdmin() {
                         <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100 max-w-md">
                             <FormSwitch
                                 label="Verify Account Status"
-                                name="isVerified"
+                                name="verified"
                                 formik={formik}
                                 description="Manually verify this user to grant full platform access."
                             />

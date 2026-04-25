@@ -10,6 +10,7 @@ import askRouter from "./routes/AskRoute.js";
 import path from "node:path";
 import helmet from "helmet";
 import fs from "node:fs"
+import appRouter from "./routes/AppRoutes.js";
 
 dotenv.config();
 
@@ -112,6 +113,7 @@ app.use("/api/", originGuard, analyticRouter);
 app.use("/api/", originGuard, profileRoutes);
 app.use("/api/", originGuard, AiRoutes);
 app.use("/api/", originGuard, askRouter);
+app.use("/api/", originGuard, appRouter);
 
 app.listen(process.env.PORT, () => {
   console.log(`Server is running on PORT ${process.env.PORT}`);

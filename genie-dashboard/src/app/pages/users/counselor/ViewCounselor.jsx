@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Pencil, ArrowLeft } from "lucide-react";
 import toast from "react-hot-toast";
-import { API } from "../../../services/API";
+import { API, CampusaimAPI } from "../../../services/API";
 
 import LeadsTab from "../../../components/common/LeadsTab/LeadsTab";
 import Breadcrumbs from "../../../components/ui/BreadCrumb/Breadcrumbs";
@@ -49,8 +49,7 @@ export default function ViewCounselor() {
             setIsLoading(true);
 
             try {
-                const counselorRes = await API.get(`/fetch-counselor/${id}`);
-                console.log(counselorRes);
+                const counselorRes = await CampusaimAPI.get(`/fetch-counselor/${id}`);
                 const counselor = counselorRes?.data?.data;
 
                 setCounselorData(counselor);
@@ -98,13 +97,13 @@ export default function ViewCounselor() {
         setLoading(true);
 
         try {
-            const res = await API.post(`/toggle-status/${counselorData._id}`);
+            const res = await CampusaimAPI.post(`/toggle-status/${counselorData._id}`);
 
             if (res.data?.status) {
                 setStatus(res.data.status);
 
                 toast.success(
-                    `User is now ${res.data.status === "active" ? "Active" : "Suspended"}`
+                    `User is now ${res.data.status === "Active" ? "Active" : "Suspended"}`
                 );
             } else {
                 throw new Error("Invalid response");
@@ -132,7 +131,7 @@ export default function ViewCounselor() {
                 items={[
                     { label: "Dashboard", to: "/dashboard" },
                     { label: "Counselor", to: "/dashboard/users/counselors" },
-                    { label: "Counselor View" },
+                    { label: "View" },
                 ]}
                 actions={[
                     {

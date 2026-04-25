@@ -283,9 +283,13 @@ export const profileLogin = async (req, res) => {
       process.env.JWT_SECRET_VALUE
     );
 
+    const isProd = process.env.NODE_ENV === "production";
+
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: isProd,                 // ✅ only HTTPS in prod
+      sameSite: isProd ? "none" : "lax", // ✅ required for cross-subdomain
+      domain: isProd ? ".campusaim.com" : "localhost", // 🔥 key fix
       maxAge: 10 * 24 * 60 * 60 * 1000 * 365,
     });
     return res.status(200).json({ message: "Logged in successfully." });

@@ -26,8 +26,8 @@ export default function Details({ data, role }) {
                                 <p className="mt-1 text-sm text-gray-900">{data?.email || "N/A"}</p>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Contact</label>
-                                <p className="mt-1 text-sm text-gray-900">{data?.contact || "N/A"}</p>
+                                <label className="block text-sm font-medium text-gray-700">Mobile Number</label>
+                                <p className="mt-1 text-sm text-gray-900">{data?.mobile_no || "N/A"}</p>
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Member Since</label>

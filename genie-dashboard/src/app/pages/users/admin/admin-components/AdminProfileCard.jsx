@@ -2,7 +2,7 @@ import { Mail, Phone, MapPin } from "lucide-react";
 import Avatar from "../../../../components/common/Avatar/Avatar";
 
 export default function AdminProfileCard({ adminData, fullAddress, toggleMutation }) {
-    const isActive = adminData?.status === "active";
+    const isActive = adminData?.status === "Active";
 
     return (
         <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-5 sm:p-6 transition hover:shadow-md">
@@ -51,7 +51,7 @@ export default function AdminProfileCard({ adminData, fullAddress, toggleMutatio
 
                         <div className="flex items-center gap-2">
                             <Phone className="w-4 h-4 text-gray-400 shrink-0" />
-                            <span>{adminData?.contact || "N/A"}</span>
+                            <span>{adminData?.mobile_no || "N/A"}</span>
                         </div>
 
                         <div className="flex items-start gap-2 sm:col-span-2">

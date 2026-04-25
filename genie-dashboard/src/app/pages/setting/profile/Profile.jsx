@@ -71,6 +71,9 @@ function Profile() {
     }, []);
 
     const validationSchema = Yup.object({
+        username: Yup.string()
+            .required("Username is required")
+            .min(2, "Minimum 2 characters"),
         name: Yup.string()
             .required("Name is required.")
             .matches(/^(?!.*\s{2})[A-Za-z\s]+$/, 'Name can contain only alphabets and single spaces.')
@@ -88,6 +91,7 @@ function Profile() {
 
     const initialValues = {
         profile_image: authUser?.profile_image || "",
+        username: authUser?.username || "",
         name: authUser?.name || "",
         email: authUser?.email || "",
         mobile_no: formatPhoneForUI(authUser?.mobile_no) || "",
@@ -98,6 +102,7 @@ function Profile() {
     const handleSubmit = async (values) => {
         const toastId = toast.loading("Saving...");
         const formData = new FormData();
+        formData.append("username", values.username);
         formData.append("name", values.name);
         formData.append("email", values.email);
         formData.append("mobile_no", formatPhoneForDB(values.mobile_no));
@@ -106,7 +111,7 @@ function Profile() {
         formData.append("profile_image", values.profile_image);
 
         try {
-            const response = await API.put(`/update-profile`, formData, {
+            const response = await API.patch(`/profile/user/${authUser?._id}`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }
@@ -208,6 +213,15 @@ function Profile() {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Username */}
+                            <FormInput
+                                label="Username"
+                                name="username"
+                                placeholder="Enter username"
+                                formik={formik}
+                                trimOnBlur
+                            />
+
                             {/* Name */}
                             <FormInput
                                 label="Name"

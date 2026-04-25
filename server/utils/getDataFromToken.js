@@ -43,9 +43,21 @@ export const getUserDataFromToken = async (req) => {
 };
 
 export const removeToken = (res) => {
+  const isProd = process.env.NODE_ENV === "production";
+
   res.clearCookie("accessToken", {
     httpOnly: true,
-    sameSite: "Strict",
-    secure: process.env.NODE_ENV === "production",
+    secure: isProd,
+    sameSite: isProd ? "none" : "lax", // ✅ must match
+    domain: isProd ? ".campusaim.com" : "localhost", // ✅ must match
+    path: "/", // ✅ always include (important)
   });
 };
+
+// export const removeToken = (res) => {
+//   res.clearCookie("accessToken", {
+//     httpOnly: true,
+//     sameSite: "Strict",
+//     secure: process.env.NODE_ENV === "production",
+//   });
+// };

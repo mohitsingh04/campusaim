@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Copy, Link as LinkIcon, X, Clock } from "lucide-react";
 import { toast } from "react-hot-toast";
-import { API } from "../../../services/API";
+import { CampusaimAPI } from "../../../services/API";
 
 export default function GeneratePartnerLinkModal({ open, onClose }) {
     const [loading, setLoading] = useState(false);
@@ -16,7 +16,7 @@ export default function GeneratePartnerLinkModal({ open, onClose }) {
             try {
                 setChecking(true);
 
-                const { data } = await API.get("/invites/partner");
+                const { data } = await CampusaimAPI.get("/invites/partner");
 
                 if (data?.inviteLink) {
                     setInviteLink(data.inviteLink);
@@ -39,7 +39,7 @@ export default function GeneratePartnerLinkModal({ open, onClose }) {
         try {
             setLoading(true);
 
-            const { data } = await API.post("/invites/partner");
+            const { data } = await CampusaimAPI.post("/invites/partner");
 
             if (!data?.inviteLink) throw new Error("Invalid response");
 

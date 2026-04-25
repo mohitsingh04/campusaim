@@ -32,6 +32,12 @@ export default function AddCounselor() {
     }, []);
 
     const validationSchema = Yup.object({
+        username: Yup.string()
+            .transform((value) => value?.toLowerCase().trim()) // force lowercase + trim
+            .matches(/^[a-z0-9]+$/, "Only lowercase letters and numbers allowed (no spaces).")
+            .min(2, "Username must contain at least 2 characters.")
+            .max(30, "Username cannot exceed 30 characters.")
+            .required("Username is required."),
         name: Yup.string()
             .required("Name is required.")
             .matches(/^(?!.*\s{2})[A-Za-z\s]+$/, 'Name can contain only alphabets and single spaces.')
@@ -46,6 +52,7 @@ export default function AddCounselor() {
     });
 
     const initialValues = {
+        username: "",
         name: "",
         email: "",
         mobile_no: "",
@@ -58,7 +65,7 @@ export default function AddCounselor() {
         const toastId = toast.loading("Adding...");
 
         try {
-            const response = await API.post(`/add-user`, values);
+            const response = await CampusaimAPI.post(`/add-user`, values);
             toast.success(response.data.message || "Added successfully!", { id: toastId });
             navigate("/dashboard/users/counselors");
         } catch (error) {
@@ -111,16 +118,29 @@ export default function AddCounselor() {
                             {/* Fields */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* Name */}
-                                <div className="space-y-1">
-                                    <FormInput
-                                        label="Full Name"
-                                        name="name"
-                                        placeholder="Enter full name..."
-                                        formik={formik}
-                                        transform={capitalizeWords}
-                                        trimOnBlur
-                                    />
-                                </div>
+                                <FormInput
+                                    label="Username"
+                                    name="username"
+                                    placeholder="Enter username..."
+                                    formik={formik}
+                                    trimOnBlur
+                                    onChange={(e) => {
+                                        const value = e.target.value
+                                            .toLowerCase()        // enforce lowercase
+                                            .replace(/\s+/g, ""); // remove spaces
+
+                                        formik.setFieldValue("username", value);
+                                    }}
+                                />
+
+                                <FormInput
+                                    label="Full Name"
+                                    name="name"
+                                    placeholder="Enter full name..."
+                                    formik={formik}
+                                    transform={capitalizeWords}
+                                    trimOnBlur
+                                />
 
                                 {/* Email */}
                                 <div className="space-y-1">
