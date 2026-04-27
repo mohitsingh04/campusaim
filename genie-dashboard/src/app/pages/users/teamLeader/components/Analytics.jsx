@@ -1,5 +1,3 @@
-// React 18+, ES2020+
-
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import toast from "react-hot-toast";
 import { API } from "../../../../services/API";

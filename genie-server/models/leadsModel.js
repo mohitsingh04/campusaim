@@ -5,10 +5,10 @@ const { Schema } = mongoose;
 
 // Admission Sub-Schema
 const AdmissionSchema = new Schema({
-    userId: { type: Schema.Types.ObjectId, ref: "User", default: null },
+    userId: { type: Schema.Types.ObjectId, ref: "user", default: null },
     courseId: { type: Schema.Types.ObjectId, ref: "Course", default: null },
     collegeId: { type: Schema.Types.ObjectId, ref: "College", default: null },
-    confirmedBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
+    confirmedBy: { type: Schema.Types.ObjectId, ref: "user", default: null },
     confirmedAt: { type: Date, default: null },
 }, { _id: false });
 
@@ -17,8 +17,8 @@ const AdmissionSchema = new Schema({
 /* -------------------------------------------------- */
 const AssignmentHistorySchema = new Schema(
     {
-        assignedTo: { type: Schema.Types.ObjectId, ref: "User", default: null },
-        assignedBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
+        assignedTo: { type: Schema.Types.ObjectId, ref: "user", default: null },
+        assignedBy: { type: Schema.Types.ObjectId, ref: "user", required: true },
         role: { type: String, enum: ["admin", "teamleader"], required: true },
         assignedOn: { type: Date, default: Date.now },
     },
@@ -28,7 +28,7 @@ const AssignmentHistorySchema = new Schema(
 // Contact History Sub-Schema
 const ContactHistorySchema = new Schema(
     {
-        contactedBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
+        contactedBy: { type: Schema.Types.ObjectId, ref: "user", required: true },
         contactedAt: { type: Date, default: Date.now },
         mode: {
             type: String,
@@ -162,18 +162,18 @@ const LeadSchema = new Schema(
     {
         teamLeader: {
             type: Schema.Types.ObjectId,
-            ref: "User",
+            ref: "user",
             default: null,
         },
 
         createdBy: {
             type: Schema.Types.ObjectId,
-            ref: "User",
+            ref: "user",
         },
 
         assignedTo: {
             type: Schema.Types.ObjectId,
-            ref: "User",
+            ref: "user",
             default: null,
         },
         property_id: { type: Schema.Types.ObjectId, default: null },
@@ -271,7 +271,7 @@ const LeadSchema = new Schema(
         /* 🏁 Application Tracking */
         applicationDoneBy: {
             type: Schema.Types.ObjectId,
-            ref: "User",
+            ref: "user",
             default: null,
         },
 
@@ -283,7 +283,7 @@ const LeadSchema = new Schema(
         /* 🏁 Conversion Tracking */
         convertedBy: {
             type: Schema.Types.ObjectId,
-            ref: "User",
+            ref: "user",
             default: null,
         },
 

@@ -24,7 +24,7 @@ const ConversationSessionSchema = new mongoose.Schema(
         // 🔥 WHO made this conversation
         createdBy: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
+            ref: "user",
             required: true,
         },
         role: {
@@ -66,13 +66,13 @@ const ConversationSessionSchema = new mongoose.Schema(
         // who scheduled the follow-up
         follow_up_created_by: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
+            ref: "user",
         },
 
         // who completed the follow-up
         follow_up_completed_by: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
+            ref: "user",
         },
 
         overallAnswerScore: { type: Number, default: 0 },

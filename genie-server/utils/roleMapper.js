@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import Role from "../models/Role.js";
+import Role from "../models/role.js";
 
 /* ================= ROLE MAPPING ================= */
 

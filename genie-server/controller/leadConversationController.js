@@ -1,9 +1,11 @@
-import Lead from "../models/leadsModel.js";
 import mongoose from "mongoose";
+import User from "../models/userModel.js";
+import Lead from "../models/leadsModel.js";
+import RegularUser from "../models/regularUser.js";
+import { getRoleMap, mapRoleForApp, getDbRoleKey, getRoleId } from "../utils/roleMapper.js";
 import LeadConversation from "../models/leadConversation.js";
 import { calculateFinalLeadScore } from "../utils/leadScore.js";
 import { getDataFromToken } from "../helper/getDataFromToken.js";
-import User from "../models/userModel.js";
 import { buildLeadScoreExplanation } from "../utils/leadScoreExplanation.js";
 import { createNotification } from "../services/notification.service.js";
 import { updateGoalProgress } from "../utils/updateGoalProgress.js";
@@ -34,13 +36,16 @@ export const addOrUpdateLeadConversation = async (req, res) => {
             return res.status(400).json({ error: "Invalid userId." });
         }
 
-        const user = await User.findById(userId)
+        const user = await RegularUser.findById(userId)
+            .populate("role", "role")
             .select("_id name role")
             .lean();
 
         if (!user) {
             return res.status(404).json({ error: "User not found." });
         }
+
+        const appRole = mapRoleForApp(user.role?.role); // ✅ FIX
 
         // ---------------- BODY ----------------
         const {
@@ -90,11 +95,25 @@ export const addOrUpdateLeadConversation = async (req, res) => {
         }
 
         // ---------------- FETCH LEAD ----------------
-        const lead = await Lead.findById(lead_id)
-            .select("_id name assignedTo teamLeader status");
+        const lead = await Lead.findById(lead_id).select("_id name assignedTo teamLeader status");
 
         if (!lead) {
             return res.status(404).json({ error: "Lead not found." });
+        }
+
+        const isAdmin = ["admin", "superadmin"].includes(appRole);
+
+        const isAssigned =
+            lead.assignedTo?.toString() === userId.toString();
+
+        const isTeamLeader =
+            appRole === "teamleader" &&
+            lead.teamLeader?.toString() === userId.toString();
+
+        if (!isAdmin && !isAssigned && !isTeamLeader) {
+            return res.status(403).json({
+                error: "You are not allowed to update this lead"
+            });
         }
 
         // ---------------- RECIPIENT COLLECTION ----------------
@@ -103,9 +122,12 @@ export const addOrUpdateLeadConversation = async (req, res) => {
         if (lead.assignedTo) recipients.add(lead.assignedTo.toString());
         if (lead.teamLeader) recipients.add(lead.teamLeader.toString());
 
-        const admins = await User.find({
-            role: { $in: ["admin", "superadmin"] },
-        }).select("_id").lean();
+        const adminRoleIds = await Promise.all([
+            getRoleId("admin"),
+            getRoleId("superadmin")
+        ]);
+
+        const admins = await RegularUser.find({ role: { $in: adminRoleIds } }).select("_id").lean();
 
         admins.forEach(a => recipients.add(a._id.toString()));
 
@@ -212,7 +234,8 @@ export const addOrUpdateLeadConversation = async (req, res) => {
                 $push: {
                     sessions: {
                         createdBy: userId,
-                        role: user.role || "counselor",
+                        // role: user.role || "counselor",
+                        role: appRole,
                         questions: sanitizedQuestions,
                         status,
                         message: sanitizeString(message || "", 1000),
@@ -243,8 +266,7 @@ export const addOrUpdateLeadConversation = async (req, res) => {
                 upsert: true,
                 runValidators: true,
                 setDefaultsOnInsert: true
-            }
-        ).lean();
+            }).lean();
 
         // ---------------- UPDATE LEAD SNAPSHOT ----------------
         if (followUpDate) {
@@ -293,7 +315,7 @@ export const addOrUpdateLeadConversation = async (req, res) => {
                     senderId: userId,
                     type: "lead_activity",
                     title: "Lead Conversation Updated",
-                    message: `${user.name} (${user.role}) updated conversation with ${lead.name}`,
+                    message: `${user.name} (${appRole}) updated conversation with ${lead.name}`,
                     link: `/dashboard/leads/view/${lead._id}`,
                     meta: { leadId: lead._id }
                 })
@@ -325,16 +347,80 @@ export const addOrUpdateLeadConversation = async (req, res) => {
 
 export const getAllLeadConversations = async (req, res) => {
     try {
-        const conversations = await LeadConversation.find()
+        const userId = await getDataFromToken(req);
+
+        /* ---------------- AUTH ---------------- */
+
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+
+        const user = await RegularUser.findById(userId)
+            .populate("role", "role")
+            .select("_id role")
+            .lean();
+
+        if (!user) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+
+        const appRole = mapRoleForApp(user.role?.role);
+
+        /* ---------------- ROLE FILTER ---------------- */
+
+        let leadFilter = {};
+
+        if (appRole === "teamleader") {
+            const counselorRoleId = await getRoleId("counselor");
+
+            const counselors = await RegularUser.find({
+                role: counselorRoleId,
+                teamLeader: user._id
+            }).select("_id").lean();
+
+            const counselorIds = counselors.map(c => c._id);
+
+            leadFilter = {
+                $or: [
+                    { assignedTo: user._id },
+                    { assignedTo: { $in: counselorIds } }
+                ]
+            };
+        }
+        else if (!["admin", "superadmin"].includes(appRole)) {
+            leadFilter = {
+                $or: [
+                    { assignedTo: user._id },
+                    { createdBy: user._id }
+                ]
+            };
+        }
+
+        /* ---------------- FETCH LEADS ---------------- */
+
+        const leads = await Lead.find(leadFilter)
+            .select("_id")
+            .lean();
+
+        const leadIds = leads.map(l => l._id);
+
+        /* ---------------- FETCH CONVERSATIONS ---------------- */
+
+        const conversations = await LeadConversation.find({
+            lead_id: { $in: leadIds }
+        })
             .select("lead_id sessions createdAt updatedAt")
             .populate({
                 path: "sessions.createdBy",
-                select: "name role email",
+                model: RegularUser,
+                select: "name email role"
             })
             .sort({ updatedAt: -1 })
             .lean();
 
-        const formatted = conversations.map((conv) => {
+        /* ---------------- FORMAT ---------------- */
+
+        const formatted = conversations.map(conv => {
             const sessions = conv.sessions || [];
             const latestSession = sessions[sessions.length - 1];
 
@@ -348,38 +434,99 @@ export const getAllLeadConversations = async (req, res) => {
                         systemLeadScore: latestSession.systemLeadScore,
                         status: latestSession.status,
                         createdAt: latestSession.createdAt,
-                        createdBy: latestSession.createdBy,
+                        createdBy: {
+                            _id: latestSession.createdBy?._id,
+                            name: latestSession.createdBy?.name,
+                            email: latestSession.createdBy?.email,
+                            role: mapRoleForApp(
+                                latestSession.createdBy?.role?.role
+                            ) // ✅ FIX
+                        }
                     }
-                    : null,
+                    : null
             };
         });
 
         return res.status(200).json({
             success: true,
-            data: formatted,
+            count: formatted.length,
+            data: formatted
         });
+
     } catch (error) {
         console.error("Get Conversation Error:", error);
-        return res.status(500).json({ error: "Internal Server Error." });
+
+        return res.status(500).json({
+            error: "Internal Server Error."
+        });
     }
 };
 
 export const getConversationByLeadId = async (req, res) => {
     try {
+        const authUserId = await getDataFromToken(req);
         const { lead_id } = req.params;
+
+        /* ---------------- AUTH ---------------- */
+
+        if (!mongoose.Types.ObjectId.isValid(authUserId)) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+
+        const authUser = await RegularUser.findById(authUserId)
+            .populate("role", "role")
+            .select("_id role")
+            .lean();
+
+        if (!authUser) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+
+        const appRole = mapRoleForApp(authUser.role?.role);
+
+        /* ---------------- VALIDATION ---------------- */
 
         if (!mongoose.Types.ObjectId.isValid(lead_id)) {
             return res.status(400).json({ error: "Invalid lead_id." });
         }
 
-        const [conversation, followUp] = await Promise.all([
-            LeadConversation.findOne({ lead_id })
-                .populate({
-                    path: "sessions.createdBy",
-                    select: "name email role",
-                })
-                .lean(),
-        ]);
+        /* ---------------- FETCH LEAD (RBAC) ---------------- */
+
+        const lead = await Lead.findById(lead_id)
+            .select("_id assignedTo createdBy teamLeader")
+            .lean();
+
+        if (!lead) {
+            return res.status(404).json({ error: "Lead not found." });
+        }
+
+        const isAdmin = ["admin", "superadmin"].includes(appRole);
+
+        const isAssigned =
+            lead.assignedTo?.toString() === authUserId.toString();
+
+        const isCreator =
+            lead.createdBy?.toString() === authUserId.toString();
+
+        const isTeamLeader =
+            appRole === "teamleader" &&
+            lead.teamLeader?.toString() === authUserId.toString();
+
+        if (!isAdmin && !isAssigned && !isCreator && !isTeamLeader) {
+            return res.status(403).json({
+                error: "Access denied"
+            });
+        }
+
+        /* ---------------- FETCH CONVERSATION ---------------- */
+
+        const conversation = await LeadConversation.findOne({ lead_id })
+            .populate({
+                path: "sessions.createdBy",
+                model: RegularUser,
+                select: "name email role"
+            })
+            .lean();
 
         if (!conversation) {
             return res.status(404).json({ error: "Conversation not found." });
@@ -390,14 +537,15 @@ export const getConversationByLeadId = async (req, res) => {
             : [];
 
         const latestSession =
-            sessions.length > 0 ? sessions[sessions.length - 1] : null;
+            sessions.length ? sessions[sessions.length - 1] : null;
 
-        // Guard: no session yet
+        /* ---------------- NO SESSION CASE ---------------- */
+
         if (!latestSession) {
             return res.status(200).json({
                 ...conversation,
-                next_follow_up_date: followUp?.next_follow_up_date || null,
-                next_follow_up_time: followUp?.next_follow_up_time || "",
+                next_follow_up_date: null,
+                next_follow_up_time: "",
                 latestSession: null,
                 explanations: [],
                 scoreBreakdown: {
@@ -409,11 +557,11 @@ export const getConversationByLeadId = async (req, res) => {
             });
         }
 
-        /* ---------------- SCORE BREAKDOWN ---------------- */
+        /* ---------------- SCORE ---------------- */
+
         const intentScore = Number(latestSession?.overallAnswerScore ?? 0);
         const systemScore = Number(latestSession?.systemLeadScore ?? 0);
 
-        // fallback if old records don’t have stored confidence
         const counselorConfidence = Number(
             latestSession?.counselorConfidenceScore ??
             Math.round(((latestSession?.rating || 0) / 5) * 100)
@@ -422,24 +570,28 @@ export const getConversationByLeadId = async (req, res) => {
         const finalProbability = Number(latestSession?.overallLeadScore ?? 0);
 
         /* ---------------- EXPLANATIONS ---------------- */
+
         const explanations = buildLeadScoreExplanation({
             questions: latestSession?.questions || [],
             rating: latestSession?.rating || 0,
             sessions,
-            next_follow_up_date: followUp?.next_follow_up_date,
+            next_follow_up_date: latestSession?.next_follow_up_date, // ✅ FIX
             intentScore,
             engagementScore: systemScore,
             finalScore: finalProbability,
         });
 
+        /* ---------------- RESPONSE ---------------- */
+
         return res.status(200).json({
             ...conversation,
-            next_follow_up_date: followUp?.next_follow_up_date || null,
-            next_follow_up_time: followUp?.next_follow_up_time || "",
+
+            next_follow_up_date: latestSession?.next_follow_up_date || null,
+            next_follow_up_time: latestSession?.next_follow_up_time || "",
+
             latestSession,
             explanations,
 
-            // 🔥 Explicit hybrid scoring (0–100 each)
             scoreBreakdown: {
                 intentScore,
                 systemScore,
@@ -447,8 +599,12 @@ export const getConversationByLeadId = async (req, res) => {
                 finalProbability,
             },
         });
+
     } catch (error) {
         console.error("Get Conversation Error:", error);
-        return res.status(500).json({ error: "Internal Server Error." });
+
+        return res.status(500).json({
+            error: "Internal Server Error."
+        });
     }
 };

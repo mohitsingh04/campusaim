@@ -117,7 +117,7 @@ export default function AddCounselor() {
 
                             {/* Fields */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {/* Name */}
+                                {/* Username */}
                                 <FormInput
                                     label="Username"
                                     name="username"

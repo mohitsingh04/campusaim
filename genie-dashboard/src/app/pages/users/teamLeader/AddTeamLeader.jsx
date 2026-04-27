@@ -31,6 +31,12 @@ export default function AddTeamLeader() {
   }, []);
 
   const validationSchema = Yup.object({
+    username: Yup.string()
+      .transform((value) => value?.toLowerCase().trim()) // force lowercase + trim
+      .matches(/^[a-z0-9]+$/, "Only lowercase letters and numbers allowed (no spaces).")
+      .min(2, "Username must contain at least 2 characters.")
+      .max(30, "Username cannot exceed 30 characters.")
+      .required("Username is required."),
     name: Yup.string()
       .required("Name is required.")
       .matches(/^(?!.*\s{2})[A-Za-z\s]+$/, 'Name can contain only alphabets and single spaces.')
@@ -45,6 +51,7 @@ export default function AddTeamLeader() {
   });
 
   const initialValues = {
+    username: "",
     name: "",
     email: "",
     mobile_no: "",
@@ -109,6 +116,22 @@ export default function AddTeamLeader() {
 
               {/* Fields */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Username */}
+                <FormInput
+                  label="Username"
+                  name="username"
+                  placeholder="Enter username..."
+                  formik={formik}
+                  trimOnBlur
+                  onChange={(e) => {
+                    const value = e.target.value
+                      .toLowerCase()        // enforce lowercase
+                      .replace(/\s+/g, ""); // remove spaces
+
+                    formik.setFieldValue("username", value);
+                  }}
+                />
+
                 {/* Name */}
                 <div className="space-y-1">
                   <FormInput

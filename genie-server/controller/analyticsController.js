@@ -6,7 +6,7 @@ import Lead from "../models/leadsModel.js";
 import { getDataFromToken } from "../helper/getDataFromToken.js";
 import { getDateRange } from "../helper/dateRange.js";
 import { db } from '../mongoose/index.js';
-import { mapRoleForApp, getDbRoleKey } from "../utils/roleMapper.js";
+import { mapRoleForApp, getDbRoleKey, getRoleId } from "../utils/roleMapper.js";
 
 function getISOWeeksInYear(year) {
     const d = new Date(year, 11, 31);
@@ -303,26 +303,26 @@ export const getAdminDashboard = async (req, res) => {
         ] = await Promise.all([
 
             /* TEAM */
-            User.countDocuments({ role: roleIdMap["partner"] }),
-            User.countDocuments({ role: roleIdMap["teamleader"] }),
-            User.countDocuments({ role: roleIdMap["counselor"] }),
+            RegularUser.countDocuments({ role: roleIdMap["partner"] }),
+            RegularUser.countDocuments({ role: roleIdMap["teamleader"] }),
+            RegularUser.countDocuments({ role: roleIdMap["counselor"] }),
 
             /* ACTIVE */
-            User.countDocuments({
+            RegularUser.countDocuments({
                 role: roleIdMap["partner"],
                 $or: [
                     { lastLoginAt: { $gte: activeSince } },
                     { updatedAt: { $gte: activeSince } }
                 ]
             }),
-            User.countDocuments({
+            RegularUser.countDocuments({
                 role: roleIdMap["teamleader"],
                 $or: [
                     { lastLoginAt: { $gte: activeSince } },
                     { updatedAt: { $gte: activeSince } }
                 ]
             }),
-            User.countDocuments({
+            RegularUser.countDocuments({
                 role: roleIdMap["counselor"],
                 $or: [
                     { lastLoginAt: { $gte: activeSince } },
@@ -485,11 +485,14 @@ export const getCounselorDashboard = async (req, res) => {
     try {
         const counselorId = await getDataFromToken(req);
 
+        /* ---------------- VALIDATION ---------------- */
         if (!mongoose.Types.ObjectId.isValid(counselorId)) {
             return res.status(400).json({ message: "Invalid user token" });
         }
 
-        const counselor = await User.findById(counselorId)
+        /* ---------------- AUTH USER ---------------- */
+        const counselor = await RegularUser.findById(counselorId)
+            .populate("role", "role") // ✅ IMPORTANT
             .select("_id role")
             .lean();
 
@@ -497,12 +500,15 @@ export const getCounselorDashboard = async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
 
-        if (counselor.role !== "counselor") {
+        const appRole = mapRoleForApp(counselor.role?.role); // ✅ FIX
+
+        if (appRole !== "counselor") {
             return res.status(403).json({ message: "Access denied" });
         }
 
         const userId = new mongoose.Types.ObjectId(counselor._id);
 
+        /* ---------------- DATE RANGE ---------------- */
         const { start, end } = getDateRange(req.query);
 
         const startOfToday = new Date(); startOfToday.setUTCHours(0, 0, 0, 0);
@@ -705,6 +711,7 @@ export const getCounselorDashboard = async (req, res) => {
             }
         ]);
 
+        /* ---------------- RESPONSE ---------------- */
         const totalLeads = result?.totalLeads?.[0]?.count || 0;
         const totalAssignedLeads = result?.totalAssignedLeads?.[0]?.count || 0;
         const totalAddedLeads = result?.totalAddedLeads?.[0]?.count || 0;
@@ -1140,19 +1147,25 @@ export const getAdminAnalytics = async (req, res) => {
             return res.status(400).json({ error: "Invalid admin ID" });
         }
 
-        const admin = await User.findOne(
-            { _id: id, role: "admin" }
-        ).lean();
+        const admin = await RegularUser.findById(id)
+            .populate("role", "role")
+            .select("_id role")
+            .lean();
 
-        if (!admin) {
+        if (!admin || mapRoleForApp(admin.role?.role) !== "admin") {
             return res.status(404).json({ error: "Admin not found" });
         }
 
-        /* ---------------- PEOPLE METRICS ---------------- */
+        /* ---------------- ROLE IDS (HIGH PERFORMANCE) ---------------- */
+        const [partnerRoleId, counselorRoleId] = await Promise.all([
+            getRoleId("partner"),
+            getRoleId("counselor")
+        ]);
 
-        const [agentStats, counselorStats] = await Promise.all([
-            User.aggregate([
-                { $match: { role: "agent" } },
+        /* ---------------- PEOPLE METRICS ---------------- */
+        const [partnerStats, counselorStats] = await Promise.all([
+            RegularUser.aggregate([
+                { $match: { role: partnerRoleId } },
                 {
                     $group: {
                         _id: null,
@@ -1165,8 +1178,8 @@ export const getAdminAnalytics = async (req, res) => {
                     }
                 }
             ]),
-            User.aggregate([
-                { $match: { role: "counselor" } },
+            RegularUser.aggregate([
+                { $match: { role: counselorRoleId } },
                 {
                     $group: {
                         _id: null,
@@ -1182,7 +1195,6 @@ export const getAdminAnalytics = async (req, res) => {
         ]);
 
         /* ---------------- LEAD METRICS ---------------- */
-
         const now = new Date();
         const last7Days = new Date(now);
         last7Days.setDate(now.getDate() - 7);
@@ -1216,7 +1228,6 @@ export const getAdminAnalytics = async (req, res) => {
         });
 
         /* ---------------- TREND ---------------- */
-
         const dailyLeads = await Lead.aggregate([
             {
                 $match: {
@@ -1236,7 +1247,7 @@ export const getAdminAnalytics = async (req, res) => {
 
         /* ---------------- SAFE FALLBACKS ---------------- */
 
-        const agents = agentStats[0] || { total: 0, active: 0 };
+        const partners = partnerStats[0] || { total: 0, active: 0 };
         const counselors = counselorStats[0] || { total: 0, active: 0 };
         const leads = leadStats[0] || {
             total: 0,
@@ -1253,10 +1264,10 @@ export const getAdminAnalytics = async (req, res) => {
 
         return res.status(200).json({
             people: {
-                agents: {
-                    total: agents.total,
-                    active: agents.active,
-                    inactive: agents.total - agents.active
+                partners: {
+                    total: partners.total,
+                    active: partners.active,
+                    inactive: partners.total - partners.active
                 },
                 counselors: {
                     total: counselors.total,
@@ -1297,7 +1308,8 @@ export const getTeamLeaderAnalytics = async (req, res) => {
             return res.status(401).json({ success: false, error: "Unauthorized" });
         }
 
-        const authUser = await User.findById(authUserId)
+        const authUser = await RegularUser.findById(authUserId)
+            .populate("role", "role")
             .select("_id role")
             .lean();
 
@@ -1305,13 +1317,16 @@ export const getTeamLeaderAnalytics = async (req, res) => {
             return res.status(401).json({ success: false, error: "Unauthorized" });
         }
 
+        const authAppRole = mapRoleForApp(authUser.role?.role); // ✅ FIX
+
         let targetTeamLeaderId;
 
-        // ===== ROLE RESOLUTION =====
-        if (authUser.role === "teamleader") {
+        /* ================= ROLE RESOLUTION ================= */
+
+        if (authAppRole === "teamleader") {
             targetTeamLeaderId = authUser._id;
         }
-        else if (authUser.role === "admin") {
+        else if (authAppRole === "admin") {
             if (!mongoose.Types.ObjectId.isValid(teamLeaderId)) {
                 return res.status(400).json({
                     success: false,
@@ -1319,12 +1334,12 @@ export const getTeamLeaderAnalytics = async (req, res) => {
                 });
             }
 
-            const tl = await User.findOne({
-                _id: teamLeaderId,
-                role: "teamleader"
-            }).select("_id");
+            const tl = await RegularUser.findById(teamLeaderId)
+                .populate("role", "role")
+                .select("_id role")
+                .lean();
 
-            if (!tl) {
+            if (!tl || mapRoleForApp(tl.role?.role) !== "teamleader") {
                 return res.status(404).json({
                     success: false,
                     error: "TeamLeader not found"
@@ -1340,11 +1355,18 @@ export const getTeamLeaderAnalytics = async (req, res) => {
             });
         }
 
-        // ===== COUNSELORS (Hierarchy-based) =====
-        const counselors = await User.find({
-            role: "counselor",
+        /* ================= ROLE IDS (FAST QUERY) ================= */
+
+        const counselorRoleId = await getRoleId("counselor");
+
+        /* ================= COUNSELORS ================= */
+
+        const counselors = await RegularUser.find({
+            role: counselorRoleId,
             teamLeader: targetTeamLeaderId
-        }).select("_id").lean();
+        })
+            .select("_id")
+            .lean();
 
         const counselorIds = counselors.map(c => c._id);
 
@@ -1359,7 +1381,8 @@ export const getTeamLeaderAnalytics = async (req, res) => {
             });
         }
 
-        // ===== LEADS AGGREGATION (Ownership-based) =====
+        /* ================= LEADS ================= */
+
         const [leadStats] = await Lead.aggregate([
             {
                 $match: {
@@ -1379,22 +1402,20 @@ export const getTeamLeaderAnalytics = async (req, res) => {
             }
         ]);
 
-        // ===== SAFE FALLBACK =====
-        const totalLeads = leadStats?.totalLeads || 0;
-        const convertedLeads = leadStats?.convertedLeads || 0;
+        /* ================= RESPONSE ================= */
 
-        // ===== FINAL RESPONSE =====
         return res.json({
             teamLeaderId: targetTeamLeaderId,
             summary: {
                 totalCounselors: counselorIds.length,
-                totalLeads,
-                convertedLeads
+                totalLeads: leadStats?.totalLeads || 0,
+                convertedLeads: leadStats?.convertedLeads || 0
             }
         });
 
     } catch (error) {
         console.error("TeamLeader Analytics Error:", error);
+
         return res.status(500).json({
             success: false,
             error: "Internal Server Error"
@@ -1408,24 +1429,36 @@ export const getPartnerAnalytics = async (req, res) => {
         const authUserId = await getDataFromToken(req);
         const { partnerId } = req.params;
 
-        const authUser = await User.findById(authUserId).select("_id role");
+        if (!mongoose.Types.ObjectId.isValid(authUserId)) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+
+        // 🔎 Auth user
+        const authUser = await RegularUser.findById(authUserId)
+            .populate("role", "role")
+            .select("_id role")
+            .lean();
 
         if (!authUser) {
             return res.status(401).json({ error: "Unauthorized" });
         }
 
+        const authAppRole = mapRoleForApp(authUser.role?.role); // ✅ FIX
+
         let targetPartnerId;
 
         /* ---------- Role Resolution ---------- */
 
-        if (authUser.role === "partner") {
+        if (authAppRole === "partner") {
             targetPartnerId = authUser._id;
-        } else if (authUser.role === "admin") {
+        }
+        else if (authAppRole === "admin") {
             if (!mongoose.Types.ObjectId.isValid(partnerId)) {
                 return res.status(400).json({ error: "Valid Partner ID required" });
             }
             targetPartnerId = partnerId;
-        } else {
+        }
+        else {
             return res.status(403).json({ error: "Access denied" });
         }
 
@@ -1443,15 +1476,12 @@ export const getPartnerAnalytics = async (req, res) => {
             {
                 $group: {
                     _id: "$assignedTo",
-
                     totalLeads: { $sum: 1 },
-
                     convertedLeads: {
                         $sum: {
                             $cond: [{ $eq: ["$status", "converted"] }, 1, 0]
                         }
                     },
-
                     avgProbability: {
                         $avg: {
                             $ifNull: ["$latestSession.overallLeadScore", 0]
@@ -1460,16 +1490,28 @@ export const getPartnerAnalytics = async (req, res) => {
                 }
             },
 
+            // ✅ FIX: correct collection name
             {
                 $lookup: {
-                    from: "users",
+                    from: "regularusers",
                     localField: "_id",
                     foreignField: "_id",
                     as: "counselor"
                 }
             },
 
-            { $unwind: "$counselor" }
+            { $unwind: "$counselor" },
+
+            // ✅ Optional: project only needed fields
+            {
+                $project: {
+                    _id: 1,
+                    totalLeads: 1,
+                    convertedLeads: 1,
+                    avgProbability: 1,
+                    "counselor.name": 1
+                }
+            }
         ]);
 
         /* ---------- Counselor Stats ---------- */
@@ -1480,7 +1522,7 @@ export const getPartnerAnalytics = async (req, res) => {
 
             return {
                 _id: c._id,
-                name: c.counselor.name,
+                name: c.counselor?.name || "Unknown",
                 totalLeads: total,
                 convertedLeads: converted,
                 conversionRate: total
@@ -1523,9 +1565,13 @@ export const getPartnerAnalytics = async (req, res) => {
             summary,
             counselors,
         });
+
     } catch (error) {
         console.error("Partner Analytics Error:", error);
-        return res.status(500).json({ error: "Internal Server Error" });
+
+        return res.status(500).json({
+            error: "Internal Server Error"
+        });
     }
 };
 
@@ -1535,28 +1581,43 @@ export const getCounselorAnalytics = async (req, res) => {
         const authUserId = await getDataFromToken(req);
         const { counselorId } = req.params;
 
-        const authUser = await User.findById(authUserId).select("_id role");
+        if (!mongoose.Types.ObjectId.isValid(authUserId)) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+
+        // 🔎 Auth user
+        const authUser = await RegularUser.findById(authUserId)
+            .populate("role", "role")
+            .select("_id role")
+            .lean();
 
         if (!authUser) {
             return res.status(401).json({ error: "Unauthorized" });
         }
 
+        const authAppRole = mapRoleForApp(authUser.role?.role); // ✅ FIX
+
         let targetCounselorId;
 
-        if (authUser.role === "counselor") {
+        /* ---------- ROLE RESOLUTION ---------- */
+
+        if (authAppRole === "counselor") {
             targetCounselorId = authUser._id;
-        } else if (["admin", "teamleader"].includes(authUser.role)) {
+        }
+        else if (["admin", "teamleader"].includes(authAppRole)) {
             if (!mongoose.Types.ObjectId.isValid(counselorId)) {
                 return res.status(400).json({ error: "Valid Counselor ID required" });
             }
             targetCounselorId = counselorId;
-        } else {
+        }
+        else {
             return res.status(403).json({ error: "Access denied" });
         }
 
         const counselorObjectId = new mongoose.Types.ObjectId(targetCounselorId);
 
         /* ---------- CONTACT-BASED AGGREGATION ---------- */
+
         const statsAgg = await Lead.aggregate([
             {
                 $addFields: {
@@ -1634,8 +1695,8 @@ export const getCounselorAnalytics = async (req, res) => {
         return res.json({
             counselorId: targetCounselorId,
             summary: {
-                totalLeads,        // leads touched by counselor
-                totalContacts,     // total interactions
+                totalLeads,
+                totalContacts,
                 convertedLeads,
                 conversionRate
             }
@@ -1643,6 +1704,9 @@ export const getCounselorAnalytics = async (req, res) => {
 
     } catch (error) {
         console.error("Counselor Analytics Error:", error);
-        return res.status(500).json({ error: "Internal Server Error" });
+
+        return res.status(500).json({
+            error: "Internal Server Error"
+        });
     }
 };
