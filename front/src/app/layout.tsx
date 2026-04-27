@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
 import { Montserrat, Poppins } from "next/font/google";
-import "../css/globals.css";
 import Script from "next/script";
-import { ThemeProvider } from "@/hooks/useTheme";
 import { ToastContainer } from "react-toastify";
-import { GoogleOAuthProvider } from "@react-oauth/google";
-import { SkeletonTheme } from "react-loading-skeleton";
+import "../css/globals.css";
+import Providers from "@/context/providers/Provider";
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
@@ -30,10 +28,7 @@ export const metadata: Metadata = {
   },
   description:
     "Discover verified colleges and universities, explore accredited courses, and make informed academic decisions with trusted admission insights—tailored to your goals.",
-  keywords: [
-    "college",
-    "university",
-  ],
+  keywords: ["college", "university"],
   metadataBase: new URL(baseUrl),
   alternates: {
     canonical: "/",
@@ -55,24 +50,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-      </head>
+      <head></head>
       <body className={`${montserrat.variable} ${poppins.variable}`}>
-        <noscript>
-        </noscript>
+        <noscript></noscript>
         <ToastContainer />
-        <ThemeProvider>
-          <GoogleOAuthProvider
-            clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}
-          >
-            <SkeletonTheme
-              baseColor={"var(--secondary-bg)"}
-              highlightColor={"var(--primary-bg"}
-            >
-              {children}
-            </SkeletonTheme>
-          </GoogleOAuthProvider>
-        </ThemeProvider>
+        <Providers>{children}</Providers>
         <Script
           src="https://kit.fontawesome.com/87f0afa689.js"
           crossOrigin="anonymous"

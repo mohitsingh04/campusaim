@@ -1,26 +1,33 @@
 import React, {
-	useState,
-	useRef,
-	useMemo,
-	useEffect,
-	useCallback,
+  useState,
+  useRef,
+  useMemo,
+  useEffect,
+  useCallback,
 } from "react";
-import { Image, Plus } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronUp,
+  HelpCircle,
+  Image,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import JoditEditor from "jodit-react";
 import { getEditorConfig } from "../../contexts/JoditEditorConfig";
 import { API } from "../../contexts/API";
 import { useFormik } from "formik";
 import {
-	getCategoryAccodingToField,
-	getErrorResponse,
-	getFormikError,
-	getStatusAccodingToField,
+  getCategoryAccodingToField,
+  getErrorResponse,
+  getFormikError,
+  getStatusAccodingToField,
 } from "../../contexts/Callbacks";
 import {
-	CategoryProps,
-	CourseProps,
-	DashboardOutletContextProps,
-	ReqKoItem,
+  CategoryProps,
+  CourseProps,
+  DashboardOutletContextProps,
+  ReqKoItem,
 } from "../../types/types";
 import toast from "react-hot-toast";
 import { useNavigate, useOutletContext, useParams } from "react-router-dom";
@@ -31,533 +38,662 @@ import Select from "react-select";
 import AddBestFor from "./course_components/AddBestFor";
 import AddCourseEligibility from "./course_components/AddCourseEligibility";
 
+interface FAQProps {
+  question: string;
+  answer: string;
+}
+
 export function CourseEdit() {
-	const { objectId } = useParams();
-	const editor = useRef(null);
-	const redirector = useNavigate();
-	const editorConfig = useMemo(() => getEditorConfig(), []);
+  const { objectId } = useParams();
+  const editor = useRef(null);
+  const redirector = useNavigate();
+  const editorConfig = useMemo(() => getEditorConfig(), []);
 
-	const [categories, setCategories] = useState<CategoryProps[]>([]);
-	const [previewImage, setPreviewImage] = useState<string | null>(null);
-	const [mainCourse, setMainCourse] = useState<CourseProps | null>(null);
-	const [loading, setLoading] = useState(true);
-	const { status } = useOutletContext<DashboardOutletContextProps>();
-	const [bestFor, setBestFor] = useState<ReqKoItem[]>([]);
-	const [addBestFor, setAddBestFor] = useState(false);
-	const [courseEligibility, setCourseEligibility] = useState<ReqKoItem[]>([]);
-	const [addCourseEligibility, setAddCourseEligibility] = useState(false);
+  const [categories, setCategories] = useState<CategoryProps[]>([]);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [mainCourse, setMainCourse] = useState<CourseProps | null>(null);
+  const [loading, setLoading] = useState(true);
+  const { status } = useOutletContext<DashboardOutletContextProps>();
+  const [bestFor, setBestFor] = useState<ReqKoItem[]>([]);
+  const [addBestFor, setAddBestFor] = useState(false);
+  const [courseEligibility, setCourseEligibility] = useState<ReqKoItem[]>([]);
+  const [addCourseEligibility, setAddCourseEligibility] = useState(false);
+  const [currentFaq, setCurrentFaq] = useState<FAQProps>({
+    question: "",
+    answer: "",
+  });
+  const [openAccordion, setOpenAccordion] = useState<number | null>(null);
 
-	const fetchBestFor = useCallback(async () => {
-		try {
-			const res = await API.get("/best-for/all");
-			setBestFor((res?.data as ReqKoItem[]) || []);
-		} catch (error) {
-			getErrorResponse(error, true);
-		}
-	}, []);
+  const fetchBestFor = useCallback(async () => {
+    try {
+      const res = await API.get("/best-for/all");
+      setBestFor((res?.data as ReqKoItem[]) || []);
+    } catch (error) {
+      getErrorResponse(error, true);
+    }
+  }, []);
 
-	const fetchCourseEligibility = useCallback(async () => {
-		try {
-			const res = await API.get("/course-eligibility/all");
-			setCourseEligibility((res?.data as ReqKoItem[]) || []);
-		} catch (error) {
-			getErrorResponse(error, true);
-		}
-	}, []);
+  const fetchCourseEligibility = useCallback(async () => {
+    try {
+      const res = await API.get("/course-eligibility/all");
+      setCourseEligibility((res?.data as ReqKoItem[]) || []);
+    } catch (error) {
+      getErrorResponse(error, true);
+    }
+  }, []);
 
-	// Fetch course
-	const fetchCourse = useCallback(async () => {
-		setLoading(true);
-		try {
-			const res = await API.get(`/course/${objectId}`);
-			const course = res.data;
+  // Fetch course
+  const fetchCourse = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await API.get(`/course/${objectId}`);
+      const course = res.data;
 
-			setMainCourse(course);
+      setMainCourse(course);
 
-			if (course?.image?.[0]) {
-				setPreviewImage(
-					`${import.meta.env.VITE_MEDIA_URL}/course/${course?.image?.[0]}`,
-				);
-			}
-		} catch (error) {
-			getErrorResponse(error, true);
-		} finally {
-			setLoading(false);
-		}
-	}, [objectId]);
+      if (course?.image?.[0]) {
+        setPreviewImage(
+          `${import.meta.env.VITE_MEDIA_URL}/course/${course?.image?.[0]}`,
+        );
+      }
+    } catch (error) {
+      getErrorResponse(error, true);
+    } finally {
+      setLoading(false);
+    }
+  }, [objectId]);
 
-	const fetchCategories = useCallback(async () => {
-		try {
-			const res = await API.get("/category");
-			setCategories(res?.data || []);
-		} catch (error) {
-			getErrorResponse(error, true);
-		}
-	}, []);
+  const fetchCategories = useCallback(async () => {
+    try {
+      const res = await API.get("/category");
+      setCategories(res?.data || []);
+    } catch (error) {
+      getErrorResponse(error, true);
+    }
+  }, []);
 
-	useEffect(() => {
-		fetchCourse();
-		fetchCategories();
-		fetchBestFor();
-		fetchCourseEligibility();
-	}, [fetchCourse, fetchCategories, fetchBestFor, fetchCourseEligibility]);
+  useEffect(() => {
+    fetchCourse();
+    fetchCategories();
+    fetchBestFor();
+    fetchCourseEligibility();
+  }, [fetchCourse, fetchCategories, fetchBestFor, fetchCourseEligibility]);
 
-	const formik = useFormik({
-		enableReinitialize: true,
-		initialValues: {
-			course_name: mainCourse?.course_name || "",
-			course_short_name: mainCourse?.course_short_name || "",
-			specialization: mainCourse?.specialization || "",
-			duration_value: (mainCourse?.duration as string)?.split(" ")?.[0] || "",
-			duration_type: (mainCourse?.duration as string)?.split(" ")?.[1] || "",
-			course_type: mainCourse?.course_type || "",
-			degree_type: mainCourse?.degree_type || "",
-			program_type: mainCourse?.program_type || "",
-			image: null as File | null,
-			best_for: mainCourse?.best_for || [],
-			course_eligibility: mainCourse?.course_eligibility || [],
-			description: mainCourse?.description || "",
-			status: mainCourse?.status || "",
-		},
-		validationSchema: CourseValidation,
-		onSubmit: async (values) => {
-			try {
-				const fd = new FormData();
-				fd.append("course_name", values.course_name);
-				fd.append("course_short_name", values.course_short_name);
-				fd.append("specialization", values.specialization);
-				fd.append("best_for", JSON.stringify(values.best_for));
-				fd.append(
-					"course_eligibility",
-					JSON.stringify(values.course_eligibility),
-				);
-				fd.append(
-					"duration",
-					`${values?.duration_value} ${values?.duration_type}`,
-				);
-				fd.append("course_type", values.course_type);
-				fd.append("degree_type", values.degree_type);
-				fd.append("program_type", String(values.program_type));
-				fd.append("description", values.description);
-				fd.append("status", values.status);
-				if (values.image) {
-					fd.append("image", values.image);
-				}
+  const formik = useFormik({
+    enableReinitialize: true,
+    initialValues: {
+      course_name: mainCourse?.course_name || "",
+      course_short_name: mainCourse?.course_short_name || "",
+      specialization: mainCourse?.specialization || "",
+      duration_value: (mainCourse?.duration as string)?.split(" ")?.[0] || "",
+      duration_type: (mainCourse?.duration as string)?.split(" ")?.[1] || "",
+      course_type: mainCourse?.course_type || "",
+      degree_type: mainCourse?.degree_type || "",
+      program_type: mainCourse?.program_type || "",
+      image: null as File | null,
+      best_for: mainCourse?.best_for || [],
+      course_eligibility: mainCourse?.course_eligibility || [],
+      description: mainCourse?.description || "",
+      status: mainCourse?.status || "",
+      faqs: (mainCourse as any)?.faqs || ([] as FAQProps[]),
+    },
+    validationSchema: CourseValidation,
+    onSubmit: async (values) => {
+      try {
+        const fd = new FormData();
+        fd.append("course_name", values.course_name);
+        fd.append("course_short_name", values.course_short_name);
+        fd.append("specialization", values.specialization);
+        fd.append("best_for", JSON.stringify(values.best_for));
+        fd.append(
+          "course_eligibility",
+          JSON.stringify(values.course_eligibility),
+        );
+        fd.append(
+          "duration",
+          `${values?.duration_value} ${values?.duration_type}`,
+        );
+        fd.append("course_type", values.course_type);
+        fd.append("degree_type", values.degree_type);
+        fd.append("program_type", String(values.program_type));
+        fd.append("description", values.description);
+        fd.append("status", values.status);
+        fd.append("faqs", JSON.stringify(values.faqs));
+        if (values.image) {
+          fd.append("image", values.image);
+        }
 
-				const response = await API.patch(`/course/${objectId}`, fd);
-				toast.success(response.data.message || "Course updated Successfully");
-				redirector(`/dashboard/course`);
-			} catch (error) {
-				getErrorResponse(error);
-			}
-		},
-	});
+        const response = await API.patch(`/course/${objectId}`, fd);
+        toast.success(response.data.message || "Course updated Successfully");
+        redirector(`/dashboard/course`);
+      } catch (error) {
+        getErrorResponse(error);
+      }
+    },
+  });
 
-	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const file = e.target.files?.[0] ?? null;
-		formik.setFieldValue("image", file);
-		if (file) {
-			const reader = new FileReader();
-			reader.onloadend = () => setPreviewImage(reader.result as string);
-			reader.readAsDataURL(file);
-		}
-	};
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+    formik.setFieldValue("image", file);
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => setPreviewImage(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
 
-	const specializationOptions = getCategoryAccodingToField(
-		categories,
-		"specialization",
-	);
-	const specializationSelectOptions = specializationOptions.map((opt: any) => ({
-		value: opt._id,
-		label: opt.category_name || opt.name,
-	}));
-	const courseTypeOptions = getCategoryAccodingToField(
-		categories,
-		"Course Type",
-	);
-	const courseTypeSelectOptions = courseTypeOptions.map((opt: any) => ({
-		value: opt._id,
-		label: opt.category_name || opt.name,
-	}));
-	const degreeTypeOptions = getCategoryAccodingToField(
-		categories,
-		"Degree Type",
-	);
-	const degreeTypeSelectOptions = degreeTypeOptions.map((opt: any) => ({
-		value: opt._id,
-		label: opt.category_name || opt.name,
-	}));
-	const ProgramTypeOptions = getCategoryAccodingToField(
-		categories,
-		"Program Type",
-	);
-	const programTypeSelectOptions = ProgramTypeOptions.map((opt: any) => ({
-		value: opt._id,
-		label: opt.category_name || opt.name,
-	}));
+  const specializationOptions = getCategoryAccodingToField(
+    categories,
+    "specialization",
+  );
+  const specializationSelectOptions = specializationOptions.map((opt: any) => ({
+    value: opt._id,
+    label: opt.category_name || opt.name,
+  }));
+  const courseTypeOptions = getCategoryAccodingToField(
+    categories,
+    "Course Type",
+  );
+  const courseTypeSelectOptions = courseTypeOptions.map((opt: any) => ({
+    value: opt._id,
+    label: opt.category_name || opt.name,
+  }));
+  const degreeTypeOptions = getCategoryAccodingToField(
+    categories,
+    "Degree Type",
+  );
+  const degreeTypeSelectOptions = degreeTypeOptions.map((opt: any) => ({
+    value: opt._id,
+    label: opt.category_name || opt.name,
+  }));
+  const ProgramTypeOptions = getCategoryAccodingToField(
+    categories,
+    "Program Type",
+  );
+  const programTypeSelectOptions = ProgramTypeOptions.map((opt: any) => ({
+    value: opt._id,
+    label: opt.category_name || opt.name,
+  }));
 
-	const bestForOptions = bestFor.map((req) => ({
-		value: String(req._id),
-		label: req.best_for ?? "",
-	}));
-	const bestForValue = bestForOptions.filter((opt) =>
-		formik.values.best_for.includes(opt.value),
-	);
+  const bestForOptions = bestFor.map((req) => ({
+    value: String(req._id),
+    label: req.best_for ?? "",
+  }));
+  const bestForValue = bestForOptions.filter((opt) =>
+    formik.values.best_for.includes(opt.value),
+  );
 
-	const courseEligibilityOptions = courseEligibility.map((req) => ({
-		value: String(req._id),
-		label: req.course_eligibility ?? "",
-	}));
-	const courseEligibilityValue = courseEligibilityOptions.filter((opt) =>
-		formik.values.course_eligibility.includes(opt.value),
-	);
+  const courseEligibilityOptions = courseEligibility.map((req) => ({
+    value: String(req._id),
+    label: req.course_eligibility ?? "",
+  }));
+  const courseEligibilityValue = courseEligibilityOptions.filter((opt) =>
+    formik.values.course_eligibility.includes(opt.value),
+  );
 
-	if (loading) {
-		return <EditSkeleton />;
-	}
+  const addFaqToList = () => {
+    if (!currentFaq.question.trim() || !currentFaq.answer.trim()) {
+      return toast.error("Please provide both a question and an answer.");
+    }
+    formik.setFieldValue("faqs", [...formik.values.faqs, currentFaq]);
+    setCurrentFaq({ question: "", answer: "" });
+  };
 
-	return (
-		<div>
-			<Breadcrumbs
-				title="Edit Course"
-				breadcrumbs={[
-					{ label: "Dashboard", path: "/dashboard" },
-					{ label: "Courses", path: "/dashboard/course" },
-					{
-						label: mainCourse?.course_name || "",
-						path: `/dashboard/course/${objectId}`,
-					},
-					{ label: "Edit" },
-				]}
-			/>
-			<div className="bg-[var(--yp-primary)] rounded-xl shadow-sm">
-				<form onSubmit={formik.handleSubmit} className="p-6 space-y-6">
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-						{/* Course Name */}
-						<div>
-							<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
-								Course Name
-							</label>
-							<input
-								type="text"
-								name="course_name"
-								value={formik.values.course_name}
-								onChange={formik.handleChange}
-								placeholder="Enter Course Name"
-								className="w-full px-3 py-2 border border-[var(--yp-border-primary)] rounded-lg bg-[var(--yp-input-primary)] text-[var(--yp-text-primary)]"
-							/>
-							{getFormikError(formik, "course_name")}
-						</div>
+  const removeFaqFromList = (index: number) => {
+    const filtered = formik.values.faqs.filter((_: any, i: any) => i !== index);
+    formik.setFieldValue("faqs", filtered);
+    if (openAccordion === index) setOpenAccordion(null);
+  };
 
-						{/* Course Short Name */}
-						<div>
-							<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
-								Course Short Name
-							</label>
-							<input
-								type="text"
-								name="course_short_name"
-								value={formik.values.course_short_name}
-								onChange={formik.handleChange}
-								placeholder="Enter Short Name"
-								className="w-full px-3 py-2 border border-[var(--yp-border-primary)] rounded-lg bg-[var(--yp-input-primary)] text-[var(--yp-text-primary)]"
-							/>
-							{getFormikError(formik, "course_short_name")}
-						</div>
+  const toggleAccordion = (index: number) => {
+    setOpenAccordion(openAccordion === index ? null : index);
+  };
 
-						{/* Specialization */}
-						<div>
-							<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
-								Specialization
-							</label>
-							<Select
-								isMulti
-								name="specialization"
-								options={specializationSelectOptions}
-								value={specializationSelectOptions.filter((opt) =>
-									formik.values.specialization?.includes(opt.value),
-								)}
-								onChange={(selected) =>
-									formik.setFieldValue(
-										"specialization",
-										Array.isArray(selected) ? selected.map((s) => s.value) : [],
-									)
-								}
-								onBlur={() => formik.setFieldTouched("specialization", true)}
-								classNamePrefix="react-select"
-							/>
-							{getFormikError(formik, "specialization")}
-						</div>
+  if (loading) {
+    return <EditSkeleton />;
+  }
 
-						{/* Duration Value */}
-						<div className="grid grid-cols-2 gap-2">
-							<div>
-								<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
-									Duration Value
-								</label>
-								<input
-									type="number"
-									name="duration_value"
-									value={formik.values.duration_value}
-									onChange={formik.handleChange}
-									placeholder="Enter Duration"
-									className="w-full px-3 py-2 border border-[var(--yp-border-primary)] rounded-lg bg-[var(--yp-input-primary)] text-[var(--yp-text-primary)]"
-								/>
-								{getFormikError(formik, "duration_value")}
-							</div>
-							<div>
-								<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
-									Duration Type
-								</label>
-								<select
-									name="duration_type"
-									value={formik.values.duration_type}
-									onChange={formik.handleChange}
-									className="w-full px-3 py-2 border border-[var(--yp-border-primary)] rounded-lg bg-[var(--yp-input-primary)] text-[var(--yp-text-primary)]"
-								>
-									<option value="">Select Type</option>
-									<option value="months">Months</option>
-									<option value="years">Years</option>
-								</select>
-								{getFormikError(formik, "duration_type")}
-							</div>
-						</div>
+  return (
+    <div>
+      <Breadcrumbs
+        title="Edit Course"
+        breadcrumbs={[
+          { label: "Dashboard", path: "/dashboard" },
+          { label: "Courses", path: "/dashboard/course" },
+          {
+            label: mainCourse?.course_name || "",
+            path: `/dashboard/course/${objectId}`,
+          },
+          { label: "Edit" },
+        ]}
+      />
+      <div className="bg-[var(--yp-primary)] rounded-xl shadow-sm">
+        <form onSubmit={formik.handleSubmit} className="p-6 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Course Name */}
+            <div>
+              <label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
+                Course Name
+              </label>
+              <input
+                type="text"
+                name="course_name"
+                value={formik.values.course_name}
+                onChange={formik.handleChange}
+                placeholder="Enter Course Name"
+                className="w-full px-3 py-2 border border-[var(--yp-border-primary)] rounded-lg bg-[var(--yp-input-primary)] text-[var(--yp-text-primary)]"
+              />
+              {getFormikError(formik, "course_name")}
+            </div>
 
-						{/* Course Type */}
-						<div>
-							<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
-								Course Type
-							</label>
+            {/* Course Short Name */}
+            <div>
+              <label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
+                Course Short Name
+              </label>
+              <input
+                type="text"
+                name="course_short_name"
+                value={formik.values.course_short_name}
+                onChange={formik.handleChange}
+                placeholder="Enter Short Name"
+                className="w-full px-3 py-2 border border-[var(--yp-border-primary)] rounded-lg bg-[var(--yp-input-primary)] text-[var(--yp-text-primary)]"
+              />
+              {getFormikError(formik, "course_short_name")}
+            </div>
 
-							<Select
-								name="course_type"
-								options={courseTypeSelectOptions}
-								value={courseTypeSelectOptions.find(
-									(opt) => opt.value === formik.values.course_type,
-								)}
-								onChange={(selected) =>
-									formik.setFieldValue(
-										"course_type",
-										selected ? selected.value : "",
-									)
-								}
-								onBlur={() => formik.setFieldTouched("course_type", true)}
-								classNamePrefix="react-select"
-							/>
+            {/* Specialization */}
+            <div>
+              <label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
+                Specialization
+              </label>
+              <Select
+                isMulti
+                name="specialization"
+                options={specializationSelectOptions}
+                value={specializationSelectOptions.filter((opt) =>
+                  formik.values.specialization?.includes(opt.value),
+                )}
+                onChange={(selected) =>
+                  formik.setFieldValue(
+                    "specialization",
+                    Array.isArray(selected) ? selected.map((s) => s.value) : [],
+                  )
+                }
+                onBlur={() => formik.setFieldTouched("specialization", true)}
+                classNamePrefix="react-select"
+              />
+              {getFormikError(formik, "specialization")}
+            </div>
 
-							{getFormikError(formik, "course_type")}
-						</div>
+            {/* Duration Value */}
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
+                  Duration Value
+                </label>
+                <input
+                  type="number"
+                  name="duration_value"
+                  value={formik.values.duration_value}
+                  onChange={formik.handleChange}
+                  placeholder="Enter Duration"
+                  className="w-full px-3 py-2 border border-[var(--yp-border-primary)] rounded-lg bg-[var(--yp-input-primary)] text-[var(--yp-text-primary)]"
+                />
+                {getFormikError(formik, "duration_value")}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
+                  Duration Type
+                </label>
+                <select
+                  name="duration_type"
+                  value={formik.values.duration_type}
+                  onChange={formik.handleChange}
+                  className="w-full px-3 py-2 border border-[var(--yp-border-primary)] rounded-lg bg-[var(--yp-input-primary)] text-[var(--yp-text-primary)]"
+                >
+                  <option value="">Select Type</option>
+                  <option value="months">Months</option>
+                  <option value="years">Years</option>
+                </select>
+                {getFormikError(formik, "duration_type")}
+              </div>
+            </div>
 
-						{/* Degree Type */}
-						<div>
-							<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
-								Degree Type
-							</label>
+            {/* Course Type */}
+            <div>
+              <label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
+                Course Type
+              </label>
 
-							<Select
-								name="degree_type"
-								options={degreeTypeSelectOptions}
-								value={degreeTypeSelectOptions.find(
-									(opt) => opt.value === formik.values.degree_type,
-								)}
-								onChange={(selected) =>
-									formik.setFieldValue(
-										"degree_type",
-										selected ? selected.value : "",
-									)
-								}
-								onBlur={() => formik.setFieldTouched("degree_type", true)}
-								classNamePrefix="react-select"
-							/>
+              <Select
+                name="course_type"
+                options={courseTypeSelectOptions}
+                value={courseTypeSelectOptions.find(
+                  (opt) => opt.value === formik.values.course_type,
+                )}
+                onChange={(selected) =>
+                  formik.setFieldValue(
+                    "course_type",
+                    selected ? selected.value : "",
+                  )
+                }
+                onBlur={() => formik.setFieldTouched("course_type", true)}
+                classNamePrefix="react-select"
+              />
 
-							{getFormikError(formik, "degree_type")}
-						</div>
+              {getFormikError(formik, "course_type")}
+            </div>
 
-						{/* Best For */}
-						<div>
-							<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
-								Best For
-								<button
-									type="button"
-									onClick={() => setAddBestFor(true)}
-									className="px-1 py-1 ms-2 rounded text-sm text-blue-900 bg-blue-100"
-									title="Add Requirments"
-								>
-									<Plus className="w-3 h-3" />
-								</button>
-							</label>
+            {/* Degree Type */}
+            <div>
+              <label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
+                Certifaction Type
+              </label>
 
-							<Select
-								isMulti
-								name="best_for"
-								options={bestForOptions}
-								value={bestForValue}
-								onChange={(selected: any) =>
-									formik.setFieldValue(
-										"best_for",
-										(selected || []).map((s: any) => String(s.value)),
-									)
-								}
-								onBlur={() => formik.setFieldTouched("best_for", true)}
-								classNamePrefix="react-select"
-							/>
-							{getFormikError(formik, "best_for")}
-							<AddBestFor
-								isOpen={addBestFor}
-								onClose={setAddBestFor}
-								bestFor={bestFor}
-								getData={fetchBestFor}
-							/>
-						</div>
+              <Select
+                name="degree_type"
+                options={degreeTypeSelectOptions}
+                value={degreeTypeSelectOptions.find(
+                  (opt) => opt.value === formik.values.degree_type,
+                )}
+                onChange={(selected) =>
+                  formik.setFieldValue(
+                    "degree_type",
+                    selected ? selected.value : "",
+                  )
+                }
+                onBlur={() => formik.setFieldTouched("degree_type", true)}
+                classNamePrefix="react-select"
+              />
 
-						{/* Course Eligibility */}
-						<div>
-							<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
-								Course Eligibility
-								<button
-									type="button"
-									onClick={() => setAddCourseEligibility(true)}
-									className="px-1 py-1 ms-2 rounded text-sm text-blue-900 bg-blue-100"
-									title="Add Requirments"
-								>
-									<Plus className="w-3 h-3" />
-								</button>
-							</label>
-							<Select
-								isMulti
-								name="course_eligibility"
-								options={courseEligibilityOptions}
-								value={courseEligibilityValue}
-								onChange={(selected: any) =>
-									formik.setFieldValue(
-										"course_eligibility",
-										(selected || []).map((s: any) => String(s.value)),
-									)
-								}
-								onBlur={() =>
-									formik.setFieldTouched("course_eligibility", true)
-								}
-								classNamePrefix="react-select"
-							/>
-							{getFormikError(formik, "course_eligibility")}
-							<AddCourseEligibility
-								isOpen={addCourseEligibility}
-								onClose={setAddCourseEligibility}
-								courseEligibility={courseEligibility}
-								getData={fetchCourseEligibility}
-							/>
-						</div>
+              {getFormikError(formik, "degree_type")}
+            </div>
 
-						{/* Program Type */}
-						<div>
-							<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
-								Program Type
-							</label>
+            {/* Best For */}
+            <div>
+              <label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
+                Best For
+                <button
+                  type="button"
+                  onClick={() => setAddBestFor(true)}
+                  className="px-1 py-1 ms-2 rounded text-sm text-blue-900 bg-blue-100"
+                  title="Add Requirments"
+                >
+                  <Plus className="w-3 h-3" />
+                </button>
+              </label>
 
-							<Select
-								name="program_type"
-								options={programTypeSelectOptions}
-								value={programTypeSelectOptions.find(
-									(opt) => opt.value === formik.values.program_type,
-								)}
-								onChange={(selected) =>
-									formik.setFieldValue(
-										"program_type",
-										selected ? selected.value : "",
-									)
-								}
-								onBlur={() => formik.setFieldTouched("program_type", true)}
-								classNamePrefix="react-select"
-							/>
+              <Select
+                isMulti
+                name="best_for"
+                options={bestForOptions}
+                value={bestForValue}
+                onChange={(selected: any) =>
+                  formik.setFieldValue(
+                    "best_for",
+                    (selected || []).map((s: any) => String(s.value)),
+                  )
+                }
+                onBlur={() => formik.setFieldTouched("best_for", true)}
+                classNamePrefix="react-select"
+              />
+              {getFormikError(formik, "best_for")}
+              <AddBestFor
+                isOpen={addBestFor}
+                onClose={setAddBestFor}
+                bestFor={bestFor}
+                getData={fetchBestFor}
+              />
+            </div>
 
-							{getFormikError(formik, "program_type")}
-						</div>
-					</div>
+            {/* Course Eligibility */}
+            <div>
+              <label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
+                Course Eligibility
+                <button
+                  type="button"
+                  onClick={() => setAddCourseEligibility(true)}
+                  className="px-1 py-1 ms-2 rounded text-sm text-blue-900 bg-blue-100"
+                  title="Add Requirments"
+                >
+                  <Plus className="w-3 h-3" />
+                </button>
+              </label>
+              <Select
+                isMulti
+                name="course_eligibility"
+                options={courseEligibilityOptions}
+                value={courseEligibilityValue}
+                onChange={(selected: any) =>
+                  formik.setFieldValue(
+                    "course_eligibility",
+                    (selected || []).map((s: any) => String(s.value)),
+                  )
+                }
+                onBlur={() =>
+                  formik.setFieldTouched("course_eligibility", true)
+                }
+                classNamePrefix="react-select"
+              />
+              {getFormikError(formik, "course_eligibility")}
+              <AddCourseEligibility
+                isOpen={addCourseEligibility}
+                onClose={setAddCourseEligibility}
+                courseEligibility={courseEligibility}
+                getData={fetchCourseEligibility}
+              />
+            </div>
 
-					{/* Image */}
-					<div>
-						<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
-							Image
-						</label>
-						<div className="border-2 border-dashed border-[var(--yp-border-primary)] rounded-lg p-4 text-center hover:border-[var(--yp-muted)] bg-[var(--yp-input-primary)] transition-colors">
-							<input
-								type="file"
-								accept="image/*"
-								onChange={handleFileChange}
-								className="hidden"
-								id="course-image"
-							/>
-							<label htmlFor="course-image" className="cursor-pointer block">
-								{previewImage ? (
-									<img
-										src={previewImage}
-										alt="Preview"
-										className="mx-auto mb-2 max-h-40 rounded"
-									/>
-								) : (
-									<>
-										<Image className="w-8 h-8 text-[var(--yp-muted)] mx-auto mb-2" />
-										<p className="text-sm text-[var(--yp-muted)]">
-											{formik.values.image
-												? (formik.values.image as File).name
-												: "Click to upload image"}
-										</p>
-									</>
-								)}
-							</label>
-						</div>
-					</div>
+            {/* Program Type */}
+            <div>
+              <label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
+                Program Type
+              </label>
 
-					{/* Description */}
-					<div>
-						<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
-							Description
-						</label>
-						<JoditEditor
-							ref={editor}
-							value={formik.values.description}
-							config={editorConfig}
-							onBlur={(newContent) =>
-								formik.setFieldValue("description", newContent)
-							}
-						/>
-						{getFormikError(formik, "description")}
-					</div>
+              <Select
+                name="program_type"
+                options={programTypeSelectOptions}
+                value={programTypeSelectOptions.find(
+                  (opt) => opt.value === formik.values.program_type,
+                )}
+                onChange={(selected) =>
+                  formik.setFieldValue(
+                    "program_type",
+                    selected ? selected.value : "",
+                  )
+                }
+                onBlur={() => formik.setFieldTouched("program_type", true)}
+                classNamePrefix="react-select"
+              />
 
-					{/* Status */}
-					<div>
-						<label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
-							Status
-						</label>
-						<select
-							name="status"
-							value={formik.values.status}
-							onChange={formik.handleChange}
-							className="w-full px-3 py-2 border border-[var(--yp-border-primary)] rounded-lg bg-[var(--yp-input-primary)] text-[var(--yp-text-primary)]"
-						>
-							<option value="">Select Status</option>
-							{getStatusAccodingToField(status, "course").map(
-								(opt: any, idx: number) => (
-									<option key={idx} value={opt.parent_status}>
-										{opt.parent_status}
-									</option>
-								),
-							)}
-						</select>
-						{getFormikError(formik, "status")}
-					</div>
+              {getFormikError(formik, "program_type")}
+            </div>
+          </div>
 
-					<div className="flex justify-start">
-						<button
-							type="submit"
-							className="px-6 py-2 rounded-lg text-sm font-medium text-[var(--yp-blue-text)] bg-[var(--yp-blue-bg)]"
-							disabled={formik.isSubmitting}
-						>
-							{formik?.isSubmitting ? "Updating..." : "Update"}
-						</button>
-					</div>
-				</form>
-			</div>
-		</div>
-	);
+          {/* Image */}
+          <div>
+            <label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
+              Image
+            </label>
+            <div className="border-2 border-dashed border-[var(--yp-border-primary)] rounded-lg p-4 text-center hover:border-[var(--yp-muted)] bg-[var(--yp-input-primary)] transition-colors">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+                id="course-image"
+              />
+              <label htmlFor="course-image" className="cursor-pointer block">
+                {previewImage ? (
+                  <img
+                    src={previewImage}
+                    alt="Preview"
+                    className="mx-auto mb-2 max-h-40 rounded"
+                  />
+                ) : (
+                  <>
+                    <Image className="w-8 h-8 text-[var(--yp-muted)] mx-auto mb-2" />
+                    <p className="text-sm text-[var(--yp-muted)]">
+                      {formik.values.image
+                        ? (formik.values.image as File).name
+                        : "Click to upload image"}
+                    </p>
+                  </>
+                )}
+              </label>
+            </div>
+          </div>
+
+          {/* Description */}
+          <div>
+            <label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
+              Description
+            </label>
+            <JoditEditor
+              ref={editor}
+              value={formik.values.description}
+              config={editorConfig}
+              onBlur={(newContent) =>
+                formik.setFieldValue("description", newContent)
+              }
+            />
+            {getFormikError(formik, "description")}
+          </div>
+
+          {/* Status */}
+          <div>
+            <label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
+              Status
+            </label>
+            <select
+              name="status"
+              value={formik.values.status}
+              onChange={formik.handleChange}
+              className="w-full px-3 py-2 border border-[var(--yp-border-primary)] rounded-lg bg-[var(--yp-input-primary)] text-[var(--yp-text-primary)]"
+            >
+              <option value="">Select Status</option>
+              {getStatusAccodingToField(status, "course").map(
+                (opt: any, idx: number) => (
+                  <option key={idx} value={opt.parent_status}>
+                    {opt.parent_status}
+                  </option>
+                ),
+              )}
+            </select>
+            {getFormikError(formik, "status")}
+          </div>
+
+          {/* FAQ SECTION */}
+          <div className="space-y-4 pt-6 border-t border-[var(--yp-border-primary)]">
+            <h3 className="text-md font-semibold text-[var(--yp-text-primary)]">
+              FAQs
+            </h3>
+
+            {/* Single FAQ Entry Form */}
+            <div className="p-4 border border-[var(--yp-border-primary)] bg-[var(--yp-input-primary)] rounded-xl space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-[var(--yp-text-secondary)] mb-1">
+                  Question
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter a common question..."
+                  value={currentFaq.question}
+                  onChange={(e) =>
+                    setCurrentFaq({ ...currentFaq, question: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-[var(--yp-border-primary)] rounded-lg bg-[var(--yp-primary)] text-[var(--yp-text-primary)]"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[var(--yp-text-secondary)] mb-1">
+                  Answer
+                </label>
+                <div className="rounded-lg overflow-hidden border border-[var(--yp-border-primary)]">
+                  <JoditEditor
+                    value={currentFaq.answer}
+                    config={editorConfig}
+                    onBlur={(newContent) =>
+                      setCurrentFaq({ ...currentFaq, answer: newContent })
+                    }
+                  />
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={addFaqToList}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-[var(--yp-blue-text)] bg-[var(--yp-blue-bg)]"
+              >
+                <Plus size={16} /> Add FAQ to List
+              </button>
+            </div>
+
+            {/* Accordion List of FAQs */}
+            {formik.values.faqs.length > 0 && (
+              <div className="mt-4 space-y-2">
+                <label className="block text-xs font-bold text-[var(--yp-muted)] uppercase tracking-wider mb-2">
+                  Added FAQs
+                </label>
+                {formik.values.faqs.map((faq: FAQProps, index: number) => (
+                  <div
+                    key={index}
+                    className="border border-[var(--yp-border-primary)] rounded-lg overflow-hidden bg-[var(--yp-primary)]"
+                  >
+                    <div
+                      className="flex items-center justify-between p-3 cursor-pointer hover:bg-[var(--yp-input-primary)] transition-colors"
+                      onClick={() => toggleAccordion(index)}
+                    >
+                      <div className="flex items-center gap-3">
+                        <HelpCircle
+                          size={16}
+                          className="text-[var(--yp-main)]"
+                        />
+                        <span className="text-sm font-medium text-[var(--yp-text-primary)]">
+                          {faq.question}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeFaqFromList(index);
+                          }}
+                          className="text-red-500 hover:text-red-700 p-1"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                        {openAccordion === index ? (
+                          <ChevronUp size={16} />
+                        ) : (
+                          <ChevronDown size={16} />
+                        )}
+                      </div>
+                    </div>
+
+                    {openAccordion === index && (
+                      <div className="p-3 border-t border-[var(--yp-border-primary)] bg-[var(--yp-input-primary)] text-sm text-[var(--yp-text-secondary)]">
+                        <div dangerouslySetInnerHTML={{ __html: faq.answer }} />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="flex justify-start">
+            <button
+              type="submit"
+              className="px-6 py-2 rounded-lg text-sm font-medium text-[var(--yp-blue-text)] bg-[var(--yp-blue-bg)]"
+              disabled={formik.isSubmitting}
+            >
+              {formik?.isSubmitting ? "Updating..." : "Update"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
 }

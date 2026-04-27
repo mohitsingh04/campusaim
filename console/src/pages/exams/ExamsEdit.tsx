@@ -403,7 +403,7 @@ export default function ExamsEdit() {
           {/* FAQ SECTION */}
           <div className="space-y-4 pt-6 border-t border-[var(--yp-border-primary)]">
             <h3 className="text-md font-semibold text-[var(--yp-text-primary)]">
-              Blog FAQs
+              FAQs
             </h3>
 
             {/* Single FAQ Entry Form */}

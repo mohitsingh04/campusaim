@@ -4,7 +4,6 @@ import Course from "../models/Courses.js";
 import { autoAddAllSeo } from "./AllSeoController.js";
 import AllSeo from "../models/AllSeo.js";
 import mongoose from "mongoose";
-import Category from "../models/Category.js";
 
 function normalizeObjectIdArray(input) {
   let arr = [];
@@ -46,6 +45,7 @@ function normalizeToStringArray(value) {
         else if (typeof parsed === "string" && parsed.trim())
           arr = [parsed];
       } catch (err) {
+        console.log(err);
         if (value.includes(",")) {
           arr = value
             .split(",")
@@ -135,6 +135,7 @@ export const addCourse = async (req, res) => {
       description,
       best_for,
       course_eligibility,
+      faqs
     } = req.body;
 
     if (!course_name) {
@@ -167,7 +168,6 @@ export const addCourse = async (req, res) => {
       course_name,
       course_short_name,
       duration,
-      program_type,
       best_for: bestForArray,
       specialization: specializationArray,
       course_type: courseTypeArray,
@@ -177,6 +177,7 @@ export const addCourse = async (req, res) => {
       description: updatedDescription,
       image: images,
       course_slug: courseSlug,
+      faqs: faqs ? JSON.parse(faqs) : [],
     });
 
     const courseCreated = await newCourse.save();
@@ -224,6 +225,7 @@ export const updateCourse = async (req, res) => {
       description,
       best_for,
       status,
+      faqs
     } = req.body;
 
     const courseSlug = generateSlug(course_name);
@@ -306,6 +308,10 @@ export const updateCourse = async (req, res) => {
 
     if (normalizedProgramType) {
       updateObj.program_type = normalizedProgramType;
+    }
+    const parsedFaqs = faqs ? JSON.parse(faqs) : [];
+    if (parsedFaqs?.length > 0) {
+      updateObj.faqs = parsedFaqs
     }
 
     const courseUpdated = await Course.findByIdAndUpdate(

@@ -80,7 +80,7 @@ export default function Navbar() {
   const [token, setToken] = useState("");
   const { authUser } = useGetAuthUser();
   const [settingOffcanvas, setSettingOffcanvas] = useState(false);
-  console.log(courseMenuData, examMenuData);
+
   useEffect(() => {
     const checkToken = async () => {
       const tokenRes = await getToken();
