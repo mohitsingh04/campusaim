@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { API } from "../../services/API";
+import { API, CampusaimAPI } from "../../services/API";
 import Select from "react-select";
 
 export default function AssignCounselorModal({
@@ -17,8 +17,8 @@ export default function AssignCounselorModal({
     useEffect(() => {
         const fetchCounselors = async () => {
             try {
-                const res = await API.get("/fetch-counselor");
-                setCounselors(res.data || []);
+                const res = await CampusaimAPI.get("/fetch-counselors");
+                setCounselors(res.data.data || []);
             } catch (err) {
                 console.error(err);
                 toast.error("Failed to load counselors");
@@ -107,8 +107,7 @@ export default function AssignCounselorModal({
         </div>
     );
 
-    const selectedCounselor =
-        counselorOptions.find(opt => opt.value === selectedCounselorId) || null;
+    const selectedCounselor = counselorOptions.find(opt => opt.value === selectedCounselorId) || null;
 
     return (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">

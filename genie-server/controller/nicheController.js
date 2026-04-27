@@ -1,8 +1,8 @@
 import Niche from "../models/niche.js";
-import User from "../models/userModel.js";
 import generateSlug from "../utils/generateSlug.js";
 import { getDataFromToken } from "../helper/getDataFromToken.js";
 import mongoose from "mongoose";
+import RegularUser from "../models/regularUser.js";
 
 export const getNiche = async (req, res) => {
     try {
@@ -94,8 +94,7 @@ export const getNicheBySlug = async (req, res) => {
             return res.status(400).json({ error: "Slug is required." });
         }
 
-        const niche = await Niche.findOne({ slug })
-            .populate("createdBy", "name email role");
+        const niche = await Niche.findOne({ slug });
 
         if (!niche) {
             return res.status(404).json({ error: "Niche not found." });
@@ -115,11 +114,6 @@ export const addNiche = async (req, res) => {
 
         if (!userId) {
             return res.status(401).json({ error: "Unauthorized." });
-        }
-
-        const user = await User.findById(userId).select("_id");
-        if (!user) {
-            return res.status(404).json({ error: "User not found." });
         }
 
         const { name, description } = req.body;
@@ -142,14 +136,12 @@ export const addNiche = async (req, res) => {
             name: name.trim(),
             description,
             slug,
-            createdBy: user._id,
         });
 
         return res.status(201).json({
             message: "Niche added successfully.",
             niche,
         });
-
     } catch (error) {
         console.error("Error adding niche:", error);
 

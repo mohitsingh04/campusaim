@@ -15,6 +15,8 @@ import Lead from "../models/leadsModel.js";
 import { createNotification } from "../services/notification.service.js";
 import { getRoleId } from "../utils/roleMapper.js";
 import RegularUser from "../models/regularUser.js";
+import { hasRole } from "../utils/roleCheck.util.js";
+import { getRoleIds } from "../utils/profileRole.util.js";
 
 // Utility to fetch users with role filtering
 export const getUsersByRole = async ({ role = null, search = "" }) => {
@@ -297,23 +299,32 @@ export const fetchUsers = async (req, res) => {
     try {
         const authUserId = await getDataFromToken(req);
 
-        // 🔐 Validate userId
+        // ---------------- VALIDATION ----------------
         if (!mongoose.Types.ObjectId.isValid(authUserId)) {
             return res.status(400).json({ error: "Invalid user ID" });
         }
 
-        const authUser = await User.findById(authUserId)
+        const authUser = await RegularUser.findById(authUserId)
             .select("_id role")
             .lean();
 
-        // 🔐 Only admin can fetch all users
-        if (!authUser || authUser.role !== "admin") {
+        if (!authUser) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        // ---------------- AUTHORIZATION ----------------
+        const isAdmin = await hasRole(authUser, "Property Manager");
+
+        if (!isAdmin) {
             return res.status(403).json({ error: "Access denied" });
         }
 
-        // ✅ Fetch all users except superadmin
-        const users = await User.find({
-            role: { $ne: "superadmin" }
+        // ---------------- ROLE FILTER ----------------
+        const superAdminRoleId = await getRoleIds("Super Admin");
+
+        // ---------------- FETCH USERS ----------------
+        const users = await RegularUser.find({
+            role: { $ne: superAdminRoleId } // ✅ correct
         })
             .select("-password -forgotOrResetPasswordToken -forgotOrResetPasswordTokenExpiry")
             .lean();
@@ -326,6 +337,7 @@ export const fetchUsers = async (req, res) => {
 
     } catch (error) {
         console.error("Fetch Users Error:", error);
+
         return res.status(500).json({
             error: "Internal Server Error",
         });

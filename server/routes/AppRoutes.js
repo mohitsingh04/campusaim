@@ -18,9 +18,6 @@ import {
 
 const appRouter = express.Router();
 
-// Profile
-// appRouter.post("/update-profile", addUser);
-
 // Add user By Role
 appRouter.post("/add-user", addUser);
 appRouter.put("/update-user/:id", updateUser);
@@ -40,5 +37,8 @@ appRouter.post('/toggle-status/:id', toggleUserStatus);
 appRouter.get("/invites/partner", getPartnerInvite);
 appRouter.post("/invites/partner", generatePartnerInvite);
 appRouter.post("/auth/partner/register/:token", registerPartnerViaInvite);
+
+// Assign Counselor to Teamleader
+// assingmentRouter.get("/fetch-assigned-counselors", getCounselorsForAssign);
 
 export default appRouter;

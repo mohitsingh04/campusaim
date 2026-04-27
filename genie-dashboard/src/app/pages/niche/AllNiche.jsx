@@ -273,7 +273,7 @@ export default function AllNiche() {
 
                     return (
                         <span
-                            className={`px-2 py-1 text-xs rounded-full font-semibold ${STATUS_MAP[status] || "bg-gray-100 text-gray-700"
+                            className={`px-2 py-1 text-xs rounded-full font-semibold capitalize ${STATUS_MAP[status] || "bg-gray-100 text-gray-700"
                                 }`}
                         >
                             {status}

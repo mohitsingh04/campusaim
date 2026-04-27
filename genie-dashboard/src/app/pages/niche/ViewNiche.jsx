@@ -144,20 +144,6 @@ export default function ViewNiche() {
                   : "-"}
               </p>
             </Field>
-
-            {niche?.createdBy && (
-              <Field label="Created By">
-                <p className="text-sm text-gray-800">
-                  {niche.createdBy?.name}
-                </p>
-                <p className="text-sm text-gray-600">
-                  {niche.createdBy?.email}
-                </p>
-                <p className="text-sm text-gray-600">
-                  {niche.createdBy?.role}
-                </p>
-              </Field>
-            )}
           </div>
         </div>
       </div>

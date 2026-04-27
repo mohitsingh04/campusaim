@@ -234,7 +234,9 @@ export const getUserLeads = async (req, res) => {
             return res.status(400).json({ error: "Invalid auth user ID" });
         }
 
-        const authUser = await User.findById(authUserId)
+        // 🔎 Auth user with role
+        const authUser = await RegularUser.findById(authUserId)
+            .populate("role", "role")
             .select("_id role")
             .lean();
 
@@ -242,13 +244,17 @@ export const getUserLeads = async (req, res) => {
             return res.status(404).json({ error: "Auth user not found" });
         }
 
+        const authAppRole = mapRoleForApp(authUser.role?.role); // ✅ FIX
+
         const { userId } = req.params;
 
         if (!mongoose.Types.ObjectId.isValid(userId)) {
             return res.status(400).json({ error: "Invalid userId" });
         }
 
-        const targetUser = await User.findById(userId)
+        // 🔎 Target user
+        const targetUser = await RegularUser.findById(userId)
+            .populate("role", "role")
             .select("_id role teamLeader createdBy")
             .lean();
 
@@ -256,16 +262,18 @@ export const getUserLeads = async (req, res) => {
             return res.status(404).json({ error: "Target user not found" });
         }
 
-        /* ---------------- PERMISSION RULES (ROLE BASED) ---------------- */
+        const targetAppRole = mapRoleForApp(targetUser.role?.role);
 
-        const isAdmin = authUser.role === "admin";
+        /* ---------------- PERMISSION RULES ---------------- */
+
+        const isAdmin = authAppRole === "admin";
 
         const isPartner =
-            authUser.role === "partner" &&
+            authAppRole === "partner" &&
             targetUser.createdBy?.toString() === authUser._id.toString();
 
         const isTeamLeader =
-            authUser.role === "teamleader" &&
+            authAppRole === "teamleader" &&
             targetUser.teamLeader?.toString() === authUser._id.toString();
 
         const isSelf =
@@ -293,9 +301,13 @@ export const getUserLeads = async (req, res) => {
             count: leads.length,
             data: leads
         });
+
     } catch (error) {
         console.error("Error fetching user leads:", error);
-        return res.status(500).json({ error: "Internal Server Error" });
+
+        return res.status(500).json({
+            error: "Internal Server Error"
+        });
     }
 };
 
@@ -439,7 +451,7 @@ export const addLead = async (req, res) => {
             return res.status(401).json({ error: "Unauthorized user" });
         }
 
-        const authUser = await User.findById(authUserId)
+        const authUser = await RegularUser.findById(authUserId)
             .select("_id name role")
             .lean();
 
@@ -479,20 +491,6 @@ export const addLead = async (req, res) => {
 
         /* ------------------ Resolve Creator ------------------ */
         let userId = authUser._id;
-
-        if (ref_code) {
-            const refUser = await User.findOne({ ref_code })
-                .select("_id role")
-                .lean();
-
-            if (!refUser || refUser.role !== "partner") {
-                return res.status(403).json({
-                    error: "Invalid partner referral code",
-                });
-            }
-
-            userId = refUser._id;
-        }
 
         /* ------------------ Duplicate Check ------------------ */
         const [emailExists, contactExists] = await Promise.all([
@@ -540,7 +538,7 @@ export const addLead = async (req, res) => {
             },
 
             marketing: marketingData,
-            leadType: ref_code ? "partner" : "manual",
+            leadType: "manual",
             lastActivity: new Date(),
         };
 
@@ -573,7 +571,7 @@ export const updateLead = async (req, res) => {
             return res.status(400).json({ error: "Invalid user" });
         }
 
-        const actor = await User.findById(senderId)
+        const actor = await RegularUser.findById(senderId)
             .select("_id name role")
             .lean();
 

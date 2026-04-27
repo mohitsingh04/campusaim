@@ -73,7 +73,7 @@ function EditTeamLeader() {
         const toastId = toast.loading("Saving...");
 
         try {
-            const response = await API.put(`/update-user/${teamLeaderData?._id}`, values);
+            const response = await CampusaimAPI.put(`/update-user/${teamLeaderData?._id}`, values);
             toast.success(response.data.message || "Updated successfully!", { id: toastId });
             navigate("/dashboard/users/team-leaders");
         } catch (error) {

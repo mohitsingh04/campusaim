@@ -11,11 +11,6 @@ const nicheSchema = mongoose.Schema(
         description: {
             type: String,
         },
-        createdBy: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-            required: true,
-        },
         slug: {
             type: String,
             required: true,

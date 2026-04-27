@@ -1,9 +1,11 @@
 import mongoose from "mongoose";
 import Incentive from "../models/incentive.js";
 import User from "../models/userModel.js";
+import RegularUser from "../models/regularUser.js";
 import { getDataFromToken } from "../helper/getDataFromToken.js";
 import axios from "axios";
 import IncentiveEarning from "../models/incentiveEarning.js";
+import { mapRoleForApp } from "../utils/roleMapper.js";
 
 // ---------------- HELPER ----------------
 export const calculateIncentive = async (lead) => {
@@ -105,8 +107,18 @@ export const createIncentive = async (req, res) => {
             return res.status(401).json({ success: false, error: "Unauthorized" });
         }
 
-        const admin = await User.findById(adminId).select("role");
-        if (!["admin", "superadmin"].includes(admin?.role)) {
+        const admin = await RegularUser.findById(adminId)
+            .populate("role", "role")
+            .select("role")
+            .lean();
+
+        if (!admin) {
+            return res.status(401).json({ success: false, error: "Unauthorized" });
+        }
+
+        const adminAppRole = mapRoleForApp(admin.role?.role); // ✅ FIX
+
+        if (!["admin", "superadmin"].includes(adminAppRole)) {
             return res.status(403).json({ success: false, error: "Forbidden" });
         }
 
@@ -117,8 +129,18 @@ export const createIncentive = async (req, res) => {
             return res.status(400).json({ success: false, error: "Invalid userId" });
         }
 
-        const user = await User.findById(userId).select("role");
-        if (!["counselor", "teamleader"].includes(user?.role)) {
+        const user = await RegularUser.findById(userId)
+            .populate("role", "role")
+            .select("role")
+            .lean();
+
+        if (!user) {
+            return res.status(404).json({ success: false, error: "User not found" });
+        }
+
+        const userAppRole = mapRoleForApp(user.role?.role); // ✅ FIX
+
+        if (!["counselor", "teamleader"].includes(userAppRole)) {
             return res.status(400).json({ success: false, error: "Invalid user role" });
         }
 
@@ -182,6 +204,7 @@ export const createIncentive = async (req, res) => {
 
     } catch (err) {
         console.error("❌ createIncentive:", err);
+
         return res.status(500).json({
             success: false,
             error: "Server error"
@@ -199,8 +222,18 @@ export const updateIncentive = async (req, res) => {
             return res.status(401).json({ success: false, error: "Unauthorized" });
         }
 
-        const admin = await User.findById(adminId).select("role");
-        if (!["admin", "superadmin"].includes(admin?.role)) {
+        const admin = await RegularUser.findById(adminId)
+            .populate("role", "role")
+            .select("role")
+            .lean();
+
+        if (!admin) {
+            return res.status(401).json({ success: false, error: "Unauthorized" });
+        }
+
+        const adminAppRole = mapRoleForApp(admin.role?.role); // ✅ FIX
+
+        if (!["admin", "superadmin"].includes(adminAppRole)) {
             return res.status(403).json({ success: false, error: "Forbidden" });
         }
 
@@ -271,6 +304,7 @@ export const updateIncentive = async (req, res) => {
 
     } catch (err) {
         console.error("❌ updateIncentive:", err);
+
         return res.status(500).json({
             success: false,
             error: "Server error"

@@ -265,7 +265,11 @@ export const fetchCounselors = async (req, res) => {
     try {
         const counselorRoleId = await getRoleIds("Counselor");
 
-        const counselors = await RegularUser.find({ role: counselorRoleId }).select("-password").lean();
+        const counselors = await RegularUser.find({ role: counselorRoleId })
+            .populate("teamLeader", "name email") // ✅ IMPORTANT FIX
+            .select("_id name email contact status teamLeader")
+            .lean();
+        console.log(counselors)
 
         return res.status(200).json({
             success: true,

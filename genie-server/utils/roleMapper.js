@@ -9,8 +9,8 @@ const ROLE_MAP = {
     "admin": "admin",
     "partner": "partner",
     "counselor": "counselor",
-    "team leader": "team leader",
-    "teamleader": "team leader"
+    "team leader": "teamleader",   // ✅ FIXED
+    "teamleader": "teamleader"     // ✅ FIXED
 };
 
 // 🔥 appRole → DB role name

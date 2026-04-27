@@ -1,8 +1,10 @@
 import mongoose from "mongoose";
 import User from "../models/userModel.js";
+import RegularUser from "../models/regularUser.js";
 import Lead from "../models/leadsModel.js";
 import { getDataFromToken } from "../helper/getDataFromToken.js";
 import { notifyCounselorAssignment, notifyLeadAssignment } from "../helper/notification/notificationHelper.js";
+import { mapRoleForApp } from "../utils/roleMapper.js";
 
 /* ---------------- ASSIGN LEADS CONTROLLER ---------------- */
 export const assignLeads = async (req, res) => {
@@ -194,15 +196,28 @@ export const getAssignedCounselors = async (req, res) => {
             return res.status(400).json({ error: "Invalid teamLeaderId" });
         }
 
-        // 1️⃣ Fetch counselors under this team leader
-        const counselors = await User.find({
-            role: "counselor",
-            teamLeader: teamLeaderId
-        }).select("_id name email contact status");
+        // 🔎 Fetch counselors under this team leader
+        const counselors = await RegularUser.find({ teamLeader: teamLeaderId })
+            .populate("role", "role")
+            .select("_id name email mobile_no status role");
+            
+            // 🔐 Filter only counselors (since role is ObjectId now)
+            const filteredCounselors = counselors.filter(
+            (c) => mapRoleForApp(c.role?.role) === "counselor"
+        );
+        
+        const counselorIds = filteredCounselors.map(c => c._id);
 
-        const counselorIds = counselors.map(c => c._id);
+        // ⚠️ Edge case: no counselors
+        if (!counselorIds.length) {
+            return res.status(200).json({
+                success: true,
+                count: 0,
+                data: []
+            });
+        }
 
-        // 2️⃣ Aggregate lead count per counselor
+        // 🔎 Aggregate lead count
         const leadCounts = await Lead.aggregate([
             {
                 $match: {
@@ -222,22 +237,36 @@ export const getAssignedCounselors = async (req, res) => {
             }
         ]);
 
+        // 🔁 Convert to map
         const leadCountMap = {};
         leadCounts.forEach(l => {
-            leadCountMap[l._id.toString()] = l.count;
+            if (l._id) {
+                leadCountMap[l._id.toString()] = l.count;
+            }
         });
 
-        // 3️⃣ Attach leadCount to counselors
-        const response = counselors.map(c => ({
-            ...c.toObject(),
+        // 🔄 Attach leadCount
+        const response = filteredCounselors.map(c => ({
+            _id: c._id,
+            name: c.name,
+            email: c.email,
+            mobile_no: c.mobile_no,
+            status: c.status,
             leadCount: leadCountMap[c._id.toString()] || 0
         }));
 
-        return res.status(200).json({ data: response });
+        return res.status(200).json({
+            success: true,
+            count: response.length,
+            data: response
+        });
 
     } catch (err) {
         console.error("getAssignedCounselors error:", err);
-        return res.status(500).json({ error: "Internal Server Error" });
+
+        return res.status(500).json({
+            error: "Internal Server Error"
+        });
     }
 };
 
@@ -245,14 +274,22 @@ export const assignCounselorToTeamLeader = async (req, res) => {
     try {
         const authUserId = await getDataFromToken(req);
 
-        const authUser = await User.findById(authUserId)
-            .select("_id role name");
+        if (!mongoose.Types.ObjectId.isValid(authUserId)) {
+            return res.status(401).json({ error: "Invalid token" });
+        }
+
+        const authUser = await RegularUser.findById(authUserId)
+            .populate("role", "role")
+            .lean();
 
         if (!authUser) {
             return res.status(401).json({ error: "Unauthorized" });
         }
 
-        if (!["admin", "partner"].includes(authUser.role)) {
+        const appRole = mapRoleForApp(authUser.role?.role);
+
+        // 🔐 RBAC
+        if (!["admin"].includes(appRole)) {
             return res.status(403).json({ error: "Permission denied" });
         }
 
@@ -263,23 +300,32 @@ export const assignCounselorToTeamLeader = async (req, res) => {
             return res.status(400).json({ error: "Invalid counselor ID" });
         }
 
-        const counselor = await User.findOne({
-            _id: counselorId,
-            role: "counselor",
-        }).select("_id name teamLeader");
+        // 🔎 Counselor
+        const counselor = await RegularUser.findById(counselorId)
+            .populate("role", "role")
+            .select("_id name teamLeader role");
 
-        if (!counselor) {
+        const counselorRole = mapRoleForApp(counselor?.role?.role);
+
+        if (!counselor || counselorRole !== "counselor") {
             return res.status(404).json({ error: "Counselor not found" });
         }
 
         /* ---------------- UNASSIGN ---------------- */
         if (!teamLeaderId) {
+            if (!counselor.teamLeader) {
+                return res.status(200).json({
+                    success: true,
+                    message: "Counselor already unassigned",
+                });
+            }
+
             counselor.teamLeader = null;
             await counselor.save();
 
             return res.status(200).json({
                 success: true,
-                message: "Counselor unassigned successfully"
+                message: "Counselor unassigned successfully",
             });
         }
 
@@ -287,41 +333,57 @@ export const assignCounselorToTeamLeader = async (req, res) => {
             return res.status(400).json({ error: "Invalid teamLeader ID" });
         }
 
-        const teamLeader = await User.findOne({
-            _id: teamLeaderId,
-            role: "teamleader",
-        }).select("_id name");
-
-        if (!teamLeader) {
-            return res.status(404).json({ error: "TeamLeader not found" });
-        }
-
-        if (counselor.teamLeader?.equals(teamLeader._id)) {
-            return res.status(200).json({
-                message: "Counselor already assigned to this team leader"
+        if (counselorId === teamLeaderId) {
+            return res.status(400).json({
+                error: "Counselor cannot be their own team leader",
             });
         }
 
+        // 🔎 Team Leader
+        const teamLeader = await RegularUser.findById(teamLeaderId)
+            .populate("role", "role")
+            .select("_id name role");
+
+        const teamLeaderRole = mapRoleForApp(teamLeader?.role?.role);
+
+        // ✅ FIXED HERE
+        if (!teamLeader || teamLeaderRole !== "teamleader") {
+            return res.status(404).json({ error: "Team leader not found" });
+        }
+
+        // 🔁 Already assigned
+        if (counselor.teamLeader?.equals(teamLeader._id)) {
+            return res.status(200).json({
+                success: true,
+                message: "Counselor already assigned to this team leader",
+            });
+        }
+
+        // ✅ Assign
         counselor.teamLeader = teamLeader._id;
         await counselor.save();
 
-        /* ------------------ NOTIFICATION ------------------ */
-        notifyCounselorAssignment({
-            counselor,
-            teamLeader,
-            authUser
-        });
+        /* ---------------- NOTIFICATION ---------------- */
+        try {
+            await notifyCounselorAssignment({
+                counselor,
+                teamLeader,
+                authUser,
+            });
+        } catch (err) {
+            console.error("Notification error:", err);
+        }
 
         return res.status(200).json({
             success: true,
-            message: "Counselor assigned successfully"
+            message: "Counselor assigned successfully",
         });
 
     } catch (error) {
         console.error("assignCounselorToTeamLeader error:", error);
 
         return res.status(500).json({
-            error: "Internal Server Error"
+            error: "Internal Server Error",
         });
     }
 };

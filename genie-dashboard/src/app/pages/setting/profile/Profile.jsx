@@ -108,7 +108,6 @@ function Profile() {
         formData.append("mobile_no", formatPhoneForDB(values.mobile_no));
         formData.append("nicheId", values.nicheId);
         formData.append("bio", values.bio);
-        formData.append("profile_image", values.profile_image);
 
         try {
             const response = await API.patch(`/profile/user/${authUser?._id}`, formData, {
@@ -146,14 +145,31 @@ function Profile() {
         setCropImageSrc(url); // open cropper modal
     };
 
-    const handleCropSave = (blob) => {
+    const handleCropSave = async (blob) => {
         try {
             const file = new File([blob], "profile.jpg", { type: "image/jpeg" });
-            formik.setFieldValue("profile_image", file); // ✅ only here
+
+            const formData = new FormData();
+            formData.append("profile_image", file);
+
+            const toastId = toast.loading("Uploading image...");
+
+            const res = await API.patch("/update-profile/profile", formData, {
+                headers: { "Content-Type": "multipart/form-data" }
+            });
+
+            toast.success(res.data.message || "Image updated", { id: toastId });
+
+            // update UI instantly
             setPreviewProfile(URL.createObjectURL(blob));
+
+            // optional: refresh user
+            getAuthUserData();
+
             setCropImageSrc(null);
+
         } catch (err) {
-            toast.error("Image processing failed");
+            toast.error("Image upload failed");
         }
     };
 

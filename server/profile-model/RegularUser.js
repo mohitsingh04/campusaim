@@ -6,6 +6,10 @@ const regularUserSchema = mongoose.Schema({
     type: Number,
     required: true,
   },
+  teamLeader: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "user",
+  },
   avatar: {
     type: Array,
   },

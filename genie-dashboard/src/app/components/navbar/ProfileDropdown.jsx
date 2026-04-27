@@ -53,6 +53,10 @@ export default function ProfileDropdown() {
         return <Skeleton width={122} height={28} />
     }
 
+    const avatarUrl = authUser?.avatar?.[0]
+        ? `${import.meta.env.VITE_MEDIA_URL}${authUser.avatar[0]}`
+        : `https://ui-avatars.com/api/?name=${encodeURIComponent(authUser?.name || "User")}&background=0D8ABC&color=fff`;
+
     return (
         <div className="relative" ref={dropdownRef}>
             {/* Trigger Button */}
@@ -62,11 +66,16 @@ export default function ProfileDropdown() {
                 aria-haspopup="true"
                 className="flex items-center gap-3 p-1.5 rounded-xl hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition-all"
             >
-                <Avatar
+                <img
+                    src={avatarUrl}
+                    alt="Profile"
+                    className="w-9 h-9 rounded-full object-cover border"
+                />
+                {/* <Avatar
                     name={authUser?.name}
                     src={authUser?.profile_image}
                     size={9}
-                />
+                /> */}
                 <div className="hidden sm:flex items-center gap-2">
                     {/* Text block */}
                     <div className="flex flex-col leading-tight">
