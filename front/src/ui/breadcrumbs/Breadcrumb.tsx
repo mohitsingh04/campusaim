@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
-import { LuChevronRight } from "react-icons/lu";
 import { BreadcrumbProps } from "@/types/UiTypes";
+import { ChevronRightIcon } from "lucide-react";
 
 interface BreadcrumbComponentProps {
   items: BreadcrumbProps[];
@@ -29,7 +29,7 @@ const Breadcrumb: React.FC<BreadcrumbComponentProps> = ({ items }) => {
           return (
             <li key={index}>
               <div className="flex items-center">
-                <LuChevronRight className="w-4 h-4 text-(--text-color-emphasis)" />
+                <ChevronRightIcon className="w-4 h-4 text-(--text-color-emphasis)" />
 
                 {isActive ? (
                   <span className="font-medium text-(--text-color)">

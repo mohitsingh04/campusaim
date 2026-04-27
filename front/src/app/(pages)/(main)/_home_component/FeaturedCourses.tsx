@@ -1,8 +1,6 @@
 "use client";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
-import { BsArrowRight, BsClock } from "react-icons/bs";
-import { BiChevronLeft, BiChevronRight } from "react-icons/bi";
 import { HeadingProps } from "@/ui/headings/MainHeading";
 import { useCallback, useEffect, useState } from "react";
 import { generateSlug, getErrorResponse } from "@/context/Callbacks";
@@ -11,6 +9,12 @@ import API from "@/context/API";
 import Image from "next/image";
 import Link from "next/link";
 import FeaturedCoursesSkeleton from "@/ui/loader/page/landing/_components/FeaturedCoursesSkeleton";
+import {
+  ArrowRightIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ClockIcon,
+} from "lucide-react";
 
 const CourseCard = ({ course }: { course: CourseProps }) => {
   return (
@@ -38,7 +42,7 @@ const CourseCard = ({ course }: { course: CourseProps }) => {
         <div className="mt-auto pt-2 flex items-center justify-between">
           {/* Duration */}
           <div className="flex items-center justify-end gap-2 py-1.5 rounded-md">
-            <BsClock size={14} className="text-(--main)" />
+            <ClockIcon size={14} className="text-(--main)" />
             <p>{course.duration}</p>
           </div>
           <Link
@@ -46,7 +50,7 @@ const CourseCard = ({ course }: { course: CourseProps }) => {
             className="flex items-center gap-1 hover:text-(--main) text-sm font-bold transition-colors group/btn"
           >
             View Details
-            <BsArrowRight
+            <ArrowRightIcon
               size={16}
               className="group-hover/btn:translate-x-1 transition-transform"
             />
@@ -81,13 +85,13 @@ export default function PopularCourses({
 
         const mergedCourses = allCoursesData.map((course: CourseProps) => {
           const seoMatch = seoData.find(
-            (seo: any) => seo.course_id === course._id
+            (seo: any) => seo.course_id === course._id,
           );
 
           return {
             ...course,
             certification_type: categories?.find(
-              (cat) => cat?._id === course?.certification_type
+              (cat) => cat?._id === course?.certification_type,
             )?.category_name,
             course_slug: seoMatch
               ? seoMatch.slug
@@ -129,7 +133,7 @@ export default function PopularCourses({
           className="md:flex hidden items-center gap-2 text-(--main) hover:text-(--main-subtle)  font-bold transition-all duration-300 "
         >
           View All Courses
-          <BsArrowRight size={18} />
+          <ArrowRightIcon size={18} />
         </Link>
       </div>
 
@@ -172,14 +176,14 @@ export default function PopularCourses({
           className="custom-prev-button absolute left-3 sm:left-0 top-[40%] -translate-y-1/2 -translate-x-5 z-20 bg-white p-2 rounded-full shadow-custom  hover:bg-(--main) hover:text-white transition-all  xl:flex items-center justify-center cursor-pointer active:scale-95"
           aria-label="Previous slide"
         >
-          <BiChevronLeft className="w-7 h-7" />
+          <ChevronLeftIcon className="w-7 h-7" />
         </button>
 
         <button
           className="custom-next-button absolute right-3 sm:right-0 top-[40%] -translate-y-1/2 translate-x-5 z-20 bg-white p-2 rounded-full shadow-custom hover:bg-(--main) hover:text-white transition-all xl:flex items-center justify-center cursor-pointer active:scale-95"
           aria-label="Next slide"
         >
-          <BiChevronRight className="w-7 h-7" />
+          <ChevronRightIcon className="w-7 h-7" />
         </button>
       </div>
 
@@ -190,7 +194,7 @@ export default function PopularCourses({
           className="flex items-center gap-2 text-(--main) hover:text-(--main-subtle) font-bold transition-all duration-300 "
         >
           View All Courses
-          <BsArrowRight size={18} />
+          <ArrowRightIcon size={18} />
         </Link>
       </div>
     </div>

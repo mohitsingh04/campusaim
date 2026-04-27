@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { FaUser, FaVolumeDown, FaVolumeUp } from "react-icons/fa";
 import { AiPropertySugesstion } from "./AiPropertySuggestion";
 import { AiEnquiryModal } from "./AiEnquiryModal";
 import { useState } from "react";
@@ -13,6 +12,7 @@ import { formatDateWithTime, stripHtmlNoLimit } from "@/context/Callbacks";
 import { useTheme } from "@/hooks/useTheme";
 import { CourseProps } from "@/types/Types";
 import AiCourseSuggestion from "./AiCourseSuggestion";
+import { UserIcon, Volume2Icon, VolumeOffIcon } from "lucide-react";
 
 interface ChatMessage {
   id: string;
@@ -45,7 +45,6 @@ export const TypingIndicator = () => (
     className="flex justify-start mb-4"
   >
     <div className="flex items-start gap-2 max-w-[80%] sm:max-w-[70%]">
-      {/* Company logo (hidden on mobile) */}
       <div className="shrink-0 relative w-10 h-10 bg-gray-900 rounded-xl hidden sm:flex items-center justify-center shadow-md">
         <Image
           fill
@@ -170,7 +169,7 @@ export function MessageBubble({
                     onClick={stopSpeaking}
                     className="h-6 px-2 hover:bg-(--secondary-bg) text-(--text-color-emphasis) rounded-lg shrink-0 inline-flex items-center justify-center whitespace-nowrap text-sm font-medium transition-colors"
                   >
-                    <FaVolumeDown className="h-3 w-3 mr-1" />
+                    <VolumeOffIcon className="h-3 w-3 mr-1" />
                     <span className="text-xs">Stop</span>
                   </button>
                 ) : (
@@ -178,7 +177,7 @@ export function MessageBubble({
                     onClick={() => speakText(stripHtmlNoLimit(content))}
                     className="h-6 px-2 hover:bg-(--secondary-bg) text-(--text-color-emphasis) rounded-lg shrink-0 inline-flex items-center justify-center whitespace-nowrap text-sm font-medium transition-colors"
                   >
-                    <FaVolumeUp className="h-3 w-3 mr-1" />
+                    <Volume2Icon className="h-3 w-3 mr-1" />
                     <span className="text-xs">Listen</span>
                   </button>
                 )}
@@ -191,7 +190,7 @@ export function MessageBubble({
         {isUser && (
           <div className="shrink-0 w-5 h-5 md:w-10 md:h-10 bg-(--main-light) rounded-xl hidden sm:flex items-center justify-center shadow-md">
             <span className="text-(--main-emphasis) font-semibold text-sm">
-              <FaUser />
+              <UserIcon />
             </span>
           </div>
         )}

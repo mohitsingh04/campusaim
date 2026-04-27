@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { LuMic, LuSend } from "react-icons/lu";
 import { useSpeechToText } from "@/hooks/useSpeechtoText";
 import { trendingSearches } from "@/common/TrendingSearches";
 import { useRotatingPlaceholder } from "@/hooks/useRotatingPlaceholder";
 import { placeholderText } from "@/common/ExtraData";
+import { MicIcon, SendIcon } from "lucide-react";
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
@@ -71,7 +71,7 @@ export function ChatInput({
     }
   };
 
-  console.log(message)
+  console.log(message);
 
   return (
     <div className="border-t border-(--border) bg-(--secondary-bg) backdrop-blur-sm p-4 shadow-lg fixed bottom-0 w-full left-0">
@@ -115,7 +115,7 @@ export function ChatInput({
               disabled={!message.trim() || isLoading}
               className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full h-9 w-9 bg-(--secondary-bg) disabled:opacity-50 shadow-custom transition-all inline-flex items-center justify-center text-(--text-color-emphasis)"
             >
-              <LuSend className="h-4 w-4" />
+              <SendIcon className="h-4 w-4" />
             </button>
           </div>
 
@@ -130,7 +130,7 @@ export function ChatInput({
                   : "bg-(--primary-bg) hover:opacity-80"
               }`}
             >
-              <LuMic
+              <MicIcon
                 className={`h-5 w-5 ${
                   isListening
                     ? "text-(--danger-emphasis) animate-pulse"

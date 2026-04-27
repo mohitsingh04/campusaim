@@ -1,6 +1,4 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { LuX, LuUser, LuMail, LuPhone, LuMessageSquare } from "react-icons/lu";
-import { FaHome } from "react-icons/fa";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { UserProps } from "@/types/UserTypes";
@@ -12,6 +10,14 @@ import {
   getSuccessResponse,
 } from "@/context/Callbacks";
 import HeadingLine from "@/ui/headings/HeadingLine";
+import {
+  HomeIcon,
+  MailIcon,
+  MessageSquareIcon,
+  PhoneIcon,
+  UserIcon,
+  XIcon,
+} from "lucide-react";
 
 interface AiEnquiryModalProps {
   closeModal: () => void;
@@ -86,22 +92,22 @@ export function AiEnquiryModal({
 
   const details = [
     {
-      icon: <LuUser className="text-(--text-color-emphasis)" />,
+      icon: <UserIcon className="text-(--text-color-emphasis)" />,
       label: "Name",
       value: user?.name || "-",
     },
     {
-      icon: <LuMail className="text-(--text-color-emphasis)" />,
+      icon: <MailIcon className="text-(--text-color-emphasis)" />,
       label: "Email",
       value: user?.email || "-",
     },
     {
-      icon: <LuPhone className="text-(--text-color-emphasis)" />,
+      icon: <PhoneIcon className="text-(--text-color-emphasis)" />,
       label: "Contact",
       value: user?.mobile_no || "-",
     },
     {
-      icon: <FaHome className="text-(--text-color-emphasis)" />,
+      icon: <HomeIcon className="text-(--text-color-emphasis)" />,
       label: "Institute",
       value: property?.property_name || "-",
     },
@@ -117,7 +123,7 @@ export function AiEnquiryModal({
             onClick={closeModal}
             className="text-(--text-color) hover:text-(--text-color-emphasis) p-2 rounded-lg transition-all"
           >
-            <LuX className="h-4 w-4" />
+            <XIcon className="h-4 w-4" />
           </button>
         </div>
 
@@ -147,7 +153,7 @@ export function AiEnquiryModal({
             {/* Enquiry textarea */}
             <div className="space-y-2">
               <label className="flex items-center space-x-2 text-sm font-normal text-(--text-color-emphasis)">
-                <LuMessageSquare className="text-(--text-color-emphasis)" />
+                <MessageSquareIcon className="text-(--text-color-emphasis)" />
                 <span>Your Enquiry</span>
               </label>
               <textarea

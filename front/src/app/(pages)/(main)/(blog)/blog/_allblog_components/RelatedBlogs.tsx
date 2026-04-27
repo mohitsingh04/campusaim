@@ -3,11 +3,11 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
-import { LuCalendar } from "react-icons/lu";
 import { BlogsProps } from "@/types/BlogTypes";
 import API from "@/context/API";
 import { formatDate, getErrorResponse } from "@/context/Callbacks";
 import HeadingLine from "@/ui/headings/HeadingLine";
+import { CalendarIcon } from "lucide-react";
 
 const RelatedBlogs = ({ blog }: { blog?: BlogsProps | null }) => {
   const [blogs, setBlogs] = useState<BlogsProps[]>([]);
@@ -34,7 +34,7 @@ const RelatedBlogs = ({ blog }: { blog?: BlogsProps | null }) => {
         .filter(
           (item: BlogsProps) =>
             item?.status === "Active" &&
-            seoData.some((seo) => seo.blog_id === item._id)
+            seoData.some((seo) => seo.blog_id === item._id),
         )
         .map((item: BlogsProps) => {
           const seoMatch = seoData.find((seo) => seo.blog_id === item._id);
@@ -53,11 +53,11 @@ const RelatedBlogs = ({ blog }: { blog?: BlogsProps | null }) => {
       // If blog exists → use related logic
       if (blog?.tags?.length) {
         const relatedBlogs = otherBlogs.filter((item: BlogsProps) =>
-          item.tags?.some((tag: string) => blog.tags.includes(tag))
+          item.tags?.some((tag: string) => blog.tags.includes(tag)),
         );
 
         const shuffledRelated = [...relatedBlogs].sort(
-          () => Math.random() - 0.5
+          () => Math.random() - 0.5,
         );
 
         if (shuffledRelated.length >= 5) {
@@ -66,7 +66,7 @@ const RelatedBlogs = ({ blog }: { blog?: BlogsProps | null }) => {
           const remaining = 5 - shuffledRelated.length;
           const unrelated = otherBlogs.filter(
             (item) =>
-              !shuffledRelated.some((rel) => rel.uniqueId === item.uniqueId)
+              !shuffledRelated.some((rel) => rel.uniqueId === item.uniqueId),
           );
 
           const shuffledUnrelated = unrelated.sort(() => Math.random() - 0.5);
@@ -123,7 +123,7 @@ const RelatedBlogs = ({ blog }: { blog?: BlogsProps | null }) => {
                 </h4>
 
                 <div className="flex items-center space-x-1 pt-1">
-                  <LuCalendar className="h-3 w-3 text-(--main)" />
+                  <CalendarIcon className="h-3 w-3 text-(--main)" />
                   <span className="paragraph">{formatDate(b.createdAt)}</span>
                 </div>
               </div>

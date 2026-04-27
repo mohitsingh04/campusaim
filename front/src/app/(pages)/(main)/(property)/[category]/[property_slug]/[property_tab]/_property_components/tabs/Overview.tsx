@@ -1,7 +1,6 @@
-import { SlLocationPin } from "react-icons/sl";
-import { PiGlobeStandLight } from "react-icons/pi";
 import { PropertyProps } from "@/types/PropertyTypes";
 import { ReadMoreLess } from "@/ui/texts/ReadMoreLess";
+import { GlobeIcon, MapPinIcon } from "lucide-react";
 
 const Overview = ({
   property,
@@ -18,10 +17,7 @@ const Overview = ({
           About {property?.property_name}
         </h2>
         <p className="leading-relaxed">
-          <ReadMoreLess
-            html={property?.property_description || ""}
-            maxLength={650}
-          />
+          <ReadMoreLess html={property?.property_description || ""} />
         </p>
       </div>
 
@@ -44,7 +40,7 @@ const Overview = ({
 
               {(property?.city || property?.state || property?.pincode) && (
                 <div className="flex items-center gap-2">
-                  <SlLocationPin className="h-4 w-4 text-(--main)" />
+                  <MapPinIcon className="h-4 w-4 text-(--main)" />
                   <p>
                     {property?.city && `${property.city}, `}
                     {property?.state && `${property.state} `}
@@ -55,7 +51,7 @@ const Overview = ({
 
               {property?.country && (
                 <div className="flex items-center gap-2">
-                  <PiGlobeStandLight className="h-4 w-4 text-(--main)" />
+                  <GlobeIcon className="h-4 w-4 text-(--main)" />
                   <p>{property?.country}</p>
                 </div>
               )}

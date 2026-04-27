@@ -2,9 +2,9 @@ import { getUserAvatar } from "@/context/Callbacks";
 import { UserProps } from "@/types/UserTypes";
 import Image from "next/image";
 import React, { useRef, useState } from "react";
-import { BiCamera, BiTrash } from "react-icons/bi";
 import { DeleteProfileModal } from "./DeleteProfileModal";
 import ProfileCropModal from "./ProfileCropModal";
+import { CameraIcon, TrashIcon } from "lucide-react";
 
 export default function ProfileImage({
   profile,
@@ -37,7 +37,7 @@ export default function ProfileImage({
   };
 
   const handleUploadClick = (
-    e: React.MouseEvent<HTMLDivElement | HTMLButtonElement>
+    e: React.MouseEvent<HTMLDivElement | HTMLButtonElement>,
   ) => {
     e.stopPropagation();
     fileInputRef.current?.click();
@@ -57,7 +57,7 @@ export default function ProfileImage({
             onClick={handleDeleteClick}
             className="absolute bottom-0 right-8 bg-(--danger) text-white p-1.5 rounded-full shadow-md hover:opacity-80 transition cursor-pointer"
           >
-            <BiTrash size={14} />
+            <TrashIcon size={14} />
           </button>
         )}
         <button
@@ -65,7 +65,7 @@ export default function ProfileImage({
           type="button"
           onClick={handleUploadClick}
         >
-          <BiCamera size={14} className="text-(--text-color-emphasis)" />
+          <CameraIcon size={14} className="text-(--text-color-emphasis)" />
         </button>
       </div>
 

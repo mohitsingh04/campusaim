@@ -2,10 +2,8 @@ import { ButtonGroup } from "@/ui/buttons/ButtonGroup";
 import { EventProps } from "@/types/Types";
 import Link from "next/link";
 import Image from "next/image";
-import { LuMapPin } from "react-icons/lu";
 import { formatDate } from "@/context/Callbacks";
-import { FiAward } from "react-icons/fi";
-import { IoCalendarOutline } from "react-icons/io5";
+import { AwardIcon, CalendarIcon, MapPinIcon } from "lucide-react";
 
 const EventCard = ({
   event,
@@ -65,17 +63,17 @@ const EventCard = ({
             </Link>
             <div className="grid grid-cols-2 gap-4">
               <div className="flex items-center gap-2 text-sm">
-                <FiAward className="text-(--main) w-4 h-4" />
+                <AwardIcon className="text-(--main) w-4 h-4" />
                 <p>{event.entrance_type}</p>
               </div>
 
               <div className="flex items-center gap-2 text-sm">
-                <IoCalendarOutline className="text-(--main) w-4 h-4" />
+                <CalendarIcon className="text-(--main) w-4 h-4" />
                 <p>{eventDate}</p>
               </div>
               {locationParts && (
                 <div className="flex items-center gap-2 col-span-2 text-sm">
-                  <LuMapPin className="text-(--main) w-4 h-4" />
+                  <MapPinIcon className="text-(--main) w-4 h-4" />
                   <p>{locationParts}</p>
                 </div>
               )}

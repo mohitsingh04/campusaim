@@ -5,9 +5,9 @@ import {
 } from "@/context/Callbacks";
 import { PropertyProps } from "@/types/PropertyTypes";
 import Badge from "@/ui/badge/Badge";
+import { MapPinIcon, StarIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { LuMapPin, LuStar } from "react-icons/lu";
 
 function KeywordPropertyCard({
   property,
@@ -78,7 +78,7 @@ function KeywordPropertyCard({
             {location && (
               <div className="flex items-center gap-1.5 text-xs text-gray-500 md:text-(--text-color) font-medium capitalize tracking-wide w-full">
                 {/* Hide icon on mobile to save space, show on desktop if desired, or keep as is */}
-                <LuMapPin className="hidden md:block w-3.5 h-3.5 shrink-0" />
+                <MapPinIcon className="hidden md:block w-3.5 h-3.5 shrink-0" />
                 <span className="w-full truncate">{location}</span>
               </div>
             )}
@@ -87,7 +87,7 @@ function KeywordPropertyCard({
             <div className="flex items-center flex-wrap gap-2 md:gap-3 w-full mt-1 md:mt-0">
               <div className="flex items-center gap-1.5 md:bg-(--warning-subtle) md:px-2.5 md:py-1 rounded-custom">
                 <div className="flex items-center gap-1">
-                  <LuStar className="w-3.5 h-3.5 fill-(--warning) text-(--warning)" />
+                  <StarIcon className="w-3.5 h-3.5 fill-(--warning) text-(--warning)" />
                   <span className="text-xs font-bold text-(--text-color-emphasis) md:text-(--warning-emphasis) leading-none pt-0.5">
                     {rating}
                     <span className="md:hidden text-gray-400 font-normal ml-0.5">
@@ -108,7 +108,7 @@ function KeywordPropertyCard({
             </div>
 
             {/* Description - HIDDEN on Mobile */}
-            <p className="hidden md:block text-sm text-[var(--text-color)] line-clamp-3 w-full break-words opacity-80 overflow-hidden">
+            <p className="hidden md:block text-sm text-(--text-color) line-clamp-3 w-full wrap-break-words opacity-80 overflow-hidden">
               {stripHtmlAndLimit(description, 400)}
             </p>
           </div>

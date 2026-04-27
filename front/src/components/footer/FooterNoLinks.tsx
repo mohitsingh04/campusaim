@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { BottomNavBar } from "./BottomNavbar";
 import SearchModal from "../search_modal/SearchModal";
 import Link from "next/link";
-import { LuHeart } from "react-icons/lu";
 import { useResponsive } from "@/hooks/useResponsive";
 import { LEGAL_LINKS } from "@/common/LegalLinks";
+import { HeartIcon } from "lucide-react";
 
 export default function FooterNoLinks() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -42,7 +42,7 @@ export default function FooterNoLinks() {
             <p className="flex items-center justify-center">
               Build with{" "}
               <span className="mx-1">
-                <LuHeart className="fill-(--danger) text-(--danger)" />
+                <HeartIcon className="fill-(--danger) text-(--danger)" />
               </span>
             </p>
           </div>

@@ -5,16 +5,21 @@ import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
 
-import { LuChevronLeft, LuChevronRight } from "react-icons/lu";
-import { BsBuilding, BsEnvelope, BsEye, BsRobot } from "react-icons/bs";
-import { FaVolumeUp } from "react-icons/fa";
-import { FaVolumeXmark } from "react-icons/fa6";
-
 import { CourseProps } from "@/types/Types";
 import { stripHtmlNoLimit } from "@/context/Callbacks";
 import { useTheme } from "@/hooks/useTheme";
 import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 import AiCourseEnquiryModal from "./AiCourseEnquiryModal";
+import {
+  BotIcon,
+  BuildingIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  EyeIcon,
+  MailIcon,
+  Volume2Icon,
+  VolumeOffIcon,
+} from "lucide-react";
 
 export default function AiCourseSuggestion({
   course,
@@ -34,13 +39,13 @@ export default function AiCourseSuggestion({
         <button
           className={`prev-button-${index} hidden sm:flex absolute -left-6 top-1/2 -translate-y-1/2 z-20 w-10 h-10 items-center justify-center rounded-full bg-(--primary-bg) text-(--text-color-emphasis) shadow hover:opacity-80`}
         >
-          <LuChevronLeft className="w-5 h-5" />
+          <ChevronLeftIcon className="w-5 h-5" />
         </button>
 
         <button
           className={`next-button-${index} hidden sm:flex absolute -right-6 top-1/2 -translate-y-1/2 z-20 w-10 h-10 items-center justify-center rounded-full bg-(--primary-bg) text-(--text-color-emphasis) shadow hover:opacity-80`}
         >
-          <LuChevronRight className="w-5 h-5" />
+          <ChevronRightIcon className="w-5 h-5" />
         </button>
 
         <Swiper
@@ -78,7 +83,7 @@ export default function AiCourseSuggestion({
                       />
                     ) : (
                       <div className="h-full w-full bg-(--secondary-bg) flex items-center justify-center">
-                        <BsBuilding className="text-3xl text-(--text-color-emphasis)" />
+                        <BuildingIcon className="text-3xl text-(--text-color-emphasis)" />
                       </div>
                     )}
 
@@ -91,9 +96,9 @@ export default function AiCourseSuggestion({
                       title="Speak"
                     >
                       {isSpeaking ? (
-                        <FaVolumeXmark className="w-4 h-4" />
+                        <VolumeOffIcon className="w-4 h-4" />
                       ) : (
-                        <FaVolumeUp className="w-4 h-4" />
+                        <Volume2Icon className="w-4 h-4" />
                       )}
                     </button>
                   </div>
@@ -127,7 +132,7 @@ export default function AiCourseSuggestion({
                           />
                         </div>
                       ) : (
-                        <BsRobot className="w-5 h-5 text-(--text-color-emphasis)" />
+                        <BotIcon className="w-5 h-5 text-(--text-color-emphasis)" />
                       )}
                     </div>
 
@@ -162,7 +167,7 @@ export default function AiCourseSuggestion({
                           onClick={() => setEnquiryCourse(item)}
                           className="flex-1 flex items-center justify-center gap-2 py-2 rounded-custom text-sm bg-(--secondary-bg) text-(--text-color) hover:opacity-80"
                         >
-                          <BsEnvelope className="w-4 h-4" />
+                          <MailIcon className="w-4 h-4" />
                           Enquiry
                         </button>
 
@@ -171,7 +176,7 @@ export default function AiCourseSuggestion({
                           target="_blank"
                           className="flex-1 flex items-center justify-center gap-2 py-2 rounded-custom text-sm btn-shine"
                         >
-                          <BsEye className="w-4 h-4" />
+                          <EyeIcon className="w-4 h-4" />
                           View
                         </Link>
                       </div>

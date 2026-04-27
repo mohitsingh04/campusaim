@@ -51,6 +51,9 @@ const ExamSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
+        faqs: {
+            type: [{ question: { type: String }, answer: { type: String } }],
+        },
     },
     { timestamps: true }
 );

@@ -1,13 +1,12 @@
-import { FaFilter } from "react-icons/fa";
 import FilterSection from "./FilterSection";
 import CheckboxFilter from "./CheckboxFilter";
-import { LuStar } from "react-icons/lu";
 import {
   DynamicFilterOptionsProps,
   ExpandedFiltersProps,
   FilterSearchTermsProps,
   FiltersProps,
 } from "@/types/PropertyFilterTypes";
+import { FilterIcon, StarIcon } from "lucide-react";
 
 interface FiltersContentProps {
   dynamicFilterOptions: DynamicFilterOptionsProps;
@@ -50,13 +49,13 @@ const RatingFilter = ({
             <div className="ml-2 flex items-center">
               <div className="flex">
                 {[...Array(Number(option.value))].map((_, i) => (
-                  <LuStar
+                  <StarIcon
                     key={i}
                     className="w-4 h-4 text-(--warning) fill-current"
                   />
                 ))}
                 {[...Array(5 - Number(option.value))].map((_, i) => (
-                  <LuStar
+                  <StarIcon
                     key={i + Number(option.value)}
                     className="w-4 h-4 text-(--text-color)"
                   />
@@ -137,7 +136,7 @@ const FiltersContent = ({
     <div>
       <div className="hidden md:flex items-center justify-between bg-(--primary-bg) sticky top-0 z-20 w-full h-12 px-3">
         <span className="font-semibold flex items-center text-(--text-color-emphasis)">
-          <FaFilter className="w-4 h-4 mr-2 text-(--main)" /> Filters
+          <FilterIcon className="w-4 h-4 mr-2 text-(--main)" /> Filters
         </span>
 
         <button

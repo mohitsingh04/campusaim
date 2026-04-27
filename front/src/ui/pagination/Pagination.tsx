@@ -2,11 +2,11 @@
 
 import { DOTS, usePagination } from "@/hooks/usePagination";
 import {
-  LuChevronLeft,
-  LuChevronRight,
-  LuChevronsLeft,
-  LuChevronsRight,
-} from "react-icons/lu";
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ChevronsLeftIcon,
+  ChevronsRightIcon,
+} from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 
@@ -32,7 +32,6 @@ const Pagination = ({
     siblingCount: 1,
   });
 
-  // ✅ Scroll AFTER route update
   useEffect(() => {
     requestAnimationFrame(() => {
       window.scrollTo({
@@ -60,25 +59,22 @@ const Pagination = ({
     <div
       className={`flex rounded-lg justify-center bg-(--primary-bg) items-center mt-auto py-3 shrink-0 gap-1 overflow-x-auto whitespace-nowrap no-scrollbar ${classnames}`}
     >
-      {/* First */}
       <button
         onClick={onFirst}
         disabled={page === 1}
         className="flex items-center justify-center w-7 h-7 md:w-8 md:h-8 rounded-custom border border-(--main) text-(--main) bg-(--main-light) transition-all disabled:opacity-40"
       >
-        <LuChevronsLeft className="w-5 h-5" />
+        <ChevronsLeftIcon className="w-5 h-5" />
       </button>
 
-      {/* Previous */}
       <button
         onClick={onPrevious}
         disabled={page === 1}
         className="flex items-center justify-center w-7 h-7 md:w-8 md:h-8 rounded-custom border border-(--main) text-(--main) bg-(--main-light) transition-all disabled:opacity-40"
       >
-        <LuChevronLeft className="w-5 h-5" />
+        <ChevronLeftIcon className="w-5 h-5" />
       </button>
 
-      {/* Numbers */}
       {paginationRange?.map((pageNumber, index) => {
         if (pageNumber === DOTS) {
           return (
@@ -106,22 +102,20 @@ const Pagination = ({
         );
       })}
 
-      {/* Next */}
       <button
         onClick={onNext}
         disabled={page === totalPages}
         className="flex items-center justify-center w-7 h-7 md:w-8 md:h-8 rounded-custom border border-(--main) text-(--main) bg-(--main-light) transition-all disabled:opacity-40"
       >
-        <LuChevronRight className="w-5 h-5" />
+        <ChevronRightIcon className="w-5 h-5" />
       </button>
 
-      {/* Last */}
       <button
         onClick={onLast}
         disabled={page === totalPages}
         className="flex items-center justify-center w-7 h-7 md:w-8 md:h-8 rounded-custom border border-(--main) text-(--main) bg-(--main-light) transition-all disabled:opacity-40"
       >
-        <LuChevronsRight className="w-5 h-5" />
+        <ChevronsRightIcon className="w-5 h-5" />
       </button>
     </div>
   );

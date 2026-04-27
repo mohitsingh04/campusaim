@@ -1,8 +1,8 @@
 "use client";
 import GoogleLoginButton from "@/app/(pages)/(auth)/auth/_googleLogin/GoogleLoginButton";
+import { MailIcon, SmileIcon, XIcon } from "lucide-react";
 import Link from "next/link";
 import React from "react";
-import { LuMail, LuSmile, LuX } from "react-icons/lu";
 
 const LoginRequiredModal = ({
   isOpen,
@@ -23,13 +23,13 @@ const LoginRequiredModal = ({
             onClick={onClose}
             className="p-1 hover:bg-(--primary-bg) rounded-full"
           >
-            <LuX size={20} className="cursor-pointer" />
+            <XIcon size={20} className="cursor-pointer" />
           </button>
         </div>
         <div className="p-5">
           <p className="text-center mb-1 flex gap-2 items-center justify-center ">
             Oops! Looks like you’re not logged in yet.{" "}
-            <LuSmile className="text-yellow-500 h-4 w-4" />
+            <SmileIcon className="text-yellow-500 h-4 w-4" />
           </p>
           <p className="text-center text-(--text-color-emphasis) text-sm mb-6">
             Please log in to continue and enjoy all the features.
@@ -41,7 +41,7 @@ const LoginRequiredModal = ({
               href={`/auth/login`}
               className="w-full bg-(--text-color) text-(--primary-bg)  rounded-custom py-2 shadow-custom flex items-center justify-center gap-2 transition cursor-pointer font-medium paragraph"
             >
-              <LuMail className="h-4 w-4" />
+              <MailIcon className="h-4 w-4" />
               Continue with Email
             </Link>
           </div>

@@ -1,12 +1,15 @@
-import { FaStar } from "react-icons/fa";
-import { PiCalendarDots, PiCertificate, PiGraduationCap } from "react-icons/pi";
-
 import Link from "next/link";
 import Image from "next/image";
 
 import { ButtonGroup } from "@/ui/buttons/ButtonGroup";
 import { PropertyProps } from "@/types/PropertyTypes";
 import { generateSlug, getAverageRating } from "@/context/Callbacks";
+import {
+  CalendarHeartIcon,
+  FileBadgeIcon,
+  GraduationCapIcon,
+  StarIcon,
+} from "lucide-react";
 
 const InstituteCard = ({
   institute,
@@ -65,7 +68,7 @@ const InstituteCard = ({
             />
 
             <div className="absolute top-3 right-3 bg-(--warning-subtle) px-3 py-1 rounded-custom flex items-center gap-1 shadow-custom">
-              <FaStar className="w-3 h-3 text-(--warning)" />
+              <StarIcon className="w-3 h-3 text-(--warning)" />
               <p className="font-medium text-(--warning-emphasis)">
                 {getAverageRating(institute.reviews)}/5
               </p>
@@ -105,21 +108,21 @@ const InstituteCard = ({
               {location
                 ? location
                 : generateSlug(institute?.property_type) ===
-                  generateSlug("Online Yoga Studio")
-                ? "Online"
-                : "N/A"}
+                    generateSlug("Online Yoga Studio")
+                  ? "Online"
+                  : "N/A"}
             </p>
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div className="flex items-center gap-2">
-            <PiGraduationCap className="text-(--main) w-4 h-4" />
+            <GraduationCapIcon className="text-(--main) w-4 h-4" />
             <p>{institute.category || "N/A"}</p>
           </div>
 
           <div className="flex items-center gap-2">
-            <PiCertificate className="text-(--main) w-4 h-4" />
+            <FileBadgeIcon className="text-(--main) w-4 h-4" />
             <p>{institute.property_type || "N/A"}</p>
           </div>
 
@@ -130,7 +133,7 @@ const InstituteCard = ({
 
           {institute.est_year && (
             <div className="flex items-center gap-2">
-              <PiCalendarDots className="text-(--main) w-4 h-4" />
+              <CalendarHeartIcon className="text-(--main) w-4 h-4" />
               <p>{institute.est_year}</p>
             </div>
           )}

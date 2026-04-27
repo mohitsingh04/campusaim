@@ -1,6 +1,5 @@
 "use client";
 
-import { BiMailSend } from "react-icons/bi";
 import { useFormik } from "formik";
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
@@ -11,6 +10,7 @@ import {
 } from "@/context/Callbacks";
 import { emailValidation } from "@/context/ValidationSchema";
 import API from "@/context/API";
+import { SendIcon } from "lucide-react";
 
 export default function ComingSoon() {
   const [subscribed, setSubscribed] = useState(false);
@@ -72,7 +72,7 @@ export default function ComingSoon() {
                 <div className="relative group w-full">
                   {/* ICON */}
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 z-10">
-                    <BiMailSend size={16} />
+                    <SendIcon size={16} />
                   </div>
 
                   {/* INPUT */}

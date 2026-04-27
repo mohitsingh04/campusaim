@@ -1,21 +1,22 @@
 "use client";
 
 import React from "react";
-import {
-  FaStar,
-  FaArrowUpRightFromSquare,
-  FaPaperPlane,
-} from "react-icons/fa6";
-import { LuTrendingUp, LuTrendingDown } from "react-icons/lu";
 import Image from "next/image";
-import { FaVolumeDown, FaVolumeUp } from "react-icons/fa";
 import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 import { PropertyProps } from "@/types/PropertyTypes";
 import { stripHtmlNoLimit } from "@/context/Callbacks";
 import ReadMoreLessNoBlur from "@/ui/texts/ReadMoreLessNoBlur";
 import HeadingLine from "@/ui/headings/HeadingLine";
-import { BiCalendarAlt, BiMapPin } from "react-icons/bi";
 import Badge from "@/ui/badge/Badge";
+import {
+  ArrowUpRightFromSquareIcon,
+  CalendarIcon,
+  MapPinIcon,
+  SendIcon,
+  StarIcon,
+  Volume2Icon,
+  VolumeOffIcon,
+} from "lucide-react";
 
 interface PropertySummaryProps {
   property: PropertyProps;
@@ -74,13 +75,13 @@ export const AiPropertySummary = ({
           <div className="flex flex-wrap items-center gap-2 text-sm font-medium text-(--text-color)">
             {establishedYear && (
               <span className="flex items-center gap-2 px-2 py-1 text-xs bg-(--main-light) text-(--main-emphasis) rounded-full shadow-custom">
-                <BiCalendarAlt className="w-4 h-4" /> Est.
+                <CalendarIcon className="w-4 h-4" /> Est.
                 {establishedYear}
               </span>
             )}
             {location && (
               <span className="flex items-center gap-2 px-2 py-1 text-xs bg-(--main-light) text-(--main-emphasis) rounded-full shadow-custom">
-                <BiMapPin className="text-red-500" />
+                <MapPinIcon className="text-red-500" />
                 {location}
               </span>
             )}
@@ -90,18 +91,18 @@ export const AiPropertySummary = ({
                   isSpeaking
                     ? stopSpeaking()
                     : speakText(
-                        stripHtmlNoLimit(property?.property_description)
+                        stripHtmlNoLimit(property?.property_description),
                       )
                 }
                 className="flex items-center gap-2 px-2 py-1 text-xs bg-(--main-light) text-(--main-emphasis) rounded-full shadow-custom hover:opacity-90 transition"
               >
                 {isSpeaking ? (
                   <>
-                    <FaVolumeDown /> Stop
+                    <VolumeOffIcon /> Stop
                   </>
                 ) : (
                   <>
-                    <FaVolumeUp /> Listen Summary
+                    <Volume2Icon /> Listen Summary
                   </>
                 )}
               </button>
@@ -182,24 +183,24 @@ export const AiPropertySummary = ({
         <div className="lg:col-span-4 space-y-6">
           {/* Performance Dashboard */}
           <div className="bg-(--primary-bg) rounded-custom p-6 shadow-custom border border-(--border) space-y-6">
-            <div className="text-center pb-4 border-b border-(--border)">
+            {/* <div className="text-center pb-4 border-b border-(--border)">
               <p className="text-xl uppercase tracking-widest font-bold text-(--text-color) mb-1">
                 YP Rank
               </p>
               <div className="inline-flex items-center gap-2 text-3xl mt-2 font-black text-(--text-color-emphasis)">
                 #{property?.rank}
                 {(property?.rank || 0) < (property?.lastRank || 0) ? (
-                  <LuTrendingUp className="text-green-500 w-6 h-6" />
+                  <TrendingUp className="text-green-500 w-6 h-6" />
                 ) : (
-                  <LuTrendingDown className="text-red-500 w-6 h-6" />
+                  <TrendingDown className="text-red-500 w-6 h-6" />
                 )}
               </div>
-            </div>
+            </div> */}
 
             <div className="flex justify-around items-center">
               <div className="text-center">
                 <div className="flex items-center justify-center gap-1 text-xl font-bold text-(--text-color-emphasis)">
-                  <FaStar className="text-(--warning)" />{" "}
+                  <StarIcon className="text-(--warning)" />{" "}
                   {property?.average_rating}
                 </div>
                 <p className="text-sm text-(--text-color) font-medium">
@@ -222,14 +223,14 @@ export const AiPropertySummary = ({
                 onClick={() => setIsEnquiryModal(property?.property_slug)}
                 className="w-full py-4 bg-(--text-color-emphasis) text-(--primary-bg) rounded-custom font-bold flex items-center justify-center gap-3 hover:shadow-custom hover:-translate-y-1 transition-all"
               >
-                <FaPaperPlane /> Quick Enquiry
+                <SendIcon /> Quick Enquiry
               </button>
               <a
                 href={property?.property_url}
                 target="_blank"
                 className="w-full py-4 btn-shine rounded-custom font-bold flex items-center justify-center gap-3"
               >
-                <FaArrowUpRightFromSquare /> Official Site
+                <ArrowUpRightFromSquareIcon /> Official Site
               </a>
             </div>
           </div>

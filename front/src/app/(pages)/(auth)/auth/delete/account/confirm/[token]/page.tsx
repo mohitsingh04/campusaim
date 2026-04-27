@@ -4,14 +4,9 @@ import { getErrorResponse } from "@/context/Callbacks";
 import { TokenConfimationProps } from "@/types/Types";
 import { UserProps } from "@/types/UserTypes";
 import { AxiosError } from "axios";
+import { ArrowLeftIcon, CircleCheckIcon, CircleXIcon, LoaderIcon } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useState } from "react";
-import {
-  LuArrowLeft,
-  LuCircleCheck,
-  LuCircleX,
-  LuLoader,
-} from "react-icons/lu";
 
 export default function DeleteAccountConfirm() {
   const { token } = useParams();
@@ -61,7 +56,7 @@ export default function DeleteAccountConfirm() {
       }
       try {
         const response = await API.get(
-          `/profile/delete/account/${profile?.uniqueId}/${token}`
+          `/profile/delete/account/${profile?.uniqueId}/${token}`,
         );
 
         if (response.data.message) {
@@ -125,15 +120,15 @@ export default function DeleteAccountConfirm() {
       <div className="flex justify-center mb-3">
         {state.loading ? (
           <div className="rounded-full p-4 bg-(--main-light)">
-            <LuLoader className="w-12 h-12 text-(--main) animate-spin" />
+            <LoaderIcon className="w-12 h-12 text-(--main) animate-spin" />
           </div>
         ) : state.success ? (
           <div className="rounded-full p-4 bg-(--success-subtle)">
-            <LuCircleCheck className="w-12 h-12 text-(--success)" />
+            <CircleCheckIcon className="w-12 h-12 text-(--success)" />
           </div>
         ) : (
           <div className="rounded-full p-4 bg-(--danger-subtle)">
-            <LuCircleX className="w-12 h-12 text-(--danger)" />
+            <CircleXIcon className="w-12 h-12 text-(--danger)" />
           </div>
         )}
       </div>
@@ -142,8 +137,8 @@ export default function DeleteAccountConfirm() {
           state.loading
             ? "text-(--main)"
             : state.success
-            ? "text-(--success)"
-            : "text-(--danger)"
+              ? "text-(--success)"
+              : "text-(--danger)"
         }`}
       >
         {state.loading ? "Verifying Request" : state.title}
@@ -171,7 +166,7 @@ export default function DeleteAccountConfirm() {
             } disabled:opacity-50 hover:opacity-80`}
           >
             {isRedirecting ? (
-              <LuLoader className="w-5 h-5 animate-spin" />
+              <LoaderIcon className="w-5 h-5 animate-spin" />
             ) : (
               <>Continue</>
             )}
@@ -181,7 +176,7 @@ export default function DeleteAccountConfirm() {
             disabled={isRedirecting}
             className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-md border border-gray-300 text-gray-800 hover:bg-gray-100 transition disabled:opacity-50"
           >
-            <LuArrowLeft className="w-5 h-5" />
+            <ArrowLeftIcon className="w-5 h-5" />
             Go Back
           </button>
         </div>

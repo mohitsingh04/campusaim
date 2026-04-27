@@ -1,21 +1,21 @@
 import { generateSlug, getAverageRating } from "@/context/Callbacks";
 import { PropertyProps } from "@/types/PropertyTypes";
 import HeadingLine from "@/ui/headings/HeadingLine";
+import {
+  Building2Icon,
+  CalendarIcon,
+  ChevronDownIcon,
+  GraduationCapIcon,
+  MapPinIcon,
+  PlusIcon,
+  StarIcon,
+  TrendingDownIcon,
+  TrendingUpIcon,
+  XIcon,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useState } from "react";
-import {
-  LuX,
-  LuPlus,
-  LuStar,
-  LuMapPin,
-  LuCalendar,
-  LuGraduationCap,
-  LuBuilding2,
-  LuChevronDown,
-  LuTrendingUp,
-  LuTrendingDown,
-} from "react-icons/lu";
 
 export default function BasicDetailTable({
   selectedProperties,
@@ -30,8 +30,8 @@ export default function BasicDetailTable({
     selectedProperties.length === 1
       ? "grid-cols-1"
       : selectedProperties.length === 2
-      ? "grid-cols-2"
-      : "grid-cols-3";
+        ? "grid-cols-2"
+        : "grid-cols-3";
 
   return (
     <div
@@ -67,7 +67,7 @@ export default function BasicDetailTable({
                 }}
                 className="flex items-center gap-2 px-3 py-1 bg-(--success-subtle) cursor-pointer text-(--success-emphasis) rounded-custom transition-all duration-200 backdrop-blur-xs hover:scale-105 paragraph"
               >
-                <LuPlus size={14} />
+                <PlusIcon size={14} />
                 <span className="hidden sm:flex">Add Institute</span>
               </button>
             )}
@@ -79,7 +79,7 @@ export default function BasicDetailTable({
               }}
               className="flex items-center gap-2 px-3 py-1 bg-(--danger-subtle) text-(--danger) cursor-pointer rounded-custom transition-all duration-200 backdrop-blur-sm hover:scale-105 paragraph"
             >
-              <LuX size={14} />
+              <XIcon size={14} />
               <span className="hidden sm:flex">Deselect All</span>
             </button>
 
@@ -88,7 +88,7 @@ export default function BasicDetailTable({
                 isOpen ? "rotate-180" : ""
               }`}
             >
-              <LuChevronDown size={16} />
+              <ChevronDownIcon size={16} />
             </div>
           </div>
         </div>
@@ -121,12 +121,12 @@ export default function BasicDetailTable({
                         }}
                         className="absolute -top-1 -right-1 w-5 h-5 bg-(--danger) text-(--danger-subtle) rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-110 z-10"
                       >
-                        <LuX size={12} />
+                        <XIcon size={12} />
                       </button>
 
                       <Link
                         href={`/${generateSlug(p.category)}/${generateSlug(
-                          p?.property_slug
+                          p?.property_slug,
                         )}/overview`}
                       >
                         {!p?.property_logo?.[0] ? (
@@ -148,7 +148,7 @@ export default function BasicDetailTable({
                       </Link>
                       <Link
                         href={`/${generateSlug(p.category)}/${generateSlug(
-                          p?.property_slug
+                          p?.property_slug,
                         )}/overview`}
                         className="paragraph font-medium text-center leading-tight wrap-break-word"
                       >
@@ -165,7 +165,7 @@ export default function BasicDetailTable({
                 <td className="font-semibold p-4 text-(--text-color) bg-(--primary-bg) border-r border-(--border)">
                   <div className="flex items-center gap-3">
                     <div className="w-7 h-7 bg-(--main-light) text-(--main-emphasis) rounded-custom flex items-center justify-center shadow-custom">
-                      <LuGraduationCap size={14} />
+                      <GraduationCapIcon size={14} />
                     </div>
                     <span className="heading-sm">YP Rank</span>
                   </div>
@@ -178,9 +178,9 @@ export default function BasicDetailTable({
                     <span className="inline-flex gap-2 text-(--text-color-emphasis)">
                       <p className="font-semibold">#{p?.rank}</p>
                       {(p?.rank || 0) < (p?.lastRank || 0) ? (
-                        <LuTrendingUp className="w-5 h-5 text-(--success)" />
+                        <TrendingUpIcon className="w-5 h-5 text-(--success)" />
                       ) : (
-                        <LuTrendingDown className="w-5 h-5 text-(--danger)" />
+                        <TrendingDownIcon className="w-5 h-5 text-(--danger)" />
                       )}
                     </span>
                   </td>
@@ -190,7 +190,7 @@ export default function BasicDetailTable({
                 <td className="font-semibold p-4 text-(--text-color) bg-(--primary-bg) border-r border-(--border)">
                   <div className="flex items-center gap-3">
                     <div className="w-7 h-7 bg-(--main-light) text-(--main-emphasis) rounded-custom flex items-center justify-center shadow-custom">
-                      <LuGraduationCap size={14} />
+                      <GraduationCapIcon size={14} />
                     </div>
                     <span className="heading-sm">Academic Type</span>
                   </div>
@@ -210,7 +210,7 @@ export default function BasicDetailTable({
                 <td className="font-semibold p-4 text-(--text-color) bg-(--primary-bg) border-r border-(--border)">
                   <div className="flex items-center gap-3">
                     <div className="w-7 h-7 bg-(--main-light) text-(--main-emphasis) rounded-custom flex items-center justify-center shadow-custom">
-                      <LuBuilding2 size={14} />
+                      <Building2Icon size={14} />
                     </div>
                     <span className="heading-sm">Institution Type</span>
                   </div>
@@ -230,7 +230,7 @@ export default function BasicDetailTable({
                 <td className="font-semibold p-4 text-(--text-color) bg-(--primary-bg) border-r border-(--border)">
                   <div className="flex items-center gap-3">
                     <div className="w-7 h-7 bg-(--main-light) text-(--main-emphasis) rounded-custom flex items-center justify-center shadow-custom">
-                      <LuMapPin size={14} />
+                      <MapPinIcon size={14} />
                     </div>
                     <span className="heading-sm">City</span>
                   </div>
@@ -250,7 +250,7 @@ export default function BasicDetailTable({
                 <td className="font-semibold p-4 text-(--text-color) bg-(--primary-bg) border-r border-(--border)">
                   <div className="flex items-center gap-3">
                     <div className="w-7 h-7 bg-(--main-light) text-(--main-emphasis) rounded-custom flex items-center justify-center shadow-custom">
-                      <LuMapPin size={14} />
+                      <MapPinIcon size={14} />
                     </div>
                     <span className="heading-sm">State</span>
                   </div>
@@ -270,7 +270,7 @@ export default function BasicDetailTable({
                 <td className="font-semibold p-4 text-(--text-color) bg-(--primary-bg) border-r border-(--border)">
                   <div className="flex items-center gap-3">
                     <div className="w-7 h-7 bg-(--main-light) text-(--main-emphasis) rounded-custom flex items-center justify-center shadow-custom">
-                      <LuMapPin size={14} />
+                      <MapPinIcon size={14} />
                     </div>
                     <span className="heading-sm">Country</span>
                   </div>
@@ -290,7 +290,7 @@ export default function BasicDetailTable({
                 <td className="font-semibold p-4 text-(--text-color) bg-(--primary-bg) border-r border-(--border)">
                   <div className="flex items-center gap-3">
                     <div className="w-7 h-7 bg-(--main-light) text-(--main-emphasis) rounded-custom flex items-center justify-center shadow-custom">
-                      <LuStar size={14} />
+                      <StarIcon size={14} />
                     </div>
                     <span className="heading-sm">Average Rating</span>
                   </div>
@@ -301,7 +301,7 @@ export default function BasicDetailTable({
                     className="text-center p-4 border-r border-(--border) last:border-r-0"
                   >
                     <span className="inline-flex items-center gap-2 text-(--text-color-emphasis)">
-                      <LuStar
+                      <StarIcon
                         size={14}
                         className="text-(--warning) fill-current"
                       />
@@ -316,7 +316,7 @@ export default function BasicDetailTable({
                 <td className="font-semibold p-4 bg-(--primary-bg) text-(--text-color) border-r border-(--border)">
                   <div className="flex items-center gap-3">
                     <div className="w-7 h-7 bg-(--main-light) text-(--main-emphasis) rounded-custom flex items-center justify-center shadow-custom">
-                      <LuCalendar size={14} />
+                      <CalendarIcon size={14} />
                     </div>
                     <span className="heading-sm">Established</span>
                   </div>
@@ -355,13 +355,13 @@ export default function BasicDetailTable({
                   }}
                   className="mb-2 self-end w-5 h-5 bg-(--danger) text-(--danger-subtle) rounded-full flex items-center justify-center cursor-pointer"
                 >
-                  <LuX size={12} />
+                  <XIcon size={12} />
                 </button>
 
                 {/* Logo */}
                 <Link
                   href={`/${generateSlug(p.category)}/${generateSlug(
-                    p?.property_slug
+                    p?.property_slug,
                   )}/overview`}
                 >
                   {!p?.property_logo?.[0] ? (
@@ -391,7 +391,7 @@ export default function BasicDetailTable({
           <div className="divide-y divide-(--border)">
             <div className="bg-(--primary-bg)">
               <div className="p-2 flex items-center justify-center gap-2 bg-(--secondary-bg) text-(--text-color-empahsis) border border-(--border)">
-                <LuGraduationCap size={14} />
+                <GraduationCapIcon size={14} />
                 <span className="text-xs font-bold uppercase tracking-wider">
                   YP Rank
                 </span>
@@ -406,9 +406,9 @@ export default function BasicDetailTable({
                   >
                     <span className="font-bold text-sm">#{p?.rank}</span>
                     {(p?.rank || 0) < (p?.lastRank || 0) ? (
-                      <LuTrendingUp className="w-4 h-4 text-(--success)" />
+                      <TrendingUpIcon className="w-4 h-4 text-(--success)" />
                     ) : (
-                      <LuTrendingDown className="w-4 h-4 text-(--danger)" />
+                      <TrendingDownIcon className="w-4 h-4 text-(--danger)" />
                     )}
                   </div>
                 ))}
@@ -418,7 +418,7 @@ export default function BasicDetailTable({
             {/* DATA BLOCK: ACADEMIC TYPE */}
             <div className="bg-(--primary-bg)">
               <div className="p-2 flex items-center justify-center gap-2 bg-(--secondary-bg) text-(--text-color-empahsis) border border-(--border)">
-                <LuGraduationCap size={14} />
+                <GraduationCapIcon size={14} />
                 <span className="text-xs font-bold uppercase tracking-wider">
                   Academic Type
                 </span>
@@ -440,7 +440,7 @@ export default function BasicDetailTable({
             {/* DATA BLOCK: INSTITUTION TYPE */}
             <div className="bg-(--primary-bg)">
               <div className="p-2 flex items-center justify-center gap-2 bg-(--secondary-bg) text-(--text-color-empahsis) border border-(--border)">
-                <LuBuilding2 size={14} />
+                <Building2Icon size={14} />
                 <span className="text-xs font-bold uppercase tracking-wider">
                   Institution Type
                 </span>
@@ -462,7 +462,7 @@ export default function BasicDetailTable({
             {/* DATA BLOCK: CITY */}
             <div className="bg-(--primary-bg)">
               <div className="p-2 flex items-center justify-center gap-2 bg-(--secondary-bg) text-(--text-color-empahsis) border border-(--border)">
-                <LuMapPin size={14} />
+                <MapPinIcon size={14} />
                 <span className="text-xs font-bold uppercase tracking-wider">
                   City
                 </span>
@@ -484,7 +484,7 @@ export default function BasicDetailTable({
             {/* DATA BLOCK: RATING */}
             <div className="bg-(--primary-bg)">
               <div className="p-2 flex items-center justify-center gap-2 bg-(--secondary-bg) text-(--text-color-empahsis) border border-(--border)">
-                <LuStar size={14} />
+                <StarIcon size={14} />
                 <span className="text-xs font-bold uppercase tracking-wider ">
                   Rating
                 </span>
@@ -497,7 +497,7 @@ export default function BasicDetailTable({
                       i < selectedProperties.length - 1 ? "border-r" : ""
                     }`}
                   >
-                    <LuStar
+                    <StarIcon
                       size={12}
                       className="text-(--warning) fill-current"
                     />
@@ -510,7 +510,7 @@ export default function BasicDetailTable({
             {/* DATA BLOCK: ESTABLISHED */}
             <div className="bg-(--primary-bg)">
               <div className="p-2 flex items-center justify-center gap-2 bg-(--secondary-bg) text-(--text-color-empahsis) border border-(--border)">
-                <LuCalendar size={14} />
+                <CalendarIcon size={14} />
                 <span className="text-xs font-bold uppercase tracking-wider">
                   Est. Year
                 </span>

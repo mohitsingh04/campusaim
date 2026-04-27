@@ -11,10 +11,10 @@ import {
   getSuccessResponse,
 } from "@/context/Callbacks";
 import ButtonGroupSend from "@/ui/buttons/ButtonGroup";
-import { BiSave } from "react-icons/bi";
 import { userLocationEditValidation } from "@/context/ValidationSchema";
 import { CityProps, CountryProps, StateProps } from "@/types/Types";
 import SettingsHeader from "../SettingHeader";
+import { SaveIcon } from "lucide-react";
 
 const LocationTab = ({ profile }: { profile: UserProps | null }) => {
   const [country, setCountry] = useState<CountryProps[]>([]);
@@ -89,13 +89,13 @@ const LocationTab = ({ profile }: { profile: UserProps | null }) => {
 
   useEffect(() => {
     setFilteredStates(
-      states.filter((item) => item.country_name === formik.values.country)
+      states.filter((item) => item.country_name === formik.values.country),
     );
   }, [states, formik.values.country]);
 
   useEffect(() => {
     setFilteredCities(
-      cities.filter((item) => item.state_name === formik.values.state)
+      cities.filter((item) => item.state_name === formik.values.state),
     );
   }, [cities, formik.values.state]);
 
@@ -178,7 +178,7 @@ const LocationTab = ({ profile }: { profile: UserProps | null }) => {
             {/* SUBMIT BUTTON */}
             <div className="md:col-span-2 flex justify-end">
               <ButtonGroupSend
-                Icon={BiSave}
+                Icon={SaveIcon}
                 label="Save"
                 type="submit"
                 disable={resLoading}

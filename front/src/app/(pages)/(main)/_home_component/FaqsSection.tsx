@@ -1,9 +1,8 @@
 "use client";
 import { faqsData } from "@/common/Faqs";
 import BadgeBorder from "@/ui/badge/BadgeBorder";
+import { MinusIcon, PlusIcon } from "lucide-react";
 import React, { useState } from "react";
-import { BiMinus } from "react-icons/bi";
-import { BsPlus } from "react-icons/bs";
 
 const FaqsSection = () => {
   const [activeId, setActiveId] = useState<number | null>(null);
@@ -65,9 +64,9 @@ const FaqsSection = () => {
 
                 <div className="lg:hidden text-(--text-color) pt-1">
                   {activeId === index ? (
-                    <BiMinus size={20} />
+                    <MinusIcon size={20} />
                   ) : (
-                    <BsPlus size={20} />
+                    <PlusIcon size={20} />
                   )}
                 </div>
               </div>

@@ -1,9 +1,7 @@
 "use client";
 
+import { FilterIcon, GridIcon, ListIcon, SortAscIcon } from "lucide-react";
 import { useState } from "react";
-import { BiSort } from "react-icons/bi";
-import { FaTh, FaList } from "react-icons/fa";
-import { FiFilter } from "react-icons/fi";
 
 interface ResultsHeaderProps {
   totalResults: number;
@@ -55,7 +53,7 @@ const ResultsHeader = ({
             onClick={onShowMobileFilters}
             className="lg:hidden flex items-center px-4 py-1 bg-(--main-light) text-(--main-emphasis) border border-(--main-emphasis) rounded-full text-sm transition-colors"
           >
-            <FiFilter className="w-4 h-4 mr-2" /> Filters
+            <FilterIcon className="w-4 h-4 mr-2" /> Filters
           </button>
 
           {/* Grid / List Buttons */}
@@ -66,7 +64,7 @@ const ResultsHeader = ({
                 viewMode === "grid" ? "text-(--main)" : ""
               }`}
             >
-              <FaTh className="w-4 h-4" />
+              <GridIcon className="w-4 h-4" />
             </button>
 
             <button
@@ -75,7 +73,7 @@ const ResultsHeader = ({
                 viewMode === "list" ? "text-(--main)" : ""
               }`}
             >
-              <FaList className="w-4 h-4" />
+              <ListIcon className="w-4 h-4" />
             </button>
           </div>
 
@@ -85,7 +83,7 @@ const ResultsHeader = ({
               onClick={() => setOpenMenu((prev) => !prev)}
               className="px-4 py-1 border border-(--border) text-(--text-color-emphasis) rounded-full text-sm flex items-center"
             >
-              <BiSort /> sort
+              <SortAscIcon /> sort
             </button>
 
             {/* Dropdown Menu */}

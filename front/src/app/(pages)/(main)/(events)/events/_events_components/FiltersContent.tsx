@@ -1,4 +1,3 @@
-import { FaFilter } from "react-icons/fa";
 import FilterSection from "./FilterSection";
 import CheckboxFilter from "./CheckboxFilter";
 import {
@@ -7,6 +6,7 @@ import {
   ExpandedEventFiltersProps,
   FilterEventSearchTermsProps,
 } from "@/types/EventFilterTypes";
+import { FilterIcon } from "lucide-react";
 
 interface FiltersContentProps {
   dynamicFilterOptions: DynamicFilterEventOptionsProps;
@@ -17,7 +17,7 @@ interface FiltersContentProps {
   onCheckboxFilter: (filterType: keyof eventFilterProps, value: string) => void;
   onFilterSearchChange: (
     filterType: keyof FilterEventSearchTermsProps,
-    value: string
+    value: string,
   ) => void;
   onClearAll: () => void;
 }
@@ -32,19 +32,19 @@ const FiltersContent = ({
   onClearAll,
 }: FiltersContentProps) => {
   const availableStates = dynamicFilterOptions.getStatesWithCounts(
-    filters.event_country
+    filters.event_country,
   );
 
   // Get cities with proper counts from unfiltered data
   const availableCities = dynamicFilterOptions.getCitiesWithCounts(
     filters.event_country,
-    filters.event_state
+    filters.event_state,
   );
   return (
     <div>
       <div className="hidden md:flex items-center justify-between bg-(--primary-bg) sticky top-0 z-20 w-full h-12 px-3">
         <span className="font-semibold flex items-center text-(--text-color-emphasis)">
-          <FaFilter className="w-4 h-4 mr-2 text-(--main)" /> Filters
+          <FilterIcon className="w-4 h-4 mr-2 text-(--main)" /> Filters
         </span>
 
         <button

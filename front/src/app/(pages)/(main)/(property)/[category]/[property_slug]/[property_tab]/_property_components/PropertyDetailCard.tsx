@@ -2,10 +2,9 @@
 import { generateSlug, getAverageRating } from "@/context/Callbacks";
 import { PropertyProps } from "@/types/PropertyTypes";
 import { ButtonGroup } from "@/ui/buttons/ButtonGroup";
+import { BookOpenIcon, MapPinIcon, ScaleIcon, StarIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { FaBalanceScale } from "react-icons/fa";
-import { LuBookOpen, LuMapPin, LuStar } from "react-icons/lu";
 
 const PropertyDetailCard = ({
   property,
@@ -81,7 +80,7 @@ const PropertyDetailCard = ({
 
           return (
             <div className="flex items-center text-(--text-color) gap-1 ms-2">
-              <LuMapPin className="w-4 h-4 text-(--main)" />
+              <MapPinIcon className="w-4 h-4 text-(--main)" />
               <h2 className="heading-sm">{locationParts.join(", ")}</h2>
             </div>
           );
@@ -95,7 +94,7 @@ const PropertyDetailCard = ({
             className="flex items-center justify-center px-2 py-1 rounded-custom shadow-custom bg-(--secondary-bg)"
           >
             <div className="w-6 h-6 flex items-center justify-center rounded-full bg-(--warning-subtle) me-2">
-              <LuStar className="w-4 h-4 text-(--warning)" />
+              <StarIcon className="w-4 h-4 text-(--warning)" />
             </div>
             <p className="text-xs font-semibold ">
               {getAverageRating(property?.reviews)} / 5
@@ -108,7 +107,7 @@ const PropertyDetailCard = ({
             className="flex  items-center px-2 py-1 justify-center rounded-custom shadow-custom bg-(--secondary-bg)"
           >
             <div className="w-6 h-6 flex items-center justify-center rounded-full bg-(--purple-subtle) me-2">
-              <LuBookOpen className="w-4 h-4 text-(--purple)" />
+              <BookOpenIcon className="w-4 h-4 text-(--purple)" />
             </div>
             <p className="text-xs font-semibold">
               {property?.courses?.length || 0}
@@ -119,7 +118,7 @@ const PropertyDetailCard = ({
             className="flex items-center gap-2 py-1 px-2 rounded-custom justify-center shadow-custom bg-(--secondary-bg)"
           >
             <div className="w-6 h-6 flex items-center justify-center rounded-full bg-(--success-subtle) me-2">
-              <FaBalanceScale className="w-4 h-4 text-(--success)" />
+              <ScaleIcon className="w-4 h-4 text-(--success)" />
             </div>
             <p className="text-xs font-semibold">Compare</p>
           </Link>

@@ -2,8 +2,6 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-
-import { LuSearch } from "react-icons/lu";
 import Pagination from "../../../../../ui/pagination/Pagination";
 import {
   formatDate,
@@ -18,6 +16,7 @@ import BlogCourse from "../../(blog)/blog/_allblog_components/BlogCourses";
 import RelatedBlogs from "../../(blog)/blog/_allblog_components/RelatedBlogs";
 import Image from "next/image";
 import NewsListSkeleton from "@/ui/loader/page/news-and-updates/NewslistSkeleton";
+import { SearchIcon } from "lucide-react";
 
 const NewsPage: React.FC = () => {
   const searchParams = useSearchParams();
@@ -54,7 +53,7 @@ const NewsPage: React.FC = () => {
         const validNews = allNewsData.filter(
           (item: NewsProps) =>
             item?.status === "Published" &&
-            seoData.some((seo: any) => seo.news_id === item._id)
+            seoData.some((seo: any) => seo.news_id === item._id),
         );
 
         const enriched = validNews.map((item: NewsProps) => {
@@ -96,7 +95,7 @@ const NewsPage: React.FC = () => {
               <div className="text-center py-16 bg-(--primary-bg) rounded-custom shadow-custom">
                 <div className="max-w-md mx-auto">
                   <div className="w-24 h-24 bg-(--main-emphasis) rounded-full flex items-center justify-center mx-auto mb-4">
-                    <LuSearch className="h-12 w-12 text-(--main-light)" />
+                    <SearchIcon className="h-12 w-12 text-(--main-light)" />
                   </div>
 
                   <h3 className="heading font-semibold text-(--text-color-emphasis) mb-2">

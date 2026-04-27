@@ -1,8 +1,8 @@
 import { generateSlug } from "@/context/Callbacks";
 import { PropertyProps } from "@/types/PropertyTypes";
+import { LandmarkIcon, MapIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { LuLandmark, LuMap } from "react-icons/lu";
 
 export default function PropertyCard({
   property,
@@ -45,7 +45,7 @@ export default function PropertyCard({
 
               return (
                 <div className="flex items-center gap-1 ms-2">
-                  <LuMap className="w-4 h-4 text-(--main)" />
+                  <MapIcon className="w-4 h-4 text-(--main)" />
                   <h2 className="heading-sm">{locationParts.join(", ")}</h2>
                 </div>
               );
@@ -54,7 +54,7 @@ export default function PropertyCard({
         </div>
 
         <div className="flex items-center gap-1 sm:self-end justify-end sm:justify-start">
-          <LuLandmark className="w-3 h-3 sm:w-6 sm:h-6" />
+          <LandmarkIcon className="w-3 h-3 sm:w-6 sm:h-6" />
           <h3 className="text-xs sm:text-lg font-bold">{property?.category}</h3>
         </div>
       </div>

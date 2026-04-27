@@ -3,16 +3,16 @@
 import { generateSlug } from "@/context/Callbacks";
 import { PropertyProps } from "@/types/PropertyTypes";
 import HeadingLine from "@/ui/headings/HeadingLine";
+import {
+  BuildingIcon,
+  ChevronDownIcon,
+  CircleCheckIcon,
+  CircleXIcon,
+  WifiIcon,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import {
-  LuChevronDown,
-  LuWifi,
-  LuCircleCheck,
-  LuCircleX,
-  LuBuilding,
-} from "react-icons/lu";
 
 export default function AmenityTable({
   selectedProperties,
@@ -41,8 +41,8 @@ export default function AmenityTable({
     selectedProperties.length === 1
       ? "grid-cols-1"
       : selectedProperties.length === 2
-      ? "grid-cols-2"
-      : "grid-cols-3";
+        ? "grid-cols-2"
+        : "grid-cols-3";
 
   // Helper function to check amenity existence
   const checkAmenity = (prop: PropertyProps, amenity: string) => {
@@ -93,7 +93,7 @@ export default function AmenityTable({
                 isOpen ? "rotate-180" : ""
               }`}
             >
-              <LuChevronDown size={16} />
+              <ChevronDownIcon size={16} />
             </div>
           </div>
         </div>
@@ -124,7 +124,7 @@ export default function AmenityTable({
                           <div className="flex flex-col items-center relative">
                             <Link
                               href={`/${generateSlug(
-                                p.category
+                                p.category,
                               )}/${generateSlug(p?.property_slug)}/overview`}
                             >
                               {!p?.property_logo?.[0] ? (
@@ -146,7 +146,7 @@ export default function AmenityTable({
                             </Link>
                             <Link
                               href={`/${generateSlug(
-                                p.category
+                                p.category,
                               )}/${generateSlug(p?.property_slug)}/overview`}
                               className="paragraph font-medium text-center leading-tight wrap-break-word"
                             >
@@ -164,7 +164,7 @@ export default function AmenityTable({
                         <td className="font-semibold p-4 text-(--text-color) bg-(--primary-bg) border-r border-(--border)">
                           <div className="flex items-center gap-3">
                             <div className="w-7 h-7 bg-(--main-light) text-(--main-emphasis) rounded-custom flex items-center justify-center shadow-custom">
-                              <LuBuilding size={14} />
+                              <BuildingIcon size={14} />
                             </div>
                             <span className="heading-sm">{amenity}</span>
                           </div>
@@ -180,11 +180,11 @@ export default function AmenityTable({
                               <div className="flex justify-center">
                                 {hasAmenity ? (
                                   <div className="w-8 h-8 rounded-full bg-(--success-light) flex items-center justify-center text-(--success)">
-                                    <LuCircleCheck size={18} />
+                                    <CircleCheckIcon size={18} />
                                   </div>
                                 ) : (
                                   <div className="w-8 h-8 rounded-full bg-(--danger-light) flex items-center justify-center text-(--danger)">
-                                    <LuCircleX size={18} />
+                                    <CircleXIcon size={18} />
                                   </div>
                                 )}
                               </div>
@@ -210,7 +210,7 @@ export default function AmenityTable({
                       >
                         <Link
                           href={`/${generateSlug(p.category)}/${generateSlug(
-                            p?.property_slug
+                            p?.property_slug,
                           )}/overview`}
                         >
                           {!p?.property_logo?.[0] ? (
@@ -244,7 +244,7 @@ export default function AmenityTable({
                     <div key={idx} className="bg-(--primary-bg)">
                       {/* Row Label */}
                       <div className="p-2 flex items-center justify-center gap-2 bg-(--secondary-bg) text-(--text-color-emphasis) border-b border-(--border)">
-                        <LuBuilding size={14} />
+                        <BuildingIcon size={14} />
                         <span className="text-xs font-bold uppercase tracking-wider text-center">
                           {amenity}
                         </span>
@@ -265,11 +265,11 @@ export default function AmenityTable({
                             >
                               {hasAmenity ? (
                                 <div className="w-8 h-8 rounded-full bg-(--success-light) flex items-center justify-center text-(--success)">
-                                  <LuCircleCheck size={18} />
+                                  <CircleCheckIcon size={18} />
                                 </div>
                               ) : (
                                 <div className="w-8 h-8 rounded-full bg-(--danger-light) flex items-center justify-center text-(--danger)">
-                                  <LuCircleX size={18} />
+                                  <CircleXIcon size={18} />
                                 </div>
                               )}
                             </div>
@@ -284,7 +284,7 @@ export default function AmenityTable({
           ) : (
             <div className="text-center py-12 text-(--text-color) bg-(--primary-bg)">
               <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-custom">
-                <LuWifi size={24} />
+                <WifiIcon size={24} />
               </div>
               <h3 className="sub-heading font-semibold mb-2">
                 No Amenities Data

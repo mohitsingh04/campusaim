@@ -2,8 +2,8 @@
 import API from "@/context/API";
 import { getErrorResponse } from "@/context/Callbacks";
 import Loading from "@/ui/loader/Loading";
+import { LockIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { LuLock } from "react-icons/lu";
 
 const Disclaimers = () => {
   const [disclaimer, setDisclaimer] = useState<string | null>(null);
@@ -38,7 +38,7 @@ const Disclaimers = () => {
       ) : (
         // Fallback (Policy Coming Soon)
         <div className="grow px-6 py-16 flex flex-col items-center justify-center text-center">
-          <LuLock size={80} className="text-(--main) mb-6" />
+          <LockIcon size={80} className="text-(--main) mb-6" />
           <h2 className="text-2xl md:text-3xl font-semibold mb-3 text-(--main)">
             Policy Coming Soon
           </h2>

@@ -1,7 +1,6 @@
 "use client";
+import { ChevronDownIcon, EyeIcon, EyeOffIcon } from "lucide-react";
 import { useState } from "react";
-import { BiChevronDown } from "react-icons/bi";
-import { LuEye, LuEyeOff } from "react-icons/lu";
 import React from "react";
 
 export const InputGroup = ({
@@ -137,7 +136,7 @@ export const SelectGroup = ({
         ))}
       </select>
 
-      <BiChevronDown className="w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+      <ChevronDownIcon className="w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
     </div>
   </div>
 );
@@ -288,7 +287,7 @@ export const PasswordInputGroup = ({
           onClick={() => setShowPassword((p) => !p)}
           className="absolute right-3 text-(--text-color-emphasis) cursor-pointer"
         >
-          {showPassword ? <LuEyeOff size={18} /> : <LuEye size={18} />}
+          {showPassword ? <EyeOffIcon size={18} /> : <EyeIcon size={18} />}
         </button>
       </div>
     </div>

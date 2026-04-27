@@ -1,6 +1,6 @@
 import { useTheme } from "@/hooks/useTheme";
+import { MoonIcon, SunIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-import { FiMoon, FiSun } from "react-icons/fi";
 
 export default function ThemeButton() {
   const { theme, setTheme } = useTheme();
@@ -21,9 +21,9 @@ export default function ThemeButton() {
         title={theme === "dark" ? "Light Theme" : "Dark Theme"}
       >
         {icon === "dark" ? (
-          <FiSun className="h-5 w-5" />
+          <SunIcon className="h-5 w-5" />
         ) : (
-          <FiMoon className="h-5 w-5" />
+          <MoonIcon className="h-5 w-5" />
         )}
       </button>
     </div>

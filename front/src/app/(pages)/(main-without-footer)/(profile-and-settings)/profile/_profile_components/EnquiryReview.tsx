@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { LuX, LuUser, LuMail, LuPhone } from "react-icons/lu";
 import { useFormik } from "formik";
 import { UserProps } from "@/types/UserTypes";
 import API from "@/context/API";
@@ -11,6 +10,7 @@ import {
 import HeadingLine from "@/ui/headings/HeadingLine";
 import { FeedbackData } from "@/common/FeedbackData";
 import { enquiryReviewSchema } from "@/context/ValidationSchema";
+import { MailIcon, PhoneIcon, UserIcon, XIcon } from "lucide-react";
 
 interface EnquiryReviewModalProps {
   closeModal: () => void;
@@ -53,17 +53,17 @@ export function EnquiryReviewModal({
 
   const details = [
     {
-      icon: <LuUser className="text-(--text-color-emphasis)" />,
+      icon: <UserIcon className="text-(--text-color-emphasis)" />,
       label: "Name",
       value: profile?.name || "-",
     },
     {
-      icon: <LuMail className="text-(--text-color-emphasis)" />,
+      icon: <MailIcon className="text-(--text-color-emphasis)" />,
       label: "Email",
       value: profile?.email || "-",
     },
     {
-      icon: <LuPhone className="text-(--text-color-emphasis)" />,
+      icon: <PhoneIcon className="text-(--text-color-emphasis)" />,
       label: "Contact",
       value: profile?.mobile_no || "-",
     },
@@ -79,7 +79,7 @@ export function EnquiryReviewModal({
             onClick={closeModal}
             className="text-(--text-color) hover:text-(--text-color-emphasis) p-2 rounded-lg"
           >
-            <LuX className="h-4 w-4" />
+            <XIcon className="h-4 w-4" />
           </button>
         </div>
 

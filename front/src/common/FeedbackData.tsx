@@ -1,33 +1,32 @@
-import { BiAngry, BiLaugh, BiMeh, BiSmile } from "react-icons/bi";
-import { FiFrown } from "react-icons/fi";
+import { Angry, Frown, Laugh, Meh, Smile } from "lucide-react";
 
 export const FeedbackData = [
   {
-    icon: BiAngry,
+    icon: Angry,
     label: "Very Dissatisfied",
     color: "text-[var(--danger-emphasis)]",
     bg: "bg-[var(--danger-subtle)]",
   },
   {
-    icon: FiFrown,
+    icon: Frown,
     label: "Dissatisfied",
     color: "text-[var(--orange-emphasis)]",
     bg: "bg-[var(--orange-subtle)]",
   },
   {
-    icon: BiMeh,
+    icon: Meh,
     label: "Neutral",
     color: "text-[var(--warning-emphasis)]",
     bg: "bg-[var(--warning-subtle)]",
   },
   {
-    icon: BiSmile,
+    icon: Smile,
     label: "Satisfied",
     color: "text-[var(--success-emphasis)]",
     bg: "bg-[var(--success-subtle)]",
   },
   {
-    icon: BiLaugh,
+    icon: Laugh,
     label: "Very Satisfied",
     color: "text-[var(--blue-emphasis)]",
     bg: "bg-[var(--blue-subtle)]",

@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { LuArrowRight } from "react-icons/lu";
+import { ArrowRightIcon } from "lucide-react";
 
 interface ReadMoreButtonProps {
   href: string;
@@ -29,7 +29,7 @@ const ReadMoreButton: React.FC<ReadMoreButtonProps> = ({
       >
         <span className="relative">{label}</span>
         <span>
-          <LuArrowRight className="mt-0.5 w-3.5 h-3.5" />
+          <ArrowRightIcon className="mt-0.5 w-3.5 h-3.5" />
         </span>
       </Link>
 

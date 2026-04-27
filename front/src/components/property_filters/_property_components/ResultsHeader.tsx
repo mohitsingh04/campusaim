@@ -1,7 +1,6 @@
 "use client";
 
-import { FaTh, FaList } from "react-icons/fa";
-import { FiFilter } from "react-icons/fi";
+import { FilterIcon, GridIcon, ListIcon } from "lucide-react";
 
 interface ResultsHeaderProps {
   totalResults: number;
@@ -47,7 +46,7 @@ const ResultsHeader = ({
             onClick={onShowMobileFilters}
             className="lg:hidden flex items-center px-4 py-1 bg-(--main-light) text-(--main-emphasis) border border-(--main-emphasis) rounded-full text-sm transition-colors"
           >
-            <FiFilter className="w-4 h-4 mr-2" /> Filters
+            <FilterIcon className="w-4 h-4 mr-2" /> Filters
           </button>
           <div className="hidden md:flex items-center space-x-2">
             <button
@@ -56,7 +55,7 @@ const ResultsHeader = ({
                 viewMode === "grid" ? "text-(--main)" : ""
               }`}
             >
-              <FaTh className="w-4 h-4" />
+              <GridIcon className="w-4 h-4" />
             </button>
 
             <button
@@ -65,7 +64,7 @@ const ResultsHeader = ({
                 viewMode === "list" ? "text-(--main)" : ""
               }`}
             >
-              <FaList className="w-4 h-4" />
+              <ListIcon className="w-4 h-4" />
             </button>
           </div>
         </div>

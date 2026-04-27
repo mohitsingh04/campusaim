@@ -61,6 +61,7 @@ export interface SeoProps {
   event_id: string;
   course_id: string;
   blog_id: string;
+  exam_id: string;
   news_id: string;
   slug: string;
 }

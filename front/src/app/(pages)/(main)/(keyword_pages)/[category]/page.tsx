@@ -21,8 +21,8 @@ import Breadcrumb from "@/ui/breadcrumbs/Breadcrumb";
 import Pagination from "@/ui/pagination/Pagination";
 import RelatedBlogs from "../../(blog)/blog/_allblog_components/RelatedBlogs";
 import BlogCourse from "../../(blog)/blog/_allblog_components/BlogCourses";
-import { FaGraduationCap } from "react-icons/fa";
 import Loading from "@/ui/loader/Loading";
+import { GraduationCapIcon } from "lucide-react";
 
 const ITEMS_PER_PAGE = 20;
 
@@ -32,7 +32,7 @@ export default function KeywordPage() {
 
   const currentPage = useMemo(
     () => Number(searchParams.get("page") || 1),
-    [searchParams]
+    [searchParams],
   );
 
   const { category: keyword_slug } = useParams<{ category: string }>();
@@ -67,8 +67,8 @@ export default function KeywordPage() {
         response.data?.filter(
           (item: CategoryProps) =>
             generateSlug(item?.parent_category) ===
-            generateSlug("Academic Type")
-        )
+            generateSlug("Academic Type"),
+        ),
       );
       setCategories(response.data);
     } catch (error) {
@@ -83,11 +83,11 @@ export default function KeywordPage() {
   const getCategoryById = useCallback(
     (id: string) => {
       const cat = categories.find(
-        (item) => item.uniqueId === Number(id) || item._id === id
+        (item) => item.uniqueId === Number(id) || item._id === id,
       );
       return cat?.category_name;
     },
-    [categories]
+    [categories],
   );
 
   /* ---------------- FETCH DATA ---------------- */
@@ -112,7 +112,7 @@ export default function KeywordPage() {
       ) {
         const propertiesData =
           propertyRes.value.data.filter(
-            (item: PropertyProps) => item.status === "Active"
+            (item: PropertyProps) => item.status === "Active",
           ) || [];
 
         const locationsData = locationRes.value.data || [];
@@ -122,16 +122,16 @@ export default function KeywordPage() {
         const merged = propertiesData.map((property: PropertyProps) => {
           const location = locationsData.find(
             (loc: PropertyLocationProps) =>
-              Number(loc.property_id) === property.uniqueId
+              Number(loc.property_id) === property.uniqueId,
           );
 
           const reviews = reviewsData.filter(
             (rev: PropertyReviewProps) =>
-              Number(rev.property_id) === property.uniqueId
+              Number(rev.property_id) === property.uniqueId,
           );
 
           const rank = rankData.find(
-            (r: PropertyRankProps) => String(r.property_id) === property._id
+            (r: PropertyRankProps) => String(r.property_id) === property._id,
           );
 
           return {
@@ -157,8 +157,8 @@ export default function KeywordPage() {
         setProperties(
           merged.sort(
             (a: PropertyProps, b: PropertyProps) =>
-              (a.rank || 9999) - (b.rank || 9999)
-          )
+              (a.rank || 9999) - (b.rank || 9999),
+          ),
         );
       }
     } catch (error) {
@@ -252,7 +252,7 @@ export default function KeywordPage() {
     combinedLocations.forEach((loc) => {
       // Use boundary regex to match whole words only
       const regex = new RegExp(`\\b${loc.slug}\\b`);
-      
+
       if (regex.test(tempCheckString)) {
         // Match found! Set the appropriate state
         if (loc.type === "city") setKeywordCity(loc.val);
@@ -331,7 +331,7 @@ export default function KeywordPage() {
 
   const displayedInstitutes = filteredProperties.slice(
     (safeCurrentPage - 1) * ITEMS_PER_PAGE,
-    safeCurrentPage * ITEMS_PER_PAGE
+    safeCurrentPage * ITEMS_PER_PAGE,
   );
 
   return (
@@ -347,7 +347,7 @@ export default function KeywordPage() {
 
       {!loading && filteredProperties.length === 0 && (
         <div className="text-center py-16 bg-(--secondary-bg) text-(--text-color-emphasis) rounded-custom shadow-custom">
-          <FaGraduationCap className="w-16 h-16 mx-auto mb-4" />
+          <GraduationCapIcon className="w-16 h-16 mx-auto mb-4" />
           <h3 className="heading font-bold mb-2">No institutes found</h3>
           <p>
             {isInvalidSearch

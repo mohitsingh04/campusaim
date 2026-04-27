@@ -1,8 +1,6 @@
+import { LoaderIcon, LucideIcon, SendIcon } from "lucide-react";
 import Link from "next/link";
 import React from "react";
-import { IconType } from "react-icons";
-import { LuSend } from "react-icons/lu";
-import { TbLoader } from "react-icons/tb";
 
 interface ButtonGroupProps {
   label?: string;
@@ -75,7 +73,7 @@ interface ButtonGroup2Props {
   disable: boolean;
   isSubmitting?: boolean;
   className?: string;
-  Icon?: IconType;
+  Icon?: LucideIcon;
 }
 
 export default function ButtonGroupSend({
@@ -85,7 +83,7 @@ export default function ButtonGroupSend({
   className = "",
   disable,
   isSubmitting = false,
-  Icon = LuSend,
+  Icon = SendIcon,
 }: ButtonGroup2Props) {
   return (
     <button
@@ -96,7 +94,7 @@ export default function ButtonGroupSend({
     >
       {isSubmitting ? (
         <>
-          <TbLoader className="w-5 h-5 animate-spin" />
+          <LoaderIcon className="w-5 h-5 animate-spin" />
           <span>Sending...</span>
         </>
       ) : (

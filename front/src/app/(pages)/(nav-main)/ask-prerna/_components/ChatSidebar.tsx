@@ -1,8 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { FiMessageCircle } from "react-icons/fi";
-import { LuX } from "react-icons/lu";
 import { useCallback, useEffect, useState } from "react";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -11,6 +9,7 @@ import API from "@/context/API";
 import { formatDateWithTime, getErrorResponse } from "@/context/Callbacks";
 import { useTheme } from "@/hooks/useTheme";
 import HeadingLine from "@/ui/headings/HeadingLine";
+import { MessageCircleIcon, XIcon } from "lucide-react";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -88,7 +87,7 @@ export function ChatSidebar({ isOpen, onClose, authUser }: SidebarProps) {
                 onClick={onClose}
                 className="flex items-center justify-center text-(--text-color) transition-all"
               >
-                <LuX className="h-5 w-5" />
+                <XIcon className="h-5 w-5" />
               </button>
             </div>
 
@@ -99,7 +98,7 @@ export function ChatSidebar({ isOpen, onClose, authUser }: SidebarProps) {
                 href={`/ask-prerna`}
                 className="w-full flex items-center justify-center gap-2 px-4 py-3 btn-shine rounded-custom"
               >
-                <FiMessageCircle className="h-5 w-5" />
+                <MessageCircleIcon className="h-5 w-5" />
                 New Chat
               </Link>
 

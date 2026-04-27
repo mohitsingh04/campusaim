@@ -3,11 +3,11 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
-import { LuCalendar } from "react-icons/lu";
 import API from "@/context/API";
 import { formatDate, getErrorResponse } from "@/context/Callbacks";
 import HeadingLine from "@/ui/headings/HeadingLine";
 import { NewsProps } from "@/types/NewsTypes";
+import { CalendarIcon } from "lucide-react";
 
 const RelatedNews = ({ news }: { news: NewsProps | null }) => {
   const [newsList, setNewsList] = useState<NewsProps[]>([]);
@@ -95,7 +95,7 @@ const RelatedNews = ({ news }: { news: NewsProps | null }) => {
                 </h4>
 
                 <div className="flex items-center space-x-1 pt-1">
-                  <LuCalendar className="h-3 w-3 text-(--main)" />
+                  <CalendarIcon className="h-3 w-3 text-(--main)" />
                   <span className="paragraph">{formatDate(n.createdAt)}</span>
                 </div>
               </div>

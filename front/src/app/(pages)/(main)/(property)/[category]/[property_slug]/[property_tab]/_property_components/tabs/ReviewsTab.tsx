@@ -2,11 +2,11 @@
 
 import { PropertyProps } from "@/types/PropertyTypes";
 import { useState } from "react";
-import { LuStar, LuUser } from "react-icons/lu";
 import ReviewForm from "./ReviewForm";
 import { getAverageRating, getRatingDistribution } from "@/context/Callbacks";
 import ReadMoreLessNoBlur from "@/ui/texts/ReadMoreLessNoBlur";
 import { UserProps } from "@/types/UserTypes";
+import { StarIcon, UserIcon } from "lucide-react";
 
 export default function ReviewsTab({
   property,
@@ -26,7 +26,7 @@ export default function ReviewsTab({
     return Array(5)
       .fill(0)
       .map((_, index) => (
-        <LuStar
+        <StarIcon
           key={index}
           className={`w-5 h-5 transition-colors ${
             rating > index
@@ -53,7 +53,7 @@ export default function ReviewsTab({
               return (
                 <div key={star} className="flex items-center">
                   <span className="w-6">{star}</span>
-                  <LuStar
+                  <StarIcon
                     className="w-5 h-5 text-(--warning) ml-1"
                     fill="currentColor"
                   />
@@ -105,7 +105,7 @@ export default function ReviewsTab({
               <div className="flex items-start gap-4">
                 <div className="shrink-0">
                   <div className="w-14 h-14 bg-(--main-light) shadow-custom rounded-full flex items-center justify-center">
-                    <LuUser className="w-7 h-7 text-(--main-emphasis)" />
+                    <UserIcon className="w-7 h-7 text-(--main-emphasis)" />
                   </div>
                 </div>
 

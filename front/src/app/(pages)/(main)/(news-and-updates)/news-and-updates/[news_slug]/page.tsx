@@ -3,20 +3,19 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { notFound, useParams } from "next/navigation";
 import Image from "next/image";
-import { BiCalendar } from "react-icons/bi";
 import {
   formatDate,
   getErrorResponse,
   getUserAvatar,
 } from "@/context/Callbacks";
 import API from "@/context/API";
-import { BsClock } from "react-icons/bs";
 import { formatDistanceToNow } from "date-fns";
 import { UserProps } from "@/types/UserTypes";
 import { ReadMoreLess } from "@/ui/texts/ReadMoreLess";
 import { NewsProps } from "@/types/NewsTypes";
 import RelatedNews from "../_news_components/RelatedNews";
 import NewsDetialSkeleton from "@/ui/loader/page/news-and-updates/NewsDetialSkeleton";
+import { CalendarIcon, ClockIcon } from "lucide-react";
 
 const NewsDetailPage: React.FC = () => {
   const { news_slug } = useParams();
@@ -92,7 +91,7 @@ const NewsDetailPage: React.FC = () => {
               <div className="p-5">
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-4">
                   <div className="flex items-center space-x-1 ml-auto">
-                    <BiCalendar className="h-4 w-4 text-(--main)" />
+                    <CalendarIcon className="h-4 w-4 text-(--main)" />
                     <p className="text-sm">
                       {formatDate(blog?.createdAt || "")}
                     </p>
@@ -100,7 +99,7 @@ const NewsDetailPage: React.FC = () => {
 
                   {safeCreatedAt && (
                     <div className="flex items-center space-x-1">
-                      <BsClock className="h-4 w-4 text-(--main)" />
+                      <ClockIcon className="h-4 w-4 text-(--main)" />
                       <p>
                         {formatDistanceToNow(safeCreatedAt, {
                           addSuffix: true,
@@ -115,7 +114,7 @@ const NewsDetailPage: React.FC = () => {
                 </h1>
 
                 <div id="blog-main">
-                  <ReadMoreLess html={blog?.content} />
+                  <ReadMoreLess html={blog?.content || ""} />
                 </div>
               </div>
             </article>

@@ -1,20 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import { BiHelpCircle, BiHome } from "react-icons/bi";
-import { FiEdit3 } from "react-icons/fi";
-import {
-  LuSettings,
-  LuMapPin,
-  LuStar,
-  LuMessageCircle,
-  LuMessageSquareDashed,
-  LuInbox,
-  LuClock,
-  LuBookOpen,
-  LuUsers,
-  LuCalendar,
-} from "react-icons/lu";
 import Image from "next/image";
 import Link from "next/link";
 import { getProfile } from "@/context/getAssets";
@@ -30,13 +16,28 @@ import {
 } from "@/context/Callbacks";
 import Loading from "@/ui/loader/Loading";
 import SettingsOffcanvas from "@/components/setting/SettingOffcanvas";
-import { FaWpforms } from "react-icons/fa";
 import API from "@/context/API";
 import CountUp from "react-countup";
 import { PropertyReviewProps } from "@/types/PropertyTypes";
 import { formatDistanceToNow } from "date-fns";
 import Badge from "@/ui/badge/Badge";
 import { EnquiryReviewModal } from "./_profile_components/EnquiryReview";
+import {
+  BookOpenIcon,
+  CalendarIcon,
+  ClockIcon,
+  Edit3Icon,
+  FileTextIcon,
+  HelpCircleIcon,
+  HomeIcon,
+  InboxIcon,
+  MapPinIcon,
+  MessageCircleIcon,
+  MessageSquareDashedIcon,
+  SettingsIcon,
+  StarIcon,
+  UsersIcon,
+} from "lucide-react";
 
 function ReviewsContent({ reviews }: { reviews: PropertyReviewProps[] }) {
   const [visibleCount, setVisibleCount] = useState(10);
@@ -49,7 +50,7 @@ function ReviewsContent({ reviews }: { reviews: PropertyReviewProps[] }) {
     return (
       <div className="flex flex-col items-center justify-center py-16 px-6 bg-(--primary-bg) rounded-custom shadow-custom animate-in fade-in duration-500 text-center">
         <div className="mb-4 bg-(--main-emphasis) text-(--main-light) rounded-full">
-          <LuMessageSquareDashed size={48} />
+          <MessageSquareDashedIcon size={48} />
         </div>
 
         <h3 className="text-(--text-color-emphasis) font-semibold text-lg mb-2">
@@ -72,7 +73,7 @@ function ReviewsContent({ reviews }: { reviews: PropertyReviewProps[] }) {
             {Array(rev?.rating || 0)
               .fill(true)
               .map((_, idx) => (
-                <LuStar key={idx} size={14} fill="currentColor" />
+                <StarIcon key={idx} size={14} fill="currentColor" />
               ))}
           </div>
 
@@ -119,7 +120,7 @@ function QuestionsContent({ questions }: { questions: any[] }) {
     return (
       <div className="flex flex-col items-center justify-center py-16 px-6 bg-(--primary-bg) rounded-custom shadow-custom animate-in fade-in duration-500 text-center">
         <div className="mb-4 bg-(--main-emphasis) text-(--main-light) rounded-full">
-          <BiHelpCircle size={48} />
+          <HelpCircleIcon size={48} />
         </div>
         <h3 className="text-(--text-color-emphasis) font-semibold text-lg mb-2">
           No questions yet
@@ -140,7 +141,7 @@ function QuestionsContent({ questions }: { questions: any[] }) {
         >
           <div className="flex gap-4">
             <div className="shrink-0 w-10 h-10 bg-(--main-emphasis) text-(--main-light) rounded-custom flex items-center justify-center">
-              <BiHelpCircle size={22} />
+              <HelpCircleIcon size={22} />
             </div>
 
             <div className="flex-1">
@@ -154,7 +155,7 @@ function QuestionsContent({ questions }: { questions: any[] }) {
 
               <div className="flex items-center gap-4 mt-3 pt-3 border-t border-(--border)/10 text-xs text-(--text-color-emphasis)">
                 <span className="flex items-center gap-1">
-                  <LuMessageCircle size={12} />
+                  <MessageCircleIcon size={12} />
                   Asked{" "}
                   {qst?.createdAt
                     ? formatDistanceToNow(new Date(qst.createdAt), {
@@ -190,7 +191,7 @@ function AnswersContent({ answers }: { answers: any[] }) {
     return (
       <div className="flex flex-col items-center justify-center py-16 px-6 bg-(--primary-bg) rounded-custom shadow-custom animate-in fade-in duration-500 text-center">
         <div className="mb-4 text-(--text-color-emphasis)">
-          <LuMessageCircle size={48} />
+          <MessageCircleIcon size={48} />
         </div>
         <h3 className="text-(--text-color-emphasis) font-semibold text-lg mb-2">
           No answers yet
@@ -210,7 +211,7 @@ function AnswersContent({ answers }: { answers: any[] }) {
         >
           <div className="flex gap-4">
             <div className="shrink-0 w-10 h-10 bg-(--main-emphasis) text-(--main-light) rounded-custom flex items-center justify-center">
-              <LuMessageCircle size={20} />
+              <MessageCircleIcon size={20} />
             </div>
 
             <div className="flex-1">
@@ -220,7 +221,7 @@ function AnswersContent({ answers }: { answers: any[] }) {
 
               <div className="flex items-center gap-4 mt-3 pt-3 border-t border-(--border)/10 text-xs text-(--text-color-emphasis)">
                 <span className="flex items-center gap-1">
-                  <LuClock size={12} />
+                  <ClockIcon size={12} />
                   Answered{" "}
                   {ans?.createdAt
                     ? formatDistanceToNow(new Date(ans.createdAt))
@@ -267,7 +268,7 @@ function EnquiriesContent({
     return (
       <div className="flex flex-col items-center justify-center py-16 px-6 bg-(--primary-bg) rounded-custom shadow-custom animate-in fade-in duration-500 text-center">
         <div className="mb-4 text-(--text-color-emphasis)">
-          <LuInbox size={48} />
+          <InboxIcon size={48} />
         </div>
         <h3 className="text-(--text-color-emphasis) font-semibold text-lg mb-2">
           No enquiries yet
@@ -302,14 +303,14 @@ function EnquiriesContent({
 
                 {enq?.property_name && (
                   <div className="flex items-center gap-1.5 text-xs text-(--text-color)">
-                    <BiHome size={12} />
+                    <HomeIcon size={12} />
                     <span>{enq.property_name}</span>
                   </div>
                 )}
 
                 {enq?.city && (
                   <div className="flex items-center gap-1.5 text-xs text-(--text-color)">
-                    <LuMapPin size={12} />
+                    <MapPinIcon size={12} />
                     <span>{enq.city}</span>
                   </div>
                 )}
@@ -318,7 +319,7 @@ function EnquiriesContent({
 
             {enq?.createdAt && (
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-custom shadow-custom text-xs font-medium bg-(--gray-subtle) text-(--gray-emphasis)">
-                <LuClock size={12} />
+                <ClockIcon size={12} />
                 <span>
                   {formatDate(enq.createdAt)} | {formatTime(enq.createdAt)}
                 </span>
@@ -338,14 +339,14 @@ function EnquiriesContent({
 
             {enq?.preferred_course && (
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-custom shadow-custom text-xs font-medium bg-(--gray-subtle) text-(--gray-emphasis)">
-                <LuBookOpen size={12} />
+                <BookOpenIcon size={12} />
                 {enq.preferred_course}
               </span>
             )}
 
             {enq?.people && (
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-custom shadow-custom text-xs font-medium bg-(--gray-subtle) text-(--gray-emphasis)">
-                <LuUsers size={12} />
+                <UsersIcon size={12} />
                 {enq.people} People
               </span>
             )}
@@ -363,7 +364,7 @@ function EnquiriesContent({
           <div className="flex items-center justify-between pt-3 border-t border-(--border)/50">
             {enq?.date && (
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-custom shadow-custom text-xs font-medium bg-(--gray-subtle) text-(--gray-emphasis)">
-                <LuCalendar size={14} />
+                <CalendarIcon size={14} />
                 <span>Accepted for: {formatDate(enq.date)}</span>
               </div>
             )}
@@ -514,25 +515,25 @@ export default function ProfilePage() {
     {
       id: "your-reviews",
       label: "Your Reviews",
-      icon: <LuStar size={16} />,
+      icon: <StarIcon size={16} />,
       tab: <ReviewsContent reviews={review} />,
     },
     {
       id: "your-questions",
       label: "Your Questions",
-      icon: <BiHelpCircle size={16} />,
+      icon: <HelpCircleIcon size={16} />,
       tab: <QuestionsContent questions={questions} />,
     },
     {
       id: "your-answers",
       label: "Your Answers",
-      icon: <LuMessageCircle size={16} />,
+      icon: <MessageCircleIcon size={16} />,
       tab: <AnswersContent answers={answers} />,
     },
     {
       id: "your-enquiries",
       label: "Your Enquires",
-      icon: <FaWpforms size={16} />,
+      icon: <FileTextIcon size={16} />,
       tab: (
         <EnquiriesContent
           enquiries={enquires}
@@ -592,7 +593,7 @@ export default function ProfilePage() {
                     </p>
                     {location && (
                       <div className="flex items-start gap-1 text-xs text-(--text-color) mt-2 shrink-0">
-                        <LuMapPin size={16} className="shrink-0" />
+                        <MapPinIcon size={16} className="shrink-0" />
                         <span>{location}</span>
                       </div>
                     )}
@@ -622,13 +623,13 @@ export default function ProfilePage() {
                     href={`/settings/account`}
                     className="flex-1 py-2.5 rounded-lg font-medium border border-(--border) text-(--text-color) bg-(--primary-bg) hover:bg-(--secondary-bg) flex items-center justify-center gap-2 text-sm"
                   >
-                    <FiEdit3 size={16} /> Edit
+                    <Edit3Icon size={16} /> Edit
                   </Link>
                   <button
                     onClick={() => setIsSettingsOpen(true)}
                     className="px-3 py-2.5 rounded-lg border border-(--border) text-(--text-color) bg-(--primary-bg) hover:bg-(--secondary-bg) flex items-center justify-center"
                   >
-                    <LuSettings size={20} />
+                    <SettingsIcon size={20} />
                   </button>
                 </div>
               </div>

@@ -1,6 +1,6 @@
 import { eventFilterProps } from "@/types/EventFilterTypes";
+import { XIcon } from "lucide-react";
 import React from "react";
-import { FaTimes } from "react-icons/fa";
 
 interface ActiveFilterTagsProps {
   filters: eventFilterProps;
@@ -65,7 +65,7 @@ const ActiveFilterTags: React.FC<ActiveFilterTagsProps> = ({
                 className="ml-2 cursor-pointer"
                 aria-label={`Remove filter: ${filter.label}`}
               >
-                <FaTimes className="w-3 h-3" />
+                <XIcon className="w-3 h-3" />
               </button>
             </span>
           ))}

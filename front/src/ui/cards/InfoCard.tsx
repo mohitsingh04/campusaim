@@ -1,14 +1,14 @@
 "use client";
 
+import { LucideIcon } from "lucide-react";
 import React from "react";
-import { IconType } from "react-icons";
 
 const InfoCard = ({
   Icon,
   title,
   value,
 }: {
-  Icon: IconType;
+  Icon: LucideIcon;
   title: string;
   value: string | number;
 }) => (
@@ -18,7 +18,9 @@ const InfoCard = ({
       <Icon size={20} />
     </div>
     <div>
-      <p className="text-sm font-medium text-(--text-color-emphasis)">{title}</p>
+      <p className="text-sm font-medium text-(--text-color-emphasis)">
+        {title}
+      </p>
       <p className="font-semibold text-(--text-color)">{value}</p>
     </div>
   </div>

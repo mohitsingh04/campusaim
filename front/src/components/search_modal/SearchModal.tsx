@@ -8,18 +8,8 @@ import React, {
   useState,
 } from "react";
 import { useRouter } from "next/navigation";
-import { LuSearch, LuX, LuChevronRight, LuMic, LuMicOff } from "react-icons/lu";
 import useSearchFetch from "@/app/(pages)/(main)/(search)/search/_hook/useSearchFetch";
 import useSearchFilter from "@/app/(pages)/(main)/(search)/search/_hook/useSearchFilter";
-import { IconType } from "react-icons";
-import {
-  FaBuilding,
-  FaGraduationCap,
-  FaPenFancy,
-  FaRegNewspaper,
-} from "react-icons/fa";
-import { TbTimelineEvent } from "react-icons/tb";
-import { BiFileFind } from "react-icons/bi";
 import { useRotatingPlaceholder } from "@/hooks/useRotatingPlaceholder";
 import { placeholderText } from "@/common/ExtraData";
 import {
@@ -32,7 +22,21 @@ import Link from "next/link";
 import { trendingSearches } from "@/common/TrendingSearches";
 import HeadingLine from "@/ui/headings/HeadingLine";
 import { useSpeechToText } from "@/hooks/useSpeechtoText";
-import { FaUps } from "react-icons/fa6";
+import {
+  BuildingIcon,
+  CalendarsIcon,
+  ChevronRightIcon,
+  FileSearchIcon,
+  GraduationCapIcon,
+  LucideIcon,
+  MicIcon,
+  MicOffIcon,
+  NewspaperIcon,
+  PenIcon,
+  SearchIcon,
+  WholeWordIcon,
+  XIcon,
+} from "lucide-react";
 
 interface SearchModalProps {
   isOpen: boolean;
@@ -55,7 +59,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
   const trending = useMemo(
     () => shuffleArray(trendingSearches).slice(0, 10),
-    []
+    [],
   );
 
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -81,7 +85,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
   });
 
   const [results, setResults] = useState<
-    { Icon: IconType; title: string; href: string }[]
+    { Icon: LucideIcon; title: string; href: string }[]
   >([]);
 
   /* 🎙️ voice → input sync */
@@ -95,34 +99,34 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
   useEffect(() => {
     const combinedResults = [
       ...finalProps.map((item: any) => ({
-        Icon: FaBuilding,
+        Icon: BuildingIcon,
         title: item.property_name,
         href: `/${generateSlug(item?.academic_type)}/${generateSlug(
-          item?.property_slug
+          item?.property_slug,
         )}/overview`,
       })),
       ...finalCourses.map((item: any) => ({
-        Icon: FaGraduationCap,
+        Icon: GraduationCapIcon,
         title: item.course_name,
         href: `/course/${generateSlug(item?.course_slug)}`,
       })),
       ...finalBlogs.map((item: any) => ({
-        Icon: FaPenFancy,
+        Icon: PenIcon,
         title: item.title,
         href: `/blog/${generateSlug(item?.blog_slug)}`,
       })),
       ...finalEvents.map((item: any) => ({
-        Icon: TbTimelineEvent,
+        Icon: CalendarsIcon,
         title: item.title,
         href: `/event/${generateSlug(item?.event_slug)}`,
       })),
       ...finalNews.map((item: any) => ({
-        Icon: FaRegNewspaper,
+        Icon: NewspaperIcon,
         title: item.title,
         href: `/news-and-updates/${generateSlug(item?.news_slug)}`,
       })),
       ...finalKeywords.map((item: any) => ({
-        Icon: FaUps,
+        Icon: WholeWordIcon,
         title: item,
         href: `/${generateSlug(item)}`,
       })),
@@ -154,7 +158,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
       setSearchTerm("");
       onClose();
     },
-    [router, handleStoreSearch, onClose]
+    [router, handleStoreSearch, onClose],
   );
 
   const handleKeyDown = useCallback(
@@ -162,7 +166,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
       if (e.key === "Enter" && searchTerm.length >= 3)
         redirectToFullPage(searchTerm);
     },
-    [redirectToFullPage, searchTerm]
+    [redirectToFullPage, searchTerm],
   );
 
   const handleSearchButton = useCallback(() => {
@@ -173,19 +177,17 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
   return (
     <>
-      {/* BACKDROP */}
       <div
         className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
         onClick={onClose}
       />
 
-      {/* MODAL */}
       <div className="fixed inset-0 z-50 flex items-start justify-center mt-2 px-2 pointer-events-none">
         <div className="w-full max-w-4xl mx-auto pointer-events-auto">
           <div className="bg-(--primary-bg) relative text-(--text-color) rounded-custom shadow-custom border border-(--border) sm:max-h-[90vh] max-h-[99vh] flex flex-col overflow-y-scroll hide-scrollbar">
             <div className="sticky top-0 bg-(--primary-bg) px-4 py-3 flex justify-end">
               <button onClick={onClose}>
-                <LuX className="w-4 h-4 text-(--main)" />
+                <XIcon className="w-4 h-4 text-(--main)" />
               </button>
             </div>
 
@@ -193,7 +195,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
               <form className="relative w-full">
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <LuSearch className="w-4 h-4" />
+                    <SearchIcon className="w-4 h-4" />
                   </div>
 
                   <input
@@ -216,10 +218,10 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                     >
                       {isListening ? (
                         <div className="text-(--danger) p-1 animate-pulse bg-(--danger-subtle) rounded-full">
-                          <LuMicOff className="w-5 h-5" />
+                          <MicOffIcon className="w-5 h-5" />
                         </div>
                       ) : (
-                        <LuMic className="w-5 h-5 text-(--text-color-emphasis)" />
+                        <MicIcon className="w-5 h-5 text-(--text-color-emphasis)" />
                       )}
                     </button>
                   )}
@@ -230,7 +232,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                     <div className="p-3 grid gap-2">
                       <div className="flex justify-between text-xs">
                         <span className="flex items-center gap-2">
-                          <BiFileFind /> Suggestions
+                          <FileSearchIcon className="w-4 h-4 text-(--main)"/> Suggestions
                         </span>
                         <span>{results.length} results</span>
                       </div>
@@ -259,7 +261,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                           onClick={handleSearchButton}
                           className="w-full text-xs flex justify-center gap-1"
                         >
-                          View all <LuChevronRight />
+                          View all <ChevronRightIcon />
                         </button>
                       )}
                     </div>

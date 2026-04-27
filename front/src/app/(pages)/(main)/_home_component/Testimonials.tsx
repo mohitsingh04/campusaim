@@ -2,9 +2,9 @@
 
 import { originalTestimonials } from "@/common/TestimonialsData";
 import { HeadingProps } from "@/ui/headings/MainHeading";
+import { QuoteIcon, StarIcon } from "lucide-react";
 import Image from "next/image";
 import { useState, useEffect, useCallback } from "react";
-import { BsQuote, BsStarFill } from "react-icons/bs";
 
 const ITEM_HEIGHT = 120;
 const VISIBLE_SLOTS = 3;
@@ -168,7 +168,7 @@ const Testimonials = () => {
 
                       <div className="flex items-center gap-2 mt-1">
                         <div className="flex items-center">
-                          <BsStarFill size={14} className="fill-(--warning)" />
+                          <StarIcon size={14} className="fill-(--warning)" />
                           <span className="ml-1 text-sm font-bold text-(--text-color)">
                             {item.rating}
                           </span>
@@ -186,7 +186,7 @@ const Testimonials = () => {
 
           {/* RIGHT SIDE: MAIN QUOTE (desktop & up) */}
           <div className="w-full md:w-7/12 hidden md:block relative min-h-[300px] px-2 sm:px-4 md:pl-8">
-            <BsQuote className="absolute -top-8 -left-4 sm:-left-6 text-(--secondary-bg) w-28 h-28 sm:w-36 sm:h-36 rotate-180 opacity-60" />
+            <QuoteIcon className="absolute -top-8 -left-4 sm:-left-6 text-(--secondary-bg) w-28 h-28 sm:w-36 sm:h-36 rotate-180 opacity-60" />
 
             <div className="relative z-10 w-full max-w-2xl">
               <div
@@ -197,7 +197,7 @@ const Testimonials = () => {
                 <div className="mb-8">
                   <div className="flex gap-2">
                     <span className="text-5xl md:text-6xl font-serif font-bold float-left mr-3 leading-none h-8 -mt-2">
-                      <BsQuote />
+                      <QuoteIcon />
                     </span>
                     <p className="italic">{currentTestimonial.text}</p>
                   </div>
@@ -213,7 +213,7 @@ const Testimonials = () => {
                   {Array.from({
                     length: Math.round(currentTestimonial.rating),
                   }).map((_, idx) => (
-                    <BsStarFill
+                    <StarIcon
                       key={idx}
                       size={18}
                       className="fill-(--warning)"

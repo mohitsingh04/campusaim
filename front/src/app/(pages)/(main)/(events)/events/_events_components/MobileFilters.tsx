@@ -1,6 +1,6 @@
 "use client";
+import { FilterIcon, XIcon } from "lucide-react";
 import React from "react";
-import { FaFilter, FaTimes } from "react-icons/fa";
 
 const MobileFilters = ({
   isOpen,
@@ -30,11 +30,11 @@ const MobileFilters = ({
       <div className="bg-(--primary-bg) fixed inset-y-0 left-0 w-full max-w-full shadow-xl overflow-y-auto transition-transform duration-300 ease-in-out transform translate-x-0">
         <div className="flex items-center justify-between px-4 py-3">
           <span className="font-semibold flex items-center">
-            <FaFilter className="w-4 h-4 mr-2 text-(--main)" /> Filters
+            <FilterIcon className="w-4 h-4 mr-2 text-(--main)" /> Filters
           </span>{" "}
           <button onClick={onClose} className="p-2 text-(--main)">
             <span className="sr-only">Close filters</span>
-            <FaTimes className="w-6 h-6" />
+            <XIcon className="w-6 h-6" />
           </button>
         </div>
         {children}

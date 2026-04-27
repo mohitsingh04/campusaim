@@ -1,8 +1,8 @@
 "use client";
 
 import HeadingLine from "@/ui/headings/HeadingLine";
+import { ChevronDownIcon } from "lucide-react";
 import React from "react";
-import { FaChevronDown } from "react-icons/fa";
 
 const FilterSection = ({
   title,
@@ -24,7 +24,7 @@ const FilterSection = ({
     >
       {/* <span>{title}</span> */}
       <HeadingLine title={title} className="mb-0! text-sm!" />
-      <FaChevronDown
+      <ChevronDownIcon
         className={`w-3 h-3 transition-transform duration-200 ${
           isExpanded ? "rotate-180" : ""
         }`}

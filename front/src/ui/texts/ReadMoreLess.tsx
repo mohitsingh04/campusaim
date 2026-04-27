@@ -1,69 +1,58 @@
 "use client";
+import React, { useState, useMemo, useEffect, useRef } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import "@/css/Blogs.css";
 
-import { useEffect, useMemo, useState } from "react";
-import { LuMinus, LuPlus } from "react-icons/lu";
-
-type ReadMoreProps = {
-  html?: string;
-  maxLength?: number;
+interface ReadMoreLessProps {
+  html: string;
+  limit?: number;
+  maxHeight?: number;
+  fallbackText?: string;
+  className?: string;
+  readText?: string;
+  collapseText?: string;
   enableToggle?: boolean;
-};
+}
 
-const DEFAULT_MAX_LENGTH = 350;
-
-/**
- * Removes all inline styles from HTML elements
- */
-const sanitizeHtml = (html: string) => {
-  if (!html) return "";
-
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(html, "text/html");
-
-  const allElements = doc.body.querySelectorAll("*");
-  allElements.forEach((el) => el.removeAttribute("style"));
-
-  return doc.body.innerHTML.trim();
-};
-
-/**
- * Extract plain text from HTML
- */
-const stripHtml = (html: string) => {
-  if (!html) return "";
-  const div = document.createElement("div");
-  div.innerHTML = html;
-  return div.textContent?.trim() || div.innerText?.trim() || "";
-};
-
-export function ReadMoreLess({
-  html,
-  maxLength = DEFAULT_MAX_LENGTH,
+export const ReadMoreLess: React.FC<ReadMoreLessProps> = ({
+  html = "",
+  limit = 100,
+  maxHeight = 150,
+  fallbackText = "No content available.",
+  className = "",
+  readText = "Read Full Details",
+  collapseText = "Collapse Details",
   enableToggle = true,
-}: ReadMoreProps) {
+}) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [shouldTrim, setShouldTrim] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const cleanedHtml = useMemo(() => sanitizeHtml(html || ""), [html]);
+  const cleanHtml = useMemo(() => {
+    if (!html) return "";
+    return html.replace(/style="[^"]*"/gi, "");
+  }, [html]);
 
-  const plainText = useMemo(() => stripHtml(cleanedHtml), [cleanedHtml]);
+  // Calculate trimming on the client side only to avoid SSR ReferenceErrors
+  useEffect(() => {
+    if (!enableToggle || !cleanHtml || typeof window === "undefined") {
+      setShouldTrim(false);
+      return;
+    }
 
-  const hasContent = plainText.length > 0;
-
-  const needsTruncation =
-    hasContent && enableToggle && plainText.length > maxLength;
-
-  const truncatedText = needsTruncation
-    ? plainText.substring(0, maxLength) + "..."
-    : plainText;
-
-  const contentToShow =
-    needsTruncation && !isExpanded ? truncatedText : cleanedHtml;
+    const div = document.createElement("div");
+    div.innerHTML = cleanHtml;
+    const text = div.textContent?.trim() || div.innerText?.trim() || "";
+    const wordCount = text.split(/\s+/).length;
+    
+    setShouldTrim(wordCount > limit);
+  }, [cleanHtml, limit, enableToggle]);
 
   useEffect(() => {
-    if (!hasContent) return;
+    if (!cleanHtml || typeof window === "undefined") return;
 
     const accordions = document.querySelectorAll<HTMLDivElement>(
-      "#blog-main .accordion"
+      "#blog-main .accordion",
     );
 
     const handleClick = (accordion: HTMLElement) => {
@@ -88,7 +77,7 @@ export function ReadMoreLess({
 
     accordions.forEach((accordion) => {
       const question = accordion.querySelector<HTMLElement>(
-        ".accordion-question"
+        ".accordion-question",
       );
 
       if (question) {
@@ -99,30 +88,51 @@ export function ReadMoreLess({
     });
 
     return () => cleanupFns.forEach((fn) => fn());
-  }, [hasContent, isExpanded, cleanedHtml]);
+  }, [cleanHtml, isExpanded]);
 
-  if (!hasContent) return null;
+  const isEmptyContent = !cleanHtml || cleanHtml.length === 0;
+
+  if (isEmptyContent) {
+    return (
+      <div className="text-(--text-color) italic text-sm">{fallbackText}</div>
+    );
+  }
 
   return (
-    <div className="relative">
+    <div id="blog-main" className={`leading-relaxed text-sm ${className}`}>
       <div
-        className="text-(--text-color)"
-        dangerouslySetInnerHTML={{ __html: contentToShow }}
-      />
+        className="relative overflow-hidden transition-all duration-700 ease-in-out"
+        style={{
+          maxHeight: shouldTrim
+            ? isExpanded
+              ? "100000px"
+              : `${maxHeight}px`
+            : "none",
+        }}
+      >
+        <div ref={containerRef} className="relative">
+          <div dangerouslySetInnerHTML={{ __html: cleanHtml }} />
+        </div>
 
-      {needsTruncation && !isExpanded && (
-        <div className="absolute bottom-4 left-0 w-full h-16 bg-linear-to-t from-(--primary-bg) to-transparent pointer-events-none" />
-      )}
+        {shouldTrim && !isExpanded && (
+          <div className="absolute bottom-0 left-0 w-full h-16 bg-linear-to-t from-(--primary-bg) via-(--primary-bg)/90 to-transparent pointer-events-none" />
+        )}
+      </div>
 
-      {needsTruncation && (
+      {shouldTrim && (
         <button
-          onClick={() => setIsExpanded((prev) => !prev)}
-          className="flex items-center gap-1 text-(--main) font-semibold mt-2 hover:opacity-80 relative z-10"
+          type="button"
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="flex items-center gap-1 text-gradient font-semibold mt-2 hover:opacity-80 relative z-10 cursor-pointer"
         >
-          {isExpanded ? <LuMinus size={12} /> : <LuPlus size={12} />}
-          <span>{isExpanded ? "Show less" : "Show more"}</span>
+          {isExpanded ? collapseText : readText}
+          {isExpanded ? (
+            <ChevronUp className="transition-transform text-(--main)" />
+          ) : (
+            <ChevronDown className="transition-transform text-(--main)" />
+          )}
         </button>
       )}
     </div>
   );
-}
+};

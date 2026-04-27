@@ -3,9 +3,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
-import { BiChild, BiGlobe, BiMapPin } from "react-icons/bi";
-import { FaDollarSign } from "react-icons/fa";
-import { BsTicketDetailed, BsTicketPerforatedFill } from "react-icons/bs";
 import { EventProps } from "@/types/Types";
 import API from "@/context/API";
 import {
@@ -18,6 +15,14 @@ import { ReadMoreLess } from "@/ui/texts/ReadMoreLess";
 import InfoCard from "@/ui/cards/InfoCard";
 import HeadingLine from "@/ui/headings/HeadingLine";
 import EventPageSkeleton from "@/ui/loader/page/event/EventDetailSkeleton";
+import {
+  DollarSignIcon,
+  GlobeIcon,
+  MapPinIcon,
+  TicketCheckIcon,
+  TicketIcon,
+  UserIcon,
+} from "lucide-react";
 
 const EventDetails = ({}) => {
   const { event_slug } = useParams();
@@ -74,7 +79,7 @@ const EventDetails = ({}) => {
                 {event?.title}
               </h1>
 
-              <ReadMoreLess html={event?.description} />
+              <ReadMoreLess html={event?.description || ""} />
 
               {/* External Join Link */}
               {event?.event_host_url && (
@@ -97,7 +102,7 @@ const EventDetails = ({}) => {
                 {/* Language */}
                 {(event?.language?.length || 0) > 0 && (
                   <InfoCard
-                    Icon={BiGlobe}
+                    Icon={GlobeIcon}
                     title="Languages"
                     value={(event?.language || [])?.join(", ")}
                   />
@@ -108,7 +113,7 @@ const EventDetails = ({}) => {
                   event?.event_state ||
                   event?.event_country) && (
                   <InfoCard
-                    Icon={BiMapPin}
+                    Icon={MapPinIcon}
                     title="Venue"
                     value={[
                       event?.event_city,
@@ -123,7 +128,7 @@ const EventDetails = ({}) => {
                 {/* Entrance Type */}
                 {event?.entrance_type && (
                   <InfoCard
-                    Icon={FaDollarSign}
+                    Icon={DollarSignIcon}
                     title="Entrance Type"
                     value={event.entrance_type}
                   />
@@ -132,7 +137,7 @@ const EventDetails = ({}) => {
                 {/* Ticket Booking Start */}
                 {event?.ticket_booking?.start && (
                   <InfoCard
-                    Icon={BsTicketPerforatedFill}
+                    Icon={TicketIcon}
                     title="Ticket Booking Start"
                     value={formatDate(event.ticket_booking.start)}
                   />
@@ -141,7 +146,7 @@ const EventDetails = ({}) => {
                 {/* Ticket Booking End */}
                 {event?.ticket_booking?.end && (
                   <InfoCard
-                    Icon={BsTicketDetailed}
+                    Icon={TicketCheckIcon}
                     title="Ticket Booking End"
                     value={formatDate(event.ticket_booking.end)}
                   />
@@ -149,7 +154,7 @@ const EventDetails = ({}) => {
 
                 {event?.age_limit?.min && event?.age_limit?.max && (
                   <InfoCard
-                    Icon={BiChild}
+                    Icon={UserIcon}
                     title="Age Limit"
                     value={`${event.age_limit.min} - ${event.age_limit.max}`}
                   />
@@ -222,7 +227,7 @@ const EventDetails = ({}) => {
                       event?.schedule?.map((item: any, i: number) => {
                         const duration = calculateDuration(
                           item?.start_time || "",
-                          item?.end_time || ""
+                          item?.end_time || "",
                         );
 
                         return (

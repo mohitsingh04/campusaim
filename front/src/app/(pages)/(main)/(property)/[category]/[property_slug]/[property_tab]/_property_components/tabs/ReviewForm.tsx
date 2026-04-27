@@ -13,8 +13,8 @@ import ButtonGroupSend from "@/ui/buttons/ButtonGroup";
 import { InputGroup, TextareaGroup } from "@/ui/form/FormComponents";
 import HeadingLine from "@/ui/headings/HeadingLine";
 import { useFormik } from "formik";
+import { StarIcon } from "lucide-react";
 import { useState } from "react";
-import { LuStar } from "react-icons/lu";
 import PhoneInput from "react-phone-input-2";
 import { toast } from "react-toastify";
 
@@ -67,7 +67,7 @@ export default function ReviewForm({
 
   const renderStars = () => {
     return Array.from({ length: 5 }, (_, i) => (
-      <LuStar
+      <StarIcon
         key={i}
         className={`w-6 h-6  cursor-pointer ${
           i < rating

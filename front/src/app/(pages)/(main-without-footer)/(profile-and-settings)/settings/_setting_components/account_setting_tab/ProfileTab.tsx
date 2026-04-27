@@ -14,9 +14,9 @@ import {
   getSuccessResponse,
 } from "@/context/Callbacks";
 import ButtonGroupSend from "@/ui/buttons/ButtonGroup";
-import { BiSave } from "react-icons/bi";
 import { userEditValidation } from "@/context/ValidationSchema";
 import SettingsHeader from "../SettingHeader";
+import { SaveIcon } from "lucide-react";
 
 const ProfileTab = ({ profile }: { profile: UserProps | null }) => {
   const [resLoading, setResLoading] = useState(false);
@@ -139,7 +139,7 @@ const ProfileTab = ({ profile }: { profile: UserProps | null }) => {
               {/* SUBMIT BUTTON */}
               <div className="md:col-span-2 flex justify-end">
                 <ButtonGroupSend
-                  Icon={BiSave}
+                  Icon={SaveIcon}
                   label="Save"
                   type="submit"
                   disable={resLoading}

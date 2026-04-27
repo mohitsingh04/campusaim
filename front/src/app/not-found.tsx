@@ -1,10 +1,9 @@
 "use client";
 
+import { ArrowLeftCircleIcon, HomeIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BiHome } from "react-icons/bi";
-import { BsArrowLeftCircle } from "react-icons/bs";
 
 const NotFound = () => {
   const router = useRouter();
@@ -58,14 +57,14 @@ const NotFound = () => {
               href="/"
               className="inline-flex items-center gap-2 bg-white text-slate-800 px-4 py-2 rounded-full font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
             >
-              <BiHome size={20} />
+              <HomeIcon size={20} />
               Back Home
             </Link>
             <button
               onClick={() => router.back()}
               className="inline-flex items-center gap-2 bg-white text-slate-800 px-4 py-2 rounded-full font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
             >
-              <BsArrowLeftCircle size={20} />
+              <ArrowLeftCircleIcon size={20} />
               Go Back
             </button>
           </div>

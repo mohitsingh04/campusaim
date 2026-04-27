@@ -1,10 +1,10 @@
 import React, { useRef, useState } from "react";
 import { Cropper, CropperRef } from "react-advanced-cropper";
 import "react-advanced-cropper/dist/style.css";
-import { LuX } from "react-icons/lu";
 import { UserProps } from "@/types/UserTypes";
 import API from "@/context/API";
 import { getErrorResponse } from "@/context/Callbacks";
+import { XIcon } from "lucide-react";
 
 interface ProfileCropModalProps {
   image: string;
@@ -39,7 +39,7 @@ const ProfileCropModal: React.FC<ProfileCropModalProps> = ({
             try {
               await API.patch(
                 `/profile/user/avatar/${profile?.uniqueId}`,
-                formData
+                formData,
               );
               window.location.reload();
             } catch (error) {
@@ -49,7 +49,7 @@ const ProfileCropModal: React.FC<ProfileCropModalProps> = ({
             }
           },
           "image/jpeg",
-          0.9
+          0.9,
         );
       }
     }
@@ -66,7 +66,7 @@ const ProfileCropModal: React.FC<ProfileCropModalProps> = ({
             onClick={onClose}
             className="text-(--text-color) hover:text-(--text-color-emphasis) p-2 rounded-custom transition-all"
           >
-            <LuX className="h-6 w-6" />
+            <XIcon className="h-6 w-6" />
           </button>
         </div>
 

@@ -1,4 +1,5 @@
 import { downloadImageAndReplaceSrcNonProperty } from "../helper/folder-cleaners/EditorImagesController.js";
+import AllSeo from "../models/AllSeo.js";
 import Exam from "../models/Exam.js";
 import RegularUser from "../profile-model/RegularUser.js";
 import { generateSlug, getUploadedFilePaths } from "../utils/Callback.js";
@@ -51,6 +52,7 @@ export const addExam = async (req, res) => {
             exam_form_link,
             exam_mode,
             description,
+            faqs
         } = req.body;
 
         const images = await getUploadedFilePaths(req, "image");
@@ -89,7 +91,7 @@ export const addExam = async (req, res) => {
             application_form_link,
             exam_form_link,
             exam_mode,
-            description,
+            faqs: faqs ? JSON.parse(faqs) : [],
         });
 
         const examCreated = await newExam.save();
@@ -128,6 +130,7 @@ export const updateExam = async (req, res) => {
             exam_mode,
             description,
             status,
+            faqs
         } = req.body;
 
         let updatedDescription = description;
@@ -162,6 +165,7 @@ export const updateExam = async (req, res) => {
                     image: [existImage, existImageOriginal],
                     description: updatedDescription,
                     status,
+                    faqs: faqs ? JSON.parse(faqs) : [],
                 },
             },
             { new: true }

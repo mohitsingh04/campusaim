@@ -2,20 +2,10 @@
 
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
-import { LuChevronLeft, LuChevronRight } from "react-icons/lu";
-import { FaVolumeUp } from "react-icons/fa";
-import {
-  BsBuilding,
-  BsStarFill,
-  BsEnvelope,
-  BsEye,
-  BsRobot,
-} from "react-icons/bs";
 import Link from "next/link";
 import { useCallback } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
-import { FaVolumeXmark } from "react-icons/fa6";
 import { PropertyProps } from "@/types/PropertyTypes";
 import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 import API from "@/context/API";
@@ -25,6 +15,17 @@ import {
   stripHtmlNoLimit,
 } from "@/context/Callbacks";
 import { useTheme } from "@/hooks/useTheme";
+import {
+  BotIcon,
+  BuildingIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  EyeIcon,
+  MailIcon,
+  StarIcon,
+  Volume2Icon,
+  VolumeOff,
+} from "lucide-react";
 
 interface ChatMessage {
   id: string;
@@ -104,7 +105,7 @@ export const AiPropertySugesstion = ({
         setIsLoading(false);
       }
     },
-    [chat_id, setMessages, setIsLoading]
+    [chat_id, setMessages, setIsLoading],
   );
 
   return (
@@ -114,13 +115,13 @@ export const AiPropertySugesstion = ({
         <button
           className={`prev-button-${index} absolute -left-4 sm:-left-6 md:-left-8 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-3 bg-(--primary-bg) text-(--text-color-emphasis) rounded-full shadow-custom hover:opacity-80 transition hidden sm:flex items-center justify-center`}
         >
-          <LuChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+          <ChevronLeftIcon className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
 
         <button
           className={`next-button-${index} absolute -right-4 sm:-right-6 md:-right-8 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-3  bg-(--primary-bg) text-(--text-color-emphasis) rounded-full shadow-custom hover:opacity-80 transition hidden sm:flex items-center justify-center`}
         >
-          <LuChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
+          <ChevronRightIcon className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
 
         {/* Swiper Carousel */}
@@ -155,7 +156,7 @@ export const AiPropertySugesstion = ({
                         onClick={stopSpeaking}
                         title="Stop Speaking"
                       >
-                        <FaVolumeXmark className="w-4 h-4 sm:w-5 sm:h-5" />
+                        <VolumeOff className="w-4 h-4 sm:w-5 sm:h-5" />
                       </button>
                     ) : (
                       <button
@@ -163,7 +164,7 @@ export const AiPropertySugesstion = ({
                         onClick={() => speakText(cleanText)}
                         title="Speak Institute Overview"
                       >
-                        <FaVolumeUp className="w-4 h-4 sm:w-5 sm:h-5" />
+                        <Volume2Icon className="w-4 h-4 sm:w-5 sm:h-5" />
                       </button>
                     )}
                   </div>
@@ -180,7 +181,7 @@ export const AiPropertySugesstion = ({
                     </div>
                   ) : (
                     <div className="h-36 sm:h-44 md:h-48 w-full bg-(--secondary-bg) flex items-center justify-center">
-                      <BsBuilding className="text-(--text-color-emphasis) text-2xl sm:text-3xl" />
+                      <BuildingIcon className="text-(--text-color-emphasis) text-2xl sm:text-3xl" />
                     </div>
                   )}
 
@@ -205,7 +206,7 @@ export const AiPropertySugesstion = ({
                             onClick={() =>
                               handlePropertySearchOnClick(
                                 item?.property_name,
-                                item?.objectId
+                                item?.objectId,
                               )
                             }
                             className="text-sm sm:text-base font-semibold text-(--text-color-emphasis) truncate cursor-pointer hover:underline"
@@ -247,7 +248,7 @@ export const AiPropertySugesstion = ({
                           />
                         </div>
                       ) : (
-                        <BsRobot className="text-(--text-color-emphasis) w-5 h-5 shrink-0" />
+                        <BotIcon className="text-(--text-color-emphasis) w-5 h-5 shrink-0" />
                       )}
                     </div>
 
@@ -255,13 +256,13 @@ export const AiPropertySugesstion = ({
                     <div className="flex flex-wrap gap-2 text-[11px] sm:text-xs text-(--text-color)">
                       {item.academic_type && (
                         <p className="flex items-center gap-1.5">
-                          <LuChevronRight className="text-(--text-color) w-3 h-3" />
+                          <ChevronRightIcon className="text-(--text-color) w-3 h-3" />
                           <span>{item.academic_type}</span>
                         </p>
                       )}
                       {item.property_type && (
                         <p className="flex items-center gap-1.5">
-                          <LuChevronRight className="text-(--text-color) w-3 h-3" />
+                          <ChevronRightIcon className="text-(--text-color) w-3 h-3" />
                           <span>{item.property_type}</span>
                         </p>
                       )}
@@ -271,7 +272,7 @@ export const AiPropertySugesstion = ({
                     {((item?.average_rating || 0) > 0 ||
                       (item?.total_reviews || 0) > 0) && (
                       <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-(--text-color)">
-                        <BsStarFill className="text-(--warning) w-3 h-3" />
+                        <StarIcon className="text-(--warning) fill-(--warning) w-3 h-3" />
                         {item.average_rating && (
                           <span>{item.average_rating}/5</span>
                         )}
@@ -303,18 +304,18 @@ export const AiPropertySugesstion = ({
                             handlePropertyEnquiryModal(item?.property_slug)
                           }
                         >
-                          <BsEnvelope className="w-3 h-3 sm:w-4 sm:h-4" />
+                          <MailIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                           Enquiry
                         </button>
                         <Link
                           href={`/${generateSlug(
-                            item?.academic_type || ""
+                            item?.academic_type || "",
                           )}/${generateSlug(item?.property_slug)}/overview`}
                           target="_blank"
                           className="flex-1 flex items-center justify-center gap-1.5 sm:gap-2 btn-shine px-3 sm:px-4 py-2 rounded-custom"
                           title={item?.property_name}
                         >
-                          <BsEye className="w-3 h-3 sm:w-4 sm:h-4" />
+                          <EyeIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                           View
                         </Link>
                       </div>

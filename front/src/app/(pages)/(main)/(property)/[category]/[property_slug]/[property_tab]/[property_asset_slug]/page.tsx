@@ -12,17 +12,6 @@ import { AxiosResponse } from "axios";
 import Link from "next/link";
 import { notFound, useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { FaBars, FaChevronLeft, FaChevronRight, FaTimes } from "react-icons/fa";
-import {
-  LuBed,
-  LuBookOpen,
-  LuCircleHelp,
-  LuImage,
-  LuInfo,
-  LuSettings,
-  LuStar,
-  LuUsers,
-} from "react-icons/lu";
 import Overview from "../_property_components/tabs/Overview";
 import GalleryTab from "../_property_components/tabs/GalleryTab";
 import FaqsTab from "../_property_components/tabs/FaqsTab";
@@ -35,6 +24,20 @@ import PropertyCourseDetails from "./_property_asset_tab/PropertyCourse";
 import { getProfile } from "@/context/getAssets";
 import { UserProps } from "@/types/UserTypes";
 import TabLoading from "@/ui/loader/component/TabLoading";
+import {
+  BedIcon,
+  BookOpenIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  CircleHelpIcon,
+  ImageIcon,
+  InfoIcon,
+  MenuIcon,
+  SettingsIcon,
+  StarIcon,
+  UsersIcon,
+  XIcon,
+} from "lucide-react";
 
 export default function Page() {
   const { category, property_slug, property_tab } = useParams<{
@@ -73,11 +76,11 @@ export default function Page() {
       const cat = categories.find(
         (item) =>
           Number(item.uniqueId) === Number(id) ||
-          String(item?._id) === String(id)
+          String(item?._id) === String(id),
       );
       return cat?.category_name;
     },
-    [categories]
+    [categories],
   );
 
   const getProperty = useCallback(async () => {
@@ -158,7 +161,7 @@ export default function Page() {
 
       const getData = <T,>(
         result: PromiseSettledResult<AxiosResponse<T>>,
-        fallback: T
+        fallback: T,
       ): T => (result.status === "fulfilled" ? result.value.data : fallback);
 
       const mergedCourses: CourseProps[] =
@@ -166,7 +169,7 @@ export default function Page() {
         allCourseRes.status === "fulfilled"
           ? (mergeCourseData(
               propertyCourseRes.value?.data,
-              allCourseRes.value?.data
+              allCourseRes.value?.data,
             ) as unknown as CourseProps[])
           : [];
 
@@ -212,14 +215,14 @@ export default function Page() {
       {
         id: "overview",
         label: "Overview",
-        icon: LuInfo,
+        icon: InfoIcon,
         show: true,
         tab: <Overview property={property} getCategoryById={getCategoryById} />,
       },
       {
         id: "courses",
         label: "Courses",
-        icon: LuBookOpen,
+        icon: BookOpenIcon,
         show: (property?.courses?.length || 0) > 0,
         tab: (
           <CoursesTab
@@ -231,42 +234,42 @@ export default function Page() {
       {
         id: "gallery",
         label: "Gallery",
-        icon: LuImage,
+        icon: ImageIcon,
         show: (property?.gallery?.length || 0) > 0,
         tab: <GalleryTab property={property} />,
       },
       {
         id: "accomodation",
         label: "Accomodation",
-        icon: LuBed,
+        icon: BedIcon,
         show: (property?.accomodation?.length || 0) > 0,
         tab: <AccommodationTab property={property} />,
       },
       {
         id: "amenities",
         label: "Amenities",
-        icon: LuSettings,
+        icon: SettingsIcon,
         show: Object.keys(property?.amenities || {})?.length > 0,
         tab: <AmenitiesTab property={property} />,
       },
       {
         id: "teachers",
         label: "Faculty",
-        icon: LuUsers,
+        icon: UsersIcon,
         show: (property?.teachers?.length || 0) > 0,
         tab: <TeachersTab teachers={property?.teachers || []} />,
       },
       {
         id: "faq",
         label: "FAQ",
-        icon: LuCircleHelp,
+        icon: CircleHelpIcon,
         show: (property?.faqs?.length || 0) > 0,
         tab: <FaqsTab faqs={property?.faqs || []} />,
       },
       {
         id: "reviews",
         label: "Reviews",
-        icon: LuStar,
+        icon: StarIcon,
         show: true,
         tab: (
           <ReviewsTab
@@ -277,17 +280,17 @@ export default function Page() {
         ),
       },
     ],
-    [property, getCategoryById, getPropertyData, profile]
+    [property, getCategoryById, getPropertyData, profile],
   );
 
   useEffect(() => {
     if (property_tab) {
       const matchedTab = tabs.find(
-        (tab) => generateSlug(tab.id) === property_tab
+        (tab) => generateSlug(tab.id) === property_tab,
       );
       if (!matchedTab) {
         router.push(
-          `/${generateSlug(category)}/${generateSlug(property_slug)}/overview`
+          `/${generateSlug(category)}/${generateSlug(property_slug)}/overview`,
         );
       }
       if (matchedTab) setActiveTab(matchedTab.id);
@@ -341,7 +344,7 @@ export default function Page() {
             onClick={() => setSidebarOpen(true)}
             className="absolute left-0 z-20 bg-(--primary-bg) ps-3 pe-2 transition md:hidden"
           >
-            <FaBars className="text-(--text-color) h-5 w-5" />
+            <MenuIcon className="text-(--text-color) h-5 w-5" />
           </button>
 
           {canScrollLeft && (
@@ -349,7 +352,7 @@ export default function Page() {
               onClick={() => scroll("left")}
               className="hidden md:flex absolute cursor-pointer left-0 z-10 p-2 bg-(--secondary-bg) shadow-md rounded-full hover:opacity-80 transition"
             >
-              <FaChevronLeft className="text-(--text-color)" />
+              <ChevronLeftIcon className="text-(--text-color)" />
             </button>
           )}
 
@@ -362,7 +365,7 @@ export default function Page() {
               return (
                 <Link
                   href={`/${generateSlug(category)}/${generateSlug(
-                    property_slug
+                    property_slug,
                   )}/${generateSlug(tab.id)}`}
                   key={tab.id}
                   className={`relative py-3 px-3 whitespace-nowrap cursor-pointer font-medium heading-sm transition-colors duration-200  flex items-center gap-2 ${
@@ -392,7 +395,7 @@ export default function Page() {
               onClick={() => scroll("right")}
               className="hidden md:flex absolute cursor-pointer right-0 z-10 p-2  bg-(--secondary-bg) shadow-md rounded-full hover:opacity-80 transition"
             >
-              <FaChevronRight className="text-(--text-color)" />
+              <ChevronRightIcon className="text-(--text-color)" />
             </button>
           )}
         </div>
@@ -412,7 +415,7 @@ export default function Page() {
               onClick={() => setSidebarOpen(false)}
               className="absolute top-3 right-3 p-2 rounded-md text-(--main) hover:bg-(--main-light)"
             >
-              <FaTimes />
+              <XIcon />
             </button>
 
             <h3 className="sub-heading font-semibold mb-4">Menu</h3>
@@ -420,7 +423,7 @@ export default function Page() {
               {tabs.map((tab) => (
                 <Link
                   href={`/${generateSlug(category)}/${generateSlug(
-                    property_slug
+                    property_slug,
                   )}/${generateSlug(tab.id)}`}
                   key={tab.id}
                   className={`flex items-center gap-2 w-full text-left py-2 px-3 rounded-custom font-medium transition-colors ${

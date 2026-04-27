@@ -2,8 +2,7 @@ import { ButtonGroup } from "@/ui/buttons/ButtonGroup";
 import { CourseProps } from "@/types/Types";
 import Link from "next/link";
 import Image from "next/image";
-import { PiBookOpenTextLight, PiCertificateLight } from "react-icons/pi";
-import { FiAward } from "react-icons/fi";
+import { AwardIcon, BookOpenIcon, FileBadgeIcon } from "lucide-react";
 
 const CourseCard = ({
   course,
@@ -60,16 +59,16 @@ const CourseCard = ({
             </Link>
             <div className="grid grid-cols-2 gap-4">
               <div className="flex items-center gap-2 text-sm">
-                <FiAward className="text-(--main) w-4 h-4" />
+                <AwardIcon className="text-(--main) w-4 h-4" />
                 <p>{course.program_type}</p>
               </div>
 
               <div className="flex items-center gap-2 text-sm">
-                <PiCertificateLight className="text-(--main) w-4 h-4" />
+                <FileBadgeIcon className="text-(--main) w-4 h-4" />
                 <p>{course.degree_type}</p>
               </div>
               <div className="flex items-center gap-2 col-span-2 text-sm">
-                <PiBookOpenTextLight className="text-(--main) w-4 h-4" />
+                <BookOpenIcon className="text-(--main) w-4 h-4" />
                 <p>{course.course_type}</p>
               </div>
             </div>

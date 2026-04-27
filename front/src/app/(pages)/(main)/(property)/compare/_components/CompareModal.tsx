@@ -1,22 +1,19 @@
 "use client";
 
 import React, { useEffect, useState, useMemo } from "react";
-import {
-  LuX,
-  LuGraduationCap,
-  LuSearch,
-  LuPlus,
-  LuTrendingUp,
-  LuTrendingDown,
-  LuStar,
-} from "react-icons/lu";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { FaGraduationCap } from "react-icons/fa";
 import { PropertyProps } from "@/types/PropertyTypes";
 import HeadingLine from "@/ui/headings/HeadingLine";
 import { getAverageRating } from "@/context/Callbacks";
 import Badge from "@/ui/badge/Badge";
+import {
+  GraduationCapIcon,
+  PlusIcon,
+  SearchIcon,
+  StarIcon,
+  XIcon,
+} from "lucide-react";
 
 export default function CompareModal({
   allProperties,
@@ -39,7 +36,7 @@ export default function CompareModal({
     return allProperties.filter(
       (property) =>
         !draftSelectedProperties.some(
-          (p) => p.uniqueId === property.uniqueId
+          (p) => p.uniqueId === property.uniqueId,
         ) &&
         (searchTerm === "" ||
           property.property_name
@@ -47,7 +44,7 @@ export default function CompareModal({
             .includes(searchTerm.toLowerCase()) ||
           property.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           property.state?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          property.category?.toLowerCase().includes(searchTerm.toLowerCase()))
+          property.category?.toLowerCase().includes(searchTerm.toLowerCase())),
     );
   }, [allProperties, draftSelectedProperties, searchTerm]);
 
@@ -63,7 +60,7 @@ export default function CompareModal({
 
   const handleRemoveProperty = (property: PropertyProps) => {
     setDraftSelectedProperties(
-      draftSelectedProperties.filter((p) => p.uniqueId !== property.uniqueId)
+      draftSelectedProperties.filter((p) => p.uniqueId !== property.uniqueId),
     );
   };
 
@@ -78,8 +75,8 @@ export default function CompareModal({
       router.push(`/compare/${slugs}`);
     }
   };
-  
-  console.log(draftSelectedProperties)
+
+  console.log(draftSelectedProperties);
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
@@ -116,7 +113,7 @@ export default function CompareModal({
 
             <div className="relative group shadow-custom rounded-custom overflow-hidden">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <LuSearch className="h-5 w-5 text-(--text-color) group-focus-within:text-(--main) transition-colors" />
+                <SearchIcon className="h-5 w-5 text-(--text-color) group-focus-within:text-(--main) transition-colors" />
               </div>
               <input
                 type="text"
@@ -132,7 +129,7 @@ export default function CompareModal({
                 {draftSelectedProperties.map((property) => (
                   <div
                     key={property.uniqueId}
-                    className="flex-shrink-0 flex items-center gap-2 bg-(--secondary-bg) text-(--text-color-emphasis) pl-3 pr-2 py-1.5 rounded-custom"
+                    className="shrink-0 flex items-center gap-2 bg-(--secondary-bg) text-(--text-color-emphasis) pl-3 pr-2 py-1.5 rounded-custom"
                   >
                     <span className="text-sm font-medium">
                       {property.property_name}
@@ -141,7 +138,7 @@ export default function CompareModal({
                       onClick={() => handleRemoveProperty(property)}
                       className="rounded-full transition-colors cursor-pointer"
                     >
-                      <LuX size={14} />
+                      <XIcon size={14} />
                     </button>
                   </div>
                 ))}
@@ -214,29 +211,29 @@ export default function CompareModal({
                     })()}
 
                     <div className="flex flex-wrap justify-between items-center gap-4 mt-1 pt-2 sm:pt-0">
-                      <div className="flex items-center gap-2 text-sm">
+                      {/* <div className="flex items-center gap-2 text-sm">
                         <span className="text-(--text-color)">YP Rank:</span>
                         <div className="flex items-center gap-1 font-semibold text-(--text-color-emphasis)">
                           <span>#{property?.rank || "N/A"}</span>
                           {(property?.rank || 0) < (property?.lastRank || 0) ? (
-                            <LuTrendingUp className="w-4 h-4 text-(--success)" />
+                            <TrendingUp className="w-4 h-4 text-(--success)" />
                           ) : (
-                            <LuTrendingDown className="w-4 h-4 text-(--danger)" />
+                            <TrendingDown className="w-4 h-4 text-(--danger)" />
                           )}
                         </div>
-                      </div>
+                      </div> */}
                       <div>
                         {(property?.reviews?.length || 0) > 0 ? (
                           <div className="flex items-center gap-1 text-xs font-bold">
                             <div className="flex items-center">
                               {[...Array(5)].map((_, idx) => (
-                                <LuStar
+                                <StarIcon
                                   key={idx}
                                   size={12}
                                   className={
                                     idx <
                                     Math.round(
-                                      getAverageRating(property?.reviews)
+                                      getAverageRating(property?.reviews),
                                     )
                                       ? "fill-current text-(--warning)"
                                       : "fill-transparent text-(--text-color)"
@@ -258,7 +255,7 @@ export default function CompareModal({
 
                   <div className="hidden sm:flex shrink-0 flex-col justify-start items-end pl-4">
                     <div className="w-10 h-10 rounded-full bg-(--main-light) text-(--main-emphasis) group-hover:bg-(--main-emphasis) group-hover:text-(--main-light) transition-all duration-300 flex items-center justify-center ">
-                      <LuPlus size={20} />
+                      <PlusIcon size={20} />
                     </div>
                   </div>
                 </div>
@@ -267,7 +264,7 @@ export default function CompareModal({
           ) : (
             <div className="h-full flex flex-col items-center justify-center text-center p-8 opacity-70">
               <div className="w-20 h-20 bg-(--secondary-bg) rounded-full flex items-center justify-center mb-4">
-                <FaGraduationCap className="w-10 h-10 text-(--main)" />
+                <GraduationCapIcon className="w-10 h-10 text-(--main)" />
               </div>
               <h3 className="text-xl font-bold text-(--text-color-emphasis)">
                 {searchTerm ? "No results found" : "Selection Complete"}
@@ -326,7 +323,7 @@ export default function CompareModal({
                   : "btn-shine font-bold"
               }`}
             >
-              <LuGraduationCap size={20} />
+              <GraduationCapIcon size={20} />
               <span>
                 {draftSelectedProperties.length < 2
                   ? "Select More"

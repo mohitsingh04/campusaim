@@ -2,8 +2,8 @@
 
 import { PropertyFaqProps } from "@/types/PropertyTypes";
 import { ReadMoreLess } from "@/ui/texts/ReadMoreLess";
+import { MinusIcon, PlusIcon } from "lucide-react";
 import { useState } from "react";
-import { LuMinus, LuPlus } from "react-icons/lu";
 
 export default function FaqsTab({ faqs }: { faqs: PropertyFaqProps[] }) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
@@ -24,9 +24,9 @@ export default function FaqsTab({ faqs }: { faqs: PropertyFaqProps[] }) {
               >
                 {faq.question}
                 {openIndex === index ? (
-                  <LuMinus className="w-5 h-5 text-(--main)" />
+                  <MinusIcon className="w-5 h-5 text-(--main)" />
                 ) : (
-                  <LuPlus className="w-5 h-5 text-(--main)" />
+                  <PlusIcon className="w-5 h-5 text-(--main)" />
                 )}
               </button>
               {openIndex === index && (

@@ -4,14 +4,13 @@ import { useCallback, useEffect, useState } from "react";
 import InfoCard from "@/ui/cards/InfoCard";
 import ListItem from "@/ui/list/ListItem";
 import { ReadMoreLess } from "@/ui/texts/ReadMoreLess";
-import { BiAward, BiBarChart } from "react-icons/bi";
-import { FiZap } from "react-icons/fi";
 import { useParams } from "next/navigation";
 import { CourseProps } from "@/types/Types";
 import { getErrorResponse } from "@/context/Callbacks";
 import API from "@/context/API";
 import HeadingLine from "@/ui/headings/HeadingLine";
 import Loading from "@/ui/loader/Loading";
+import { AwardIcon, BarChartIcon, ZapIcon } from "lucide-react";
 
 const PropertyCourseDetails = () => {
   const { property_asset_slug } = useParams();
@@ -22,7 +21,7 @@ const PropertyCourseDetails = () => {
     setLoading(true);
     try {
       const res = await API.get(`/property-course/slug/${property_asset_slug}`);
-      console.log(res)
+      console.log(res);
       setMainCourse(res.data);
     } catch (error) {
       getErrorResponse(error, true);
@@ -50,17 +49,17 @@ const PropertyCourseDetails = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <InfoCard
-            Icon={BiBarChart}
+            Icon={BarChartIcon}
             title="Difficulty"
             value={mainCourse?.course_level || ""}
           />
           <InfoCard
-            Icon={BiAward}
+            Icon={AwardIcon}
             title="Certification"
             value={mainCourse?.certification_type || ""}
           />
           <InfoCard
-            Icon={FiZap}
+            Icon={ZapIcon}
             title="Course Type"
             value={mainCourse?.course_type || ""}
           />

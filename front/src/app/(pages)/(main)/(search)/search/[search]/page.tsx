@@ -6,21 +6,20 @@ import { useState } from "react";
 import useSearchFetch from "../_hook/useSearchFetch";
 import useSearchFilter from "../_hook/useSearchFilter";
 
-import {
-  LuBookOpen,
-  LuBuilding,
-  LuGraduationCap,
-  LuSearch,
-} from "react-icons/lu";
-import { BsNewspaper } from "react-icons/bs";
-import { BiCalendarEvent } from "react-icons/bi";
-
 import SearchList from "../_search_components/SearchList";
 import Pagination from "@/ui/pagination/Pagination";
 import SearchTabResult from "../_search_components/SearchTabResult";
 
 import { SearchResult } from "@/types/Types";
 import Loading from "@/ui/loader/Loading";
+import {
+  BookOpenIcon,
+  BuildingIcon,
+  CalendarIcon,
+  GraduationCapIcon,
+  NewspaperIcon,
+  SearchIcon,
+} from "lucide-react";
 
 export default function Page() {
   const itemsPerPage = 10;
@@ -71,23 +70,23 @@ export default function Page() {
     activeTab === "property"
       ? finalProps.map((i) => ({ ...i, type: "property" }))
       : activeTab === "course"
-      ? finalCourses.map((i) => ({ ...i, type: "course" }))
-      : activeTab === "blog"
-      ? finalBlogs.map((i) => ({ ...i, type: "blog" }))
-      : activeTab === "events"
-      ? finalEvents.map((i) => ({ ...i, type: "events" }))
-      : activeTab === "news-and-updates"
-      ? finalNews.map((i) => ({ ...i, type: "news-and-updates" }))
-      : activeTab === "queries"
-      ? finalKeywords.map((i) => ({ keyword: i, type: "queries" }))
-      : allResults;
+        ? finalCourses.map((i) => ({ ...i, type: "course" }))
+        : activeTab === "blog"
+          ? finalBlogs.map((i) => ({ ...i, type: "blog" }))
+          : activeTab === "events"
+            ? finalEvents.map((i) => ({ ...i, type: "events" }))
+            : activeTab === "news-and-updates"
+              ? finalNews.map((i) => ({ ...i, type: "news-and-updates" }))
+              : activeTab === "queries"
+                ? finalKeywords.map((i) => ({ keyword: i, type: "queries" }))
+                : allResults;
   // Pagination calculations
   const totalPages = Math.ceil(visibleResults.length / itemsPerPage);
 
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedResults = visibleResults.slice(
     startIndex,
-    startIndex + itemsPerPage
+    startIndex + itemsPerPage,
   );
 
   // Reset page to 1 when search input changes
@@ -111,43 +110,43 @@ export default function Page() {
             {
               key: "all",
               label: "All",
-              icon: LuSearch,
+              icon: SearchIcon,
               count: allResults.length,
             },
             {
               key: "property",
               label: "Institutes",
-              icon: LuBuilding,
+              icon: BuildingIcon,
               count: finalProps.length,
             },
             {
               key: "course",
               label: "Courses",
-              icon: LuGraduationCap,
+              icon: GraduationCapIcon,
               count: finalCourses.length,
             },
             {
               key: "blog",
               label: "Blogs",
-              icon: LuBookOpen,
+              icon: BookOpenIcon,
               count: finalBlogs.length,
             },
             {
               key: "events",
               label: "Events",
-              icon: BiCalendarEvent,
+              icon: CalendarIcon,
               count: finalEvents.length,
             },
             {
               key: "news-and-updates",
               label: "News & Updates",
-              icon: BsNewspaper,
+              icon: NewspaperIcon,
               count: finalNews.length,
             },
             {
               key: "queries",
               label: "Queries",
-              icon: BsNewspaper,
+              icon: NewspaperIcon,
               count: keywordsList.length,
             },
           ]}
@@ -165,7 +164,7 @@ export default function Page() {
         {/* No Results */}
         {!loading && allResults.length <= 0 && (
           <div className="text-center bg-(--primary-bg) mt-6 rounded-custom shadow-custom py-10">
-            <LuSearch className="w-16 h-16 mx-auto mb-4 text-(--text-color-emphasis)" />
+            <SearchIcon className="w-16 h-16 mx-auto mb-4 text-(--text-color-emphasis)" />
             <h2 className="sub-heading text-(--text-color) font-medium">
               No results found for &quot;
               <span className="font-bold">{search}</span>&quot;

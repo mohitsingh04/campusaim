@@ -1,10 +1,10 @@
 "use client";
 
-import { LuMail } from "react-icons/lu";
 import { ChatInput } from "./ChatInput";
 import Link from "next/link";
 import { UserProps } from "@/types/UserTypes";
 import GoogleLoginButton from "@/app/(pages)/(auth)/auth/_googleLogin/GoogleLoginButton";
+import { MailIcon } from "lucide-react";
 
 interface WelcomeScreenProps {
   onStart: () => void;
@@ -57,7 +57,7 @@ export function WelcomeScreen({
               onClick={onStart}
               className="w-full sm:w-auto h-11 px-4 bg-(--text-color-emphasis) text-(--primary-bg) rounded-custom font-medium heading-sm shadow-custom flex items-center justify-center gap-2 transition cursor-pointer"
             >
-              <LuMail className="text-xl" />
+              <MailIcon className="text-xl" />
               <span className="hidden sm:inline">Continue with Email</span>
               <span className="sm:hidden">Email</span>
             </Link>

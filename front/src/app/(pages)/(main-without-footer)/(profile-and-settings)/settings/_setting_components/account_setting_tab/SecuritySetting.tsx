@@ -11,12 +11,11 @@ import {
   getSuccessResponse,
 } from "@/context/Callbacks";
 import ButtonGroupSend from "@/ui/buttons/ButtonGroup";
-import { BiLogOut, BiSave } from "react-icons/bi";
 import { userChangePasswordValidation } from "@/context/ValidationSchema";
-import { LuTrash2, LuX } from "react-icons/lu";
 import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 import HeadingLine from "@/ui/headings/HeadingLine";
+import { LogOutIcon, SaveIcon, Trash2Icon, XIcon } from "lucide-react";
 
 const SecuritySetting = ({ profile }: { profile: UserProps | null }) => {
   const [resLoading, setResLoading] = useState(false);
@@ -62,7 +61,7 @@ const SecuritySetting = ({ profile }: { profile: UserProps | null }) => {
     try {
       setDeleteLoading(true);
       const response = await API.post(
-        `/profile/delete/account/${profile?.uniqueId}`
+        `/profile/delete/account/${profile?.uniqueId}`,
       );
       getSuccessResponse(response);
       setShowDeleteModal(false);
@@ -84,7 +83,7 @@ const SecuritySetting = ({ profile }: { profile: UserProps | null }) => {
               onClick={() => setShowDeleteModal(false)}
               className="text-(--text-color)"
             >
-              <LuX className="w-5 h-5" />
+              <XIcon className="w-5 h-5" />
             </button>
           </div>
           <p className="text-(--text-color) mb-6">
@@ -110,7 +109,7 @@ const SecuritySetting = ({ profile }: { profile: UserProps | null }) => {
           </div>
         </div>
       </div>,
-      document.body
+      document.body,
     );
 
   return (
@@ -163,7 +162,7 @@ const SecuritySetting = ({ profile }: { profile: UserProps | null }) => {
             {/* SUBMIT BUTTON */}
             <div className="md:col-span-2 flex justify-end">
               <ButtonGroupSend
-                Icon={BiSave}
+                Icon={SaveIcon}
                 label="Save"
                 type="submit"
                 disable={resLoading}
@@ -179,14 +178,14 @@ const SecuritySetting = ({ profile }: { profile: UserProps | null }) => {
             onClick={handleLogout}
             className="inline-flex items-center px-4 py-2 rounded-lg shadow-sm text-sm font-medium text-(--warning-emphasis) bg-(--warning-subtle)"
           >
-            <BiLogOut className="w-4 h-4 mr-2" />
+            <LogOutIcon className="w-4 h-4 mr-2" />
             Logout
           </button>
           <button
             onClick={() => setShowDeleteModal(true)}
             className="inline-flex items-center px-4 py-2 rounded-lg shadow-sm text-sm font-medium text-(--danger-emphasis) bg-(--danger-subtle)"
           >
-            <LuTrash2 className="w-4 h-4 mr-2" />
+            <Trash2Icon className="w-4 h-4 mr-2" />
             Delete Account
           </button>
         </div>

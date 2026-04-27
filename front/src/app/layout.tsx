@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Montserrat, Poppins } from "next/font/google";
-import "./globals.css";
+import "../css/globals.css";
 import Script from "next/script";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { ToastContainer } from "react-toastify";

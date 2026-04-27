@@ -12,7 +12,6 @@ import {
   useMemo,
   useState,
 } from "react";
-import { FaGraduationCap } from "react-icons/fa";
 import InstituteCard from "./_property_components/InstituteCard";
 import ResultsHeader from "./_property_components/ResultsHeader";
 // import ActiveFilterTags from "./_property_components/ActiveFilters";
@@ -25,6 +24,7 @@ import {
 import { usePathname } from "next/navigation";
 import Pagination from "@/ui/pagination/Pagination";
 import InsitutesLoader from "@/ui/loader/page/institutes/Institutes";
+import { GraduationCapIcon } from "lucide-react";
 
 const ITEMS_PER_PAGE = 12;
 
@@ -374,7 +374,7 @@ export default function PropertyFilters({
                   </div>
                 ) : (
                   <div className="text-center py-16 bg-(--primary-bg) shadow-custom rounded-2xl">
-                    <FaGraduationCap className="w-16 h-16 text-(--text-color) mx-auto mb-4" />
+                    <GraduationCapIcon className="w-16 h-16 text-(--text-color) mx-auto mb-4" />
                     <h3 className="heading font-bold mb-2">
                       No college found
                     </h3>

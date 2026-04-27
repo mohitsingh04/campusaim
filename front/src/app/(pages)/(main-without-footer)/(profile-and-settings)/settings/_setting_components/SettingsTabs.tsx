@@ -1,9 +1,9 @@
 "use client";
 import React, { useRef, useEffect, useState } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import { BiChevronLeft, BiChevronRight } from "react-icons/bi";
 import { generateSlug } from "@/context/Callbacks";
 import { UserProps } from "@/types/UserTypes";
+import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 
 interface TabType {
   label: string;
@@ -77,7 +77,7 @@ const SettingsTabs: React.FC<{
     if (!el) return;
 
     const activeEl = el.querySelector(
-      `[data-tab="${activeTab}"]`
+      `[data-tab="${activeTab}"]`,
     ) as HTMLElement;
     if (activeEl) {
       activeEl.scrollIntoView({
@@ -106,7 +106,7 @@ const SettingsTabs: React.FC<{
               onClick={() => scrollBy(-200)}
               className="absolute left-0 top-0 bottom-0 z-10 w-8 bg-linear-to-r from-gray-950 to-transparent flex items-center justify-start text-white"
             >
-              <BiChevronLeft className="w-5 h-5" />
+              <ChevronLeftIcon className="w-5 h-5" />
             </button>
           )}
 
@@ -142,7 +142,7 @@ const SettingsTabs: React.FC<{
               onClick={() => scrollBy(200)}
               className="absolute right-0 top-0 bottom-0 z-10 w-8 bg-linear-to-l from-gray-950 to-transparent flex items-center justify-end text-white"
             >
-              <BiChevronRight className="w-5 h-5" />
+              <ChevronRightIcon className="w-5 h-5" />
             </button>
           )}
         </div>

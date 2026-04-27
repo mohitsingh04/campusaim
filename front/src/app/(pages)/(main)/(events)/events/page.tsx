@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo, useEffect, useCallback } from "react";
-import { FaGraduationCap } from "react-icons/fa";
 import { useSearchParams, useRouter } from "next/navigation";
 import { EventProps } from "@/types/Types";
 import { createDynamicFilterOptions, filterdEvents } from "./utils/filterUtils";
@@ -21,6 +20,7 @@ import {
 import { getProfile } from "@/context/getAssets";
 import { UserProps } from "@/types/UserTypes";
 import InsitutesLoader from "@/ui/loader/page/institutes/Institutes";
+import { GraduationCapIcon } from "lucide-react";
 
 const ITEMS_PER_PAGE = 12;
 
@@ -88,7 +88,7 @@ export default function EventPage() {
     });
 
   const [filters, setFilters] = useState<eventFilterProps>(
-    initializeFiltersFromURL
+    initializeFiltersFromURL,
   );
 
   const [filterSearchTerms, setFilterSearchTerms] =
@@ -129,7 +129,7 @@ export default function EventPage() {
         router.push(`/events${newURL}`, { scroll: false });
       }, 0);
     },
-    [router, searchTerm]
+    [router, searchTerm],
   );
 
   // Initialize from URL on mount
@@ -162,7 +162,7 @@ export default function EventPage() {
 
       return parentLocations;
     },
-    [allEvent]
+    [allEvent],
   );
 
   const getAllEventDetails = useCallback(async () => {
@@ -193,7 +193,7 @@ export default function EventPage() {
       const activeEvents = allEventData.filter((event: EventProps) => {
         if (event?.status !== "Active") return false;
         return isDateEnded(
-          event?.schedule?.[event?.schedule?.length - 1]?.date
+          event?.schedule?.[event?.schedule?.length - 1]?.date,
         );
       });
 
@@ -234,7 +234,7 @@ export default function EventPage() {
 
       // ✅ hide events without slug
       const filteredEvents = mergedEvent.filter(
-        (e: any) => e.event_slug && e.event_slug.trim() !== ""
+        (e: any) => e.event_slug && e.event_slug.trim() !== "",
       );
 
       const sortedEvents = filteredEvents.sort((a: any, b: any) => {
@@ -261,7 +261,7 @@ export default function EventPage() {
   // Dynamic filter options
   const dynamicFilterOptions = useMemo(
     () => createDynamicFilterOptions(allEvent),
-    [allEvent]
+    [allEvent],
   );
 
   // Only compute filters when dataReady to avoid false "no results" state
@@ -273,7 +273,7 @@ export default function EventPage() {
   const totalPages = Math.ceil(filteredEventFound.length / ITEMS_PER_PAGE);
   const displayedEvents: EventProps[] = filteredEventFound.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
+    currentPage * ITEMS_PER_PAGE,
   );
 
   const clearFilters = () => {
@@ -306,7 +306,7 @@ export default function EventPage() {
 
   const handleCheckboxFilter = (
     filterType: keyof eventFilterProps,
-    value: string
+    value: string,
   ) => {
     setFilters((prev) => {
       const currentValues = prev[filterType] as string[];
@@ -387,7 +387,7 @@ export default function EventPage() {
 
   const handleFilterSearchChange = (
     filterType: keyof FilterEventSearchTermsProps,
-    value: string
+    value: string,
   ) => {
     setFilterSearchTerms((prev) => ({ ...prev, [filterType]: value }));
   };
@@ -466,7 +466,7 @@ export default function EventPage() {
                   </div>
                 ) : (
                   <div className="text-center py-16 bg-(--primary-bg) shadow-custom rounded-custom">
-                    <FaGraduationCap className="w-16 h-16 text-() mx-auto mb-4" />
+                    <GraduationCapIcon className="w-16 h-16 text-() mx-auto mb-4" />
                     <h3 className="heading font-bold mb-2">No Event found</h3>
                     <p>Try adjusting your filters</p>
                   </div>

@@ -1,9 +1,9 @@
 "use client";
 import React, { useCallback, useEffect, useState } from "react";
-import { LuLock } from "react-icons/lu";
 import API from "@/context/API";
 import { getErrorResponse } from "@/context/Callbacks";
 import Loading from "@/ui/loader/Loading";
+import { LockIcon } from "lucide-react";
 
 const Cookies = () => {
   const [cookiesPolicy, setCookiesPolicy] = useState<string | null>(null);
@@ -42,7 +42,7 @@ const Cookies = () => {
       ) : (
         // Fallback if API has no cookies policy
         <div className="grow px-6 py-16 flex flex-col items-center justify-center text-center">
-          <LuLock size={80} className="text-(--main) mb-6" />
+          <LockIcon size={80} className="text-(--main) mb-6" />
           <h2 className="text-2xl md:text-3xl font-semibold mb-3 text-(--main)">
             Policy Coming Soon
           </h2>

@@ -1,6 +1,6 @@
 import { PropertyTeacherProps } from "@/types/PropertyTypes";
+import { ClockIcon, MapPinIcon } from "lucide-react";
 import Image from "next/image";
-import { LuClock, LuMapPin } from "react-icons/lu";
 
 export default function TeachersTab({
   teachers,
@@ -33,11 +33,11 @@ export default function TeachersTab({
                 {teacher.teacher_name}
               </h3>
               <div className="flex items-center paragraph">
-                <LuMapPin className="h-4 w-4 mr-2 text-(--main)" />
+                <MapPinIcon className="h-4 w-4 mr-2 text-(--main)" />
                 {teacher.designation}
               </div>
               <div className="flex items-center paragraph">
-                <LuClock className="h-4 w-4 mr-2 text-(--main)" />
+                <ClockIcon className="h-4 w-4 mr-2 text-(--main)" />
                 {teacher.experience}
               </div>
             </div>

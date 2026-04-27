@@ -1,5 +1,5 @@
+import { PlusIcon } from "lucide-react";
 import React from "react";
-import { LuPlus } from "react-icons/lu";
 
 export default function MainGridCard({
   onClick,
@@ -17,7 +17,7 @@ export default function MainGridCard({
     >
       <div className="relative z-10 flex flex-col items-center">
         <div className="w-16 h-16 bg-(--secondary-bg) group-hover:bg-(--primary-bg) flex items-center justify-center rounded-full mb-4 transition-all duration-500 shadow-custom group-hover:shadow-xs group-hover:scale-110">
-          <LuPlus
+          <PlusIcon
             size={24}
             className="text-(--main) group-hover:text-(--main) transition-all duration-300 group-hover:rotate-90"
           />
