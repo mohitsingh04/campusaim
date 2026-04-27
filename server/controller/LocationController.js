@@ -383,3 +383,50 @@ export const UpdateLocation = async (req, res) => {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
+export const getUniqueLocationPairs = async (req, res) => {
+  try {
+    const limitRaw = Number(req.query.limit);
+    const limit =
+      Number.isFinite(limitRaw) && limitRaw > 0 ? Math.min(limitRaw, 200) : 20;
+
+    const sortOrder = req.query.sort === "asc" ? 1 : -1;
+
+    const results = await Location.aggregate([
+      {
+        $match: {
+          property_city: { $exists: true, $nin: [null, ""] },
+          property_state: { $exists: true, $nin: [null, ""] },
+          property_country: { $exists: true, $nin: [null, ""] },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            city: { $trim: { input: "$property_city" } },
+            state: { $trim: { input: "$property_state" } },
+            country: { $trim: { input: "$property_country" } },
+          },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          city: "$_id.city",
+          state: "$_id.state",
+          country: "$_id.country",
+          count: 1,
+        },
+      },
+      {
+        $sort: { count: sortOrder, city: 1 },
+      },
+      { $limit: limit },
+    ]);
+
+    return res.status(200).json(results);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error." });
+  }
+};

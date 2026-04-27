@@ -135,6 +135,7 @@ import {
 import {
   addLocation,
   getAllLocations,
+  getUniqueLocationPairs,
   getLocation,
   UpdateLocation,
 } from "../controller/LocationController.js";
@@ -365,6 +366,7 @@ router.patch("/property/location/:property_id", Authorize, UpdateLocation);
 router.get("/property/location/:property_id", getLocation);
 router.get("/locations", getAllLocations);
 router.post("/location", Authorize, addLocation);
+router.get("/property/unique/location/pairs", Authorize, getUniqueLocationPairs);
 
 //? Teacher Route
 const teacherProfile = upload.fields([{ name: "profile", maxCount: 1 }]);

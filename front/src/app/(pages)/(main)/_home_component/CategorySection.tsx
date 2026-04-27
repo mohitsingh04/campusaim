@@ -7,7 +7,13 @@ import { HeadingProps } from "@/ui/headings/MainHeading";
 import { PropertyProps } from "@/types/PropertyTypes";
 import { FieldDataSimple } from "@/types/Types";
 import AcademicTypeSkeleton from "@/ui/loader/page/landing/_components/AcademicTypeSkeleton";
-import { GraduationCapIcon, UniversityIcon } from "lucide-react";
+import {
+  Backpack,
+  GlobeIcon,
+  GraduationCapIcon,
+  SchoolIcon,
+  UniversityIcon,
+} from "lucide-react";
 
 export default function CategorySection({
   properties,
@@ -33,6 +39,27 @@ export default function CategorySection({
   const statsData = [
     {
       description:
+        "Explore a wide network of trusted and certified yoga training centers offering deep, transformative courses across India.",
+      value: properties?.length,
+      label: "All Institutes",
+      icon: GlobeIcon,
+      colors: { sub: "--blue-subtle", emphasis: "--blue-emphasis" },
+      href: "/colleges",
+    },
+    {
+      description:
+        "Top-rated studios offering authentic daily classes, weekend workshops, and expert guidance for all levels of practice.",
+      value:
+        uniqueCategory?.find(
+          (item) => generateSlug(item?.title) === generateSlug("School"),
+        )?.value || 0,
+      label: "School",
+      icon: SchoolIcon,
+      colors: { sub: "--gray-subtle", emphasis: "--gray-emphasis" },
+      href: "/colleges?category=school",
+    },
+    {
+      description:
         "Colleges offering structured academic programs, practical learning opportunities, and electives to support your educational and career goals.",
       value:
         uniqueCategory?.find(
@@ -55,40 +82,19 @@ export default function CategorySection({
       colors: { sub: "--danger-subtle", emphasis: "--danger-emphasis" },
       href: "/colleges?category=university",
     },
-    // {
-    // 	description:
-    // 		"Explore a wide network of trusted and certified yoga training centers offering deep, transformative courses across India.",
-    // 	value: properties?.length,
-    // 	label: "All Yoga Institutes",
-    // 	icon: LiaUniversalAccessSolid,
-    // 	colors: { sub: "--blue-subtle", emphasis: "--blue-emphasis" },
-    // 	href: "/yoga-institutes",
-    // },
-    // {
-    // 	description:
-    // 		"Top-rated studios offering authentic daily classes, weekend workshops, and expert guidance for all levels of practice.",
-    // 	value:
-    // 		uniqueCategory?.find(
-    // 			(item) => generateSlug(item?.title) === generateSlug("Yoga Studio"),
-    // 		)?.value || 0,
-    // 	label: "Yoga Studio",
-    // 	icon: GrYoga,
-    // 	colors: { sub: "--gray-subtle", emphasis: "--gray-emphasis" },
-    // 	href: "/yoga-institutes?category=yoga-studio",
-    // },
-    // {
-    // 	description:
-    // 		"Learn yoga anytime, anywhere! Access high-quality, live, and on-demand classes with expert online trainers from the comfort of your home.",
-    // 	value:
-    // 		uniqueCategory?.find(
-    // 			(item) =>
-    // 				generateSlug(item?.title) === generateSlug("Online Yoga Studio"),
-    // 		)?.value || 0,
-    // 	label: "Online Yoga Studio",
-    // 	icon: RiPresentationLine,
-    // 	colors: { sub: "--orange-subtle", emphasis: "--orange-emphasis" },
-    // 	href: "/yoga-institutes?category=online-yoga-studio",
-    // },
+
+    {
+      description:
+        "Learn yoga anytime, anywhere! Access high-quality, live, and on-demand classes with expert online trainers from the comfort of your home.",
+      value:
+        uniqueCategory?.find(
+          (item) => generateSlug(item?.title) === generateSlug("Coaching"),
+        )?.value || 0,
+      label: "Coaching",
+      icon: Backpack,
+      colors: { sub: "--orange-subtle", emphasis: "--orange-emphasis" },
+      href: "/colleges?category=coaching",
+    },
   ];
 
   if (loading) return <AcademicTypeSkeleton />;

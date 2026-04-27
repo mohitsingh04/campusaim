@@ -1,7 +1,12 @@
+import { FAQProps } from "../../../console/src/types/types";
 import { BlogsProps } from "./BlogTypes";
 import { NewsProps } from "./NewsTypes";
 import { PropertyProps } from "./PropertyTypes";
 
+export interface FaqProps {
+  question: string;
+  answer: string;
+}
 export interface CategoryProps {
   uniqueId: number;
   _id: string;
@@ -26,6 +31,25 @@ export interface CourseProps {
   requirements: string[];
   best_for: string[];
   course_slug?: string;
+}
+
+export interface ExamProps {
+  _id: string;
+  exam_name: string;
+  exam_short_name: string;
+  upcoming_exam_date: string;
+  result_date: string;
+  application_form_date: string;
+  youtube_link: string;
+  exam_form_link: string;
+  exam_mode: string;
+  slug: string;
+  description: string;
+  image: string[];
+  application_form_link: string;
+  isDeleted: boolean;
+  status: string;
+  faqs: FAQProps;
 }
 
 export interface EventProps {

@@ -24,7 +24,9 @@ const CourseEnquirySchema = mongoose.Schema(
     },
     courseId: {
       type: mongoose.Schema.Types.ObjectId,
-      required: true,
+    },
+    examId: {
+      type: mongoose.Schema.Types.ObjectId,
     },
   },
   { timestamps: true }
