@@ -1,14 +1,41 @@
+import mongoose from "mongoose";
 import Goal from "../models/Goal.js";
 import User from "../models/userModel.js";
+import RegularUser from "../models/regularUser.js";
 import { getDataFromToken } from "../helper/getDataFromToken.js";
-import mongoose from "mongoose";
 import { createNotification } from "../services/notification.service.js";
+import { mapRoleForApp, getDbRoleKey, getRoleId } from "../utils/roleMapper.js";
 
 export const getCounselorGoals = async (req, res) => {
     try {
+        const authUserId = await getDataFromToken(req);
         const { counselorId } = req.params;
 
-        // 🔒 Validate input
+        /* ---------------- AUTH ---------------- */
+
+        if (!mongoose.Types.ObjectId.isValid(authUserId)) {
+            return res.status(401).json({
+                success: false,
+                message: "Unauthorized"
+            });
+        }
+
+        const authUser = await RegularUser.findById(authUserId)
+            .populate("role", "role")
+            .select("_id role")
+            .lean();
+
+        if (!authUser) {
+            return res.status(401).json({
+                success: false,
+                message: "Unauthorized"
+            });
+        }
+
+        const authAppRole = mapRoleForApp(authUser.role?.role); // ✅ FIX
+
+        /* ---------------- VALIDATE COUNSELOR ---------------- */
+
         if (!mongoose.Types.ObjectId.isValid(counselorId)) {
             return res.status(400).json({
                 success: false,
@@ -16,12 +43,41 @@ export const getCounselorGoals = async (req, res) => {
             });
         }
 
+        const counselor = await RegularUser.findById(counselorId)
+            .populate("role", "role")
+            .select("_id role teamLeader")
+            .lean();
+
+        if (!counselor || mapRoleForApp(counselor.role?.role) !== "counselor") {
+            return res.status(404).json({
+                success: false,
+                message: "Counselor not found"
+            });
+        }
+
+        /* ---------------- ACCESS CONTROL ---------------- */
+
+        const isAdmin = ["admin", "superadmin"].includes(authAppRole);
+
+        const isTeamLeader =
+            authAppRole === "teamleader" &&
+            counselor.teamLeader?.toString() === authUser._id.toString();
+
+        const isSelf =
+            authAppRole === "counselor" &&
+            authUser._id.toString() === counselor._id.toString();
+
+        if (!isAdmin && !isTeamLeader && !isSelf) {
+            return res.status(403).json({
+                success: false,
+                message: "Access denied"
+            });
+        }
+
         const now = new Date();
 
-        // ---------------- STATUS NORMALIZATION ----------------
-        // Order matters (priority based)
+        /* ---------------- STATUS NORMALIZATION ---------------- */
 
-        // 1️⃣ COMPLETED (highest priority)
         await Goal.updateMany(
             {
                 counselorId,
@@ -30,7 +86,6 @@ export const getCounselorGoals = async (req, res) => {
             { $set: { status: "completed" } }
         );
 
-        // 2️⃣ NOT STARTED (future goals only if not completed)
         await Goal.updateMany(
             {
                 counselorId,
@@ -40,7 +95,6 @@ export const getCounselorGoals = async (req, res) => {
             { $set: { status: "not_started" } }
         );
 
-        // 3️⃣ EXPIRED (past goals only if not completed)
         await Goal.updateMany(
             {
                 counselorId,
@@ -50,7 +104,6 @@ export const getCounselorGoals = async (req, res) => {
             { $set: { status: "expired" } }
         );
 
-        // 4️⃣ ACTIVE (current running goals only if not completed)
         await Goal.updateMany(
             {
                 counselorId,
@@ -61,13 +114,15 @@ export const getCounselorGoals = async (req, res) => {
             { $set: { status: "active" } }
         );
 
-        // ---------------- FETCH ----------------
+        /* ---------------- FETCH ---------------- */
+
         const goals = await Goal.find({ counselorId })
             .select("-__v")
-            .sort({ startDate: -1 }) // better than createdAt
+            .sort({ startDate: -1 })
             .lean();
 
-        // ---------------- NORMALIZE ----------------
+        /* ---------------- NORMALIZE ---------------- */
+
         const normalizedGoals = goals.map(g => ({
             ...g,
             currentValue: Number(g.currentValue) || 0,
@@ -94,20 +149,29 @@ export const getAssignedGoals = async (req, res) => {
     try {
         const userId = await getDataFromToken(req);
 
-        // ---------------- AUTH ----------------
+        /* ---------------- AUTH ---------------- */
+
         if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
             return res.status(401).json({ success: false, error: "Unauthorized" });
         }
 
-        const user = await User.findById(userId)
+        const user = await RegularUser.findById(userId)
+            .populate("role", "role")
             .select("_id role")
             .lean();
 
-        if (!user || !["admin", "teamleader", "superadmin"].includes(user.role)) {
+        if (!user) {
+            return res.status(401).json({ success: false, error: "Unauthorized" });
+        }
+
+        const userAppRole = mapRoleForApp(user.role?.role); // ✅ FIX
+
+        if (!["admin", "teamleader", "superadmin"].includes(userAppRole)) {
             return res.status(403).json({ success: false, error: "Access denied" });
         }
 
-        // ---------------- QUERY ----------------
+        /* ---------------- QUERY ---------------- */
+
         const page = Math.max(1, parseInt(req.query.page) || 1);
         const limit = Math.max(1, parseInt(req.query.limit) || 10);
         const skip = (page - 1) * limit;
@@ -119,14 +183,16 @@ export const getAssignedGoals = async (req, res) => {
 
         const searchRegex = new RegExp(search, "i");
 
-        // ---------------- MATCH ----------------
+        /* ---------------- MATCH ---------------- */
+
         const matchStage = {};
 
-        // 👉 ROLE-BASED ACCESS CONTROL
-        if (user.role === "teamleader") {
-            // Only goals assigned by this TL OR to their counselors
-            const counselors = await User.find({
-                role: "counselor",
+        // 🔐 ROLE-BASED ACCESS
+        if (userAppRole === "teamleader") {
+            const counselorRoleId = await getRoleId("counselor");
+
+            const counselors = await RegularUser.find({
+                role: counselorRoleId,
                 teamLeader: user._id
             }).select("_id").lean();
 
@@ -138,8 +204,6 @@ export const getAssignedGoals = async (req, res) => {
             ];
         }
 
-        // admin / superadmin → see all (no restriction)
-
         if (status) matchStage.status = status;
         if (goalType) matchStage.goalType = goalType;
 
@@ -147,46 +211,48 @@ export const getAssignedGoals = async (req, res) => {
             matchStage.counselorId = new mongoose.Types.ObjectId(counselorId);
         }
 
-        // ---------------- AGGREGATION ----------------
-        const [result] = await Goal.aggregate([
+        /* ---------------- AGGREGATION ---------------- */
 
+        const [result] = await Goal.aggregate([
             { $match: matchStage },
 
             // counselor
             {
                 $lookup: {
-                    from: "users",
+                    from: "regularusers", // ✅ FIX
                     localField: "counselorId",
                     foreignField: "_id",
-                    as: "counselorId"
+                    as: "counselor"
                 }
             },
-            { $unwind: { path: "$counselorId", preserveNullAndEmptyArrays: true } },
+            { $unwind: { path: "$counselor", preserveNullAndEmptyArrays: true } },
 
             // assignedBy
             {
                 $lookup: {
-                    from: "users",
+                    from: "regularusers", // ✅ FIX
                     localField: "assignedBy",
                     foreignField: "_id",
-                    as: "assignedBy"
+                    as: "assignedByUser"
                 }
             },
-            { $unwind: { path: "$assignedBy", preserveNullAndEmptyArrays: true } },
+            { $unwind: { path: "$assignedByUser", preserveNullAndEmptyArrays: true } },
 
-            // ---------------- SEARCH ----------------
+            /* ---------------- SEARCH ---------------- */
+
             ...(search ? [{
                 $match: {
                     $or: [
-                        { "counselorId.name": searchRegex },
-                        { "counselorId.email": searchRegex },
-                        { "assignedBy.name": searchRegex },
+                        { "counselor.name": searchRegex },
+                        { "counselor.email": searchRegex },
+                        { "assignedByUser.name": searchRegex },
                         { goalType: searchRegex }
                     ]
                 }
             }] : []),
 
-            // ---------------- FACET ----------------
+            /* ---------------- FACET ---------------- */
+
             {
                 $facet: {
                     metadata: [{ $count: "total" }],
@@ -197,8 +263,8 @@ export const getAssignedGoals = async (req, res) => {
                         {
                             $project: {
                                 __v: 0,
-                                "counselorId.password": 0,
-                                "assignedBy.password": 0
+                                "counselor.password": 0,
+                                "assignedByUser.password": 0
                             }
                         }
                     ]
@@ -206,8 +272,8 @@ export const getAssignedGoals = async (req, res) => {
             }
         ]);
 
-        const total = result.metadata[0]?.total || 0;
-        const goals = result.data || [];
+        const total = result?.metadata?.[0]?.total || 0;
+        const goals = result?.data || [];
 
         return res.status(200).json({
             success: true,
@@ -222,6 +288,7 @@ export const getAssignedGoals = async (req, res) => {
 
     } catch (error) {
         console.error("Get Assigned Goals Error:", error);
+
         return res.status(500).json({
             success: false,
             error: "Internal server error"
@@ -240,11 +307,22 @@ export const assignGoal = async (req, res) => {
             });
         }
 
-        const user = await User.findById(userId)
+        // 🔎 Auth user
+        const user = await RegularUser.findById(userId)
+            .populate("role", "role")
             .select("_id name role")
             .lean();
 
-        if (!user || !["admin", "teamleader"].includes(user.role)) {
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: "Unauthorized"
+            });
+        }
+
+        const userAppRole = mapRoleForApp(user.role?.role); // ✅ FIX
+
+        if (!["admin", "teamleader"].includes(userAppRole)) {
             return res.status(403).json({
                 success: false,
                 message: "Unauthorized"
@@ -259,7 +337,8 @@ export const assignGoal = async (req, res) => {
             goals
         } = req.body;
 
-        // ---------------- VALIDATION ----------------
+        /* ---------------- VALIDATION ---------------- */
+
         if (
             !mongoose.Types.ObjectId.isValid(counselorId) ||
             !goalPeriod ||
@@ -284,21 +363,33 @@ export const assignGoal = async (req, res) => {
             });
         }
 
-        // ---------------- VALIDATE COUNSELOR ----------------
-        const counselor = await User.findById(counselorId)
+        /* ---------------- VALIDATE COUNSELOR ---------------- */
+
+        const counselor = await RegularUser.findById(counselorId)
+            .populate("role", "role")
             .select("_id role teamLeader")
             .lean();
 
-        if (!counselor || counselor.role !== "counselor") {
+        if (!counselor) {
             return res.status(400).json({
                 success: false,
                 message: "Invalid counselor"
             });
         }
 
-        // 🔐 TEAMLEADER RESTRICTION (IMPORTANT)
+        const counselorAppRole = mapRoleForApp(counselor.role?.role); // ✅ FIX
+
+        if (counselorAppRole !== "counselor") {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid counselor role"
+            });
+        }
+
+        /* ---------------- TEAMLEADER RESTRICTION ---------------- */
+
         if (
-            user.role === "teamleader" &&
+            userAppRole === "teamleader" &&
             counselor.teamLeader?.toString() !== user._id.toString()
         ) {
             return res.status(403).json({
@@ -309,13 +400,14 @@ export const assignGoal = async (req, res) => {
 
         const createdGoals = [];
 
-        // ---------------- LOOP ----------------
+        /* ---------------- LOOP ---------------- */
+
         for (const item of goals) {
             const { goalType, targetValue } = item;
 
             if (!goalType || !targetValue || Number(targetValue) <= 0) continue;
 
-            // ✅ OVERLAP CHECK (NO ORG)
+            // 🔁 OVERLAP CHECK
             const overlap = await Goal.findOne({
                 counselorId,
                 goalType,
@@ -331,14 +423,16 @@ export const assignGoal = async (req, res) => {
                 });
             }
 
-            // ---------------- STATUS LOGIC ----------------
+            /* ---------------- STATUS ---------------- */
+
             const now = new Date();
 
             let status = "active";
             if (start > now) status = "not_started";
             else if (end < now) status = "expired";
 
-            // ---------------- CREATE ----------------
+            /* ---------------- CREATE ---------------- */
+
             const goal = await Goal.create({
                 counselorId,
                 assignedBy: userId,
@@ -353,25 +447,30 @@ export const assignGoal = async (req, res) => {
             createdGoals.push(goal);
         }
 
-        if (createdGoals.length === 0) {
+        if (!createdGoals.length) {
             return res.status(400).json({
                 success: false,
                 message: "No valid goals provided"
             });
         }
 
-        // ---------------- NOTIFICATION ----------------
-        await createNotification({
-            receiverId: counselorId,
-            senderId: userId,
-            type: "assigned_goal",
-            title: "New Goals Assigned",
-            message: `${user.name} assigned new goals to you.`,
-            link: `/dashboard/my-goals`,
-            meta: {
-                goals: createdGoals.map(g => g.goalType)
-            }
-        });
+        /* ---------------- NOTIFICATION ---------------- */
+
+        try {
+            await createNotification({
+                receiverId: counselorId,
+                senderId: userId,
+                type: "assigned_goal",
+                title: "New Goals Assigned",
+                message: `${user.name} assigned new goals to you.`,
+                link: `/dashboard/my-goals`,
+                meta: {
+                    goals: createdGoals.map(g => g.goalType)
+                }
+            });
+        } catch (err) {
+            console.error("Notification error:", err);
+        }
 
         return res.status(201).json({
             success: true,

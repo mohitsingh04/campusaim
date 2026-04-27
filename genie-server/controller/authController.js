@@ -462,9 +462,9 @@ export const forgotPassword = async (req, res) => {
         if (!user) {
             return res.status(404).json({ error: "No account found with this email." });
         }
-        if (!user.isVerified) {
-            return res.status(403).json({ error: "Please verify your email before resetting password." });
-        }
+        // if (!user.isVerified) {
+        //     return res.status(403).json({ error: "Please verify your email before resetting password." });
+        // }
 
         await sendResetEmail({ email, userId: user._id });
 

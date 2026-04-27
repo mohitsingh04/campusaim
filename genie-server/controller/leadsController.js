@@ -18,7 +18,7 @@ import { handleAdmission } from "../utils/handleAdmission.js";
 import { handleCommission } from "../utils/handleCommission.js";
 import IncentiveEarning from "../models/incentiveEarning.js";
 import { db } from '../mongoose/index.js';
-import { getRoleMap, mapRoleForApp } from "../utils/roleMapper.js";
+import { getRoleMap, mapRoleForApp, getDbRoleKey, getRoleId } from "../utils/roleMapper.js";
 import RegularUser from "../models/regularUser.js";
 
 const COURSE_TYPES = ["UG", "PG", "Diploma", "Certificate", "PhD", "Other"];
@@ -31,18 +31,32 @@ const sanitizeEnum = (value, allowed) => {
 };
 
 const getGoalOwner = async (lead) => {
-    const ownerId = lead.assignedTo || lead.createdBy;
+    try {
+        const ownerId = lead.assignedTo || lead.createdBy;
 
-    if (!ownerId) return null;
+        if (!ownerId || !mongoose.Types.ObjectId.isValid(ownerId)) {
+            return null;
+        }
 
-    const user = await User.findById(ownerId).select("role").lean();
+        const user = await RegularUser.findById(ownerId)
+            .populate("role", "role")
+            .select("_id role")
+            .lean();
 
-    if (!user || user.role !== "counselor") {
-        console.log("❌ Owner is not counselor");
+        if (!user) return null;
+
+        const appRole = mapRoleForApp(user.role?.role); // ✅ FIX
+
+        if (appRole !== "counselor") {
+            return null;
+        }
+
+        return user._id;
+
+    } catch (err) {
+        console.error("getGoalOwner error:", err);
         return null;
     }
-
-    return ownerId;
 };
 
 function ensureDir(folder) {
@@ -74,55 +88,58 @@ export const getLeads = async (req, res) => {
 
         const user = await RegularUser.findById(authUserId)
             .populate("role", "role")
+            .select("_id role")
             .lean();
 
         if (!user) {
             return res.status(404).json({ error: "Auth user not found." });
         }
-        const roleName = user.role?.role;
-        const appRole = mapRoleForApp(roleName);
 
-        const { _id, role } = user;
+        const appRole = mapRoleForApp(user.role?.role); // ✅ FIX
+        const userId = user._id;
 
         /* ================= BASE QUERY ================= */
-        const finalQuery = {}; // ✅ NO org dependency
-
+        const finalQuery = {};
         const andClauses = [];
         const roleConditions = [];
         const searchConditions = [];
         const filterConditions = [];
 
         /* ================= ROLE FILTER ================= */
-        if (role === "teamleader") {
-            const counselors = await User.find({
-                role: "counselor",
-                teamLeader: _id,
+
+        if (appRole === "teamleader") {
+            const counselorRoleId = await getRoleId("counselor");
+
+            const counselors = await RegularUser.find({
+                role: counselorRoleId,
+                teamLeader: userId
             }).select("_id").lean();
 
-            const counselorIds = counselors.map((c) => c._id);
+            const counselorIds = counselors.map(c => c._id);
 
             roleConditions.push(
-                { createdBy: _id },
-                { assignedTo: _id },
+                { createdBy: userId },
+                { assignedTo: userId },
                 { createdBy: { $in: counselorIds } },
                 { assignedTo: { $in: counselorIds } }
             );
         }
         else if (appRole === "superadmin") {
-            roleConditions.push();
+            // full access
         }
         else if (appRole !== "admin") {
             roleConditions.push(
-                { createdBy: _id },
-                { assignedTo: _id }
+                { createdBy: userId },
+                { assignedTo: userId }
             );
         }
 
-        if (roleConditions.length > 0) {
+        if (roleConditions.length) {
             andClauses.push({ $or: roleConditions });
         }
 
         /* ================= SEARCH ================= */
+
         const sanitizedSearch = String(req.query.search || "").trim();
 
         if (sanitizedSearch) {
@@ -138,7 +155,7 @@ export const getLeads = async (req, res) => {
                 searchConditions.push(
                     { name: { $regex: safeSearch, $options: "i" } },
                     { email: { $regex: safeSearch, $options: "i" } },
-                    { contact: { $regex: safeSearch, $options: "i" } } // ✅ FIX mobile → contact
+                    { contact: { $regex: safeSearch, $options: "i" } }
                 );
             }
 
@@ -153,76 +170,50 @@ export const getLeads = async (req, res) => {
 
         if (req.query.assigned === "false") {
             filterConditions.push({
-                $or: [{ assignedTo: null }, { assignedTo: { $exists: false } }],
+                $or: [
+                    { assignedTo: null },
+                    { assignedTo: { $exists: false } }
+                ]
             });
         }
 
         if (req.query.filter === "today") {
-            const todayStart = new Date();
-            todayStart.setHours(0, 0, 0, 0);
-
-            const todayEnd = new Date();
-            todayEnd.setHours(23, 59, 59, 999);
+            const start = new Date(); start.setHours(0, 0, 0, 0);
+            const end = new Date(); end.setHours(23, 59, 59, 999);
 
             filterConditions.push({
-                createdAt: { $gte: todayStart, $lte: todayEnd },
+                createdAt: { $gte: start, $lte: end }
             });
         }
 
-        if (req.query.followup === "today") {
-            const todayStart = new Date();
-            todayStart.setHours(0, 0, 0, 0);
-
-            const todayEnd = new Date();
-            todayEnd.setHours(23, 59, 59, 999);
-
-            const followups = await db.collection("leadconversations")
-                .aggregate([
-                    { $unwind: "$sessions" },
-                    {
-                        $match: {
-                            "sessions.next_follow_up_date": {
-                                $gte: todayStart,
-                                $lte: todayEnd,
-                            },
-                            "sessions.follow_up_completed": false
-                        },
-                    },
-                    { $group: { _id: "$lead_id" } },
-                ])
-                .toArray();
-
-            const leadIds = followups.map((f) => f._id);
-
-            filterConditions.push({
-                _id: { $in: leadIds.length ? leadIds : [null] },
-            });
-        }
-
-        if (filterConditions.length > 0) {
+        if (filterConditions.length) {
             andClauses.push({ $and: filterConditions });
         }
 
-        if (andClauses.length > 0) {
+        if (andClauses.length) {
             finalQuery.$and = andClauses;
         }
 
         /* ================= DATA ================= */
+
         const leads = await Lead.find(finalQuery)
             .sort({ createdAt: -1 })
-            .populate("createdBy", "name email role")
-            .populate("assignedTo", "name role")
+            .populate({ path: "createdBy", model: RegularUser, select: "name email role" })
+            .populate({ path: "assignedTo", model: RegularUser, select: "name role" })
             .lean();
 
         return res.status(200).json({
             success: true,
             count: leads.length,
-            data: leads,
+            data: leads
         });
 
     } catch (error) {
         console.error("Error fetching leads:", error);
-        return res.status(500).json({ error: "Internal Server Error" });
+
+        return res.status(500).json({
+            error: "Internal Server Error"
+        });
     }
 };
 
@@ -292,8 +283,8 @@ export const getUserLeads = async (req, res) => {
             ]
         })
             .sort({ createdAt: -1 })
-            .populate("createdBy", "name role")
-            .populate("assignedTo", "name role")
+            .populate({ path: "createdBy", model: RegularUser, select: "name email role" })
+            .populate({ path: "assignedTo", model: RegularUser, select: "name role" })
             .lean();
 
         return res.status(200).json({
@@ -315,32 +306,37 @@ export const getLeadById = async (req, res) => {
     try {
         const { id } = req.params;
 
-        // ---------------- VALIDATION ----------------
+        /* ---------------- VALIDATION ---------------- */
+
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({ error: "Invalid ID" });
         }
 
-        // ---------------- FETCH LEAD ----------------
+        /* ---------------- FETCH LEAD ---------------- */
+
         const lead = await Lead.findById(id)
-            .populate("createdBy", "name role email")
-            .populate("convertedBy", "name role email")
+            .populate({ path: "createdBy", model: RegularUser, select: "name email role" })
+            .populate({ path: "convertedBy", model: RegularUser, select: "name role" })
             .populate({
                 path: "assignedTo",
-                select: "name role email teamLeader",
+                model: RegularUser,
+                select: "name email role teamLeader",
                 populate: {
                     path: "teamLeader",
-                    select: "name role email",
-                },
+                    model: RegularUser,
+                    select: "name email role"
+                }
             })
-            .populate("assignmentHistory.assignedTo", "name role email")
-            .populate("assignmentHistory.assignedBy", "name role email")
+            .populate({ path: "assignmentHistory.assignedTo", model: RegularUser, select: "name role" })
+            .populate({ path: "assignmentHistory.assignedBy", model: RegularUser, select: "name role" })
             .lean();
 
         if (!lead) {
             return res.status(404).json({ error: "Lead not found" });
         }
 
-        // ---------------- SORT ASSIGNMENT HISTORY ----------------
+        /* ---------------- SORT ASSIGNMENT HISTORY ---------------- */
+
         if (Array.isArray(lead.assignmentHistory)) {
             lead.assignmentHistory.sort(
                 (a, b) =>
@@ -349,31 +345,36 @@ export const getLeadById = async (req, res) => {
             );
         }
 
-        // ---------------- DERIVE Team Leader ----------------
+        /* ---------------- DERIVE TEAM LEADER ---------------- */
+
         let teamleader = null;
 
         if (lead.assignedTo) {
-            if (lead.assignedTo.role === "teamleader") {
+            const assignedRole = mapRoleForApp(lead.assignedTo?.role?.role);
+
+            if (assignedRole === "teamleader") {
                 teamleader = lead.assignedTo;
             } else if (
-                lead.assignedTo.role === "counselor" &&
+                assignedRole === "counselor" &&
                 lead.assignedTo.teamLeader
             ) {
                 teamleader = lead.assignedTo.teamLeader;
             }
         }
 
-        // ---------------- FETCH LAST CONVERSATION (LIGHTWEIGHT) ----------------
+        /* ---------------- FETCH LAST CONVERSATION ---------------- */
+
         const conversation = await LeadConversation.findOne({ lead_id: id })
             .select(`sessions.createdBy 
-                    sessions.createdAt 
-                    sessions.next_follow_up_date 
-                    sessions.next_follow_up_time`)
+               sessions.createdAt 
+               sessions.next_follow_up_date 
+               sessions.next_follow_up_time`)
             .lean();
 
         let hasConversation = false;
         let lastConversationBy = null;
         let lastConversationAt = null;
+        let nextFollowUp = null;
 
         if (conversation?.sessions?.length) {
             hasConversation = true;
@@ -386,12 +387,6 @@ export const getLeadById = async (req, res) => {
                     : lastSession?.createdBy;
 
             lastConversationAt = lastSession?.createdAt || null;
-        }
-
-        let nextFollowUp = null;
-
-        if (conversation?.sessions?.length) {
-            const lastSession = conversation.sessions.at(-1);
 
             if (lastSession?.next_follow_up_date) {
                 nextFollowUp = {
@@ -401,16 +396,15 @@ export const getLeadById = async (req, res) => {
             }
         }
 
-        // ---------------- RESPONSE ----------------
+        /* ---------------- RESPONSE ---------------- */
+
         return res.status(200).json({
             ...lead,
             teamleader,
-
             hasConversation,
             lastConversationBy,
             lastConversationAt,
-
-            nextFollowUp, // ✅ FIXED
+            nextFollowUp
         });
 
     } catch (error) {
@@ -871,25 +865,69 @@ export const deleteMultiLeads = async (req, res) => {
 export const addbulkLeads = async (req, res) => {
     try {
         const userId = await getDataFromToken(req);
-        const user = await User.findById(userId).select("_id role name");
-        if (!user) return res.status(404).json({ error: "User not found." });
 
-        if (!req.file) return res.status(400).json({ error: "No file uploaded." });
+        /* ---------------- AUTH ---------------- */
+
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+
+        const user = await RegularUser.findById(userId)
+            .populate("role", "role")
+            .select("_id role name")
+            .lean();
+
+        if (!user) {
+            return res.status(404).json({ error: "User not found." });
+        }
+
+        const appRole = mapRoleForApp(user.role?.role); // ✅ FIX
+
+        // 🔐 Only allowed roles
+        if (!["admin", "teamleader", "partner"].includes(appRole)) {
+            return res.status(403).json({ error: "Access denied" });
+        }
+
+        /* ---------------- FILE VALIDATION ---------------- */
+
+        if (!req.file) {
+            return res.status(400).json({ error: "No file uploaded." });
+        }
+
+        const allowedTypes = [
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "application/vnd.ms-excel"
+        ];
+
+        if (!allowedTypes.includes(req.file.mimetype)) {
+            return res.status(400).json({ error: "Invalid file type" });
+        }
+
+        /* ---------------- PARSE EXCEL ---------------- */
 
         const workbook = XLSX.read(req.file.buffer, { type: "buffer" });
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
         const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
 
-        if (!rows.length) return res.status(400).json({ error: "Uploaded file is empty." });
+        if (!rows.length) {
+            return res.status(400).json({ error: "Uploaded file is empty." });
+        }
 
         const validLeads = [];
         const rejected = [];
 
+        /* ---------------- PROCESS ROWS ---------------- */
+
         rows.forEach((row, index) => {
-            const lead = mapRowToLead(row, user);
             const rowNum = index + 2;
 
-            // only NAME required
+            const lead = mapRowToLead(row, user);
+
+            // 🔐 Basic sanitization
+            if (lead.name) {
+                lead.name = String(lead.name).trim();
+            }
+
             if (!lead.name) {
                 rejected.push({ row: rowNum, reason: "Missing Name" });
                 return;
@@ -898,6 +936,7 @@ export const addbulkLeads = async (req, res) => {
             validLeads.push({
                 ...lead,
                 leadType: "import",
+
                 marketing: {
                     platform: "offline",
                     source: "excel-import",
@@ -906,7 +945,9 @@ export const addbulkLeads = async (req, res) => {
                     referrer: "",
                     utm: {}
                 },
+
                 rawImport: row,
+
                 importMeta: {
                     fileName: req.file.originalname,
                     uploadedBy: user._id,
@@ -916,35 +957,53 @@ export const addbulkLeads = async (req, res) => {
             });
         });
 
+        /* ---------------- INSERT ---------------- */
+
         let insertedLeads = [];
 
-        if (validLeads.length > 0) {
-            insertedLeads = await Lead.insertMany(validLeads, { ordered: false });
-        }
-
-        if (insertedLeads.length) {
-            await notifyLeadCreated({
-                authUser: user,
-                leadIds: insertedLeads.map(l => l._id)
+        if (validLeads.length) {
+            insertedLeads = await Lead.insertMany(validLeads, {
+                ordered: false
             });
         }
+
+        /* ---------------- NOTIFICATION ---------------- */
+
+        if (insertedLeads.length) {
+            try {
+                await notifyLeadCreated({
+                    authUser: user,
+                    leadIds: insertedLeads.map(l => l._id)
+                });
+            } catch (err) {
+                console.error("Notification error:", err);
+            }
+        }
+
+        /* ---------------- RESPONSE ---------------- */
 
         return res.status(200).json({
             success: true,
             message: `${insertedLeads.length} leads imported.`,
+            insertedCount: insertedLeads.length,
             rejectedCount: rejected.length,
             rejected
         });
 
     } catch (error) {
         console.error("Bulk upload error:", error);
-        return res.status(500).json({ error: "Internal Server Error during import." });
+
+        return res.status(500).json({
+            error: "Internal Server Error during import."
+        });
     }
 };
 
 export const createPublicLead = async (req, res) => {
     try {
         const { name, email, contact, course, ref_code } = req.body || {};
+
+        /* ---------------- VALIDATION ---------------- */
 
         if (!name || !email || !contact) {
             return res.status(400).json({ error: "Required fields missing" });
@@ -962,21 +1021,36 @@ export const createPublicLead = async (req, res) => {
             return res.status(400).json({ error: "Invalid contact" });
         }
 
-        /* ------------------ Resolve Partner ------------------ */
-        let user = null;
+        /* ---------------- ROLE IDS ---------------- */
+
+        const [partnerRoleId, adminRoleId] = await Promise.all([
+            getRoleId("partner"),
+            getRoleId("admin")
+        ]);
+
+        /* ---------------- RESOLVE PARTNER ---------------- */
+
+        let partnerUser = null;
         let refApplied = false;
 
         if (ref_code) {
-            user = await User.findOne({ ref_code, role: "partner" })
+            partnerUser = await RegularUser.findOne({
+                ref_code: String(ref_code).trim(),
+                role: partnerRoleId
+            })
                 .select("_id name")
                 .lean();
 
-            if (user) refApplied = true;
+            if (partnerUser) refApplied = true;
         }
 
-        /* ------------------ Duplicate Check ------------------ */
+        /* ---------------- DUPLICATE CHECK ---------------- */
+
         const exists = await Lead.exists({
-            $or: [{ email: sanitizedEmail }, { contact: sanitizedContact }]
+            $or: [
+                { email: sanitizedEmail },
+                { contact: sanitizedContact }
+            ]
         });
 
         if (exists) {
@@ -986,21 +1060,24 @@ export const createPublicLead = async (req, res) => {
             });
         }
 
-        /* ------------------ Resolve Owner ------------------ */
+        /* ---------------- RESOLVE OWNER ---------------- */
+
         let createdBy = null;
 
-        if (refApplied && user) {
-            createdBy = user._id;
+        if (refApplied && partnerUser) {
+            createdBy = partnerUser._id;
         } else {
-            // fallback → assign to admin
-            const admin = await User.findOne({ role: "admin" })
+            const admin = await RegularUser.findOne({
+                role: adminRoleId
+            })
                 .select("_id")
                 .lean();
 
             createdBy = admin?._id || null;
         }
 
-        /* ------------------ Create Lead ------------------ */
+        /* ---------------- CREATE LEAD ---------------- */
+
         const lead = await Lead.create({
             createdBy,
             assignedTo: null,
@@ -1008,8 +1085,9 @@ export const createPublicLead = async (req, res) => {
             name: sanitizedName,
             email: sanitizedEmail,
             contact: sanitizedContact,
+
             preferences: {
-                courseName: course?.trim()
+                courseName: course ? String(course).trim() : ""
             },
 
             leadType: refApplied ? "partner" : "external",
@@ -1021,12 +1099,15 @@ export const createPublicLead = async (req, res) => {
             message: "Lead created",
             leadId: lead._id,
             refApplied,
-            partnerName: user?.name || null
+            partnerName: partnerUser?.name || null
         });
 
     } catch (err) {
         console.error("Public Lead Error:", err);
-        return res.status(500).json({ error: "Internal server error" });
+
+        return res.status(500).json({
+            error: "Internal server error"
+        });
     }
 };
 
@@ -1048,6 +1129,8 @@ export const addExternalLead = async (req, res) => {
             course_id,
         } = req.body || {};
 
+        /* ---------------- VALIDATION ---------------- */
+
         if (!name || !email || !contact) {
             return res.status(400).json({
                 error: "name, email, contact are required",
@@ -1066,17 +1149,46 @@ export const addExternalLead = async (req, res) => {
             return res.status(400).json({ error: "Invalid email format" });
         }
 
-        /* ------------------ Resolve Owner ------------------ */
-        const admin = await User.findOne({ role: "admin" })
+        /* ---------------- ROLE IDS ---------------- */
+
+        const adminRoleId = await getRoleId("admin");
+
+        /* ---------------- RESOLVE OWNER ---------------- */
+
+        const admin = await RegularUser.findOne({ role: adminRoleId })
             .select("_id")
             .lean();
 
-        const adminId = admin?._id || null;
+        if (!admin) {
+            return res.status(500).json({
+                error: "No admin configured in system",
+            });
+        }
 
-        /* ------------------ Marketing ------------------ */
+        const adminId = admin._id;
+
+        /* ---------------- DUPLICATE CHECK (IMPORTANT) ---------------- */
+
+        const exists = await Lead.exists({
+            $or: [
+                { email: sanitizedEmail },
+                { contact: sanitizedContact }
+            ]
+        });
+
+        if (exists) {
+            return res.status(200).json({
+                success: true,
+                message: "Lead already exists",
+            });
+        }
+
+        /* ---------------- MARKETING ---------------- */
+
         const detectedMarketing = detectLeadSource(req);
 
-        /* ------------------ Payload ------------------ */
+        /* ---------------- PAYLOAD ---------------- */
+
         const leadPayload = {
             property_id,
             course_id,
@@ -1087,25 +1199,39 @@ export const addExternalLead = async (req, res) => {
             name: sanitizedName,
             email: sanitizedEmail,
             contact: sanitizedContact,
-            address: address?.trim() || "",
-            city: city?.trim() || preferences?.preferredCity || "",
-            state: state?.trim() || "",
-            pincode: pincode?.trim() || "",
+
+            address: String(address).trim(),
+            city: String(city || preferences?.preferredCity || "").trim(),
+            state: String(state).trim(),
+            pincode: String(pincode).trim(),
 
             academics: {
-                qualification: academics?.qualification?.trim() || "",
-                boardOrUniversity: academics?.boardOrUniversity?.trim() || "",
+                qualification: String(academics?.qualification || "").trim(),
+                boardOrUniversity: String(academics?.boardOrUniversity || "").trim(),
                 passingYear: academics?.passingYear || null,
                 percentage: academics?.percentage || null,
-                stream: academics?.stream?.trim() || "",
+                stream: String(academics?.stream || "").trim(),
             },
 
             preferences: {
-                courseName: preferences?.courseName?.trim() || undefined,
+                courseName: preferences?.courseName
+                    ? String(preferences.courseName).trim()
+                    : undefined,
+
                 courseType: sanitizeEnum(preferences?.courseType, COURSE_TYPES),
-                specialization: preferences?.specialization?.trim() || undefined,
-                preferredState: preferences?.preferredState?.trim() || undefined,
-                preferredCity: preferences?.preferredCity?.trim() || undefined,
+
+                specialization: preferences?.specialization
+                    ? String(preferences.specialization).trim()
+                    : undefined,
+
+                preferredState: preferences?.preferredState
+                    ? String(preferences.preferredState).trim()
+                    : undefined,
+
+                preferredCity: preferences?.preferredCity
+                    ? String(preferences.preferredCity).trim()
+                    : undefined,
+
                 collegeType:
                     sanitizeEnum(preferences?.collegeType, COLLEGE_TYPES) || "Any",
             },
@@ -1121,15 +1247,23 @@ export const addExternalLead = async (req, res) => {
             lastActivity: new Date(),
         };
 
-        /* ------------------ Create ------------------ */
+        /* ---------------- CREATE ---------------- */
+
         const newLead = await Lead.create(leadPayload);
 
-        /* ------------------ Notification ------------------ */
-        await notifyLeadCreated({
-            authUser: null,
-            leadIds: [newLead._id],
-            leadName: newLead.name,
-        });
+        /* ---------------- NOTIFICATION ---------------- */
+
+        try {
+            await notifyLeadCreated({
+                authUser: null,
+                leadIds: [newLead._id],
+                leadName: newLead.name,
+            });
+        } catch (err) {
+            console.error("Notification error:", err);
+        }
+
+        /* ---------------- RESPONSE ---------------- */
 
         return res.status(201).json({
             success: true,
@@ -1139,7 +1273,10 @@ export const addExternalLead = async (req, res) => {
 
     } catch (err) {
         console.error("External Lead Error:", err);
-        return res.status(500).json({ error: "Internal server error" });
+
+        return res.status(500).json({
+            error: "Internal server error",
+        });
     }
 };
 

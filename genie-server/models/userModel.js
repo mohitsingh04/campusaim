@@ -1,144 +1,91 @@
 import mongoose from "mongoose";
-import { db } from "../mongoose/index.js";
 
 const userSchema = new mongoose.Schema({
-    nicheId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "niche",
-        default: null,
-    },
-
-    name: {
-        type: String,
-        trim: true,
-    },
-
-    email: {
-        type: String,
+    uniqueId: {
+        type: Number,
         required: true,
-        unique: true,
-        lowercase: true,
-        trim: true,
-        match: [/^\S+@\S+\.\S+$/, "Please enter a valid email address"],
     },
-
-    contact: {
-        type: String,
-        unique: true,
-        sparse: true,
-        match: [/^[0-9]{10}$/, "Please enter a valid 10-digit contact number"],
-    },
-
-    ref_code: {
-        type: String,
-        unique: true,
-        sparse: true,
-        default: undefined
-    },
-
-    password: {
-        type: String,
-        required: function () {
-            return this.provider === "local";
-        },
-        minlength: 6,
-        select: false,
-    },
-
-    profile_image: {
-        type: String,
-    },
-
-    profile_image_compressed: {
-        type: String,
-    },
-
-    bio: {
-        type: String,
-        maxlength: 500,
-    },
-
-    googleId: {
-        type: String,
-        unique: true,
-        sparse: true,
-    },
-
-    provider: {
-        type: String,
-        enum: ["local", "google", "hybrid"], // ✅ add hybrid
-        default: "local",
-    },
-
-    status: {
-        type: String,
-        enum: ["active", "suspended"],
-        default: "active",
-    },
-
-    isVerified: {
-        type: Boolean,
-        default: false, // true = Verified, false = Unverified
-    },
-
-    role: {
-        type: String,
-        enum: ["superadmin", "admin", "partner", "counselor", "teamleader"],
-        default: "admin", // because admin can create partner and counselor, and superadmin can change roles and permission
-    },
-
     teamLeader: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-        default: null
+        ref: "user",
     },
-
-    permission: {
-        type: [String],
-        default: [],
+    avatar: {
+        type: Array,
     },
-
+    banner: {
+        type: Array,
+    },
+    username: {
+        type: String,
+        required: true,
+    },
+    name: {
+        type: String,
+        required: true,
+    },
+    email: {
+        type: String,
+    },
+    mobile_no: {
+        type: String,
+    },
+    alt_mobile_no: {
+        type: String,
+    },
+    ref_code: { type: String, unique: true, default: undefined },
+    ref_by: { type: String, default: undefined },
+    password: {
+        type: String,
+    },
+    status: {
+        type: String,
+        default: "Active",
+    },
+    isGoogleLogin: {
+        type: Boolean,
+        default: false,
+    },
+    role: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "role"
+    },
+    permissions: {
+        type: [mongoose.Schema.Types.ObjectId],
+    },
+    isProfessional: {
+        type: Boolean,
+        default: false,
+    },
+    verified: {
+        type: Boolean,
+        default: false,
+    },
     verifyToken: {
         type: String,
-        select: false,
     },
-
     verifyTokenExpiry: {
         type: Date,
     },
-
-    forgotOrResetPasswordToken: {
+    resetToken: {
         type: String,
-        select: false,
     },
-
-    forgotOrResetPasswordTokenExpiry: {
+    resetTokenExpiry: {
         type: Date,
     },
-
-    totalActiveSeconds: {
-        type: Number, // to track counselor's active time, only for counselor
-        default: 0,
+    professionalToken: {
+        type: String,
     },
-
-    lastLoginAt: {
+    professionalTokenExpiry: {
         type: Date,
-        default: null,
     },
+    deletionToken: {
+        type: String,
+    },
+    deletionTokenExpiry: {
+        type: Date,
+    },
+    lastLoginAt: { type: Date, default: null },
+});
 
-    activityLogs: [
-        {
-            at: {
-                type: Date,
-                default: Date.now,
-            },
-            seconds: {
-                type: Number,
-                required: true,
-            },
-        },
-    ],
-}, { timestamps: true });
-
-const User = db.models.User || db.model("User", userSchema);
+const User = mongoose.models.user || mongoose.model("user", userSchema);
 export default User;
