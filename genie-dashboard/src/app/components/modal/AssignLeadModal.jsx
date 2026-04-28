@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Select from "react-select";
 import toast from "react-hot-toast";
-import { API } from "../../services/API";
+import { API, CampusaimAPI } from "../../services/API";
 import { useAuth } from "../../context/AuthContext";
 
 const capitalizeRole = (role) =>
@@ -23,20 +23,23 @@ export default function AssignLeadModal({
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const url =
-                    authUser.role === "admin"
-                        ? "/admin/assignable-users"
-                        : "/teamleader/counselors";
+                const res = await CampusaimAPI.get("/fetch-counselor-teamleader");
 
-                const res = await API.get(url);
+                const { counselors = [], teamleaders = [] } = res.data?.data || {};
+
+                // 🔥 merge both arrays
+                const users = [...teamleaders, ...counselors];
+
                 setOptions(
-                    res.data.map(u => ({
+                    users.map(u => ({
                         value: u._id,
-                        label: `${u.name} • ${capitalizeRole(u.role)} • ${u.email}`,
+                        label: `${u.name} • ${capitalizeRole(u.role?.role)} • ${u.email}`,
                         role: u.role
                     }))
                 );
-            } catch {
+
+            } catch (err) {
+                console.error(err);
                 toast.error("Failed to load users");
             }
         };

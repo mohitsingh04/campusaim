@@ -5,7 +5,7 @@ export default function AllTeamLeader() {
         <UserList
             roleKey="teamLeader"
             title="Team Leader"
-            apiPath="/fetch-team-leader"
+            apiPath="/fetch-teamleader"
             basePath="/dashboard/users/team-leaders"
         />
     );

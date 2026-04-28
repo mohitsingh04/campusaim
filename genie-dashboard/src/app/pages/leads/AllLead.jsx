@@ -396,7 +396,7 @@ export default function AllLead() {
                                 {assignee?.name || "N/A"}
                             </span>
                             <span className="text-xs text-gray-500 capitalize">
-                                {assignee?.role || "user"}
+                                {assignee?.role?.role || "user"}
                             </span>
                         </div>
                     );

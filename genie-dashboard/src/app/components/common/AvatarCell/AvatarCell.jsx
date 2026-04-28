@@ -43,9 +43,9 @@ export default function AvatarCell({ user, role = "User" }) {
                     </div>
                 )}
 
-                {(user.contact || user.mobile) && (
+                {(user.contact || user.mobile_no) && (
                     <div className="text-sm text-gray-500">
-                        {maskPhone(user.contact || user.mobile)}
+                        {maskPhone(user.contact || user.mobile_no)}
                     </div>
                 )}
             </div>

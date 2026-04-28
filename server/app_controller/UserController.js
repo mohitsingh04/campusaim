@@ -35,6 +35,10 @@ const normalizeMobile = (input = "") => {
 // Add a USER
 export const addUser = async (req, res) => {
     try {
+        const adminId = await getDataFromToken(req);
+        const admin = await RegularUser.findById(adminId).select("_id nicheId name").lean();
+        const nicheId = admin?.nicheId;
+
         const { username, name, email, mobile_no: rawMobileNo, role } = req.body;
         const mobile_no = normalizeMobile(rawMobileNo);
         const sanitizedUsername = username?.toLowerCase().trim().replace(/\s+/g, "");
@@ -97,6 +101,7 @@ export const addUser = async (req, res) => {
         const uniqueId = await generateUniqueId(RegularUser);
 
         const newUser = new RegularUser({
+            nicheId,
             uniqueId,
             username: sanitizedUsername,
             name,
@@ -184,6 +189,70 @@ export const updateUser = async (req, res) => {
     }
 };
 
+// Controller to fetch counselors and teamleaders
+export const fetchCounselorsAndTeamleaders = async (req, res) => {
+    try {
+        // 1. Fetch both role IDs in parallel
+        const [counselorRoleId, teamLeaderRoleId] = await Promise.all([
+            getRoleIds("counselor"),
+            getRoleIds("team leader") // make sure exact role name matches DB
+        ]);
+
+        // 2. Validate ObjectIds (defensive)
+        if (
+            !mongoose.Types.ObjectId.isValid(counselorRoleId) ||
+            !mongoose.Types.ObjectId.isValid(teamLeaderRoleId)
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid role IDs"
+            });
+        }
+
+        // 3. Fetch users in single query (better performance)
+        const users = await RegularUser.find({
+            role: { $in: [counselorRoleId, teamLeaderRoleId] }
+        })
+            .select("_id name email contact status role teamLeader")
+            .populate("role", "role") // ✅ get role name
+            .populate("teamLeader", "name email")
+            .lean();
+
+        // 4. Split into groups (O(n), no extra DB calls)
+        const counselors = [];
+        const teamleaders = [];
+
+        for (const user of users) {
+            const roleId = user.role?._id?.toString();
+
+            if (roleId === counselorRoleId) {
+                counselors.push(user);
+            } else if (roleId === teamLeaderRoleId) {
+                teamleaders.push(user);
+            }
+        }
+
+        return res.status(200).json({
+            success: true,
+            count: {
+                counselors: counselors.length,
+                teamleaders: teamleaders.length
+            },
+            data: {
+                counselors,
+                teamleaders
+            }
+        });
+    } catch (error) {
+        console.error("Error fetching counselors & teamleaders:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: error.message || "Internal Server Error"
+        });
+    }
+};
+
 // Controller to fetch admins
 export const fetchAdmins = async (req, res) => {
     try {
@@ -263,13 +332,12 @@ export const fetchAdminById = async (req, res) => {
 // Controller to fetch counselors
 export const fetchCounselors = async (req, res) => {
     try {
-        const counselorRoleId = await getRoleIds("Counselor");
+        const counselorRoleId = await getRoleIds("counselor");
 
         const counselors = await RegularUser.find({ role: counselorRoleId })
             .populate("teamLeader", "name email") // ✅ IMPORTANT FIX
             .select("_id name email contact status teamLeader")
             .lean();
-        console.log(counselors)
 
         return res.status(200).json({
             success: true,
@@ -379,7 +447,7 @@ export const fetchTeamLeaderById = async (req, res) => {
 // Controller to fetch Partner
 export const fetchPartner = async (req, res) => {
     try {
-        const partnerRoleId = await getRoleIds("Partner");
+        const partnerRoleId = await getRoleIds("partner");
 
         const partners = await RegularUser.find({ role: partnerRoleId }).select("-password").lean();
 
@@ -407,7 +475,7 @@ export const fetchPartnerById = async (req, res) => {
         }
 
         // ---------------- ROLE RESOLVE ----------------
-        const partnerRoleId = await getRoleIds("Partner");
+        const partnerRoleId = await getRoleIds("partner");
 
         // ---------------- FETCH USER ----------------
         const partner = await RegularUser.findOne({
@@ -545,6 +613,9 @@ export const generatePartnerInvite = async (req, res) => {
 // Register the Partner via Invite Link
 export const registerPartnerViaInvite = async (req, res) => {
     try {
+        const niche = await Niche.findOne({ name: "Education" }).select("_id name").lean();
+        const nicheId = niche?._id;
+
         const { token } = req.params;
         const { username, name, email, mobile_no: rawMobileNo, password } = req.body;
 
@@ -598,6 +669,7 @@ export const registerPartnerViaInvite = async (req, res) => {
 
         // ---------------- CREATE USER ----------------
         const newUser = await RegularUser.create({
+            nicheId,
             uniqueId,
             username,
             name,

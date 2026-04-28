@@ -68,6 +68,8 @@ function ViewLead() {
         role?.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase());
 
     useEffect(() => {
+        if (!["admin", "teamleader"].includes(role)) return;
+
         const fetchUsers = async () => {
             try {
                 const { data } = await API.get(`/fetch/users`);
@@ -81,8 +83,9 @@ function ViewLead() {
                 );
 
             } catch (error) {
-                toast
-                    .error(error.response.data.error || "Failed to load users");
+                if (error?.response?.status !== 403) {
+                    toast.error(error.response?.data?.error || "Failed to load users");
+                }
             }
         };
 

@@ -46,6 +46,14 @@ export default function LeadConversation() {
 
     const nicheId = authUser?.nicheId;
 
+    if (!nicheId) {
+        return (
+            <div className="p-10 text-center text-[var(--yp-muted)]">
+                First select niche before make any conversation.
+            </div>
+        );
+    }
+
     const [searchParams] = useSearchParams();
     // const isNewSession = searchParams.get("newSession") === "true";
     const mode = searchParams.get("mode"); // "continue" | "new"

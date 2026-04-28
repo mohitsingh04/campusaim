@@ -4,6 +4,7 @@ import {
   sendProfileResetEmail,
 } from "../email/profileEmail.js";
 import RegularUser from "../profile-model/RegularUser.js";
+import { Niche } from "../profile-model/Niche.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
@@ -49,6 +50,9 @@ export const mapRoleForApp = (roleName) => {
 
 export const profileRegister = async (req, res) => {
   try {
+    const niche = await Niche.findOne({name: "Education"}).select("_id name").lean();
+    const nicheId = niche?._id;
+    
     let { username, name, email, mobile_no, password, confirm_password, role } = req.body;
 
     if (
@@ -131,6 +135,7 @@ export const profileRegister = async (req, res) => {
 
     // Create new user
     const newUser = new RegularUser({
+      nicheId,
       uniqueId,
       username, // already lowercase
       name,

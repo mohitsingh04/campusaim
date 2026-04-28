@@ -2,6 +2,11 @@ import mongoose from "mongoose";
 import { profileDatabase } from "../database/Databases.js";
 
 const regularUserSchema = mongoose.Schema({
+  nicheId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "niche",
+    default: null
+  },
   uniqueId: {
     type: Number,
     required: true,

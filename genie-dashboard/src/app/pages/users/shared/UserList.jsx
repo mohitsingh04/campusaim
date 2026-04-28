@@ -6,7 +6,7 @@ import { saveAs } from "file-saver";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 
-import { API } from "../../../services/API";
+import { API, CampusaimAPI } from "../../../services/API";
 import Breadcrumbs from "../../../components/ui/BreadCrumb/Breadcrumbs";
 import SearchFilter from "../../../components/common/SearchFilter/SearchFilter";
 import BulkActionsBar from "../../../components/common/BulkActionsBar/BulkActionsBar";
@@ -51,10 +51,10 @@ export default function UserList({
     const fetchData = useCallback(async () => {
         setIsLoading(true);
         try {
-            const res = await API.get(apiPath);
-            console.log(res)
+            const res = await CampusaimAPI.get(apiPath);
+            console.log(res?.data?.data)
             // setItems(res.data || []);
-            setItems(res.data?.users || []); // ✅ FIXED
+            setItems(res?.data?.data || []); // ✅ FIXED
         } catch (error) {
             console.error("Fetch Data Error:", error);
             toast.error(error?.response?.data?.error || `Failed to fetch ${title}`);
@@ -78,12 +78,12 @@ export default function UserList({
 
                 const name = l.name?.toLowerCase() || "";
                 const email = l.email?.toLowerCase() || "";
-                const contact = String(l.contact?.toLowerCase() || "");
+                const mobile_no = String(l.mobile_no?.toLowerCase() || "");
 
                 return (
                     name.includes(q) ||
                     email.includes(q) ||
-                    contact.includes(q)
+                    mobile_no.includes(q)
                 );
             });
         } catch (err) {
@@ -211,7 +211,7 @@ export default function UserList({
                 .map(i => ({
                     Name: i.name || "-",
                     Email: i.email || "-",
-                    Phone: i.contact || "-",
+                    Phone: i.mobile_no || "-",
                 }));
 
             const sheet = XLSX.utils.json_to_sheet(dataToExport);
@@ -285,26 +285,26 @@ export default function UserList({
                 ]
                 : []),
 
-            ...(roleKey === "teamLeader"
-                ? [
-                    {
-                        key: "counselorCount",
-                        label: "Assigned Counselors",
-                        render: u => (
-                            <span
-                                className={`px-3 py-1 text-xs rounded-full font-medium
-                        ${u.counselorCount > 0
-                                        ? "bg-blue-100 text-blue-700"
-                                        : "bg-gray-100 text-gray-500"
-                                    }
-                    `}
-                            >
-                                {u.counselorCount} counselor{u.counselorCount !== 1 ? "s" : ""}
-                            </span>
-                        ),
-                    },
-                ]
-                : []),
+            // ...(roleKey === "teamLeader"
+            //     ? [
+            //         {
+            //             key: "counselorCount",
+            //             label: "Assigned Counselors",
+            //             render: u => (
+            //                 <span
+            //                     className={`px-3 py-1 text-xs rounded-full font-medium
+            //             ${u.counselorCount > 0
+            //                             ? "bg-blue-100 text-blue-700"
+            //                             : "bg-gray-100 text-gray-500"
+            //                         }
+            //         `}
+            //                 >
+            //                     {u.counselorCount} counselor{u.counselorCount !== 1 ? "s" : ""}
+            //                 </span>
+            //             ),
+            //         },
+            //     ]
+            //     : []),
 
 
             /* ================= verified ================= */

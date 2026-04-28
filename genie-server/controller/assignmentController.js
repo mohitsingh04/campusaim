@@ -31,18 +31,23 @@ export const assignLeads = async (req, res) => {
 
         const authUser = await User
             .findById(authUserId)
-            .select("_id name role");
+            .select("_id name role")
+            .populate("role", "role");
 
         const assignToUser = await User
             .findById(assignToId)
-            .select("_id role teamLeader");
+            .select("_id role teamLeader")
+            .populate("role", "role");
 
         if (!authUser || !assignToUser) {
             return res.status(404).json({ error: "User not found" });
         }
 
+        const authUserRole = mapRoleForApp(authUser.role?.role);
+        const assignToRole = mapRoleForApp(assignToUser.role?.role);
+
         /* ================= ADMIN LOGIC ================= */
-        if (authUser.role === "admin") {
+        if (authUserRole === "admin") {
 
             const leads = await Lead.find({
                 _id: { $in: sanitizedLeadIds }
@@ -60,7 +65,7 @@ export const assignLeads = async (req, res) => {
             }
 
             /* -------- Admin → TeamLeader -------- */
-            if (assignToUser.role === "teamleader") {
+            if (assignToRole === "teamleader") {
 
                 await Lead.updateMany(
                     { _id: { $in: validLeadIds } },
@@ -82,7 +87,7 @@ export const assignLeads = async (req, res) => {
 
             /* -------- Admin → Counselor -------- */
 
-            if (assignToUser.role === "counselor") {
+            if (assignToRole === "counselor") {
                 await Lead.updateMany(
                     { _id: { $in: validLeadIds } },
                     {
@@ -200,12 +205,12 @@ export const getAssignedCounselors = async (req, res) => {
         const counselors = await RegularUser.find({ teamLeader: teamLeaderId })
             .populate("role", "role")
             .select("_id name email mobile_no status role");
-            
-            // 🔐 Filter only counselors (since role is ObjectId now)
-            const filteredCounselors = counselors.filter(
+
+        // 🔐 Filter only counselors (since role is ObjectId now)
+        const filteredCounselors = counselors.filter(
             (c) => mapRoleForApp(c.role?.role) === "counselor"
         );
-        
+
         const counselorIds = filteredCounselors.map(c => c._id);
 
         // ⚠️ Edge case: no counselors

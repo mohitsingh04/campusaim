@@ -201,7 +201,7 @@ export const fetchCounselorById = async (req, res) => {
             }
         });
     } catch (error) {
-        console.error("Error fetching counselor:", error);
+        console.error("Error fetching counselor by id:", error);
         return res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 };
@@ -247,7 +247,7 @@ export const fetchPartnerById = async (req, res) => {
 // Controller to fetch team leader
 export const fetchTeamLeader = async (req, res) => {
     try {
-        const result = await getUsersByRole({ role: "teamleader" });
+        const result = await getUsersByRole({ role: "team leader" });
 
         const usersWithCount = await Promise.all(
             result.users.map(async (tl) => {
@@ -269,6 +269,7 @@ export const fetchTeamLeader = async (req, res) => {
         });
 
     } catch (error) {
+        console.error("Error fetching teamleaders:", error);
         return res.status(500).json({ error: "Internal Server Error" });
     }
 };
@@ -481,6 +482,7 @@ export const addUser = async (req, res) => {
             testPassword: password // optional: remove in prod
         });
     } catch (error) {
+        console.error("Error fetching counselors:", error);
         return res.status(500).json({ error: error.message });
     }
 };

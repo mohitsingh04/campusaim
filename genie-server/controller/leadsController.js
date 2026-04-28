@@ -198,8 +198,18 @@ export const getLeads = async (req, res) => {
 
         const leads = await Lead.find(finalQuery)
             .sort({ createdAt: -1 })
-            .populate({ path: "createdBy", model: RegularUser, select: "name email role" })
-            .populate({ path: "assignedTo", model: RegularUser, select: "name role" })
+            .populate({
+                path: "createdBy",
+                model: RegularUser,
+                select: "name email role", // ✅ comma added
+                populate: { path: "role", select: "role" }
+            })
+            .populate({
+                path: "assignedTo",
+                model: RegularUser,
+                select: "name email role", // ✅ comma added
+                populate: { path: "role", select: "role" }
+            })
             .lean();
 
         return res.status(200).json({

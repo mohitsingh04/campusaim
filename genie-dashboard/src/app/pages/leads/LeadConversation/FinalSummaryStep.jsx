@@ -42,8 +42,7 @@ export default function FinalSummaryStep({
   const totalQuestions = questions.length;
   const submittedCount = Object.keys(answers).length;
 
-  const isAdmin =
-    authUser?.role === "admin" || authUser?.role === "superadmin";
+  const isAdmin = authUser?.appRole === "admin" || authUser?.appRole === "superadmin";
 
   // --- Score Calculations ---
   const overallAnswerScore = useMemo(() => {

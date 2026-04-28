@@ -60,9 +60,37 @@ export const getSuperadminDashboard = async (req, res) => {
             return res.status(400).json({ success: false, message: "Invalid date range" });
         }
 
+        const authUserId = await getDataFromToken(req);
+
+        if (!mongoose.Types.ObjectId.isValid(authUserId)) {
+            return res.status(401).json({ message: "Unauthorized" });
+        }
+
+        const authUser = await RegularUser.findById(authUserId)
+            .populate("role", "role")
+            .select("_id role")
+            .lean();
+
+        if (!authUser) {
+            return res.status(401).json({ message: "Unauthorized" });
+        }
+
+        const appRole = mapRoleForApp(authUser.role?.role);
+
+        if (appRole !== "superadmin") {
+            return res.status(403).json({ message: "Access denied" });
+        }
+
         const now = new Date();
 
         const roleIdMap = await getRoleMap();
+        const [adminRoleId, partnerRoleId, counselorRoleId, teamLeaderRoleId] =
+            await Promise.all([
+                getRoleId("admin"),
+                getRoleId("partner"),
+                getRoleId("counselor"),
+                getRoleId("teamleader"),
+            ]);
 
         /* ---------------- PLATFORM ---------------- */
         const [
@@ -71,7 +99,7 @@ export const getSuperadminDashboard = async (req, res) => {
             newAdmins,
             unverifiedAdmins,
         ] = await Promise.all([
-            RegularUser.countDocuments({ role: roleIdMap[getDbRoleKey("admin")] }),
+            RegularUser.countDocuments({ role: adminRoleId }),
 
             RegularUser.countDocuments({
                 role: roleIdMap[getDbRoleKey("admin")],
@@ -99,17 +127,17 @@ export const getSuperadminDashboard = async (req, res) => {
             activePartners,
             activeCounselors,
         ] = await Promise.all([
-            RegularUser.countDocuments({ role: roleIdMap["partner"] }),
-            RegularUser.countDocuments({ role: roleIdMap["counselor"] }),
-            RegularUser.countDocuments({ role: roleIdMap["teamleader"] }),
+            RegularUser.countDocuments({ role: partnerRoleId }),
+            RegularUser.countDocuments({ role: counselorRoleId }),
+            RegularUser.countDocuments({ role: teamLeaderRoleId }),
 
             RegularUser.countDocuments({
-                role: roleIdMap["partner"],
+                role: partnerRoleId,
                 lastLoginAt: { $gte: start, $lte: end }
             }),
 
             RegularUser.countDocuments({
-                role: roleIdMap["counselor"],
+                role: counselorRoleId,
                 lastLoginAt: { $gte: start, $lte: end }
             }),
         ]);
@@ -275,7 +303,11 @@ export const getAdminDashboard = async (req, res) => {
             return res.status(403).json({ message: "Access denied" });
         }
 
-        const roleIdMap = await getRoleMap();
+        const [partnerRoleId, teamLeaderRoleId, counselorRoleId] = await Promise.all([
+            getRoleId("partner"),
+            getRoleId("teamleader"),
+            getRoleId("counselor")
+        ]);
 
         /* ---------- DATE RANGE ---------- */
         let start, end;
@@ -303,27 +335,27 @@ export const getAdminDashboard = async (req, res) => {
         ] = await Promise.all([
 
             /* TEAM */
-            RegularUser.countDocuments({ role: roleIdMap["partner"] }),
-            RegularUser.countDocuments({ role: roleIdMap["teamleader"] }),
-            RegularUser.countDocuments({ role: roleIdMap["counselor"] }),
+            RegularUser.countDocuments({ role: partnerRoleId }),
+            RegularUser.countDocuments({ role: teamLeaderRoleId }),
+            RegularUser.countDocuments({ role: counselorRoleId }),
 
             /* ACTIVE */
             RegularUser.countDocuments({
-                role: roleIdMap["partner"],
+                role: partnerRoleId,
                 $or: [
                     { lastLoginAt: { $gte: activeSince } },
                     { updatedAt: { $gte: activeSince } }
                 ]
             }),
             RegularUser.countDocuments({
-                role: roleIdMap["teamleader"],
+                role: teamLeaderRoleId,
                 $or: [
                     { lastLoginAt: { $gte: activeSince } },
                     { updatedAt: { $gte: activeSince } }
                 ]
             }),
             RegularUser.countDocuments({
-                role: roleIdMap["counselor"],
+                role: counselorRoleId,
                 $or: [
                     { lastLoginAt: { $gte: activeSince } },
                     { updatedAt: { $gte: activeSince } }
@@ -765,16 +797,28 @@ export const getPartnerDashboard = async (req, res) => {
     try {
         const partnerId = await getDataFromToken(req);
 
+        /* ---------------- VALIDATION ---------------- */
         if (!mongoose.Types.ObjectId.isValid(partnerId)) {
             return res.status(400).json({ message: "Invalid user token" });
         }
 
-        const partner = await User.findById(partnerId)
+        /* ---------------- AUTH USER ---------------- */
+
+        const partner = await RegularUser.findById(partnerId)
+            .populate("role", "role") // ✅ IMPORTANT
             .select("_id role")
             .lean();
 
-        if (!partner || partner.role !== "partner") {
-            return res.status(403).json({ message: "Access denied or user not found" });
+        if (!partner) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const appRole = mapRoleForApp(partner.role?.role); // ✅ FIX
+
+        if (appRole !== "partner") {
+            return res.status(403).json({
+                message: "Access denied"
+            });
         }
 
         const userId = new mongoose.Types.ObjectId(partner._id);
@@ -907,11 +951,18 @@ export const getTeamLeaderDashboard = async (req, res) => {
             return res.status(400).json({ message: "Invalid user token" });
         }
 
-        const teamleader = await User.findById(teamLeaderId)
+        const teamleader = await RegularUser.findById(teamLeaderId)
+            .populate("role", "role")
             .select("_id role")
             .lean();
 
-        if (!teamleader || teamleader.role !== "teamleader") {
+        if (!teamleader) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const appRole = mapRoleForApp(teamleader.role?.role);
+
+        if (appRole !== "teamleader") {
             return res.status(403).json({ message: "Access denied" });
         }
 
@@ -927,10 +978,14 @@ export const getTeamLeaderDashboard = async (req, res) => {
         }
 
         /* ---------------- Counselors ---------------- */
-        const counselors = await User.find({
-            role: "counselor",
+        const counselorRoleId = await getRoleId("counselor");
+
+        const counselors = await RegularUser.find({
+            role: counselorRoleId,
             teamLeader: tlId,
-        }).select("_id name").lean();
+        })
+            .select("_id name")
+            .lean();
 
         const counselorIds = counselors.map(c => c._id);
         const safeCounselorIds = counselorIds.length ? counselorIds : [null];

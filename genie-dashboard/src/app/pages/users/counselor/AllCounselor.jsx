@@ -5,7 +5,7 @@ export default function AllCounselor() {
         <UserList
             roleKey="counselor"
             title="Counselors"
-            apiPath="/fetch-counselor"
+            apiPath="/fetch-counselors"
             basePath="/dashboard/users/counselors"
             enableAssign
         />

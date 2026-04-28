@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import { addPropertyScore } from "../analytic-controller/PropertyScoreController.js";
 import Course from "../models/Courses.js";
 import PropertyCourse from "../models/PropertyCourse.js";
-import { generateUniqueId } from "../utils/Callback.js";
+import { generateSlug, generateUniqueId } from "../utils/Callback.js";
 
 function normalizeObjectIdArray(input) {
   let arr = [];
