@@ -112,7 +112,7 @@ export default function YogaTimeline() {
 										{isActive && (
 											<motion.div
 												layoutId="activeGlow"
-												className="absolute w-6 h-6 rounded-full bg-(--main-light) border border-(--main) shadow-custom"
+												className="absolute w-6 h-6 rounded-full bg-(--main-subtle) border border-(--main) shadow-custom"
 												transition={{
 													type: "spring",
 													stiffness: 300,

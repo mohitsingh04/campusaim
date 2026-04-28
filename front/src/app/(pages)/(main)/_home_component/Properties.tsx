@@ -1,7 +1,10 @@
 "use client";
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
+
+import "swiper/css";
+import "swiper/css/autoplay";
 
 import { HeadingProps } from "@/ui/headings/MainHeading";
 import { PropertyProps } from "@/types/PropertyTypes";
@@ -9,140 +12,137 @@ import Link from "next/link";
 import { generateSlug } from "@/context/Callbacks";
 import Image from "next/image";
 import { useTheme } from "@/hooks/useTheme";
+import { useQuery } from "@tanstack/react-query";
+import API from "@/context/API";
+import { useGetAssets } from "@/context/providers/AssetsProviders";
+import InstitutesSkeleton from "@/ui/loader/page/landing/_components/InstitutesSkeleton";
+const MEDIA_URL = process.env.NEXT_PUBLIC_MEDIA_URL;
 
-const PropertyCarousel = ({ properties }: { properties: PropertyProps[] }) => {
-  const MEDIA_URL = process.env.NEXT_PUBLIC_MEDIA_URL;
+const PropertyCarousel = () => {
   const { theme } = useTheme();
   const isLight = theme === "light";
 
-  const { first20, randomList } = useMemo(() => {
-    if (!properties) return { first20: [], randomList: [] };
-
-    const validProperties = properties.filter(
+  const { data, isLoading } = useQuery({
+    queryKey: ["partner-logos"],
+    queryFn: async () => {
+      const [collgesRes, schoolRes] = await Promise.all([
+        API.get(
+          `/filter-by-category/property?names=College,University&&limit=20`,
+        ),
+        API.get(`/filter-by-category/property?names=School&limit=20`),
+      ]);
+      return {
+        collegeData: collgesRes.data || [],
+        schoolData: schoolRes.data || [],
+      };
+    },
+    staleTime: 0,
+  });
+  const processList = (list: PropertyProps[]) => {
+    const valid = list.filter(
       (p) => p?.property_logo?.[0] && p.property_logo[0].trim() !== "",
     );
+    if (valid.length > 0 && valid.length < 10) return [...valid, ...valid];
+    return valid;
+  };
 
-    const universities = validProperties?.filter(
-      (item) => item?.category === "University" || item?.category === "College",
-    );
-    const schools = validProperties?.filter(
-      (item) => item?.category === "School",
-    );
-    const first = universities.slice(0, 20);
-    const rest = schools.slice(0, 20);
-
-    const shuffled = [...rest].sort(() => 0.5 - Math.random());
-    const random = shuffled.slice(0, 20);
-
-    const finalFirst =
-      first.length < 10 ? [...first, ...first, ...first] : first;
-    const finalRandom =
-      random.length < 10 ? [...random, ...random, ...random] : random;
-
-    return { first20: finalFirst, randomList: finalRandom };
-  }, [properties]);
+  const firstList = useMemo(() => processList(data?.collegeData || []), [data]);
+  const randomList = useMemo(() => processList(data?.schoolData || []), [data]);
 
   const swiperOptions = {
     modules: [Autoplay],
     loop: true,
-    speed: 3000,
-    spaceBetween: 20,
-    slidesPerView: 2,
-    loopedSlides: 10,
-    allowTouchMove: false,
+    speed: 5000,
+    spaceBetween: 12,
+    slidesPerView: 3,
+    allowTouchMove: true,
+    grabCursor: true,
+    observer: true,
+    observeParents: true,
+    autoplay: {
+      delay: 0,
+      disableOnInteraction: false,
+    },
+    watchSlidesProgress: true,
     breakpoints: {
-      320: { slidesPerView: 3, spaceBetween: 12 },
       480: { slidesPerView: 4, spaceBetween: 14 },
       640: { slidesPerView: 5, spaceBetween: 16 },
       768: { slidesPerView: 6, spaceBetween: 18 },
       1024: { slidesPerView: 8, spaceBetween: 20 },
-      1280: { slidesPerView: 8, spaceBetween: 22 },
     },
-    className: "mySwiper !pb-0",
   };
 
-  if (properties?.length <= 0) return null;
-
+  if (isLoading || (!firstList.length && !randomList.length)) {
+    return <InstitutesSkeleton />;
+  }
   return (
-    <section className="bg-(--primary-bg) py-10 px-4 sm:px-8 text-(--text-color)">
-      <style jsx global>{`
-        .swiper-wrapper {
-          transition-timing-function: linear !important;
-        }
-      `}</style>
-
+    <section className="bg-(--primary-bg) py-10 px-4 sm:px-8 text-(--text-color) overflow-hidden">
       <div className="mb-10">
         <HeadingProps
-          tag={`${properties?.length}+ Partnered for Excellence`}
+          tag={`${firstList.length + randomList.length}+ Partnered for Excellence`}
           title="Our "
           activetitle="Institutes"
-          subtitle="Partnered for Excellence. We collaborate with accredited colleges and universities to deliver trusted, high-quality education."
+          subtitle="We collaborate only with India's leading, certified yoga institutions."
         />
       </div>
 
-      <div className="mb-10" dir="ltr">
-        <Swiper
-          {...swiperOptions}
-          autoplay={{
-            delay: 0,
-            disableOnInteraction: false,
-            pauseOnMouseEnter: true,
-          }}
-        >
-          {first20.map((prop, index) => (
-            <SwiperSlide key={`top-${index}`}>
-              <Link
-                href={`/${generateSlug(prop?.category)}/${generateSlug(
-                  prop?.property_slug,
-                )}/overview`}
-                className="flex items-center relative justify-center w-16 h-16 md:w-20 md:h-20 cursor-pointer overflow-hidden transition-transform hover:scale-105"
-              >
-                <Image
-                  src={`${MEDIA_URL}/${prop.property_logo[0]}`}
-                  alt={prop.property_name}
-                  fill
-                  className={`object-contain rounded-custom ${
-                    isLight ? "grayscale-0" : "grayscale hover:grayscale-0"
-                  } brightness-110 transition`}
-                />
-              </Link>
-              {prop?.category}
-            </SwiperSlide>
-          ))}
-        </Swiper>
+      <div className="linear-swiper-wrapper">
+        {firstList.length > 0 && (
+          <div className="mb-6" dir="ltr">
+            <Swiper {...swiperOptions} className="ease-linear!">
+              {firstList.map((prop, index) => (
+                <SwiperSlide key={index} className="transition-timing-linear!">
+                  <LogoLink prop={prop} isLight={isLight} />
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          </div>
+        )}
       </div>
-      <div dir="rtl">
-        <Swiper
-          {...swiperOptions}
-          autoplay={{
-            delay: 0,
-            disableOnInteraction: false,
-            pauseOnMouseEnter: true,
-          }}
-        >
-          {randomList.map((prop, index) => (
-            <SwiperSlide key={`bottom-${index}`} dir="ltr">
-              <Link
-                href={`/${generateSlug(prop?.category)}/${generateSlug(
-                  prop?.property_slug,
-                )}/overview`}
-                className="flex relative items-center justify-center w-16 h-16 md:w-20 md:h-20 cursor-pointer overflow-hidden transition-transform hover:scale-105"
+      {randomList.length > 0 && (
+        <div dir="rtl">
+          <Swiper {...swiperOptions} className="ease-linear!">
+            {randomList.map((prop, index) => (
+              <SwiperSlide
+                key={index}
+                dir="ltr"
+                className="transition-timing-linear!"
               >
-                <Image
-                  src={`${MEDIA_URL}/${prop.property_logo[0]}`}
-                  alt={prop.property_name}
-                  fill
-                  className={`object-contain rounded-custom ${
-                    isLight ? "grayscale-0" : "grayscale hover:grayscale-0"
-                  } brightness-110 transition`}
-                />
-              </Link>
-            </SwiperSlide>
-          ))}
-        </Swiper>
-      </div>
+                <LogoLink prop={prop} isLight={isLight} />
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </div>
+      )}
     </section>
   );
 };
+
+const LogoLink = React.memo(
+  ({ prop, isLight }: { prop: PropertyProps; isLight: boolean }) => {
+    const { getCategoryById } = useGetAssets();
+    return (
+      <Link
+        href={`/${generateSlug(getCategoryById(prop?.academic_type) || "")}/${generateSlug(prop?.property_slug)}/overview`}
+        className="flex items-center relative justify-center w-16 h-16 md:w-20 md:h-20 cursor-pointer overflow-hidden transform-gpu hover:scale-105"
+      >
+        <Image
+          src={`${MEDIA_URL}/${prop.property_logo[0]}`}
+          alt={prop.property_name}
+          fill
+          sizes="80px"
+          className={`object-contain rounded-custom transition-opacity duration-300 ${
+            isLight
+              ? "grayscale-0"
+              : "grayscale opacity-70 hover:opacity-100 hover:grayscale-0"
+          }`}
+          loading="lazy"
+        />
+      </Link>
+    );
+  },
+);
+
+LogoLink.displayName = "LogoLink";
 
 export default PropertyCarousel;

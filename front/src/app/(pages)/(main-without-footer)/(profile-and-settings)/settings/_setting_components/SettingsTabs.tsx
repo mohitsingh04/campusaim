@@ -125,8 +125,8 @@ const SettingsTabs: React.FC<{
                     className={`flex items-center gap-1 px-4 py-2 my-1 text-xs cursor-pointer rounded-full shrink-0
                       ${
                         isActive
-                          ? "bg-(--main-emphasis) text-(--main-light)"
-                          : "text-(--main-emphasis) bg-(--main-light) shadow-sm backdrop-blur-md hover:opacity-80"
+                          ? "bg-(--main-emphasis) text-(--main-subtle)"
+                          : "text-(--main-emphasis) bg-(--main-subtle) shadow-sm backdrop-blur-md hover:opacity-80"
                       }`}
                   >
                     {Icon && <Icon className="w-4 h-4" />}

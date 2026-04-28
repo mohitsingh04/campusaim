@@ -19,9 +19,9 @@ export const HeadingProps: React.FC<HeadingProps> = ({
       <BadgeBorder label={tag || ""} />
       <h2 className="text-3xl font-bold text-(--text-color-emphasis) my-3 leading-tight">
         {title}
-        <span className="text-(--main)">{activetitle}</span>
+        <span className="text-gradient">{activetitle}</span>
       </h2>
-      <p className="text-lg text-(--text-color) max-w-4xl mb-3 leading-relaxed">
+      <p className="text-lg text-(--text-color) font-medium max-w-4xl mb-3 leading-relaxed">
         {subtitle}
       </p>
     </div>

@@ -57,7 +57,7 @@ const ActiveFilterTags: React.FC<ActiveFilterTagsProps> = ({
           {activeFilters.map((filter, index) => (
             <span
               key={index}
-              className="inline-flex items-center bg-(--main-light) text-(--main) px-3 py-1 rounded-custom  text-xs font-medium"
+              className="inline-flex items-center bg-(--main-subtle) text-(--main) px-3 py-1 rounded-custom  text-xs font-medium"
             >
               {filter.label}
               <button

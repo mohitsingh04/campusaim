@@ -95,7 +95,7 @@ const NewsPage: React.FC = () => {
               <div className="text-center py-16 bg-(--primary-bg) rounded-custom shadow-custom">
                 <div className="max-w-md mx-auto">
                   <div className="w-24 h-24 bg-(--main-emphasis) rounded-full flex items-center justify-center mx-auto mb-4">
-                    <SearchIcon className="h-12 w-12 text-(--main-light)" />
+                    <SearchIcon className="h-12 w-12 text-(--main-subtle)" />
                   </div>
 
                   <h3 className="heading font-semibold text-(--text-color-emphasis) mb-2">

@@ -301,7 +301,7 @@ function SettingsLink({
 
 function IconBox({ icon: Icon }: { icon: LucideIcon }) {
   return (
-    <div className="p-2.5 bg-(--main-light) text-(--main-emphasis) rounded-lg">
+    <div className="p-2.5 bg-(--main-subtle) text-(--main-emphasis) rounded-lg">
       <Icon size={18} />
     </div>
   );

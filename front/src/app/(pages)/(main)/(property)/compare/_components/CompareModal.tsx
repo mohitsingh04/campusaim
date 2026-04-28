@@ -96,7 +96,7 @@ export default function CompareModal({
                     className={`px-2 py-0.5 rounded-custom font-bold ${
                       draftSelectedProperties.length === 3
                         ? "bg-(--success-subtle) text-(--success-emphasis)"
-                        : "bg-(--main-light) text-(--main-emphasis)"
+                        : "bg-(--main-subtle) text-(--main-emphasis)"
                     }`}
                   >
                     {draftSelectedProperties.length}/3 Selected
@@ -254,7 +254,7 @@ export default function CompareModal({
                   </div>
 
                   <div className="hidden sm:flex shrink-0 flex-col justify-start items-end pl-4">
-                    <div className="w-10 h-10 rounded-full bg-(--main-light) text-(--main-emphasis) group-hover:bg-(--main-emphasis) group-hover:text-(--main-light) transition-all duration-300 flex items-center justify-center ">
+                    <div className="w-10 h-10 rounded-full bg-(--main-subtle) text-(--main-emphasis) group-hover:bg-(--main-emphasis) group-hover:text-(--main-subtle) transition-all duration-300 flex items-center justify-center ">
                       <PlusIcon size={20} />
                     </div>
                   </div>
@@ -287,8 +287,8 @@ export default function CompareModal({
                     key={i}
                     className={`w-10 h-10 rounded-full border-2 border-(--main) flex items-center justify-center text-sm font-bold shadow-sm ${
                       draftSelectedProperties[i]
-                        ? "bg-(--main-emphasis) text-(--main-light)"
-                        : "bg-(--main-light) text-(--main-emphasis)"
+                        ? "bg-(--main-emphasis) text-(--main-subtle)"
+                        : "bg-(--main-subtle) text-(--main-emphasis)"
                     }`}
                   >
                     {draftSelectedProperties[i] ? (

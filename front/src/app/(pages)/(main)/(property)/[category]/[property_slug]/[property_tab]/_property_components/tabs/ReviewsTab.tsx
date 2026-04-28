@@ -104,7 +104,7 @@ export default function ReviewsTab({
             >
               <div className="flex items-start gap-4">
                 <div className="shrink-0">
-                  <div className="w-14 h-14 bg-(--main-light) shadow-custom rounded-full flex items-center justify-center">
+                  <div className="w-14 h-14 bg-(--main-subtle) shadow-custom rounded-full flex items-center justify-center">
                     <UserIcon className="w-7 h-7 text-(--main-emphasis)" />
                   </div>
                 </div>

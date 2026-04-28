@@ -2,22 +2,23 @@
 
 import ButtonGroupSend from "@/ui/buttons/ButtonGroup";
 import {
-	InputGroup,
-	SelectGroup,
-	TextareaGroup,
+  InputGroup,
+  SelectGroup,
+  TextareaGroup,
 } from "@/ui/form/FormComponents";
 import React, { useCallback, useEffect, useState } from "react";
 import { useFormik } from "formik";
 import {
-	getErrorResponse,
-	getFieldDataSimple,
-	getFormikError,
-	getSuccessResponse,
+  getErrorResponse,
+  getFieldDataSimple,
+  getFormikError,
+  getSuccessResponse,
 } from "@/context/Callbacks";
 import { enquirySchema } from "@/context/ValidationSchema";
 import API from "@/context/API";
 import { PropertyProps } from "@/types/PropertyTypes";
 import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
 import { phoneInputClass } from "@/common/ExtraData";
 import HeadingLine from "@/ui/headings/HeadingLine";
 import EnquirySubmitted from "@/ui/submits/EnquirySubmitted";
@@ -27,189 +28,189 @@ import EnquiryFormSkeleton from "@/ui/loader/ui/EnquiryFormSkeleton";
 import { toast } from "react-toastify";
 
 const EnquiryForm = ({ property }: { property: PropertyProps }) => {
-	const [submitted, setSubmitted] = useState(false);
-	const [profile, setProfile] = useState<UserProps | null>(null);
-	const [loading, setLoading] = useState(true);
+  const [submitted, setSubmitted] = useState(false);
+  const [profile, setProfile] = useState<UserProps | null>(null);
+  const [loading, setLoading] = useState(true);
 
-	const getProfileUser = useCallback(async () => {
-		try {
-			const data = await getProfile();
-			setProfile(data);
-		} catch (error) {
-			getErrorResponse(error);
-		} finally {
-			setLoading(false);
-		}
-	}, []);
+  const getProfileUser = useCallback(async () => {
+    try {
+      const data = await getProfile();
+      setProfile(data);
+    } catch (error) {
+      getErrorResponse(error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-	useEffect(() => {
-		getProfileUser();
-	}, [getProfileUser]);
+  useEffect(() => {
+    getProfileUser();
+  }, [getProfileUser]);
 
-	const formik = useFormik({
-		initialValues: {
-			userId: profile?._id || null,
-			property_id: property?._id || "",
-			property_name: property?.property_name || "",
-			name: profile?.name || "",
-			email: profile?.email || "",
-			contact: profile?.mobile_no || "",
-			city: profile?.city || "",
-			preferred_course: "",
-			message: "",
-		},
-		validationSchema: enquirySchema,
-		enableReinitialize: true,
-		onSubmit: async (values, { setSubmitting, resetForm }) => {
-			try {
-				const selectedCourse = property?.courses?.find(
-					(c) => c.course_name === values.preferred_course,
-				);
+  const formik = useFormik({
+    initialValues: {
+      userId: profile?._id || null,
+      property_id: property?._id || "",
+      property_name: property?.property_name || "",
+      name: profile?.name || "",
+      email: profile?.email || "",
+      contact: profile?.mobile_no || "",
+      city: profile?.city || "",
+      preferred_course: "",
+      message: "",
+    },
+    validationSchema: enquirySchema,
+    enableReinitialize: true,
+    onSubmit: async (values, { setSubmitting, resetForm }) => {
+      try {
+        const selectedCourse = property?.courses?.find(
+          (c) => c.course_name === values.preferred_course,
+        );
 
-				const payload = {
-					...values,
-					course_id: selectedCourse?._id || null,
-				};
-				
-				// const response = await API.post(`/add/enquiry`, values);
-				const response = await API.post(
-					`${process.env.NEXT_PUBLIC_LEAD_API_URL}/api/external/leads`,
-					payload,
-				);
-				if (response?.data?.success === false) {
-					toast.error(response?.data?.error);
-					console.log(response);
-				} else {
-					toast.success(response?.data?.message);
-					console.log(response);
-					resetForm();
-				}
-				getSuccessResponse(response);
-				setSubmitted(true);
-				resetForm();
-			} catch (error) {
-				getErrorResponse(error);
-			} finally {
-				setSubmitting(false);
-			}
-		},
-	});
+        const payload = {
+          ...values,
+          course_id: selectedCourse?._id || null,
+        };
 
-	const courseOptions =
-		getFieldDataSimple(property?.courses, "course_name") ?? [];
-	const finalCourseOptions = [...courseOptions, "Other"];
+        // const response = await API.post(`/add/enquiry`, values);
+        const response = await API.post(
+          `${process.env.NEXT_PUBLIC_LEAD_API_URL}/api/external/leads`,
+          payload,
+        );
+        if (response?.data?.success === false) {
+          toast.error(response?.data?.error);
+          console.log(response);
+        } else {
+          toast.success(response?.data?.message);
+          console.log(response);
+          resetForm();
+        }
+        getSuccessResponse(response);
+        setSubmitted(true);
+        resetForm();
+      } catch (error) {
+        getErrorResponse(error);
+      } finally {
+        setSubmitting(false);
+      }
+    },
+  });
 
-	if (submitted) return <EnquirySubmitted setSubmitted={setSubmitted} />;
-	if (loading) return <EnquiryFormSkeleton />;
+  const courseOptions =
+    getFieldDataSimple(property?.courses, "course_name") ?? [];
+  const finalCourseOptions = [...courseOptions, "Other"];
 
-	return (
-		<div
-			id="enquiry"
-			className="bg-(--primary-bg) text-(--text-color) rounded-custom shadow-custom p-5"
-		>
-			<HeadingLine title="Enquiry Form" />
+  if (submitted) return <EnquirySubmitted setSubmitted={setSubmitted} />;
+  if (loading) return <EnquiryFormSkeleton />;
 
-			<form onSubmit={formik.handleSubmit}>
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-					{/* Name */}
-					<div className="w-full">
-						<InputGroup
-							label="Enter Your Name"
-							id="name"
-							placeholder="Enter your full name"
-							value={formik.values.name}
-							onChange={formik.handleChange}
-							onBlur={formik.handleBlur}
-						/>
-						{getFormikError(formik, "name")}
-					</div>
+  return (
+    <div
+      id="enquiry"
+      className="bg-(--primary-bg) text-(--text-color) rounded-custom shadow-custom p-5"
+    >
+      <HeadingLine title="Enquiry Form" />
 
-					{/* Email */}
-					<div className="w-full">
-						<InputGroup
-							label="Email"
-							type="email"
-							id="email"
-							placeholder="you@example.com"
-							value={formik.values.email}
-							onChange={formik.handleChange}
-							onBlur={formik.handleBlur}
-						/>
-						{getFormikError(formik, "email")}
-					</div>
+      <form onSubmit={formik.handleSubmit}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Name */}
+          <div className="w-full">
+            <InputGroup
+              label="Enter Your Name"
+              id="name"
+              placeholder="Enter your full name"
+              value={formik.values.name}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+            />
+            {getFormikError(formik, "name")}
+          </div>
 
-					{/* Phone */}
-					<div className="w-full">
-						<label className="text-xs mb-1 block">Phone</label>
-						<div className="w-full">
-							<PhoneInput
-								country="in"
-								value={formik.values.contact}
-								onChange={(value) => formik.setFieldValue("contact", value)}
-								onBlur={() => formik.setFieldTouched("contact", true)}
-								inputClass={`${phoneInputClass.input} w-full`}
-								buttonClass={phoneInputClass.button}
-								dropdownClass={phoneInputClass.dropdown}
-							/>
-						</div>
-						{getFormikError(formik, "contact")}
-					</div>
+          {/* Email */}
+          <div className="w-full">
+            <InputGroup
+              label="Email"
+              type="email"
+              id="email"
+              placeholder="you@example.com"
+              value={formik.values.email}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+            />
+            {getFormikError(formik, "email")}
+          </div>
 
-					{/* City */}
-					<div className="w-full">
-						<InputGroup
-							label="Your City"
-							id="city"
-							value={formik.values.city}
-							onChange={formik.handleChange}
-							onBlur={formik.handleBlur}
-						/>
-						{getFormikError(formik, "city")}
-					</div>
+          {/* Phone */}
+          <div className="w-full">
+            <label className="text-xs mb-1 block">Phone</label>
+            <div className="w-full">
+              <PhoneInput
+                country="in"
+                value={formik.values.contact}
+                onChange={(value) => formik.setFieldValue("contact", value)}
+                onBlur={() => formik.setFieldTouched("contact", true)}
+                inputClass={`${phoneInputClass.input} w-full`}
+                buttonClass={phoneInputClass.button}
+                dropdownClass={phoneInputClass.dropdown}
+              />
+            </div>
+            {getFormikError(formik, "contact")}
+          </div>
 
-					{/* Course */}
-					{property?.courses?.length > 0 && (
-						<div className="w-full">
-							<SelectGroup
-								label="Preferred Course"
-								id="preferred_course"
-								options={finalCourseOptions}
-								value={formik.values.preferred_course}
-								onChange={formik.handleChange}
-								onBlur={formik.handleBlur}
-								placeholder="Select Course"
-							/>
-							{getFormikError(formik, "preferred_course")}
-						</div>
-					)}
+          {/* City */}
+          <div className="w-full">
+            <InputGroup
+              label="Your City"
+              id="city"
+              value={formik.values.city}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+            />
+            {getFormikError(formik, "city")}
+          </div>
 
-					{/* Message */}
-					<div className="md:col-span-2 w-full">
-						<TextareaGroup
-							label="Message"
-							id="message"
-							value={formik.values.message}
-							onChange={formik.handleChange}
-							onBlur={formik.handleBlur}
-							placeholder="Enter your message"
-						/>
-						{getFormikError(formik, "message")}
-					</div>
+          {/* Course */}
+          {property?.courses?.length > 0 && (
+            <div className="w-full">
+              <SelectGroup
+                label="Preferred Course"
+                id="preferred_course"
+                options={finalCourseOptions}
+                value={formik.values.preferred_course}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                placeholder="Select Course"
+              />
+              {getFormikError(formik, "preferred_course")}
+            </div>
+          )}
 
-					{/* Submit */}
-					<div className="md:col-span-2 w-full">
-						<ButtonGroupSend
-							label="Send Enquiry"
-							type="submit"
-							className="w-full"
-							disable={formik.isSubmitting}
-							isSubmitting={formik.isSubmitting}
-						/>
-					</div>
-				</div>
-			</form>
-		</div>
-	);
+          {/* Message */}
+          <div className="md:col-span-2 w-full">
+            <TextareaGroup
+              label="Message"
+              id="message"
+              value={formik.values.message}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              placeholder="Enter your message"
+            />
+            {getFormikError(formik, "message")}
+          </div>
+
+          {/* Submit */}
+          <div className="md:col-span-2 w-full">
+            <ButtonGroupSend
+              label="Send Enquiry"
+              type="submit"
+              className="w-full"
+              disable={formik.isSubmitting}
+              isSubmitting={formik.isSubmitting}
+            />
+          </div>
+        </div>
+      </form>
+    </div>
+  );
 };
 
 export default EnquiryForm;

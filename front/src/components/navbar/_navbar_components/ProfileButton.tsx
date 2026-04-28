@@ -49,14 +49,14 @@ export default function ProfileButton({
               alt="Avatar"
               fill
               sizes="44px"
-              className="rounded-full border-2 border-(--main-subtle) object-cover"
+              className="rounded-full border-2 border-( --main-extra) object-cover"
             />
           </div>
           <div className="flex flex-col min-w-0">
-            <span className="font-bold text-sm text-(--main-subtle) truncate">
+            <span className="font-bold text-sm text-( --main-extra) truncate">
               {authUser?.username || "User"}
             </span>
-            <span className="text-xs text-(--main-subtle) opacity-70 truncate">
+            <span className="text-xs text-( --main-extra) opacity-70 truncate">
               View Profile
             </span>
           </div>
@@ -80,7 +80,7 @@ export default function ProfileButton({
       ) : (
         <button
           onClick={() => setSettingOffcanvas(true)}
-          className="group flex items-center gap-2.5 bg-(--secondary-bg) hover:bg-(--main-subtle) px-3 py-1.5 rounded-custom transition-all"
+          className="group flex items-center gap-2.5 bg-(--secondary-bg) hover:bg-( --main-extra) px-3 py-1.5 rounded-custom transition-all"
         >
           <div className="relative w-7 h-7 overflow-hidden rounded-full">
             <Image

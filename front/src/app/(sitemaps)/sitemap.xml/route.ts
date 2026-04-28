@@ -11,11 +11,12 @@ export async function GET() {
   const sitemapFiles = [
     "sitemap-pages.xml",
     "sitemap-institutes.xml",
-    "sitemap-blog.xml",
-    "sitemap-events.xml",
-    "sitemap-news-and-updates.xml",
     "sitemap-course.xml",
+    "sitemap-exams.xml",
     "sitemap-queries.xml",
+    // "sitemap-blog.xml",
+    // "sitemap-events.xml",
+    // "sitemap-news-and-updates.xml",
   ];
 
   const sitemapEntries = sitemapFiles

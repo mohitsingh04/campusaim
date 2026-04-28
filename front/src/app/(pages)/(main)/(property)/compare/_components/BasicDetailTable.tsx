@@ -84,7 +84,7 @@ export default function BasicDetailTable({
             </button>
 
             <div
-              className={`p-2 rounded-full bg-(--main-light) cursor-pointer text-(--main-emphasis) backdrop-blur-sm transition-all duration-300 hover:scale-110 ${
+              className={`p-2 rounded-full bg-(--main-subtle) cursor-pointer text-(--main-emphasis) backdrop-blur-sm transition-all duration-300 hover:scale-110 ${
                 isOpen ? "rotate-180" : ""
               }`}
             >
@@ -164,7 +164,7 @@ export default function BasicDetailTable({
               <tr>
                 <td className="font-semibold p-4 text-(--text-color) bg-(--primary-bg) border-r border-(--border)">
                   <div className="flex items-center gap-3">
-                    <div className="w-7 h-7 bg-(--main-light) text-(--main-emphasis) rounded-custom flex items-center justify-center shadow-custom">
+                    <div className="w-7 h-7 bg-(--main-subtle) text-(--main-emphasis) rounded-custom flex items-center justify-center shadow-custom">
                       <GraduationCapIcon size={14} />
                     </div>
                     <span className="heading-sm">YP Rank</span>
@@ -189,7 +189,7 @@ export default function BasicDetailTable({
               <tr>
                 <td className="font-semibold p-4 text-(--text-color) bg-(--primary-bg) border-r border-(--border)">
                   <div className="flex items-center gap-3">
-                    <div className="w-7 h-7 bg-(--main-light) text-(--main-emphasis) rounded-custom flex items-center justify-center shadow-custom">
+                    <div className="w-7 h-7 bg-(--main-subtle) text-(--main-emphasis) rounded-custom flex items-center justify-center shadow-custom">
                       <GraduationCapIcon size={14} />
                     </div>
                     <span className="heading-sm">Academic Type</span>
@@ -209,7 +209,7 @@ export default function BasicDetailTable({
               <tr>
                 <td className="font-semibold p-4 text-(--text-color) bg-(--primary-bg) border-r border-(--border)">
                   <div className="flex items-center gap-3">
-                    <div className="w-7 h-7 bg-(--main-light) text-(--main-emphasis) rounded-custom flex items-center justify-center shadow-custom">
+                    <div className="w-7 h-7 bg-(--main-subtle) text-(--main-emphasis) rounded-custom flex items-center justify-center shadow-custom">
                       <Building2Icon size={14} />
                     </div>
                     <span className="heading-sm">Institution Type</span>
@@ -229,7 +229,7 @@ export default function BasicDetailTable({
               <tr>
                 <td className="font-semibold p-4 text-(--text-color) bg-(--primary-bg) border-r border-(--border)">
                   <div className="flex items-center gap-3">
-                    <div className="w-7 h-7 bg-(--main-light) text-(--main-emphasis) rounded-custom flex items-center justify-center shadow-custom">
+                    <div className="w-7 h-7 bg-(--main-subtle) text-(--main-emphasis) rounded-custom flex items-center justify-center shadow-custom">
                       <MapPinIcon size={14} />
                     </div>
                     <span className="heading-sm">City</span>
@@ -249,7 +249,7 @@ export default function BasicDetailTable({
               <tr>
                 <td className="font-semibold p-4 text-(--text-color) bg-(--primary-bg) border-r border-(--border)">
                   <div className="flex items-center gap-3">
-                    <div className="w-7 h-7 bg-(--main-light) text-(--main-emphasis) rounded-custom flex items-center justify-center shadow-custom">
+                    <div className="w-7 h-7 bg-(--main-subtle) text-(--main-emphasis) rounded-custom flex items-center justify-center shadow-custom">
                       <MapPinIcon size={14} />
                     </div>
                     <span className="heading-sm">State</span>
@@ -269,7 +269,7 @@ export default function BasicDetailTable({
               <tr>
                 <td className="font-semibold p-4 text-(--text-color) bg-(--primary-bg) border-r border-(--border)">
                   <div className="flex items-center gap-3">
-                    <div className="w-7 h-7 bg-(--main-light) text-(--main-emphasis) rounded-custom flex items-center justify-center shadow-custom">
+                    <div className="w-7 h-7 bg-(--main-subtle) text-(--main-emphasis) rounded-custom flex items-center justify-center shadow-custom">
                       <MapPinIcon size={14} />
                     </div>
                     <span className="heading-sm">Country</span>
@@ -289,7 +289,7 @@ export default function BasicDetailTable({
               <tr>
                 <td className="font-semibold p-4 text-(--text-color) bg-(--primary-bg) border-r border-(--border)">
                   <div className="flex items-center gap-3">
-                    <div className="w-7 h-7 bg-(--main-light) text-(--main-emphasis) rounded-custom flex items-center justify-center shadow-custom">
+                    <div className="w-7 h-7 bg-(--main-subtle) text-(--main-emphasis) rounded-custom flex items-center justify-center shadow-custom">
                       <StarIcon size={14} />
                     </div>
                     <span className="heading-sm">Average Rating</span>
@@ -315,7 +315,7 @@ export default function BasicDetailTable({
               <tr>
                 <td className="font-semibold p-4 bg-(--primary-bg) text-(--text-color) border-r border-(--border)">
                   <div className="flex items-center gap-3">
-                    <div className="w-7 h-7 bg-(--main-light) text-(--main-emphasis) rounded-custom flex items-center justify-center shadow-custom">
+                    <div className="w-7 h-7 bg-(--main-subtle) text-(--main-emphasis) rounded-custom flex items-center justify-center shadow-custom">
                       <CalendarIcon size={14} />
                     </div>
                     <span className="heading-sm">Established</span>

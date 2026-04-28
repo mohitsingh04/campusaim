@@ -144,7 +144,7 @@
 #blog-main th {
   font-weight: 700;
   background: var(--main-emphasis);
-  color: var(--main-subtle);
+  color: var( --main-extra);
   padding: 14px 12px;
   text-align: center;
   vertical-align: middle;
@@ -191,7 +191,7 @@
 }
 
 #blog-main tbody tr:hover {
-  background-color: var(--main-subtle);
+  background-color: var( --main-extra);
   color: var(--main-emphasis) !important;
   cursor: default;
 }
@@ -253,7 +253,7 @@
   align-items: center;
   justify-content: center;
   background: linear-gradient(193deg, var(--main-extra), var(--main));
-  color: var(--main-subtle);
+  color: var( --main-extra);
   font-size: 20px;
   font-weight: bold;
   border-radius: 50%;

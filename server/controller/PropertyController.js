@@ -1004,3 +1004,109 @@ export const getRelatedProperties = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
+
+
+export const getPropertyCategoryCounts = async (req, res) => {
+  try {
+    const result = await Property.aggregate([
+      {
+        $lookup: {
+          from: "categories",
+          localField: "academic_type",
+          foreignField: "_id",
+          as: "categoryData",
+        },
+      },
+      {
+        $unwind: {
+          path: "$categoryData",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $group: {
+          _id: "$categoryData.category_name",
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          categories: {
+            $push: {
+              k: {
+                $toLower: {
+                  $replaceAll: {
+                    input: "$_id",
+                    find: " ",
+                    replacement: "-",
+                  },
+                },
+              },
+              v: "$count",
+            },
+          },
+          allProperties: { $sum: "$count" },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          data: { $arrayToObject: "$categories" },
+          allProperties: 1,
+        },
+      },
+    ]);
+
+    if (!result.length) {
+      return res.status(200).json({ allProperties: 0 });
+    }
+
+    return res.status(200).json({
+      ...result[0].data,
+      allProperties: result[0].allProperties,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error." });
+  }
+};
+export const getPropertiesByCategoryName = async (req, res) => {
+  try {
+    const { names, limit } = req.query;
+
+    if (!names) {
+      return res.status(400).json({ message: "Category names are required.", });
+    }
+
+    const nameArray = names.split(",").map((name) => name.trim());
+    const categories = await Category.find({
+      category_name: {
+        $in: nameArray.map(name => new RegExp(`^${name}$`, "i"))
+      }
+    }).select("_id");
+
+    if (!categories || categories.length === 0) {
+      return res.status(404).json({
+        message: "None of the specified categories were found.",
+        attemptedNames: nameArray
+      });
+    }
+
+    const categoryIds = categories.map(cat => cat._id);
+    const resultLimit = limit ? parseInt(limit, 10) : 0;
+    const properties = await Property.find({
+      academic_type: { $in: categoryIds }
+    })
+      .sort({ createdAt: -1 })
+      .limit(resultLimit);
+
+    return res.status(200).json(properties);
+
+  } catch (error) {
+    return res.status(500).json({
+      message: "Server Error while fetching properties by category name",
+      error: error.message,
+    });
+  }
+};

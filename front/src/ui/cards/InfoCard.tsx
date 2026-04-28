@@ -13,7 +13,7 @@ const InfoCard = ({
   value: string | number;
 }) => (
   <div className="flex items-center gap-2 p-4  rounded-custom bg-(--secondary-bg) shadow-custom">
-    <div className="bg-(--main-light) p-2 text-(--main-emphasis) rounded-full">
+    <div className="bg-(--main-subtle) p-2 text-(--main-emphasis) rounded-full">
       {/* {React.cloneElement(icon, { size: 20 })} */}
       <Icon size={20} />
     </div>

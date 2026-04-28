@@ -89,7 +89,7 @@ export default function AmenityTable({
           {/* Right Buttons */}
           <div className="flex items-center gap-2">
             <div
-              className={`p-2 rounded-full bg-(--main-light) cursor-pointer text-(--main-emphasis) backdrop-blur-sm transition-all duration-300 hover:scale-110 ${
+              className={`p-2 rounded-full bg-(--main-subtle) cursor-pointer text-(--main-emphasis) backdrop-blur-sm transition-all duration-300 hover:scale-110 ${
                 isOpen ? "rotate-180" : ""
               }`}
             >
@@ -163,7 +163,7 @@ export default function AmenityTable({
                       <tr key={idx} className="hover:bg-(--secondary-bg)">
                         <td className="font-semibold p-4 text-(--text-color) bg-(--primary-bg) border-r border-(--border)">
                           <div className="flex items-center gap-3">
-                            <div className="w-7 h-7 bg-(--main-light) text-(--main-emphasis) rounded-custom flex items-center justify-center shadow-custom">
+                            <div className="w-7 h-7 bg-(--main-subtle) text-(--main-emphasis) rounded-custom flex items-center justify-center shadow-custom">
                               <BuildingIcon size={14} />
                             </div>
                             <span className="heading-sm">{amenity}</span>

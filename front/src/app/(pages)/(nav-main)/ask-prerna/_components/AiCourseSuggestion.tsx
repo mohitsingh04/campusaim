@@ -5,6 +5,10 @@ import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
 
+import "swiper/css";
+import "swiper/css/autoplay";
+import "swiper/css/navigation";
+
 import { CourseProps } from "@/types/Types";
 import { stripHtmlNoLimit } from "@/context/Callbacks";
 import { useTheme } from "@/hooks/useTheme";

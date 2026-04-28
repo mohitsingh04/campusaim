@@ -25,8 +25,6 @@ export interface CourseProps {
   description: string;
   [key: string]: any;
   property_id: string;
-  certification_type: string;
-  course_format: string;
   key_outcomes: string[];
   requirements: string[];
   best_for: string[];

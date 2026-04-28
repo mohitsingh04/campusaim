@@ -26,7 +26,7 @@ export default function MobileSubMenuSecond({
       {mobileDetailMenu && (
         <div className="h-full flex flex-col">
           <div className="p-4 bg-(--main-emphasis) flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4 text-(--main-subtle)">
+            <div className="flex items-center gap-4 text-( --main-extra)">
               <button
                 onClick={() => setMobileDetailMenu(null)}
                 aria-label="mobile-detail-menu"
@@ -43,7 +43,7 @@ export default function MobileSubMenuSecond({
             <button
               onClick={handleCloseMobileMenu}
               aria-label="mobile-submenu-close"
-              className="p-1 text-(--main-subtle)"
+              className="p-1 text-( --main-extra)"
             >
               <XIcon className="w-5 h-5" />
             </button>

@@ -101,7 +101,7 @@ const ExamDetails = () => {
                 fill
                 className="w-full object-cover aspect-16/10"
               />
-              <span className="absolute bottom-4 left-4 px-3 py-1 bg-(--main-light) text-(--main-emphasis) text-sm font-medium rounded-custom shadow-custom">
+              <span className="absolute bottom-4 left-4 px-3 py-1 bg-(--main-subtle) text-(--main-emphasis) text-sm font-medium rounded-custom shadow-custom">
                 {mainCourse?.exam_mode}
               </span>
             </div>

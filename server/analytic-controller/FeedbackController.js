@@ -49,8 +49,7 @@ export const getAllFeedbacks = async (req, res) => {
 export const deleteFeedbackById = async (req, res) => {
   try {
     const { objectId } = req.params;
-    console.log(objectId);
-
+ 
     const feedback = await Feedback.findByIdAndDelete(objectId);
 
     if (!feedback) {

@@ -33,12 +33,14 @@ import {
 import {
   addProperty,
   deleteProperty,
+  getPropertiesByCategoryName,
   getPropertiesMultipleObjectId,
   getProperty,
   getPropertyById,
   getPropertyBySlug,
   getPropertyByUniqueId,
   getPropertyByUserId,
+  getPropertyCategoryCounts,
   getRelatedProperties,
   PropertySlugGenerator,
   updateProperty,
@@ -352,6 +354,8 @@ router.get("/property/:objectId", getPropertyById);
 router.get("/property/slug/:property_slug", getPropertyBySlug);
 router.post("/property/multi/objectId", getPropertiesMultipleObjectId);
 router.get("/related/property", getRelatedProperties);
+router.get("/filter-by-category/property", getPropertiesByCategoryName);
+router.get("/property/counts/category", getPropertyCategoryCounts);
 
 //? Property Verification
 router.post("/property/verify/email", sendPropertyVerifyEmailOTP);
@@ -366,7 +370,7 @@ router.patch("/property/location/:property_id", Authorize, UpdateLocation);
 router.get("/property/location/:property_id", getLocation);
 router.get("/locations", getAllLocations);
 router.post("/location", Authorize, addLocation);
-router.get("/property/unique/location/pairs", Authorize, getUniqueLocationPairs);
+router.get("/property/unique/location/pairs",  getUniqueLocationPairs);
 
 //? Teacher Route
 const teacherProfile = upload.fields([{ name: "profile", maxCount: 1 }]);

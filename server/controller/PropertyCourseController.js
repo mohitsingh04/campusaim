@@ -3,63 +3,66 @@ import { addPropertyScore } from "../analytic-controller/PropertyScoreController
 import Course from "../models/Courses.js";
 import PropertyCourse from "../models/PropertyCourse.js";
 import { generateSlug, generateUniqueId } from "../utils/Callback.js";
+import Category from "../models/Category.js";
+import BestFor from "../models/BestFor.js";
+import CourseEligibility from "../models/CourseEligibility.js";
 
-function normalizeObjectIdArray(input) {
-  let arr = [];
+// function normalizeObjectIdArray(input) {
+//   let arr = [];
 
-  if (!input) return arr;
+//   if (!input) return arr;
 
-  if (Array.isArray(input)) {
-    arr = input;
-  } else if (typeof input === "string") {
-    try {
-      const parsed = JSON.parse(input);
-      if (Array.isArray(parsed)) arr = parsed;
-      else if (parsed) arr = [parsed];
-    } catch {
-      arr = input.includes(",")
-        ? input.split(",").map(s => s.trim())
-        : [input.trim()];
-    }
-  } else {
-    arr = [String(input)];
-  }
+//   if (Array.isArray(input)) {
+//     arr = input;
+//   } else if (typeof input === "string") {
+//     try {
+//       const parsed = JSON.parse(input);
+//       if (Array.isArray(parsed)) arr = parsed;
+//       else if (parsed) arr = [parsed];
+//     } catch {
+//       arr = input.includes(",")
+//         ? input.split(",").map(s => s.trim())
+//         : [input.trim()];
+//     }
+//   } else {
+//     arr = [String(input)];
+//   }
 
-  return arr
-    .map(id => String(id).trim())
-    .filter(id => mongoose.Types.ObjectId.isValid(id));
-}
+//   return arr
+//     .map(id => String(id).trim())
+//     .filter(id => mongoose.Types.ObjectId.isValid(id));
+// }
 
 
-function normalizeToStringArray(value) {
-  let arr = [];
+// function normalizeToStringArray(value) {
+//   let arr = [];
 
-  if (value) {
-    if (Array.isArray(value)) {
-      arr = value;
-    } else if (typeof value === "string") {
-      try {
-        const parsed = JSON.parse(value);
-        if (Array.isArray(parsed)) arr = parsed.map((v) => String(v));
-        else if (typeof parsed === "string" && parsed.trim())
-          arr = [parsed];
-      } catch (err) {
-        if (value.includes(",")) {
-          arr = value
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean);
-        } else if (value.trim()) {
-          arr = [value.trim()];
-        }
-      }
-    } else {
-      arr = [String(value)];
-    }
-  }
+//   if (value) {
+//     if (Array.isArray(value)) {
+//       arr = value;
+//     } else if (typeof value === "string") {
+//       try {
+//         const parsed = JSON.parse(value);
+//         if (Array.isArray(parsed)) arr = parsed.map((v) => String(v));
+//         else if (typeof parsed === "string" && parsed.trim())
+//           arr = [parsed];
+//       } catch (err) {
+//         if (value.includes(",")) {
+//           arr = value
+//             .split(",")
+//             .map((s) => s.trim())
+//             .filter(Boolean);
+//         } else if (value.trim()) {
+//           arr = [value.trim()];
+//         }
+//       }
+//     } else {
+//       arr = [String(value)];
+//     }
+//   }
 
-  return arr.map((v) => String(v).trim()).filter(Boolean);
-}
+//   return arr.map((v) => String(v).trim()).filter(Boolean);
+// }
 
 const tryParseJSON = (v) => {
   if (typeof v !== "string") return v;
@@ -476,29 +479,31 @@ export const getPropertyCourseBySlug = async (req, res) => {
 
     const findingCatgories = [
       merged?.course_type,
-      merged?.course_format,
-      merged?.certification_type,
-      merged?.course_level,
+      merged?.degree_type,
+      merged?.program_type,
+      ...merged.specialization
     ];
 
-    const keyOutComes = await KeyOutComes.find({ _id: merged.key_outcomes });
-    const requirements = await Requirments.find({ _id: merged.requirements });
     const categories = await Category.find({ _id: findingCatgories });
+    const bestFor = await BestFor.find({ _id: { $in: merged.best_for } })
+    const courseEligibility = await CourseEligibility.find({ _id: { $in: merged.course_eligibility } })
 
     const finalData = {
       ...merged,
-      requirements: requirements.map((item) => item.requirment),
-      key_outcomes: keyOutComes.map((item) => item.key_outcome),
+      best_for: bestFor?.map((item) => item?.best_for),
+      course_eligibility: courseEligibility?.map((item) => item?.course_eligibility),
       course_type: categories.find((item) => item?._id?.toString() === merged.course_type?.toString())
         ?.category_name,
-      certification_type: categories.find(
-        (item) => item?._id?.toString() === merged.certification_type?.toString()
+      degree_type: categories.find(
+        (item) => item?._id?.toString() === merged.degree_type?.toString()
       )?.category_name,
-      course_level: categories.find((item) => item?._id?.toString() === merged.course_level?.toString())
+      program_type: categories.find((item) => item?._id?.toString() === merged.program_type?.toString())
         ?.category_name,
-      course_format: categories.find(
-        (item) => item?._id?.toString() === merged.course_format?.toString()
-      )?.category_name,
+      specialization: categories.filter((cat) =>
+        merged.specialization?.some(
+          (item) => item?.toString() === cat?._id?.toString()
+        )
+      ),
     };
 
     return res.json(finalData);

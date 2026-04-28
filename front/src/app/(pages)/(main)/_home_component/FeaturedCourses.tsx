@@ -1,10 +1,14 @@
 "use client";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Pagination, Autoplay } from "swiper/modules";
+import { Navigation } from "swiper/modules";
+
+import "swiper/css";
+import "swiper/css/navigation";
+
 import { HeadingProps } from "@/ui/headings/MainHeading";
-import { useCallback, useEffect, useState } from "react";
-import { generateSlug, getErrorResponse } from "@/context/Callbacks";
-import { CategoryProps, CourseProps } from "@/types/Types";
+import React from "react";
+import { generateSlug } from "@/context/Callbacks";
+import { CourseProps } from "@/types/Types";
 import API from "@/context/API";
 import Image from "next/image";
 import Link from "next/link";
@@ -15,43 +19,51 @@ import {
   ChevronRightIcon,
   ClockIcon,
 } from "lucide-react";
+import { useGetAssets } from "@/context/providers/AssetsProviders";
+import { useQuery } from "@tanstack/react-query";
 
-const CourseCard = ({ course }: { course: CourseProps }) => {
+const CourseCard = React.memo(({ course }: { course: CourseProps }) => {
   return (
-    <div className="group bg-(--secondary-bg) text-(--text-color-emphasis) rounded-custom overflow-hidden shadow-custom transition-all duration-300  flex flex-col relative top-0 hover:-top-1">
-      <div className="relative w-full overflow-hidden ">
-        <div className="relative w-full aspect-2/1">
-          <Image
-            src={`${process.env.NEXT_PUBLIC_MEDIA_URL}/course/${course.image?.[0]}`}
-            alt={course.course_name}
-            fill
-            className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
-          />
-        </div>
+    <div className="group bg-(--secondary-bg) text-(--text-color-emphasis) rounded-custom overflow-hidden shadow-custom transition-all duration-300 flex flex-col h-full transform-gpu">
+      <div className="relative w-full overflow-hidden">
+        <Link href={`/course/${course?.course_slug}`}>
+          <div className="relative w-full aspect-2/1 bg-(--secondary-bg)">
+            <Image
+              src={`${process.env.NEXT_PUBLIC_MEDIA_URL}/course/${course.image?.[0]}`}
+              alt={course.course_name}
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+              loading="lazy"
+            />
+          </div>
+        </Link>
 
-        <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-(--main) ">
-          {course.certification_type}
+        <div className="absolute bottom-3 left-3 bg-(--main-emphasis) backdrop-blur-sm px-3 py-1 rounded-full text-[10px] md:text-xs font-bold text-(--main-subtle)! z-10">
+          {course.course_type}
         </div>
       </div>
 
       <div className="p-5 flex flex-col grow">
-        <h3 className="heading font-semibold line-clamp-2 leading-tight group-hover:text-(--main) transition-colors truncate">
+        <Link
+          href={`/course/${course?.course_slug}`}
+          className="text-sm md:text-base font-semibold line-clamp-2 leading-tight group-hover:text-(--main) transition-colors min-h-10"
+        >
           {course.course_name}
-        </h3>
+        </Link>
 
-        <div className="mt-auto pt-2 flex items-center justify-between">
-          {/* Duration */}
-          <div className="flex items-center justify-end gap-2 py-1.5 rounded-md">
-            <ClockIcon size={14} className="text-(--main)" />
-            <p>{course.duration}</p>
+        <div className="mt-auto pt-4 flex items-center justify-between border-t border-(--border)">
+          <div className="flex items-center gap-1.5">
+            <ClockIcon size={12} className="text-(--main)" />
+            <p className="text-xs">{course.duration}</p>
           </div>
           <Link
             href={`/course/${course?.course_slug}`}
-            className="flex items-center gap-1 hover:text-(--main) text-sm font-bold transition-colors group/btn"
+            className="flex items-center gap-1 hover:text-(--main) text-xs font-bold transition-colors group/btn"
           >
-            View Details
+            Details
             <ArrowRightIcon
-              size={16}
+              size={14}
               className="group-hover/btn:translate-x-1 transition-transform"
             />
           </Link>
@@ -59,144 +71,121 @@ const CourseCard = ({ course }: { course: CourseProps }) => {
       </div>
     </div>
   );
-};
+});
 
-export default function PopularCourses({
-  categories,
-}: {
-  categories: CategoryProps[];
-}) {
-  const [courses, setCourses] = useState<CourseProps[]>([]);
-  const [loading, setLoading] = useState(true);
+CourseCard.displayName = "CourseCard";
 
-  const getCourse = useCallback(async () => {
-    setLoading(true);
-    try {
+export default function PopularCourses() {
+  const { getCategoryById, allCategories } = useGetAssets();
+
+  const { data: courses, isLoading } = useQuery({
+    queryKey: ["popular-courses", allCategories?.length],
+    queryFn: async () => {
       const [allCourseRes, allCourseSeoRes] = await Promise.allSettled([
-        API.get(`/course`),
+        API.get(`/course?limit=6`),
         API.get("/all/seo?type=course"),
       ]);
+
       if (
         allCourseRes.status === "fulfilled" &&
         allCourseSeoRes.status === "fulfilled"
       ) {
-        const allCoursesData = allCourseRes?.value?.data || [];
+        const allCoursesData = allCourseRes.value.data || [];
         const seoData = allCourseSeoRes.value.data || [];
 
-        const mergedCourses = allCoursesData.map((course: CourseProps) => {
-          const seoMatch = seoData.find(
-            (seo: any) => seo.course_id === course._id,
-          );
+        return allCoursesData
+          .map((course: CourseProps) => {
+            const seoMatch = seoData.find(
+              (seo: any) => seo.course_id === course._id,
+            );
 
-          return {
-            ...course,
-            certification_type: categories?.find(
-              (cat) => cat?._id === course?.certification_type,
-            )?.category_name,
-            course_slug: seoMatch
-              ? seoMatch.slug
-              : generateSlug(course.course_name),
-          };
-        });
-
-        const shuffled = mergedCourses.sort(() => 0.5 - Math.random());
-        const randomSix = shuffled.slice(0, 6);
-        setCourses(randomSix);
+            return {
+              ...course,
+              course_type: getCategoryById(course?.course_type),
+              course_slug: seoMatch
+                ? seoMatch.slug
+                : generateSlug(course.course_name),
+            };
+          })
+          .slice(0, 6);
       }
-    } catch (error) {
-      getErrorResponse(error, true);
-    } finally {
-      setLoading(false);
-    }
-  }, [categories]);
+      return [];
+    },
+    staleTime: 1000 * 60 * 30,
+  });
 
-  useEffect(() => {
-    getCourse();
-  }, [getCourse]);
-
-  if (loading) return <FeaturedCoursesSkeleton />;
+  if (isLoading) return <FeaturedCoursesSkeleton />;
   if (courses?.length <= 0) return;
   return (
-    <div className="py-10 px-4 sm:px-8 w-full bg-(--primary-bg)">
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row justify-between sm:items-end items-start mb-10 gap-6">
+    <section className="py-10 px-4 sm:px-8 w-full bg-(--primary-bg) overflow-hidden">
+      <div className="flex flex-col md:flex-row justify-between sm:items-end items-start mb-8 gap-6">
         <div className="w-full md:w-2/3">
           <HeadingProps
-            tag="Next Level Courses"
+            tag="Next Level Yoga"
             title="Featured "
             activetitle="Courses"
-            subtitle=" Discover sought-after, accredited programs. Train, master, and certify your practice with us"
+            subtitle="Discover sought-after, accredited programs. Train, master, and certify your practice with us"
           />
         </div>
         <Link
           href={`/courses`}
-          className="md:flex hidden items-center gap-2 text-(--main) hover:text-(--main-subtle)  font-bold transition-all duration-300 "
+          className="md:flex hidden items-center gap-2 text-(--main-emphasis) hover:text-(--main) font-bold transition-all duration-300 text-sm"
         >
           View All Courses
           <ArrowRightIcon size={18} />
         </Link>
       </div>
 
-      {/* Slider Section */}
       <div className="relative group/slider">
         <Swiper
-          modules={[Navigation, Pagination, Autoplay]}
-          spaceBetween={24}
-          slidesPerView={1}
+          modules={[Navigation]}
+          spaceBetween={16}
+          slidesPerView={1.2}
           loop={true}
-          autoplay={{
-            delay: 5000,
-            disableOnInteraction: false,
-            pauseOnMouseEnter: true,
-          }}
-          pagination={{
-            clickable: true,
-            el: ".custom-pagination",
-            dynamicBullets: true,
-          }}
+          observer={true}
+          observeParents={true}
           navigation={{
             nextEl: ".custom-next-button",
             prevEl: ".custom-prev-button",
           }}
           breakpoints={{
-            640: { slidesPerView: 1 },
-            768: { slidesPerView: 2 },
-            1024: { slidesPerView: 3 },
-            1280: { slidesPerView: 4 },
+            640: { slidesPerView: 2, spaceBetween: 20 },
+            1024: { slidesPerView: 3, spaceBetween: 24 },
+            1280: { slidesPerView: 4, spaceBetween: 24 },
           }}
+          className="pb-4!"
         >
-          {courses.map((course, index) => (
-            <SwiperSlide key={index}>
+          {courses.map((course: CourseProps, index: number) => (
+            <SwiperSlide key={index} className="h-auto">
               <CourseCard course={course} />
             </SwiperSlide>
           ))}
         </Swiper>
 
         <button
-          className="custom-prev-button absolute left-3 sm:left-0 top-[40%] -translate-y-1/2 -translate-x-5 z-20 bg-white p-2 rounded-full shadow-custom  hover:bg-(--main) hover:text-white transition-all  xl:flex items-center justify-center cursor-pointer active:scale-95"
+          className="custom-prev-button absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-20 bg-(--primary-bg) p-2 rounded-full shadow-custom hover:bg-(--main) hover:text-( --main-extra) transition-all hidden xl:flex items-center justify-center cursor-pointer"
           aria-label="Previous slide"
         >
           <ChevronLeftIcon className="w-7 h-7" />
         </button>
 
         <button
-          className="custom-next-button absolute right-3 sm:right-0 top-[40%] -translate-y-1/2 translate-x-5 z-20 bg-white p-2 rounded-full shadow-custom hover:bg-(--main) hover:text-white transition-all xl:flex items-center justify-center cursor-pointer active:scale-95"
+          className="custom-next-button absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-20 bg-(--primary-bg) p-2 rounded-full shadow-custom hover:bg-(--main) hover:text-( --main-extra) transition-all hidden xl:flex items-center justify-center cursor-pointer"
           aria-label="Next slide"
         >
           <ChevronRightIcon className="w-7 h-7" />
         </button>
       </div>
 
-      {/* Mobile View All Button */}
-      <div className="md:hidden flex pt-4 justify-start">
+      <div className="md:hidden flex pt-6 justify-center">
         <Link
           href={`/courses`}
-          className="flex items-center gap-2 text-(--main) hover:text-(--main-subtle) font-bold transition-all duration-300 "
+          className="flex items-center gap-2 text-(--main-emphasis) hover:text-(--main) font-bold text-sm"
         >
           View All Courses
           <ArrowRightIcon size={18} />
         </Link>
       </div>
-    </div>
+    </section>
   );
 }

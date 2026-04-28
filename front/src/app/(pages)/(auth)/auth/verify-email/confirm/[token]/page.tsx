@@ -101,7 +101,7 @@ export default function VerifyEmailConfirm() {
     <div className="flex flex-col items-center w-full text-center">
       <div className="flex justify-center mb-3">
         {state.loading ? (
-          <div className="rounded-full p-4 bg-(--main-light)">
+          <div className="rounded-full p-4 bg-(--main-subtle)">
             <LoaderIcon className="w-12 h-12 text-(--main) animate-spin" />
           </div>
         ) : state.success ? (

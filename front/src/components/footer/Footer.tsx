@@ -185,7 +185,7 @@ const Footer = () => {
                 >
                   {item.name}
                   {/* {item.badge && (
-                    <span className="ml-2 bg-(--main-subtle) text-(--main-emphasis) text-[10px] px-1.5 py-0.5 rounded uppercase">
+                    <span className="ml-2 bg-( --main-extra) text-(--main-emphasis) text-[10px] px-1.5 py-0.5 rounded uppercase">
                       {item.badge}
                     </span>
                   )} */}

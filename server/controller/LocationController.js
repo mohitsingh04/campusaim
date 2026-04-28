@@ -423,7 +423,6 @@ export const getUniqueLocationPairs = async (req, res) => {
       },
       { $limit: limit },
     ]);
-
     return res.status(200).json(results);
   } catch (error) {
     console.error(error);

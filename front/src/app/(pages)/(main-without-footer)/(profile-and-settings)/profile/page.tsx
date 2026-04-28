@@ -49,7 +49,7 @@ function ReviewsContent({ reviews }: { reviews: PropertyReviewProps[] }) {
   if (!reviews || reviews.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 px-6 bg-(--primary-bg) rounded-custom shadow-custom animate-in fade-in duration-500 text-center">
-        <div className="mb-4 bg-(--main-emphasis) text-(--main-light) rounded-full">
+        <div className="mb-4 bg-(--main-emphasis) text-(--main-subtle) rounded-full">
           <MessageSquareDashedIcon size={48} />
         </div>
 
@@ -82,7 +82,7 @@ function ReviewsContent({ reviews }: { reviews: PropertyReviewProps[] }) {
           </p>
 
           <div className="flex items-center gap-3 mt-4 pt-4 border-t border-(--border)/50">
-            <div className="w-10 h-10 rounded-full bg-(--main-emphasis) text-(--main-light) flex items-center justify-center shrink-0 mt-1">
+            <div className="w-10 h-10 rounded-full bg-(--main-emphasis) text-(--main-subtle) flex items-center justify-center shrink-0 mt-1">
               <span className="text-xs font-bold uppercase tracking-wide">
                 {getInitials(rev?.name || "")}
               </span>
@@ -100,7 +100,7 @@ function ReviewsContent({ reviews }: { reviews: PropertyReviewProps[] }) {
       {visibleCount < reviews.length && (
         <button
           onClick={handleLoadMore}
-          className="w-full py-3 mt-2 rounded-custom bg-(--main-emphasis) text-(--main-light) font-medium text-sm hover:opacity-85 transition-colors"
+          className="w-full py-3 mt-2 rounded-custom bg-(--main-emphasis) text-(--main-subtle) font-medium text-sm hover:opacity-85 transition-colors"
         >
           Load More Reviews ({reviews.length - visibleCount} remaining)
         </button>
@@ -119,7 +119,7 @@ function QuestionsContent({ questions }: { questions: any[] }) {
   if (!questions || questions.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 px-6 bg-(--primary-bg) rounded-custom shadow-custom animate-in fade-in duration-500 text-center">
-        <div className="mb-4 bg-(--main-emphasis) text-(--main-light) rounded-full">
+        <div className="mb-4 bg-(--main-emphasis) text-(--main-subtle) rounded-full">
           <HelpCircleIcon size={48} />
         </div>
         <h3 className="text-(--text-color-emphasis) font-semibold text-lg mb-2">
@@ -140,7 +140,7 @@ function QuestionsContent({ questions }: { questions: any[] }) {
           className="bg-(--primary-bg) p-5 rounded-xl shadow-custom transition-shadow border border-transparent hover:border-(--border)/30"
         >
           <div className="flex gap-4">
-            <div className="shrink-0 w-10 h-10 bg-(--main-emphasis) text-(--main-light) rounded-custom flex items-center justify-center">
+            <div className="shrink-0 w-10 h-10 bg-(--main-emphasis) text-(--main-subtle) rounded-custom flex items-center justify-center">
               <HelpCircleIcon size={22} />
             </div>
 
@@ -172,7 +172,7 @@ function QuestionsContent({ questions }: { questions: any[] }) {
       {visibleCount < questions.length && (
         <button
           onClick={handleLoadMore}
-          className="w-full py-3 mt-2 rounded-custom bg-(--main-emphasis) text-(--main-light) font-medium text-sm hover:opacity-85 transition-colors"
+          className="w-full py-3 mt-2 rounded-custom bg-(--main-emphasis) text-(--main-subtle) font-medium text-sm hover:opacity-85 transition-colors"
         >
           Load More Questions ({questions.length - visibleCount} remaining)
         </button>
@@ -210,7 +210,7 @@ function AnswersContent({ answers }: { answers: any[] }) {
           className="bg-(--primary-bg) p-5 rounded-xl shadow-custom transition-shadow border border-transparent hover:border-(--border)/30"
         >
           <div className="flex gap-4">
-            <div className="shrink-0 w-10 h-10 bg-(--main-emphasis) text-(--main-light) rounded-custom flex items-center justify-center">
+            <div className="shrink-0 w-10 h-10 bg-(--main-emphasis) text-(--main-subtle) rounded-custom flex items-center justify-center">
               <MessageCircleIcon size={20} />
             </div>
 
@@ -236,7 +236,7 @@ function AnswersContent({ answers }: { answers: any[] }) {
       {visibleCount < answers.length && (
         <button
           onClick={handleLoadMore}
-          className="w-full py-3 mt-2 rounded-custom bg-(--main-emphasis) text-(--main-light) font-medium text-sm hover:opacity-85 transition-colors"
+          className="w-full py-3 mt-2 rounded-custom bg-(--main-emphasis) text-(--main-subtle) font-medium text-sm hover:opacity-85 transition-colors"
         >
           Load More Answers ({answers.length - visibleCount} remaining)
         </button>
@@ -290,7 +290,7 @@ function EnquiriesContent({
           {/* Header */}
           <div className="flex justify-between items-start mb-4 gap-4">
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-full bg-(--main-emphasis) text-(--main-light) flex items-center justify-center shrink-0 mt-1">
+              <div className="w-10 h-10 rounded-full bg-(--main-emphasis) text-(--main-subtle) flex items-center justify-center shrink-0 mt-1">
                 <span className="text-xs font-bold uppercase tracking-wide">
                   {getInitials(enq?.name || "")}
                 </span>
@@ -374,7 +374,7 @@ function EnquiriesContent({
             {enq?.status === "Suspended" && !getReviewById(enq?._id) && (
               <button
                 onClick={() => setIsReviewModal(enq)}
-                className="px-4 py-2 rounded-custom text-sm font-medium bg-(--main-emphasis) text-(--main-light) hover:opacity-85 transition"
+                className="px-4 py-2 rounded-custom text-sm font-medium bg-(--main-emphasis) text-(--main-subtle) hover:opacity-85 transition"
               >
                 Review
               </button>
@@ -394,7 +394,7 @@ function EnquiriesContent({
       {visibleCount < enquiries.length && (
         <button
           onClick={handleLoadMore}
-          className="w-full py-3 mt-2 rounded-custom bg-(--main-emphasis) text-(--main-light) font-medium text-sm hover:opacity-85 transition-colors"
+          className="w-full py-3 mt-2 rounded-custom bg-(--main-emphasis) text-(--main-subtle) font-medium text-sm hover:opacity-85 transition-colors"
         >
           Load More Enquiries ({enquiries.length - visibleCount} remaining)
         </button>
@@ -645,8 +645,8 @@ export default function ProfilePage() {
                       onClick={() => handleTabChange(tab.id)}
                       className={`flex items-center gap-1 px-4 py-2 text-xs cursor-pointer rounded-full shrink-0 ${
                         currentTabId === tab.id
-                          ? "bg-(--main-emphasis) text-(--main-light)"
-                          : "text-(--main-emphasis) bg-(--main-light) shadow-sm hover:opacity"
+                          ? "bg-(--main-emphasis) text-(--main-subtle)"
+                          : "text-(--main-emphasis) bg-(--main-subtle) shadow-sm hover:opacity"
                       }`}
                     >
                       {tab.icon} {tab.label}
