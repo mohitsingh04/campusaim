@@ -21,7 +21,7 @@ const SubMenuSkeleton = () => (
               <Skeleton
                 height={20}
                 baseColor="var(--main)"
-                highlightColor="var(--main-subtle)"
+                highlightColor="var( --main-extra)"
               />
             </li>
           ))}

@@ -4,6 +4,7 @@ import { phoneInputClass } from "@/common/ExtraData";
 import { UserProps } from "@/types/UserTypes";
 import { InputGroup } from "@/ui/form/FormComponents";
 import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
 import ProfileImage from "./_profile_components/ProfileImage";
 import { useFormik } from "formik";
 import API from "@/context/API";
@@ -34,7 +35,7 @@ const ProfileTab = ({ profile }: { profile: UserProps | null }) => {
       try {
         const response = await API.patch(
           `/profile/user/${profile?._id}`,
-          values
+          values,
         );
         getSuccessResponse(response);
       } catch (error) {

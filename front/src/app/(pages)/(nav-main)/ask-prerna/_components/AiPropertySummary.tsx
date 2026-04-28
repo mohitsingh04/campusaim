@@ -74,13 +74,13 @@ export const AiPropertySummary = ({
 
           <div className="flex flex-wrap items-center gap-2 text-sm font-medium text-(--text-color)">
             {establishedYear && (
-              <span className="flex items-center gap-2 px-2 py-1 text-xs bg-(--main-light) text-(--main-emphasis) rounded-full shadow-custom">
+              <span className="flex items-center gap-2 px-2 py-1 text-xs bg-(--main-subtle) text-(--main-emphasis) rounded-full shadow-custom">
                 <CalendarIcon className="w-4 h-4" /> Est.
                 {establishedYear}
               </span>
             )}
             {location && (
-              <span className="flex items-center gap-2 px-2 py-1 text-xs bg-(--main-light) text-(--main-emphasis) rounded-full shadow-custom">
+              <span className="flex items-center gap-2 px-2 py-1 text-xs bg-(--main-subtle) text-(--main-emphasis) rounded-full shadow-custom">
                 <MapPinIcon className="text-red-500" />
                 {location}
               </span>
@@ -94,7 +94,7 @@ export const AiPropertySummary = ({
                         stripHtmlNoLimit(property?.property_description),
                       )
                 }
-                className="flex items-center gap-2 px-2 py-1 text-xs bg-(--main-light) text-(--main-emphasis) rounded-full shadow-custom hover:opacity-90 transition"
+                className="flex items-center gap-2 px-2 py-1 text-xs bg-(--main-subtle) text-(--main-emphasis) rounded-full shadow-custom hover:opacity-90 transition"
               >
                 {isSpeaking ? (
                   <>

@@ -5,6 +5,7 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 import { SkeletonTheme } from "react-loading-skeleton";
+import { AssetsProvider } from "./AssetsProviders";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -12,7 +13,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 60 * 1000,
+            staleTime: 0,
             refetchOnWindowFocus: false,
           },
         },
@@ -29,7 +30,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
             baseColor={"var(--secondary-bg)"}
             highlightColor={"var(--primary-bg"}
           >
-            {children}
+            <AssetsProvider>{children}</AssetsProvider>
           </SkeletonTheme>
         </GoogleOAuthProvider>
       </ThemeProvider>

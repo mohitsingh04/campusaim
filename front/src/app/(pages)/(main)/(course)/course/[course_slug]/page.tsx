@@ -116,7 +116,9 @@ const CourseDetails = () => {
         course_eligibility: (course.course_eligibility || [])
           .map((id: any) => courseEligibilityMap.get(id))
           .filter(Boolean) as string[],
-
+        specialization:
+          course.specialization?.map((item: string) => categoryMap.get(item)) ||
+          [],
         course_type: categoryMap.get(course.course_type) ?? course.course_type,
         degree_type: categoryMap.get(course.degree_type) ?? course.degree_type,
         program_type:
@@ -264,7 +266,7 @@ const CourseDetails = () => {
                 fill
                 className="w-full object-cover aspect-16/10"
               />
-              <span className="absolute bottom-4 left-4 px-3 py-1 bg-(--main-light) text-(--main-emphasis) text-sm font-medium rounded-custom shadow-custom">
+              <span className="absolute bottom-4 left-4 px-3 py-1 bg-(--main-subtle) text-(--main-emphasis) text-sm font-medium rounded-custom shadow-custom">
                 {mainCourse?.course_type}
               </span>
             </div>
@@ -321,11 +323,19 @@ const CourseDetails = () => {
           </div>
 
           {/* Best For & Coure Eligibility */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-(--primary-bg) p-5 rounded-custom shadow-custom">
               <HeadingLine title="Coure Eligibility" />
               <ul className="space-y-3">
                 {mainCourse?.course_eligibility.map((item: any, index: any) => (
+                  <ListItem key={index} text={item} type="include" />
+                ))}
+              </ul>
+            </div>
+            <div className="bg-(--primary-bg) p-5 rounded-custom shadow-custom">
+              <HeadingLine title="Coure Specialization" />
+              <ul className="space-y-3">
+                {mainCourse?.specialization?.map((item: any, index: any) => (
                   <ListItem key={index} text={item} type="include" />
                 ))}
               </ul>

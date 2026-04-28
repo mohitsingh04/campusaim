@@ -1,18 +1,4 @@
 @import "tailwindcss";
-
-@import "react-phone-input-2/lib/style.css";
-
-@import "swiper/css";
-@import "swiper/css/autoplay";
-@import "swiper/css/navigation";
-@import "swiper/css/pagination";
-
-@import "yet-another-react-lightbox/styles.css";
-@import "yet-another-react-lightbox/plugins/thumbnails.css";
-@import "yet-another-react-lightbox/plugins/counter.css";
-
-@import "react-advanced-cropper/dist/style.css";
-
 @import "react-loading-skeleton/dist/skeleton.css";
 
 :root {
@@ -25,9 +11,9 @@
   --text-color: #454545;
   --text-color-emphasis: #353535;
 
-  --main-light: #eaf7ff;
+  --main-subtle: #eaf7ff;
   --main: #3176a1;
-  --main-subtle: #491a85;
+  --main-extra: #491a85;
   --main-emphasis: #004773;
 
   --success: #22c55e;
@@ -63,9 +49,9 @@
   --white: #ffffff;
   --border: #374151;
 
-  --main-light: #eaf7ff;
+  --main-subtle: #eaf7ff;
   --main: #3176a1;
-  --main-subtle: #491a85;
+  --main-extra: #491a85;
   --main-emphasis: #004773;
 
   --success: #22c55e;
@@ -97,7 +83,7 @@
 
 *::selection {
   background: var(--main);
-  color: var(--main-light);
+  color: var(--main-subtle);
 }
 
 ::-webkit-scrollbar {
@@ -250,8 +236,15 @@ p,
   border-radius: 8px;
 }
 
+.text-gradient {
+  background: linear-gradient(0deg, var(--main), var(--main-extra));
+  color: transparent;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
 .btn-shine {
-  background: linear-gradient(193deg, var(--main-subtle), var(--main));
+  background: linear-gradient(193deg, var(--main-extra), var(--main));
   position: relative;
   overflow: hidden;
   color: var(--white);
@@ -279,5 +272,5 @@ p,
 }
 
 .btn-shine:hover {
-  background: linear-gradient(135deg, var(--main-subtle), var(--main-emphasis));
+  background: linear-gradient(135deg, var(--main-extra), var(--main-emphasis));
 }

@@ -134,11 +134,11 @@ export default function Page() {
         API.get(`/course`),
         API.get(`/property/gallery/${objectId}`),
         API.get(`/accomodation/${objectId}`),
-        API.get(`/property/amenities/${uniqueId}`),
+        API.get(`/property/amenities/${objectId}`),
         API.get(`/certifications/${objectId}`),
         API.get(`/business-hours/${uniqueId}`),
         API.get(`/teacher/property/${objectId}`),
-        API.get(`/property/faq/${uniqueId}`),
+        API.get(`/property/faq/${objectId}`),
         API.get(`/coupons/property/${uniqueId}`),
         API.get(`/hiring/${uniqueId}`),
       ];
@@ -413,7 +413,7 @@ export default function Page() {
           <div className="relative bg-(--secondary-bg) text-(--text-color-emphasis) w-full p-6 overflow-y-auto">
             <button
               onClick={() => setSidebarOpen(false)}
-              className="absolute top-3 right-3 p-2 rounded-md text-(--main) hover:bg-(--main-light)"
+              className="absolute top-3 right-3 p-2 rounded-md text-(--main) hover:bg-(--main-subtle)"
             >
               <XIcon />
             </button>
@@ -428,7 +428,7 @@ export default function Page() {
                   key={tab.id}
                   className={`flex items-center gap-2 w-full text-left py-2 px-3 rounded-custom font-medium transition-colors ${
                     activeTab === tab.id
-                      ? "bg-(--main-light) text-(--main)"
+                      ? "bg-(--main-subtle) text-(--main)"
                       : "text-(--text-color) bg-(--primary-bg)"
                   }`}
                   onClick={() => {

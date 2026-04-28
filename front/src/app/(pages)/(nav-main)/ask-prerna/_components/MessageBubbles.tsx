@@ -188,7 +188,7 @@ export function MessageBubble({
 
         {/* User avatar - hidden on mobile */}
         {isUser && (
-          <div className="shrink-0 w-5 h-5 md:w-10 md:h-10 bg-(--main-light) rounded-xl hidden sm:flex items-center justify-center shadow-md">
+          <div className="shrink-0 w-5 h-5 md:w-10 md:h-10 bg-(--main-subtle) rounded-xl hidden sm:flex items-center justify-center shadow-md">
             <span className="text-(--main-emphasis) font-semibold text-sm">
               <UserIcon />
             </span>

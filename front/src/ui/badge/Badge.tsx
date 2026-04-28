@@ -14,7 +14,7 @@ export function Badge({
   className = "",
 }: BadgeProps) {
   const colors: Record<string, string> = {
-    main: "var(--main-light) var(--main-emphasis)",
+    main: "var(--main-subtle) var(--main-emphasis)",
     green: "var(--success-subtle) var(--success-emphasis)",
     orange: "var(--orange-subtle) var(--orange-emphasis)",
     red: "var(--danger-subtle) var(--danger-emphasis)",

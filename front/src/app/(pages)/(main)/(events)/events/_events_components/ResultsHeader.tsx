@@ -42,7 +42,7 @@ const ResultsHeader = ({
         <div className="flex items-center justify-between sm:justify-end gap-4">
           <button
             onClick={onShowMobileFilters}
-            className="lg:hidden flex items-center px-4 py-1 bg-(--main-light) text-(--main-emphasis) border border-(--main-emphasis) rounded-full text-sm transition-colors"
+            className="lg:hidden flex items-center px-4 py-1 bg-(--main-subtle) text-(--main-emphasis) border border-(--main-emphasis) rounded-full text-sm transition-colors"
           >
             <FilterIcon className="w-4 h-4 mr-2" /> Filters
           </button>

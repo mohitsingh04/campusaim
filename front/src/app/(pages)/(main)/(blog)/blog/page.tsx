@@ -113,7 +113,7 @@ const BlogPage: React.FC = () => {
           {blogs.length <= 0 && (
             <div className="text-center py-16 bg-(--primary-bg) text-(--text-color) rounded-custom shadow-custom">
               <div className="max-w-md mx-auto">
-                <div className="w-24 h-24 bg-(--main-light) text-(--main-emphasis) rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-24 h-24 bg-(--main-subtle) text-(--main-emphasis) rounded-full flex items-center justify-center mx-auto mb-4">
                   <SearchIcon className="h-12 w-12" />
                 </div>
                 <h3 className="heading text-(--text-color-emphasis) font-semibold">

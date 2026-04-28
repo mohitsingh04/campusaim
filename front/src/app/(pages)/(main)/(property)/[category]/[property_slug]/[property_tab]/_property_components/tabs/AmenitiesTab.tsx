@@ -53,8 +53,8 @@ export default function AmenitiesTab({ property }: { property: any }) {
           text-sm font-medium px-4 py-2 rounded-custom whitespace-nowrap
           ${
             isActive
-              ? "bg-[var(--main-emphasis)] text-[var(--main-light)] text-shadow"
-              : "bg-[var(--main-light)] text-[var(--main-emphasis)]"
+              ? "bg-[var(--main-emphasis)] text-[var(--main-subtle)] text-shadow"
+              : "bg-[var(--main-subtle)] text-[var(--main-emphasis)]"
           }
         `;
 
@@ -62,8 +62,8 @@ export default function AmenitiesTab({ property }: { property: any }) {
           w-full text-left px-6 py-4 paragraph font-semibold border-l-4
           ${
             isActive
-              ? "bg-[var(--main-emphasis)] text-[var(--main-light)] border-[var(--main)]"
-              : "border-transparent hover:bg-[var(--main-light)] hover:text-[var(--main-emphasis)]"
+              ? "bg-[var(--main-emphasis)] text-[var(--main-subtle)] border-[var(--main)]"
+              : "border-transparent hover:bg-[var(--main-subtle)] hover:text-[var(--main-emphasis)]"
           }
         `;
 
@@ -88,8 +88,8 @@ export default function AmenitiesTab({ property }: { property: any }) {
                 className={clsx(
                   "px-2 py-0.5 rounded-custom paragraph font-bold",
                   isActive
-                    ? "bg-[var(--main-light)] text-[var(--main-emphasis)]"
-                    : "bg-(--main-light) text-(--main-emphasis)"
+                    ? "bg-[var(--main-subtle)] text-[var(--main-emphasis)]"
+                    : "bg-(--main-subtle) text-(--main-emphasis)"
                 )}
               >
                 {amenities[category]?.length || 0}
@@ -144,7 +144,7 @@ export default function AmenitiesTab({ property }: { property: any }) {
                     return (
                       <div
                         key={index}
-                        className="bg-(--secondary-bg) hover:bg-(--main-light) text-(--text-color-emphasis) hover:text-(--main-emphasis) flex justify-between items-center p-3 rounded-custom shadow-custom transition-all duration-300 group"
+                        className="bg-(--secondary-bg) hover:bg-(--main-subtle) text-(--text-color-emphasis) hover:text-(--main-emphasis) flex justify-between items-center p-3 rounded-custom shadow-custom transition-all duration-300 group"
                       >
                         <div className="flex items-center gap-4">
                           {SubcategoryIcons[label] &&
@@ -163,7 +163,7 @@ export default function AmenitiesTab({ property }: { property: any }) {
                             {children.map((c, i) => (
                               <span
                                 key={i}
-                                className="px-2 py-1 text-xs bg-(--main-light) text-(--main-emphasis) group-hover:bg-(--main-emphasis) group-hover:text-(--main-light) rounded-custom"
+                                className="px-2 py-1 text-xs bg-(--main-subtle) text-(--main-emphasis) group-hover:bg-(--main-emphasis) group-hover:text-(--main-subtle) rounded-custom"
                               >
                                 {c}
                               </span>

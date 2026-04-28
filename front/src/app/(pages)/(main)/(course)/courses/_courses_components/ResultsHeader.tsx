@@ -49,7 +49,7 @@ const ResultsHeader = ({
         <div className="flex items-center justify-between sm:justify-end gap-4">
           <button
             onClick={onShowMobileFilters}
-            className="lg:hidden flex items-center px-4 py-1 bg-(--main-light) text-(--main-emphasis) border border-(--main-emphasis) rounded-full text-sm transition-colors"
+            className="lg:hidden flex items-center px-4 py-1 bg-(--main-subtle) text-(--main-emphasis) border border-(--main-emphasis) rounded-full text-sm transition-colors"
           >
             <FilterIcon className="w-4 h-4 mr-2" /> Filters
           </button>
@@ -87,9 +87,9 @@ const ResultsHeader = ({
                       onSortChange("A-Z");
                       setOpenMenu(false);
                     }}
-                    className={`w-full text-left text-sm px-4 py-2 hover:bg-(--main-light) hover:text-(--main-emphasis) border border-transparent hover:border-(--main-emphasis)  rounded-custom ${
+                    className={`w-full text-left text-sm px-4 py-2 hover:bg-(--main-subtle) hover:text-(--main-emphasis) border border-transparent hover:border-(--main-emphasis)  rounded-custom ${
                       sortBy === "A-Z"
-                        ? "bg-(--main-light) text-(--main-emphasis)"
+                        ? "bg-(--main-subtle) text-(--main-emphasis)"
                         : ""
                     }`}
                   >
@@ -100,9 +100,9 @@ const ResultsHeader = ({
                       onSortChange("Z-A");
                       setOpenMenu(false);
                     }}
-                    className={`w-full text-left text-sm px-4 py-2 hover:bg-(--main-light) hover:text-(--main-emphasis) border border-transparent hover:border-(--main-emphasis)  rounded-custom ${
+                    className={`w-full text-left text-sm px-4 py-2 hover:bg-(--main-subtle) hover:text-(--main-emphasis) border border-transparent hover:border-(--main-emphasis)  rounded-custom ${
                       sortBy === "Z-A"
-                        ? "bg-(--main-light) text-(--main-emphasis)"
+                        ? "bg-(--main-subtle) text-(--main-emphasis)"
                         : ""
                     }`}
                   >

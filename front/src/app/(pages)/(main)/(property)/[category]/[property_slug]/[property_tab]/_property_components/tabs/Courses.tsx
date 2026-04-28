@@ -40,7 +40,7 @@ export default function CoursesTab({
               </div>
 
               {/* Category Badge */}
-              <div className="absolute bottom-3 left-3 bg-(--main-light) text-(--main-emphasis) text-xs px-3 py-1 rounded-full shadow-custom">
+              <div className="absolute bottom-3 left-3 bg-(--main-subtle) text-(--main-emphasis) text-xs px-3 py-1 rounded-full shadow-custom">
                 {getCategoryById(course.course_type)}
               </div>
             </div>

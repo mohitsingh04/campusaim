@@ -26,7 +26,7 @@ const CopyButton = ({ text, label }: { text: string; label: string }) => (
       e.stopPropagation();
       handleCopy(text, label);
     }}
-    className="p-2.5 rounded-full bg-(--main-light) text-(--main-emphasis) transition-colors z-20 relative group-hover:scale-110 active:scale-95 duration-200"
+    className="p-2.5 rounded-full bg-(--main-subtle) text-(--main-emphasis) transition-colors z-20 relative group-hover:scale-110 active:scale-95 duration-200"
     title={`Copy ${label}`}
   >
     <CopyIcon size={16} />
@@ -117,7 +117,7 @@ const ContactUs = () => {
             <div className="relative flex-1 rounded-custom bg-(--secondary-bg) p-6 transition-all duration-300 group hover:-translate-y-1 shadow-custom">
               <div className="relative space-y-6">
                 <div className="flex justify-between items-start">
-                  <div className="p-3 rounded-custom bg-(--primary-bg) transition-all duration-300 group-hover:bg-(--main-light) group-hover:text-(--main-emphasis) group-hover:-translate-y-1">
+                  <div className="p-3 rounded-custom bg-(--primary-bg) transition-all duration-300 group-hover:bg-(--main-subtle) group-hover:text-(--main-emphasis) group-hover:-translate-y-1">
                     <SendIcon size={22} />
                   </div>
 
@@ -136,7 +136,7 @@ const ContactUs = () => {
             <div className="relative flex-1 bg-(--secondary-bg) rounded-custom p-6  shadow-custom transition-all duration-300 group hover:-translate-y-1">
               <div className="relative space-y-6">
                 <div className="flex justify-between items-start">
-                  <div className="p-3 rounded-custom bg-(--primary-bg) transition-all duration-300 group-hover:bg-(--main-light) group-hover:text-(--main-emphasis) group-hover:-translate-y-1">
+                  <div className="p-3 rounded-custom bg-(--primary-bg) transition-all duration-300 group-hover:bg-(--main-subtle) group-hover:text-(--main-emphasis) group-hover:-translate-y-1">
                     <PhoneIcon size={22} />
                   </div>
 
@@ -212,7 +212,7 @@ const ContactUs = () => {
             {/* Map Badge */}
             <div className="absolute top-3 right-3 bg-(--primary-bg) backdrop-blur-md p-5 rounded-custom shadow-custom z-10">
               <div className="flex items-start gap-3">
-                <div className="mt-1 bg-(--main-light) p-1.5 rounded-full">
+                <div className="mt-1 bg-(--main-subtle) p-1.5 rounded-full">
                   <MapPinIcon className="text-(--main)" size={16} />
                 </div>
                 <div>

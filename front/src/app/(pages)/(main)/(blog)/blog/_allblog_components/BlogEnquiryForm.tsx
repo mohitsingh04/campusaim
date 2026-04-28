@@ -4,6 +4,7 @@ import { useFormik } from "formik";
 import { BlogsProps } from "@/types/BlogTypes";
 import { InputGroup, TextareaGroup } from "@/ui/form/FormComponents";
 import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
 import ButtonGroupSend from "@/ui/buttons/ButtonGroup";
 import { phoneInputClass } from "@/common/ExtraData";
 import {

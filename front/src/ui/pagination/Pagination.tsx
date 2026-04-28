@@ -62,7 +62,7 @@ const Pagination = ({
       <button
         onClick={onFirst}
         disabled={page === 1}
-        className="flex items-center justify-center w-7 h-7 md:w-8 md:h-8 rounded-custom border border-(--main) text-(--main) bg-(--main-light) transition-all disabled:opacity-40"
+        className="flex items-center justify-center w-7 h-7 md:w-8 md:h-8 rounded-custom border border-(--main) text-(--main) bg-(--main-subtle) transition-all disabled:opacity-40"
       >
         <ChevronsLeftIcon className="w-5 h-5" />
       </button>
@@ -70,7 +70,7 @@ const Pagination = ({
       <button
         onClick={onPrevious}
         disabled={page === 1}
-        className="flex items-center justify-center w-7 h-7 md:w-8 md:h-8 rounded-custom border border-(--main) text-(--main) bg-(--main-light) transition-all disabled:opacity-40"
+        className="flex items-center justify-center w-7 h-7 md:w-8 md:h-8 rounded-custom border border-(--main) text-(--main) bg-(--main-subtle) transition-all disabled:opacity-40"
       >
         <ChevronLeftIcon className="w-5 h-5" />
       </button>
@@ -93,8 +93,8 @@ const Pagination = ({
             className={`w-7 h-7 md:w-8 md:h-8 text-sm flex items-center justify-center rounded-custom border transition-all
               ${
                 isActive
-                  ? "bg-(--main) text-(--main-light) border-(--main) shadow-custom scale-95"
-                  : "border-(--main) text-(--main-emphasis) bg-(--main-light) hover:bg-(--main-emphasis) hover:text-(--main-light)"
+                  ? "bg-(--main) text-(--main-subtle) border-(--main) shadow-custom scale-95"
+                  : "border-(--main) text-(--main-emphasis) bg-(--main-subtle) hover:bg-(--main-emphasis) hover:text-(--main-subtle)"
               }`}
           >
             {pageNumber}
@@ -105,7 +105,7 @@ const Pagination = ({
       <button
         onClick={onNext}
         disabled={page === totalPages}
-        className="flex items-center justify-center w-7 h-7 md:w-8 md:h-8 rounded-custom border border-(--main) text-(--main) bg-(--main-light) transition-all disabled:opacity-40"
+        className="flex items-center justify-center w-7 h-7 md:w-8 md:h-8 rounded-custom border border-(--main) text-(--main) bg-(--main-subtle) transition-all disabled:opacity-40"
       >
         <ChevronRightIcon className="w-5 h-5" />
       </button>
@@ -113,7 +113,7 @@ const Pagination = ({
       <button
         onClick={onLast}
         disabled={page === totalPages}
-        className="flex items-center justify-center w-7 h-7 md:w-8 md:h-8 rounded-custom border border-(--main) text-(--main) bg-(--main-light) transition-all disabled:opacity-40"
+        className="flex items-center justify-center w-7 h-7 md:w-8 md:h-8 rounded-custom border border-(--main) text-(--main) bg-(--main-subtle) transition-all disabled:opacity-40"
       >
         <ChevronsRightIcon className="w-5 h-5" />
       </button>

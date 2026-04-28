@@ -12,7 +12,7 @@ export default function CourseCard({ course }: { course: CourseProps }) {
     <section className="w-full">
       <div className="bg-(--primary-bg) text-(--text-color) p-4 sm:p-6 rounded-custom shadow-custom flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mt-2">
         <div className="flex items-center sm:items-start gap-4">
-          <div className="w-12 h-12 sm:w-14 sm:h-14 bg-(--main-light) text-(--main-emphasis) rounded-full flex items-center justify-center shrink-0">
+          <div className="w-12 h-12 sm:w-14 sm:h-14 bg-(--main-subtle) text-(--main-emphasis) rounded-full flex items-center justify-center shrink-0">
             <BookOpenTextIcon className="w-6 h-6 sm:w-7 sm:h-7" />
           </div>
 
