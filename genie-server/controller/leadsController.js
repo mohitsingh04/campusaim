@@ -20,6 +20,7 @@ import IncentiveEarning from "../models/incentiveEarning.js";
 import { db } from '../mongoose/index.js';
 import { getRoleMap, mapRoleForApp, getDbRoleKey, getRoleId } from "../utils/roleMapper.js";
 import RegularUser from "../models/regularUser.js";
+import Property from "../models/property.js";
 
 const COURSE_TYPES = ["UG", "PG", "Diploma", "Certificate", "PhD", "Other"];
 const COLLEGE_TYPES = ["Government", "Private", "Deemed", "Autonomous", "Any"];

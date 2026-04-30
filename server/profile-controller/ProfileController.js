@@ -5,7 +5,7 @@ import {
 } from "../email/profileEmail.js";
 import RegularUser from "../profile-model/RegularUser.js";
 import { Niche } from "../profile-model/Niche.js";
-import bcrypt from "bcrypt";
+import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import ProfileLocation from "../profile-model/ProfileLocation.js";
@@ -104,7 +104,7 @@ export const profileRegister = async (req, res) => {
       return res.status(400).json({ error: "Already Existing Mobile Number" });
     }
 
-    const passwordHash = await bcrypt.hash(password, saltRounds);
+    const passwordHash = await bcryptjs.hash(password, saltRounds);
 
     const uniqueId = await generateUniqueId(RegularUser);
 
@@ -236,7 +236,7 @@ export const profileLogin = async (req, res) => {
     }
 
     if (!user?.isGoogleLogin) {
-      const isMatch = await bcrypt.compare(password, user?.password);
+      const isMatch = await bcryptjs.compare(password, user?.password);
       if (!isMatch) {
         return res.status(401).json({ error: "Incorrect password!" });
       }
@@ -453,7 +453,7 @@ export const profilePostResetToken = async (req, res) => {
       return res.status(400).json({ error: "Passwords do not match." });
     }
 
-    const passwordHash = await bcrypt.hash(new_password, 10);
+    const passwordHash = await bcryptjs.hash(new_password, 10);
 
     const user = await RegularUser.findOneAndUpdate(
       { resetToken: token },
@@ -494,12 +494,12 @@ export const changeProfilePassword = async (req, res) => {
         .json({ error: "New password and confirm password must match" });
     }
 
-    const isMatch = await bcrypt.compare(current_password, user.password);
+    const isMatch = await bcryptjs.compare(current_password, user.password);
     if (!isMatch) {
       return res.status(401).json({ error: "Current password is incorrect" });
     }
 
-    const passwordHash = await bcrypt.hash(new_password, saltRounds);
+    const passwordHash = await bcryptjs.hash(new_password, saltRounds);
 
     user.password = passwordHash;
     await user.save();

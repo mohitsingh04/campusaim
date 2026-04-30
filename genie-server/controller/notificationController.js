@@ -1,12 +1,13 @@
-import Notification from "../models/notificationModel.js";
-import { getDataFromToken } from "../helper/getDataFromToken.js";
 import mongoose from "mongoose";
+import { getDataFromToken } from "../helper/getDataFromToken.js";
+import Notification from "../models/notificationModel.js";
+import RegularUser from "../models/regularUser.js";
 
 export const getMyNotifications = async (req, res) => {
     try {
         const receiverId = await getDataFromToken(req);
 
-        // ✅ VALIDATION
+        // 🔒 VALIDATION
         if (!receiverId || !mongoose.Types.ObjectId.isValid(receiverId)) {
             return res.status(401).json({
                 success: false,
@@ -14,18 +15,57 @@ export const getMyNotifications = async (req, res) => {
             });
         }
 
+        /* ================= FETCH NOTIFICATIONS ================= */
         const notifications = await Notification
             .find({ receiverId })
-            .populate("senderId", "name avatar email") // Fetch sender details for the UI
-            .sort({ createdAt: -1 });
+            .sort({ createdAt: -1 })
+            .lean();
 
+        if (!notifications.length) {
+            return res.status(200).json({
+                success: true,
+                data: []
+            });
+        }
+
+        /* ================= COLLECT SENDER IDS ================= */
+        const senderIds = [
+            ...new Set(
+                notifications
+                    .map(n => n.senderId?.toString())
+                    .filter(Boolean)
+            )
+        ];
+
+        /* ================= FETCH USERS (PROFILE DB) ================= */
+        const users = await RegularUser.find({
+            _id: { $in: senderIds }
+        })
+            .select("_id name email avatar")
+            .lean();
+
+        /* ================= CREATE MAP ================= */
+        const userMap = new Map(
+            users.map(u => [u._id.toString(), u])
+        );
+
+        /* ================= MERGE ================= */
+        const enrichedNotifications = notifications.map(n => ({
+            ...n,
+            sender: n.senderId
+                ? userMap.get(n.senderId.toString()) || null
+                : null // system notification
+        }));
+
+        /* ================= RESPONSE ================= */
         return res.status(200).json({
             success: true,
-            data: notifications
+            data: enrichedNotifications
         });
 
     } catch (error) {
         console.error("Fetch Notifications Error:", error);
+
         return res.status(500).json({
             success: false,
             message: "Failed to fetch notifications"

@@ -101,8 +101,8 @@ export default function Analytics({ adminId }) {
                 theme: "emerald"
             },
             {
-                label: "Active Agents",
-                value: people.agents.active,
+                label: "Active Partners",
+                value: people.partners.active,
                 icon: Users,
                 theme: "violet"
             },
@@ -180,16 +180,16 @@ export default function Analytics({ adminId }) {
 
                 <CardContainer title="Team Health" icon={Users}>
                     <MetricItem
-                        label="Agent Availability"
-                        value={`${people.agents.active} active / ${people.agents.total}`}
-                        colorClass={people.agents.active > 0 ? "text-emerald-600" : "text-gray-900"}
+                        label="Partner Availability"
+                        value={`${people.partners.active} active / ${people.partners.total}`}
+                        colorClass={people.partners.active > 0 ? "text-emerald-600" : "text-gray-900"}
                     />
                     <MetricItem
                         label="Counselor Availability"
                         value={`${people.counselors.active} active / ${people.counselors.total}`}
                         colorClass={people.counselors.active > 0 ? "text-emerald-600" : "text-gray-900"}
                     />
-                    <MetricItem label="Inactive Agents" value={people.agents.inactive} colorClass="text-gray-400" />
+                    <MetricItem label="Inactive Partners" value={people.partners.inactive} colorClass="text-gray-400" />
                     <MetricItem label="Inactive Counselors" value={people.counselors.inactive} colorClass="text-gray-400" />
                 </CardContainer>
             </section>

@@ -62,7 +62,6 @@ function EditPartner() {
         name: partnerData?.name || "",
         email: partnerData?.email || "",
         mobile_no: partnerData?.mobile_no || "",
-        bio: partnerData?.bio || "",
         role: partnerData?.role || "",
         verified: Boolean(partnerData?.verified),
     };
@@ -206,20 +205,6 @@ function EditPartner() {
                                         : null
                                     }
                                 </div>
-                            </div>
-
-                            {/* Bio */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Bio</label>
-                                <textarea
-                                    rows={4}
-                                    name="bio"
-                                    placeholder="Experienced education partner with 5+ years in student guidance and enrollment management."
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    value={formik.values.bio}
-                                    onChange={formik.handleChange}
-                                    onBlur={formik.handleBlur}
-                                />
                             </div>
 
                             <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>

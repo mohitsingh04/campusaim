@@ -6,9 +6,7 @@ export const initSocket = (server) => {
     const io = new Server(server, {
         cors: {
             origin: [
-                process.env.FRONTEND_URL,
-                process.env.DASHBOARD_URL,
-                "http://localhost:3000"
+                process.env.APP_DASHBOARD_URL,
             ],
             credentials: true
         }

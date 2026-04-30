@@ -47,11 +47,6 @@ export default function Details({ adminData }) {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <InfoField label="Member Since" value={memberSince} />
                     <InfoField label="Last Activity" value={lastActivity} />
-                    <InfoField
-                        className="md:col-span-2"
-                        label="Bio"
-                        value={adminData?.bio}
-                    />
                 </div>
             </section>
         </div>

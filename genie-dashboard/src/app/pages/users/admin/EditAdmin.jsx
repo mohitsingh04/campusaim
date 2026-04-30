@@ -16,8 +16,6 @@ import FormTextarea from "../../../components/ui/Form/FormTextarea";
 import FormPhoneInput from "../../../components/ui/Form/FormPhoneInput";
 import FormSwitch from "../../../components/ui/Form/FormSwitch";
 
-const MAX_BIO = 2000;
-
 const formatPhoneForUI = (phone = "") => {
     if (!phone) return "";
 
@@ -56,7 +54,6 @@ const validationSchema = Yup.object({
         .transform(v => v ? v.replace(/\s/g, "") : "")
         .matches(/^(\+91|0)?[6-9][0-9]{9}$/, "Invalid Indian number"),
     role: Yup.string().required("Role required"),
-    bio: Yup.string().max(MAX_BIO, `Max ${MAX_BIO} characters`),
     verified: Yup.boolean()
 });
 
@@ -111,7 +108,6 @@ export default function EditAdmin() {
             name: adminData?.name || "",
             email: adminData?.email || "",
             mobile_no: formatPhoneForUI(adminData?.mobile_no) || "",
-            bio: adminData?.bio || "",
             role: adminData?.role || "",
             verified: !!adminData?.verified
         },
@@ -181,15 +177,6 @@ export default function EditAdmin() {
 
                     {/* SECTION: Detailed Profile */}
                     <div className="space-y-6 pt-4 border-t border-gray-50">
-                        <FormTextarea
-                            label="Professional Bio"
-                            name="bio"
-                            rows={5}
-                            placeholder="Describe the admin's responsibilities..."
-                            maxLength={MAX_BIO}
-                            formik={formik}
-                        />
-
                         <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100 max-w-md">
                             <FormSwitch
                                 label="Verify Account Status"

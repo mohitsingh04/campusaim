@@ -6,9 +6,11 @@ import helmet from "helmet";
 import path from "path";
 import { fileURLToPath } from "url";
 import compression from "compression";
+import mongoose from "mongoose";
 import http from "http";
+
 import { initSocket } from "./socket.js";
-import { db, connectDB } from "./mongoose/index.js";
+import { db, connectDB, connectGenieDB } from "./mongoose/index.js";
 
 // Routers
 import authRouter from "./routes/authRouter.js";
@@ -32,70 +34,46 @@ import comissionRouter from "./routes/comissionRoutes.js";
 
 dotenv.config();
 
-(async () => {
-  try {
-    // ✅ Connect to MAIN DB (users, roles)
-    await connectDB();
-    console.log("Connected to CampusAim Main DB");
-
-    // ✅ Connect to GENIE DB (leads, etc.)
-    db.once("open", () => {
-      console.log("Connected to Genie DB");
-    });
-
-  } catch (err) {
-    console.error("DB Connection Error:", err);
-    process.exit(1);
-  }
-})();
-
+// INIT APP FIRST (IMPORTANT)
 const app = express();
 const PORT = process.env.PORT;
 
+// ✅ CREATE SERVER (for socket)
 const server = http.createServer(app);
-
 initSocket(server);
 
 // File helpers
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Middlewares
+// ================= MIDDLEWARE =================
+app.use(helmet());
 app.use(apiMonitor);
 app.use(compression());
 app.use(express.json());
 app.use(cookieParser());
-app.use(helmet());
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 
-// Static folders
 app.use(express.static(path.join(__dirname, "../public")));
 app.use("/media", express.static(path.join(__dirname, "../media")));
 
-// Allowed origins
+// ================= CORS =================
 const allowedOrigins = [
-  process.env.DASHBOARD_URL,
-  process.env.DASHBOARD_BUILD_URL,
-  process.env.FRONTEND_URL,
+  process.env.APP_DASHBOARD_URL,
   process.env.CAMPUSAIM_API_URL,
+  process.env.CAMPUSAIM_FRONT_URL,
   process.env.CAMPUSAIM_MANAGE_URL
 ];
 
-// API CORS setup
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    credentials: true,
-  })
-);
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error("Not allowed by CORS"));
+  },
+  credentials: true,
+}));
 
-// Optional guard for extra security
+// ================= GUARD =================
 export function originGuard(req, res, next) {
   const origin = req.headers.origin;
   if (!origin || !allowedOrigins.includes(origin)) {
@@ -106,6 +84,15 @@ export function originGuard(req, res, next) {
 
 // Routes
 app.get("/", (req, res) => res.json("API is running!"));
+
+app.get("/health", (req, res) => {
+    res.json({
+        mainDB: mongoose.connection.readyState === 1 ? "UP" : "DOWN",
+        genieDB: db.readyState === 1 ? "UP" : "DOWN",
+        uptime: process.uptime(),
+    });
+});
+
 app.use("/api/", originGuard, authRouter);
 app.use("/api/", originGuard, locationRouter);
 app.use("/api/", originGuard, documentsRouter);
@@ -124,6 +111,24 @@ app.use("/api/", originGuard, incentiveRouter);
 app.use("/api/", originGuard, withdrawRouter);
 app.use("/api/", originGuard, comissionRouter);
 
-server.listen(PORT, "0.0.0.0", () => {
-  console.log(`API + WS running on http://0.0.0.0:${PORT}`);
-});
+// ================= START SERVER =================
+const startServer = async () => {
+  try {
+    // ✅ WAIT for BOTH DBs
+    await connectDB();
+    await connectGenieDB();
+
+    console.log("All databases connected successfully");
+
+    // ✅ START ONLY ONE SERVER
+    server.listen(PORT, "0.0.0.0", () => {
+      console.log(`API + WS running on http://0.0.0.0:${PORT}`);
+    });
+
+  } catch (err) {
+    console.error("Startup error:", err);
+    process.exit(1);
+  }
+};
+
+startServer();

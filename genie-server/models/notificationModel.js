@@ -6,13 +6,13 @@ const notificationSchema = new mongoose.Schema(
         // The Recipient (User receiving the notification)
         receiverId: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
+            ref: "user",
         },
 
         // The Initiator (The "Actor" who triggered the event)
         senderId: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
+            ref: "user",
             default: null // null indicates a system-generated event
         },
 

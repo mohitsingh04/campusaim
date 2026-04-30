@@ -373,8 +373,8 @@ export default function UserList({
         let notVerified = 0;
 
         for (const item of items) {
-            if (item.status === "active") active++;
-            else if (item.status === "suspended") suspended++;
+            if (item.status === "Active") active++;
+            else if (item.status === "Suspended") suspended++;
 
             if (item.verified === true) verified++;
             else if (item.verified === false) notVerified++;

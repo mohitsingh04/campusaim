@@ -51,7 +51,7 @@ export default function UserList({ users = [], role }) {
                 Name: u.name,
                 Email: u.email,
                 Phone: u.mobile_no,
-                Status: u.status === "active" ? "Active" : "Suspended",
+                Status: u.status === "Active" ? "Active" : "Suspended",
                 Verified: u.isVerified ? "Yes" : "No",
                 ...(role === "partner" && { RefCode: u.ref_code }),
             }));
@@ -113,7 +113,7 @@ export default function UserList({ users = [], role }) {
             key: "status",
             label: "Status",
             render: (u) =>
-                u.status === "active" ? (
+                u.status === "Active" ? (
                     <span className="bg-green-100 text-green-600 rounded-lg px-3 py-1 text-xs font-medium">
                         Active
                     </span>

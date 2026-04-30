@@ -77,16 +77,16 @@ export default function ViewCounselor() {
     const handleToggle = async () => {
         if (!counselorData?._id || loading) return; // guard: prevent double click
 
-        const nextStatus = status === "active" ? "suspended" : "active";
+        const nextStatus = status === "Active" ? "Suspended" : "Active";
 
         const result = await Swal.fire({
-            title: `${nextStatus === "active" ? "Activate" : "Suspend"} User?`,
-            text: `Are you sure you want to ${nextStatus === "active" ? "activate" : "suspend"} this counselor?`,
+            title: `${nextStatus === "Active" ? "Activate" : "Suspend"} User?`,
+            text: `Are you sure you want to ${nextStatus === "Active" ? "activate" : "suspend"} this counselor?`,
             icon: "warning",
             showCancelButton: true,
-            confirmButtonColor: nextStatus === "active" ? "#16a34a" : "#dc2626",
+            confirmButtonColor: nextStatus === "Active" ? "#16a34a" : "#dc2626",
             cancelButtonColor: "#6b7280",
-            confirmButtonText: `Yes, ${nextStatus === "active" ? "Activate" : "Suspend"}`,
+            confirmButtonText: `Yes, ${nextStatus === "Active" ? "Activate" : "Suspend"}`,
             cancelButtonText: "Cancel",
             reverseButtons: true,
             focusCancel: true,

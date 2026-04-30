@@ -61,8 +61,6 @@ export default function SuperadminDashboard() {
     onError: () => toast.error("Failed to load dashboard"),
   });
 
-  console.log(data?.platform)
-
   const rangeLabel = useMemo(() =>
     RANGES.find(r => r.value === range)?.label || "Custom Range",
     [range]);

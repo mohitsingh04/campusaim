@@ -38,12 +38,6 @@ export default function Details({ data, role }) {
                                 <p className="mt-1 text-sm text-gray-900">{data?.updatedAt ? timeAgo(data.updatedAt) : "N/A"}</p>
                             </div>
                         </div>
-                        <div className="grid grid-cols-1 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Bio</label>
-                                <p className="mt-1 text-sm text-gray-900">{data?.bio || "N/A"}</p>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>

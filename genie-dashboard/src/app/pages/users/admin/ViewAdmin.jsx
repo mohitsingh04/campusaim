@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { Phone, Mail, MapPin, ArrowLeft, Pencil } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -8,12 +8,11 @@ import ViewAdminSkeletonPage from './skeleton-page/ViewAdminSkeletonPage';
 import UserList from './admin-components/UserList';
 import Analytics from './admin-components/Analytics';
 import Details from './admin-components/Details';
-import { API, CampusaimAPI } from '../../../services/API';
+import { CampusaimAPI } from '../../../services/API';
 import Breadcrumbs from '../../../components/ui/BreadCrumb/Breadcrumbs';
 import AdminProfileCard from './admin-components/AdminProfileCard';
 
-// ========================= API FUNCTIONS =========================
-
+// ========================= API =========================
 const fetchAdminOverview = async (id) => {
     const { data } = await CampusaimAPI.get(`/fetch-admins/${id}`);
     return data?.data;
@@ -25,19 +24,48 @@ const toggleAdminStatus = async (id) => {
 };
 
 // ========================= COMPONENT =========================
-
 export default function ViewAdmin() {
     const { id } = useParams();
+    const [searchParams, setSearchParams] = useSearchParams();
     const queryClient = useQueryClient();
-    const [activeTab, setActiveTab] = useState('details');
 
-    // ========================= DATA FETCHING =========================
+    const tabs = useMemo(() => [
+        { id: "analytics", label: "Analytics" },
+        { id: "details", label: "Details" },
+        { id: "partners", label: "Partners" },
+        { id: "teamleader", label: "Team Leaders" },
+        { id: "counselors", label: "Counselors" },
+    ], []);
+
+    // ✅ Get tab from URL
+    const initialTab = searchParams.get("tab");
+    const isValidTab = tabs.some(t => t.id === initialTab);
+
+    const [activeTab, setActiveTab] = useState(isValidTab ? initialTab : "details");
+
+    // ========================= SYNC URL <-> STATE =========================
+
+    // Update state when URL changes
+    useEffect(() => {
+        const tabFromUrl = searchParams.get("tab");
+        if (tabFromUrl && tabs.some(t => t.id === tabFromUrl)) {
+            setActiveTab(tabFromUrl);
+        }
+    }, [searchParams, tabs]);
+
+    // Update URL when tab changes
+    const handleTabChange = (tabId) => {
+        setActiveTab(tabId);
+        setSearchParams({ tab: tabId }); // ✅ clean replace
+    };
+
+    // ========================= DATA =========================
 
     const { data: adminData, isLoading, isError } = useQuery({
         queryKey: ['admin-overview', id],
         queryFn: () => fetchAdminOverview(id),
         enabled: !!id,
-        staleTime: 300000, // 5 minutes
+        staleTime: 300000,
     });
 
     const toggleMutation = useMutation({
@@ -52,30 +80,18 @@ export default function ViewAdmin() {
         onError: () => toast.error("Failed to toggle status"),
     });
 
-    // ========================= MEMOIZED LOGIC =========================
-
     const fullAddress = useMemo(() => {
         if (!adminData?.location) return "N/A";
         const { address, pincode, city, state, country } = adminData.location;
         return [address, pincode, city, state, country].filter(Boolean).join(", ");
     }, [adminData?.location]);
 
-    const tabs = useMemo(() => [
-        { id: "analytics", label: "Analytics" },
-        { id: "details", label: "Details" },
-        { id: "partners", label: "Partners" },
-        { id: "teamleader", label: "Team Leaders" },
-        { id: "counselors", label: "Counselors" },
-    ], []);
-
-    // ========================= RENDER LOGIC =========================
-
     if (isLoading) return <ViewAdminSkeletonPage />;
     if (isError) return <div className="p-6 text-center text-red-500">Error loading admin data.</div>;
 
     const TAB_COMPONENTS = {
-        analytics: <Analytics adminId={adminData?._id} />,
-        details: <Details adminData={adminData} />,
+        analytics: <Analytics adminId={adminData?.admin?._id} />,
+        details: <Details adminData={adminData?.admin} />,
         partners: <UserList users={adminData?.partners || []} role="partner" />,
         teamleader: <UserList users={adminData?.teamleaders || []} role="teamleader" />,
         counselors: <UserList users={adminData?.counselors || []} role="counselor" />,
@@ -88,16 +104,15 @@ export default function ViewAdmin() {
                     { label: "Dashboard", to: "/dashboard" },
                     { label: "Admin", to: "/dashboard/admins" },
                     { label: "View", to: "/dashboard/admins" },
-                    { label: adminData?.name || "Admin", active: true },
+                    { label: adminData?.admin?.name || "Admin", active: true },
                 ]}
                 actions={[
-                    { label: "Edit", to: `/dashboard/admins/edit/${adminData?._id}`, Icon: Pencil, variant: "success" },
+                    { label: "Edit", to: `/dashboard/admins/edit/${adminData?.admin?._id}`, Icon: Pencil, variant: "success" },
                     { label: "Back", to: "/dashboard/admins", Icon: ArrowLeft, variant: "primary" },
                 ]}
             />
 
-            {/* Admin Profile Card */}
-            <AdminProfileCard adminData={adminData} toggleMutation={toggleMutation} fullAddress={fullAddress} />
+            <AdminProfileCard adminData={adminData?.admin} toggleMutation={toggleMutation} fullAddress={fullAddress} />
 
             <div className="border-b border-gray-200">
                 <div className="overflow-x-auto">
@@ -105,8 +120,10 @@ export default function ViewAdmin() {
                         {tabs.map((tab) => (
                             <button
                                 key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
-                                className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${activeTab === tab.id ? "border-blue-500 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                                onClick={() => handleTabChange(tab.id)} // ✅ use handler
+                                className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${activeTab === tab.id
+                                        ? "border-blue-500 text-blue-600"
+                                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                                     }`}
                             >
                                 {tab.label}

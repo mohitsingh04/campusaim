@@ -8,6 +8,7 @@ import { getRoleIds } from "../utils/profileRole.util.js";
 import { getDataFromToken } from "../utils/getDataFromToken.js";
 import UserInvite from "../profile-model/UserInvite.js";
 import crypto from 'crypto';
+import ProfileLocation from "../profile-model/ProfileLocation.js";
 
 const normalizeMobile = (input = "") => {
     // remove all non-digits
@@ -142,7 +143,6 @@ export const updateUser = async (req, res) => {
             name,
             email,
             mobile_no: rawMobileNo,
-            bio,
             role,
             verified
         } = req.body;
@@ -162,7 +162,6 @@ export const updateUser = async (req, res) => {
                     ...(name !== undefined && { name }),
                     ...(email !== undefined && { email }),
                     ...(mobile_no !== undefined && { mobile_no }),
-                    ...(bio !== undefined && { bio }),
                     ...(role !== undefined && { role }),
                     verified: normalizedVerified,
                 },
@@ -213,7 +212,7 @@ export const fetchCounselorsAndTeamleaders = async (req, res) => {
         const users = await RegularUser.find({
             role: { $in: [counselorRoleId, teamLeaderRoleId] }
         })
-            .select("_id name email contact status role teamLeader")
+            .select("_id name email mobile_no status role teamLeader")
             .populate("role", "role") // ✅ get role name
             .populate("teamLeader", "name email")
             .lean();
@@ -286,10 +285,20 @@ export const fetchAdminById = async (req, res) => {
             });
         }
 
+        const adminId = new mongoose.Types.ObjectId(id);
+
         // ---------------- ROLE RESOLVE ----------------
-        let adminRoleId;
+        let roleIds;
         try {
-            adminRoleId = await getRoleIds("Property Manager");
+            const [adminRoleId, counselorRoleId, teamLeaderRoleId, partnerRoleId] =
+                await getRoleIds(["Property Manager", "counselor", "team leader", "partner"]);
+
+            roleIds = {
+                adminRoleId,
+                counselorRoleId,
+                teamLeaderRoleId,
+                partnerRoleId
+            };
         } catch (err) {
             return res.status(500).json({
                 success: false,
@@ -297,12 +306,12 @@ export const fetchAdminById = async (req, res) => {
             });
         }
 
-        // ---------------- FETCH USER ----------------
+        // ---------------- FETCH ADMIN ----------------
         const admin = await RegularUser.findOne({
-            _id: id,
-            role: adminRoleId
+            _id: adminId,
+            role: roleIds.adminRoleId
         })
-            .select("-password -__v") // safer projection
+            .select("-password -__v")
             .lean();
 
         // ---------------- NOT FOUND ----------------
@@ -313,10 +322,35 @@ export const fetchAdminById = async (req, res) => {
             });
         }
 
+        // ---------------- PARALLEL FETCH ----------------
+        const [partners, counselors, teamleaders, location] = await Promise.all([
+
+            RegularUser.find({ role: roleIds.partnerRoleId })
+                .select("_id name email mobile_no ref_code status isVerified")
+                .lean(),
+
+            RegularUser.find({ role: roleIds.counselorRoleId })
+                .select("_id name email mobile_no status isVerified teamLeader")
+                .populate("teamLeader", "name email")
+                .lean(),
+
+            RegularUser.find({ role: roleIds.teamLeaderRoleId })
+                .select("_id name email mobile_no status isVerified")
+                .lean(),
+
+            ProfileLocation.findOne({ userId: admin?.uniqueId }).lean()
+        ]);
+
         // ---------------- SUCCESS ----------------
         return res.status(200).json({
             success: true,
-            data: admin // ✅ matches your frontend usage
+            data: {
+                admin,
+                partners,
+                counselors,
+                teamleaders,
+                location: location || null
+            }
         });
 
     } catch (error) {
@@ -336,7 +370,7 @@ export const fetchCounselors = async (req, res) => {
 
         const counselors = await RegularUser.find({ role: counselorRoleId })
             .populate("teamLeader", "name email") // ✅ IMPORTANT FIX
-            .select("_id name email contact status teamLeader")
+            .select("_id name email mobile_no status teamLeader verified")
             .lean();
 
         return res.status(200).json({
