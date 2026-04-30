@@ -10,7 +10,7 @@ interface ResultsHeaderProps {
   viewMode: string;
   onViewModeChange: (mode: string) => void;
   onShowMobileFilters: () => void;
-
+  pageCat?: string;
   sortBy: string;
   onSortChange: (sort: string) => void;
 }
@@ -23,6 +23,7 @@ const ResultsHeader = ({
   onViewModeChange,
   onShowMobileFilters,
   sortBy,
+  pageCat,
   onSortChange,
 }: ResultsHeaderProps) => {
   const [openMenu, setOpenMenu] = useState(false);
@@ -34,9 +35,9 @@ const ResultsHeader = ({
     <>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 space-y-6 gap-4 shrink-0">
         <div className="m-0 p-0 flex flex-col justify-center">
-          <h1 className="heading font-bold text-(--text-color-emphasis)">
-            <span className="text-(--main)">{totalResults}</span> Institutes
-            Found
+          <h1 className="heading font-bold text-(--text-color-emphasis) capitalize">
+            <span className="text-(--main)">{totalResults}</span>{" "}
+            {pageCat || "Institutes"} Found
           </h1>
           {totalResults > 0 && (
             <p className="leading-relaxed m-0">

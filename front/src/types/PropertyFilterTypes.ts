@@ -16,7 +16,6 @@ export interface DynamicFilterOptionsProps {
   courseLevels: FilterOptionProps[];
   courseTypes: FilterOptionProps[];
   courseFormats: FilterOptionProps[];
-  academicType: CategoryOptionProps[];
   propertyTypes: CategoryOptionProps[];
   affiliatedBy: CategoryOptionProps[];
   approvedBy: CategoryOptionProps[];
@@ -34,7 +33,6 @@ export interface FiltersProps {
   rating: string[];
   affiliated_by: string[];
   approved_by: string[];
-  academic_type: string[];
   property_type: string[];
 }
 
@@ -49,7 +47,6 @@ export interface ExpandedFiltersProps {
   rating: boolean;
   affiliated_by: boolean;
   approved_by: boolean;
-  academic_type: boolean;
   property_type: boolean;
 }
 
@@ -63,6 +60,5 @@ export interface FilterSearchTermsProps {
   course_format: string;
   affiliated_by: string;
   approved_by: string;
-  academic_type: string;
   property_type: string;
 }

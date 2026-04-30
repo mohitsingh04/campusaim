@@ -304,7 +304,7 @@ const FiltersContent = ({
           </FilterSection>
         )}
 
-        {dynamicFilterOptions.academicType.length > 0 && (
+        {/* {dynamicFilterOptions.academicType.length > 0 && (
           <FilterSection
             title="Academic Types"
             isExpanded={expandedFilters.academic_type}
@@ -323,7 +323,7 @@ const FiltersContent = ({
               }
             />
           </FilterSection>
-        )}
+        )} */}
 
         {dynamicFilterOptions.affiliatedBy.length > 0 && (
           <FilterSection

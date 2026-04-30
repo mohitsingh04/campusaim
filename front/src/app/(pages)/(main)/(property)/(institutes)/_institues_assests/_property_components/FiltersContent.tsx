@@ -304,27 +304,6 @@ const FiltersContent = ({
           </FilterSection>
         )}
 
-        {dynamicFilterOptions.academicType.length > 0 && (
-          <FilterSection
-            title="Academic Types"
-            isExpanded={expandedFilters.academic_type}
-            onToggle={() => onToggleFilter("academic_type")}
-          >
-            <CheckboxFilter
-              items={dynamicFilterOptions.academicType}
-              filterType="academic_type"
-              selectedItems={filters.academic_type}
-              searchTerm={filterSearchTerms.academic_type}
-              onSearchChange={(value) =>
-                onFilterSearchChange("academic_type", value)
-              }
-              onFilterChange={
-                onCheckboxFilter as (filterType: string, value: string) => void
-              }
-            />
-          </FilterSection>
-        )}
-
         {dynamicFilterOptions.affiliatedBy.length > 0 && (
           <FilterSection
             title="Affilated By"

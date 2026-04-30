@@ -1,15 +1,15 @@
 import InsitutesLoader from "@/ui/loader/page/institutes/Institutes";
 import { Metadata } from "next";
 import { Suspense } from "react";
-import InstitutesPage from "./InstitutesPage";
+import InstitutesPage from "../InstitutesPage";
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://campusaim.com";
 
-const title = "Institutes";
-const keywords = ["University", "Colleges", "School", "Coaching"];
+const title = "Top Coaching Institutes in India";
+const keywords = ["top coaching institutes in india", "best coaching centers"];
 const description =
-  "Discover top Institutes in India. Find, compare, and explore the best institutes near you for certification.";
-const canonical = "/institutes";
+  "Find top coaching institutes in India for IIT-JEE, NEET, NDA, UPSC, SSC & more. Compare fees, courses, results & reviews to choose the best coaching center.";
+const canonical = "/universities";
 const featuredImage = [
   {
     url: "/img/main-images/campusaim.png",
@@ -45,7 +45,7 @@ export const metadata: Metadata = {
 export default function YogaInsitutesPage() {
   return (
     <Suspense fallback={<InsitutesLoader />}>
-      <InstitutesPage />
+      <InstitutesPage pageCat="coaching" />
     </Suspense>
   );
 }

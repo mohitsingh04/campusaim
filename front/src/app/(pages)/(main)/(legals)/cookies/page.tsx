@@ -1,37 +1,63 @@
-"use client";
-import React, { useCallback, useEffect, useState } from "react";
 import API from "@/context/API";
 import { getErrorResponse } from "@/context/Callbacks";
-import Loading from "@/ui/loader/Loading";
-import { LockIcon } from "lucide-react";
+import "@/css/Blogs.css";
+import { Metadata } from "next";
+import LegalNotFound from "../_legalComponents/LegalNotFound";
 
-const Cookies = () => {
-  const [cookiesPolicy, setCookiesPolicy] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+const BASE_URL =
+  process.env.NEXT_PUBLIC_BASE_URL ?? "https://www.campusaim.com";
 
-  const getCookies = useCallback(async () => {
-    try {
-      setLoading(true);
-      const response = await API.get(`/legal`);
-      // assuming backend returns: { cookies: "<html...>" }
-      setCookiesPolicy(response.data.cookies);
-    } catch (error) {
-      getErrorResponse(error, true);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+const title = "Cookies";
+const keywords = ["Campusaim Cookies"];
+const description =
+  "Campusaim uses cookies to enhance your experience, analyze site traffic, and improve performance. Learn how we use and manage cookies responsibly.";
+const canonical = "/cookies";
+const featuredImage = [
+  {
+    url: "/img/main-images/campusaim.png",
+    width: 1200,
+    height: 700,
+    alt: "Cookies Campusaim",
+  },
+];
+export const metadata: Metadata = {
+  title: title,
+  description: description,
+  keywords: keywords,
+  alternates: {
+    canonical: canonical,
+  },
+  openGraph: {
+    title: title,
+    description: description,
+    url: canonical,
+    siteName: "Campusaim",
+    images: featuredImage,
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: title,
+    description: description,
+    images: featuredImage,
+  },
+};
 
-  useEffect(() => {
-    getCookies();
-  }, [getCookies]);
+const Cookies = async () => {
+  let cookiesPolicy = null;
 
-  if (loading) return <Loading />;
+  try {
+    const response = await API.get(`/legal`, {
+      headers: { origin: BASE_URL },
+    });
+    cookiesPolicy = response.data.cookies?.content;
+  } catch (error) {
+    getErrorResponse(error, true);
+  }
 
   return (
     <div className="bg-(--secondary-bg)">
       {cookiesPolicy ? (
-        // Actual cookies policy
         <div>
           <div
             id="blog-main"
@@ -40,18 +66,7 @@ const Cookies = () => {
           />
         </div>
       ) : (
-        // Fallback if API has no cookies policy
-        <div className="grow px-6 py-16 flex flex-col items-center justify-center text-center">
-          <LockIcon size={80} className="text-(--main) mb-6" />
-          <h2 className="text-2xl md:text-3xl font-semibold mb-3 text-(--main)">
-            Policy Coming Soon
-          </h2>
-          <p className="text-(--text-color) max-w-xl">
-            We&apos;re currently working hard to prepare this policy for you.
-            Please check back soon. Once the policy is available, you’ll receive
-            an email notification to stay informed.
-          </p>
-        </div>
+        <LegalNotFound />
       )}
     </div>
   );

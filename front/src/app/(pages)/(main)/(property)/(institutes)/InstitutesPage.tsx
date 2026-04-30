@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useMemo, useEffect, useCallback } from "react";
-import FiltersContent from "./_property_components/FiltersContent";
-import InstituteCard from "./_property_components/InstituteCard";
-import MobileFiltersCanvas from "./_property_components/MobileFilters";
-import ResultsHeader from "./_property_components/ResultsHeader";
+import FiltersContent from "./_institues_assests/_property_components/FiltersContent";
+import InstituteCard from "./_institues_assests/_property_components/InstituteCard";
+import MobileFiltersCanvas from "./_institues_assests/_property_components/MobileFilters";
+import ResultsHeader from "./_institues_assests/_property_components/ResultsHeader";
 import { useSearchParams, useRouter, notFound } from "next/navigation";
 import {
   ExpandedFiltersProps,
@@ -16,7 +16,7 @@ import { CategoryProps } from "@/types/Types";
 import {
   createDynamicFilterOptions,
   filterInstitutes,
-} from "./utils/filterUtils";
+} from "./_institues_assests/utils/filterUtils";
 import { generateSlug, getAverageRating } from "@/context/Callbacks";
 import Pagination from "@/ui/pagination/Pagination";
 import InsitutesLoader from "@/ui/loader/page/institutes/Institutes";
@@ -35,7 +35,6 @@ const getInitialFilters = (): FiltersProps => ({
   course_type: [],
   course_format: [],
   rating: [],
-  academic_type: [],
   approved_by: [],
   affiliated_by: [],
   property_type: [],
@@ -49,7 +48,6 @@ const getInitialSearchTerms = (): FilterSearchTermsProps => ({
   course_level: "",
   course_type: "",
   course_format: "",
-  academic_type: "",
   approved_by: "",
   affiliated_by: "",
   property_type: "",
@@ -64,13 +62,12 @@ const ExpandedFilterTerms: ExpandedFiltersProps = {
   course_type: true,
   course_format: true,
   rating: true,
-  academic_type: true,
   approved_by: true,
   affiliated_by: true,
   property_type: true,
 };
 
-export default function InstitutesPage() {
+export default function InstitutesPage({ pageCat }: { pageCat?: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { allCategories } = useGetAssets();
@@ -99,6 +96,7 @@ export default function InstitutesPage() {
   }, [wantedCategory, searchParams]);
 
   const { allProperties, propertiesLoading } = useGetAllProperties({
+    catFilter: pageCat,
     isShuffle: true,
   });
 
@@ -356,6 +354,7 @@ export default function InstitutesPage() {
               onViewModeChange={handleViewModeChange}
               onShowMobileFilters={() => setShowMobileFilters(true)}
               sortBy={sortBy}
+              pageCat={pageCat}
               onSortChange={setSortBy}
             />
 

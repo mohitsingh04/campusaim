@@ -2,6 +2,7 @@
 
 import API from "@/context/API";
 import {
+  generateSlug,
   getErrorResponse,
   mergeCourseData,
   shuffleArray,
@@ -20,8 +21,10 @@ import { useMemo } from "react";
 export type MergedCourse = PropertyCourseProps & Partial<CourseProps>;
 
 export default function useGetAllProperties({
+  catFilter,
   isShuffle = false,
 }: {
+  catFilter?: string;
   isShuffle?: boolean;
 }) {
   const { allCategories, getCategoryById } = useGetAssets();
@@ -41,7 +44,6 @@ export default function useGetAllProperties({
         API.get(`/course`),
       ]);
 
-      // Helper to extract data from fulfilled promises, defaulting to empty arrays on failure
       const [
         propertyRes,
         locationRes,
@@ -52,7 +54,6 @@ export default function useGetAllProperties({
         result.status === "fulfilled" ? result.value.data : [],
       );
 
-      // We filter active properties. If the main propertyRes failed, this will just be an empty array.
       const propertiesData = (propertyRes || []).filter(
         (item: PropertyProps) => item?.status === "Active",
       );
@@ -124,8 +125,16 @@ export default function useGetAllProperties({
 
   const processedProperties = useMemo(() => {
     if (!allProperties || allProperties.length === 0) return [];
-    return isShuffle ? shuffleArray([...allProperties]) : allProperties;
-  }, [allProperties, isShuffle]);
+
+    let filtered = allProperties;
+    if (catFilter) {
+      filtered = allProperties.filter(
+        (prop) => generateSlug(prop?.academic_type) === generateSlug(catFilter)
+      );
+    }
+
+    return isShuffle ? shuffleArray([...filtered]) : filtered;
+  }, [allProperties, catFilter, isShuffle]);
 
   return { allProperties: processedProperties, propertiesLoading };
 }

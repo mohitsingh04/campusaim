@@ -4,56 +4,73 @@ import Legal from "../models/Legal.js";
 export const addOrUpdateLegal = async (req, res) => {
   try {
     const {
-      privacyPolicy,
+      privacy_policy,
       terms,
       disclaimer,
-      cancelationPolicy,
+      cancelation_policy,
       cookies,
+      community_guidlines,
       sendMail,
     } = req.body;
 
     let legal = await Legal.findOne();
+    const now = new Date();
 
     if (!legal) {
-      legal = new Legal({
-        privacyPolicy,
-        terms,
-        disclaimer,
-        cancelationPolicy,
-        cookies,
-      });
-    } else {
-      legal.privacyPolicy = privacyPolicy || legal.privacyPolicy;
-      legal.terms = terms || legal.terms;
-      legal.disclaimer = disclaimer || legal.disclaimer;
-      legal.cancelationPolicy = cancelationPolicy || legal.cancelationPolicy;
-      legal.cookies = cookies || legal.cookies;
+      legal = new Legal({});
     }
 
-    let condition;
-    if (privacyPolicy) condition = "Privacy Policy";
-    else if (terms) condition = "Terms And Conditions";
-    else if (disclaimer) condition = "Disclaimer";
-    else if (cancelationPolicy) condition = "Cancelation Policy";
-    else if (cookies) condition = "Cookies";
+    let condition = null;
+
+    if (typeof privacy_policy === "string") {
+      legal.privacy_policy.content = privacy_policy;
+      legal.privacy_policy.date = now;
+      condition = "Privacy Policy";
+    }
+
+    if (typeof terms === "string") {
+      legal.terms.content = terms;
+      legal.terms.date = now;
+      condition = "Terms And Conditions";
+    }
+
+    if (typeof disclaimer === "string") {
+      legal.disclaimer.content = disclaimer;
+      legal.disclaimer.date = now;
+      condition = "Disclaimer";
+    }
+
+    if (typeof cancelation_policy === "string") {
+      legal.cancelation_policy.content = cancelation_policy;
+      legal.cancelation_policy.date = now;
+      condition = "Cancelation Policy";
+    }
+
+    if (typeof cookies === "string") {
+      legal.cookies.content = cookies;
+      legal.cookies.date = now;
+      condition = "Cookies";
+    }
+
+    if (typeof community_guidlines === "string") {
+      legal.community_guidlines.content = community_guidlines;
+      legal.community_guidlines.date = now;
+      condition = "Community Guidelines";
+    }
 
     const isNew = legal.isNew;
     await legal.save();
 
-    // 🟢 Send response first
     const message = isNew
       ? "Legal document created successfully"
       : "Legal document updated successfully";
 
-    res.status(200).json({ message });
-    if (sendMail) {
-      if (condition) {
-        policyMail({ legalPolicy: condition })
-          .then(() => console.log("✅ All policy emails sent successfully"))
-          .catch((err) =>
-            console.error("❌ Error sending policy emails:", err)
-          );
-      }
+    res.status(200).json({ message, data: legal });
+
+    if (sendMail && condition) {
+      policyMail({ legalPolicy: condition })
+        .then(() => console.log("Policy emails sent"))
+        .catch((err) => console.error("Mail error:", err));
     }
   } catch (error) {
     console.error("Error in addOrUpdateLegal:", error);

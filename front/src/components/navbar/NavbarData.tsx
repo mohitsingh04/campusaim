@@ -9,9 +9,8 @@ import {
 import { PropertyProps } from "@/types/PropertyTypes";
 
 interface UsePropertyMenuDataProps {
-  category: CategoryProps[] | undefined;
+  categories: CategoryProps[] | undefined;
   academicType?: string;
-  basePath: string;
 }
 
 export function useCoursesMenuData() {
@@ -70,23 +69,22 @@ export function useCoursesMenuData() {
 }
 
 export function usePropertyMenuData({
-  category,
+  categories,
   academicType,
-  basePath,
 }: UsePropertyMenuDataProps) {
   const [propertyMenuData, setPropertyMenuData] = useState<any>(null);
   const [propertyLoading, setPropertyLoading] = useState(true);
 
   const getCategoryById = useCallback(
     (_id: number | string) => {
-      if (!category?.length) return null;
-      return category.find((item) => item._id === _id)?.category_name || null;
+      if (!categories?.length) return null;
+      return categories.find((item) => item._id === _id)?.category_name || null;
     },
-    [category],
+    [categories],
   );
 
   useEffect(() => {
-    if (!category?.length) return;
+    if (!categories?.length) return;
 
     const fetchProperties = async () => {
       try {
@@ -98,20 +96,20 @@ export function usePropertyMenuData({
           .filter((p: any) => {
             if (!academicType) return true;
 
-            const academicCategory = getCategoryById(p.academic_type);
+            const academicCategory = getCategoryById(p?.academic_type);
             if (!academicCategory) return false;
 
             return generateSlug(academicCategory) === academicType;
           })
           .map((item: any) => {
-            const categoryName = getCategoryById(item.academic_type);
-            const propertyTypeName = getCategoryById(item.property_type);
+            const categoryName = getCategoryById(item?.academic_type);
+            const propertyTypeName = getCategoryById(item?.property_type);
 
             if (!categoryName || !propertyTypeName) return null;
 
             return {
               ...item,
-              category: categoryName,
+              academic_type: categoryName,
               property_type: propertyTypeName,
             };
           })
@@ -120,28 +118,26 @@ export function usePropertyMenuData({
         const menuData: Record<string, any> = {};
 
         properties.forEach((p) => {
-          if (!menuData[p.category]) {
-            menuData[p.category] = {};
+          if (!menuData[p?.academic_type]) {
+            menuData[p?.academic_type] = {};
           }
 
-          if (!menuData[p.category][p.property_type]) {
-            menuData[p.category][p.property_type] = {
-              title: p.property_type,
+          if (!menuData[p?.academic_type][p?.property_type]) {
+            menuData[p?.academic_type][p?.property_type] = {
+              title: p?.property_type,
               links: [],
-              viewAll: `${basePath}?category=${generateSlug(
-                p.category,
-              )}&property_type=${generateSlug(p.property_type)}`,
+              viewAll: `${p?.academic_type === "University" ? "universities" : `${generateSlug(p?.academic_type)}s`}?property_type=${generateSlug(p?.property_type)}`,
             };
           }
 
-          menuData[p.category][p.property_type].links.push({
-            name: p.property_name,
-            href: `/${generateSlug(p.category)}/${p.property_slug}/overview`,
+          menuData[p?.academic_type][p?.property_type].links.push({
+            name: p?.property_name,
+            href: `/${generateSlug(p?.academic_type)}/${p?.property_slug}/overview`,
           });
 
-          menuData[p.category][p.property_type].links = menuData[p.category][
-            p.property_type
-          ].links.slice(0, 10);
+          menuData[p?.academic_type][p?.property_type].links = menuData[
+            p?.academic_type
+          ][p?.property_type].links.slice(0, 10);
         });
 
         setPropertyMenuData(menuData);
@@ -153,7 +149,7 @@ export function usePropertyMenuData({
     };
 
     fetchProperties();
-  }, [category, academicType, basePath, getCategoryById]);
+  }, [categories, academicType, getCategoryById]);
 
   return { propertyMenuData, propertyLoading };
 }

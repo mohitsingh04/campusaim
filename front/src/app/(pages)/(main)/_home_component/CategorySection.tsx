@@ -46,7 +46,7 @@ export default function CategorySection() {
           "Top-rated studios offering authentic daily classes, weekend workshops, and expert guidance for all levels of practice.",
         label: "School",
         icon: SchoolIcon,
-        href: "/institutes?academic_type=school",
+        href: "/schools",
         colors: {
           sub: "bg-(--gray-subtle)",
           emphasis: "bg-(--gray-emphasis)",
@@ -66,7 +66,7 @@ export default function CategorySection() {
           text: "text-(--purple-emphasis)",
           textSub: "text-(--purple-subtle)",
         },
-        href: "/institutes?academic_type=college",
+        href: "/colleges",
       },
       {
         value: propertyCounts["university"] || 0,
@@ -80,7 +80,7 @@ export default function CategorySection() {
           text: "text-(--danger-emphasis)",
           textSub: "text-(--danger-subtle)",
         },
-        href: "/institutes?academic_type=university",
+        href: "/universities",
       },
       {
         value: propertyCounts["coaching"] || 0,
@@ -94,7 +94,7 @@ export default function CategorySection() {
           text: "text-(--warning-emphasis)",
           textSub: "text-(--warning-subtle)",
         },
-        href: "/institutes?academic_type=coaching",
+        href: "/coachings",
       },
     ];
   }, [propertyCounts]);

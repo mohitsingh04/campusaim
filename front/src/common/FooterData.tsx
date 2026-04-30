@@ -37,16 +37,10 @@ export const FooterStates = [
   // },
 ];
 export const CategoriesList = [
-  {
-    name: "University",
-    href: "/institutes?academic_type=univerisity",
-  },
-  { name: "College", href: "/institutes?academic_type=college" },
-  { name: "Schools", href: "/institutes?academic_type=school" },
-  {
-    name: "Coaching",
-    href: "/institutes?academic_type=coaching",
-  },
+  { name: "University", href: "/univerisities" },
+  { name: "College", href: "/colleges" },
+  { name: "Schools", href: "/schools" },
+  { name: "Coaching", href: "/coachings" },
 ];
 
 export const QuickLinks = [

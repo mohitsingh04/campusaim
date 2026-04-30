@@ -43,7 +43,6 @@ export const createDynamicFilterOptions = (
     course_type: [],
     course_format: [],
     rating: [],
-    academic_type: [],
     approved_by: [],
     affiliated_by: [],
     property_type: [],
@@ -275,15 +274,6 @@ export const createDynamicFilterOptions = (
                   averageRating < selectedRating + 1
                 );
               });
-            case "academic_type":
-              return (
-                institute.academic_type &&
-                filterValues.some(
-                  (cat) =>
-                    generateSlug(institute?.academic_type || "") ===
-                    generateSlug(cat),
-                )
-              );
             case "property_type":
               return (
                 institute.property_type &&
@@ -364,18 +354,6 @@ export const createDynamicFilterOptions = (
             Boolean(format && format.trim()),
           ),
       ),
-    ),
-  ];
-
-  const filteredForAcademicType =
-    getFilteredInstitutesForCount("academic_type");
-  const academicsTypes = [
-    ...new Set(
-      filteredForAcademicType
-        .map((inst) => inst?.academic_type)
-        .filter((academic_type): academic_type is string =>
-          Boolean(academic_type && academic_type.trim()),
-        ),
     ),
   ];
 
@@ -460,15 +438,6 @@ export const createDynamicFilterOptions = (
           (course) =>
             generateSlug(course.course_format || "") === generateSlug(format),
         ),
-      ).length,
-    })),
-    academicType: academicsTypes.map((academic_type) => ({
-      name: academic_type,
-      value: academic_type,
-      count: filteredForAcademicType.filter(
-        (inst) =>
-          generateSlug(inst?.academic_type || "") ===
-          generateSlug(academic_type),
       ).length,
     })),
     propertyTypes: propertyTypes.map((type) => ({
@@ -586,14 +555,6 @@ export const filterInstitutes = (
         );
       });
 
-    const matchesCategory =
-      filters.academic_type.length === 0 ||
-      (institute.academic_type &&
-        filters.academic_type.some(
-          (cat) =>
-            generateSlug(institute?.academic_type || "") === generateSlug(cat),
-        ));
-
     const matchesPropertyType =
       filters.property_type.length === 0 ||
       (institute.property_type &&
@@ -628,7 +589,6 @@ export const filterInstitutes = (
       matchesCourseType &&
       matchesCourseFormat &&
       matchesRating &&
-      matchesCategory &&
       matchesPropertyType &&
       matchesAffilatedBy &&
       matchesApprveddBy
