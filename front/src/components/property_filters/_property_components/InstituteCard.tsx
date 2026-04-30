@@ -4,12 +4,7 @@ import Image from "next/image";
 import { ButtonGroup } from "@/ui/buttons/ButtonGroup";
 import { PropertyProps } from "@/types/PropertyTypes";
 import { generateSlug, getAverageRating } from "@/context/Callbacks";
-import {
-  CalendarHeartIcon,
-  FileBadgeIcon,
-  GraduationCapIcon,
-  StarIcon,
-} from "lucide-react";
+import { Award, Calendars, GraduationCap, StarIcon } from "lucide-react";
 
 const InstituteCard = ({
   institute,
@@ -20,9 +15,7 @@ const InstituteCard = ({
 }) => {
   if (!institute) return null;
 
-  const slug = `/${generateSlug(institute.category)}/${
-    institute.property_slug
-  }/overview`;
+  const slug = `/${generateSlug(institute?.academic_type)}/${institute.property_slug}/overview`;
 
   const imageSrc = institute?.featured_image?.[0]
     ? `${process.env.NEXT_PUBLIC_MEDIA_URL}/${institute.featured_image[0]}`
@@ -62,7 +55,7 @@ const InstituteCard = ({
           >
             <Image
               src={imageSrc}
-              alt={institute.property_name || "Colleges"}
+              alt={institute.property_name || "Yoga Institute"}
               fill
               className="object-cover transition-transform duration-500 group-hover:scale-105"
             />
@@ -104,36 +97,24 @@ const InstituteCard = ({
               </h2>
             </Link>
 
-            <p className="text-sm">
-              {location
-                ? location
-                : generateSlug(institute?.property_type) ===
-                    generateSlug("Online Yoga Studio")
-                  ? "Online"
-                  : "N/A"}
-            </p>
+            {location && <p className="text-sm">{location}</p>}
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div className="flex items-center gap-2">
-            <GraduationCapIcon className="text-(--main) w-4 h-4" />
-            <p>{institute.category || "N/A"}</p>
+            <GraduationCap className="text-(--main) w-4 h-4" />
+            <p>{institute.academic_type}</p>
           </div>
 
           <div className="flex items-center gap-2">
-            <FileBadgeIcon className="text-(--main) w-4 h-4" />
-            <p>{institute.property_type || "N/A"}</p>
+            <Award className="text-(--main) w-4 h-4" />
+            <p>{institute.property_type}</p>
           </div>
-
-          {/* <div className="flex items-center gap-2">
-            <FaGitkraken className="text-(--main) w-4 h-4" />
-            <p>YP Rank: {institute.rank || "N/A"}</p>
-          </div> */}
 
           {institute.est_year && (
             <div className="flex items-center gap-2">
-              <CalendarHeartIcon className="text-(--main) w-4 h-4" />
+              <Calendars className="text-(--main) w-4 h-4" />
               <p>{institute.est_year}</p>
             </div>
           )}

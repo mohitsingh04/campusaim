@@ -5,19 +5,20 @@ export interface DynamicFilterOptionsProps {
   getStatesForCountries: (selectedCountries?: string[]) => string[];
   getCitiesForLocation: (
     selectedCountries?: string[],
-    selectedStates?: string[]
+    selectedStates?: string[],
   ) => string[];
   getStatesWithCounts: (selectedCountries?: string[]) => FilterOptionProps[];
   getCitiesWithCounts: (
     selectedCountries?: string[],
-    selectedStates?: string[]
+    selectedStates?: string[],
   ) => FilterOptionProps[];
   courseNames: FilterOptionProps[];
   courseLevels: FilterOptionProps[];
   courseTypes: FilterOptionProps[];
   courseFormats: FilterOptionProps[];
-  categories: CategoryOptionProps[];
   propertyTypes: CategoryOptionProps[];
+  affiliatedBy: CategoryOptionProps[];
+  approvedBy: CategoryOptionProps[];
   ratingCounts: RatingCount[];
 }
 
@@ -30,7 +31,8 @@ export interface FiltersProps {
   course_type: string[];
   course_format: string[];
   rating: string[];
-  category: string[];
+  affiliated_by: string[];
+  approved_by: string[];
   property_type: string[];
 }
 
@@ -43,7 +45,8 @@ export interface ExpandedFiltersProps {
   course_type: boolean;
   course_format: boolean;
   rating: boolean;
-  category: boolean;
+  affiliated_by: boolean;
+  approved_by: boolean;
   property_type: boolean;
 }
 
@@ -55,6 +58,7 @@ export interface FilterSearchTermsProps {
   course_level: string;
   course_type: string;
   course_format: string;
-  category: string;
+  affiliated_by: string;
+  approved_by: string;
   property_type: string;
 }

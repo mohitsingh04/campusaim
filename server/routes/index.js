@@ -41,6 +41,7 @@ import {
   getPropertyByUniqueId,
   getPropertyByUserId,
   getPropertyCategoryCounts,
+  getPropertyTabExistence,
   getRelatedProperties,
   PropertySlugGenerator,
   updateProperty,
@@ -57,6 +58,7 @@ import {
 import {
   addReview,
   deleteReview,
+  getPropertyRatingStats,
   getReview,
   getReviewById,
   getReviewByPropertyId,
@@ -108,7 +110,9 @@ import {
   getPropertyCourseByPropertyId,
   getPropertyCourseByUniqueId,
   updatePropertyCourse,
-  getPropertyCourseBySlug
+  getPropertyCourseBySlug,
+  getPropertyCourseCountByPropertyId,
+  getPropertyCourseNameListByPropertyId
 } from "../controller/PropertyCourseController.js";
 import {
   getCity,
@@ -356,6 +360,7 @@ router.post("/property/multi/objectId", getPropertiesMultipleObjectId);
 router.get("/related/property", getRelatedProperties);
 router.get("/filter-by-category/property", getPropertiesByCategoryName);
 router.get("/property/counts/category", getPropertyCategoryCounts);
+router.get("/property/tab/existence/:property_id", getPropertyTabExistence);
 
 //? Property Verification
 router.post("/property/verify/email", sendPropertyVerifyEmailOTP);
@@ -370,7 +375,7 @@ router.patch("/property/location/:property_id", Authorize, UpdateLocation);
 router.get("/property/location/:property_id", getLocation);
 router.get("/locations", getAllLocations);
 router.post("/location", Authorize, addLocation);
-router.get("/property/unique/location/pairs",  getUniqueLocationPairs);
+router.get("/property/unique/location/pairs", getUniqueLocationPairs);
 
 //? Teacher Route
 const teacherProfile = upload.fields([{ name: "profile", maxCount: 1 }]);
@@ -448,6 +453,7 @@ router.patch("/review/:objectId", Authorize, updateReview);
 router.delete("/review/:objectId", Authorize, deleteReview);
 router.get("/review/:objectId", getReviewById);
 router.get("/review/property/:property_id", getReviewByPropertyId);
+router.get("/review/property/stats/:property_id", getPropertyRatingStats);
 
 //? Gallery Route
 const gallery = upload.fields([{ name: "gallery", maxCount: 8 }]);
@@ -515,6 +521,15 @@ router.get(
 );
 router.delete("/property-course/:objectId", Authorize, deletePropertyCourse);
 router.get("/property-course/slug/:slug", getPropertyCourseBySlug);
+router.get(
+  "/property-course/count/:property_id",
+  getPropertyCourseCountByPropertyId,
+);
+router.get(
+  "/property-course/names/:property_id",
+  getPropertyCourseNameListByPropertyId,
+);
+
 
 //? amenties
 router.post("/amenities", Authorize, addAmenities);

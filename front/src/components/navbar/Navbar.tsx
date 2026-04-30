@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, MouseEvent, useCallback, useEffect } from "react";
+import { useState, MouseEvent, useEffect } from "react";
 
 import ThemeButton from "./ThemeButton";
 import YpLogo from "./YpLogo";
@@ -10,14 +10,8 @@ import {
   useExamMenuData,
   usePropertyMenuData,
 } from "./NavbarData";
-import { CategoryProps } from "@/types/Types";
-import { getErrorResponse } from "@/context/Callbacks";
-import API from "@/context/API";
 import Link from "next/link";
 import { getToken } from "@/context/getAssets";
-import NavbarLoader from "@/ui/loader/component/NavbarLoader";
-import SettingsOffcanvas from "../setting/SettingOffcanvas";
-import ProfileButton from "./_navbar_components/ProfileButton";
 import dynamic from "next/dynamic";
 import useGetAuthUser from "@/hooks/fetch-hooks/useGetAuthUser";
 import {
@@ -33,8 +27,15 @@ import {
   SearchIcon,
   XIcon,
 } from "lucide-react";
-// /types/NavbarTypes.ts
-
+import { useGetAssets } from "@/context/providers/AssetsProviders";
+import SettingsOffcanvas from "../setting/SettingOffcanvas";
+import ProfileButton from "./_navbar_components/ProfileButton";
+const NavbarLoader = dynamic(
+  () => import("@/ui/loader/component/NavbarLoader"),
+  {
+    ssr: false,
+  },
+);
 const SearchModal = dynamic(
   () => import("@/components/search_modal/SearchModal"),
   { ssr: false },
@@ -70,13 +71,10 @@ export default function Navbar() {
     useState<NavbarMobileDetailMenuState | null>(null);
 
   const [activeAccordion, setActiveAccordion] = useState<string | null>(null);
-  const [category, setCategory] = useState<CategoryProps[]>();
   const { courseMenuData, courseLoading } = useCoursesMenuData();
   const { examLoading, examMenuData } = useExamMenuData();
-  const universityMenu = usePropertyMenuData({
-    category,
-    basePath: "/colleges",
-  });
+  const { allCategories } = useGetAssets();
+  const universityMenu = usePropertyMenuData({ categories: allCategories });
   const [token, setToken] = useState("");
   const { authUser } = useGetAuthUser();
   const [settingOffcanvas, setSettingOffcanvas] = useState(false);
@@ -89,24 +87,11 @@ export default function Navbar() {
     checkToken();
   }, []);
 
-  const getCategory = useCallback(async () => {
-    try {
-      const response = await API.get(`/category`);
-      setCategory(response.data);
-    } catch (error) {
-      getErrorResponse(error, true);
-    }
-  }, []);
-
-  useEffect(() => {
-    getCategory();
-  }, [getCategory]);
-
   const menuItems: NavbarMenuItemProps[] = [
     {
       name: "Institutes",
-      href: "/colleges",
-      dropdownContent: universityMenu.propertyMenuData,
+      href: "/institutes",
+      dropdownContent: universityMenu?.propertyMenuData,
     },
     {
       name: "Courses",
@@ -118,14 +103,12 @@ export default function Navbar() {
       href: "/exams",
       dropdownContent: examMenuData,
     },
-    // { name: "Events", href: "/events", external: false },
     {
       name: "Ask",
       href: `${process.env.NEXT_PUBLIC_ASK_URL}`,
       external: true,
     },
   ];
-  /* ------------------ Helpers ---------------------- */
 
   const handleCloseMobileMenu = () => {
     setIsMobileMenuOpen(false);
@@ -156,29 +139,23 @@ export default function Navbar() {
     subItemData: Record<string, unknown> | NavbarMegaMenuGroup,
   ) => {
     e.preventDefault();
-
     if (subItemData && Object.keys(subItemData).length > 0) {
       setMobileDetailMenu({
         title: subItemName,
         data: subItemData as NavbarMegaMenuGroup,
       });
-
       setActiveAccordion(Object.keys(subItemData)[0]);
     }
   };
 
   const handleDesktopMouseEnter = (item: NavbarMenuItemProps) => {
     if (!item.dropdownContent) return;
-
     setHoveredMenu(item.name);
-
     const firstKey = Object.keys(item.dropdownContent)[0];
     setActiveDesktopSubMenu(firstKey ?? null);
   };
 
-  const handleDesktopMouseLeave = () => {
-    setHoveredMenu(null);
-  };
+  const handleDesktopMouseLeave = () => setHoveredMenu(null);
 
   const isPropertyLoading = universityMenu.propertyLoading;
 

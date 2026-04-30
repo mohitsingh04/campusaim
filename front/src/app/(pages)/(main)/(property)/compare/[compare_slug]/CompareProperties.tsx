@@ -6,7 +6,6 @@ import {
   PropertyCourseProps,
   PropertyLocationProps,
   PropertyProps,
-  PropertyRankProps,
   PropertyReviewProps,
 } from "@/types/PropertyTypes";
 import { getProfile } from "@/context/getAssets";
@@ -20,11 +19,12 @@ import {
   getSuccessResponse,
   mergeCourseData,
 } from "@/context/Callbacks";
-import { CategoryProps, CourseProps } from "@/types/Types";
+import { CourseProps } from "@/types/Types";
 import API from "@/context/API";
 import ComparisonPageSkeleton from "@/ui/loader/page/institutes/CompareInstituteLoader";
 import Link from "next/link";
 import { LinkIcon } from "lucide-react";
+import { useGetAssets } from "@/context/providers/AssetsProviders";
 
 type MergedCourse = PropertyCourseProps & Partial<CourseProps>;
 
@@ -37,15 +37,7 @@ const CompareProperties = ({ slugs }: { slugs?: string[] }) => {
   const [loading, setLoading] = useState(true);
   const [dataLoaded, setDataLoaded] = useState(false);
   const router = useRouter();
-  const [category, setCategory] = useState<CategoryProps[]>([]);
-
-  const getCategoryById = useCallback(
-    (id: any) => {
-      const cat = category.find((item) => item?._id === id);
-      return cat?.category_name;
-    },
-    [category],
-  );
+  const { getCategoryById } = useGetAssets();
 
   useEffect(() => {
     if (dataLoaded && allProperties.length > 0) {
@@ -68,14 +60,6 @@ const CompareProperties = ({ slugs }: { slugs?: string[] }) => {
     }
   }, [dataLoaded, allProperties, slugs]);
 
-  const getCategories = useCallback(async () => {
-    try {
-      const response = await API.get(`/category`);
-      setCategory(response.data);
-    } catch (error) {
-      getErrorResponse(error, true);
-    }
-  }, []);
   const getAllPropertyDetails = useCallback(async () => {
     setLoading(true);
 
@@ -87,7 +71,6 @@ const CompareProperties = ({ slugs }: { slugs?: string[] }) => {
         propertyCourseRes,
         allCourseRes,
         amenitiesRes,
-        rankRes,
       ] = await Promise.allSettled([
         API.get(`/property`),
         API.get<PropertyLocationProps[]>(`/locations`),
@@ -95,7 +78,6 @@ const CompareProperties = ({ slugs }: { slugs?: string[] }) => {
         API.get(`/property-course`),
         API.get(`/course`),
         API.get<PropertyAmenities[]>(`/amenities`),
-        API.get<PropertyRankProps[]>(`/ranks`),
       ]);
 
       const allFulfilled =
@@ -104,30 +86,22 @@ const CompareProperties = ({ slugs }: { slugs?: string[] }) => {
         reviewRes.status === "fulfilled" &&
         propertyCourseRes.status === "fulfilled" &&
         allCourseRes.status === "fulfilled" &&
-        rankRes.status === "fulfilled" &&
         amenitiesRes.status === "fulfilled";
 
       if (!allFulfilled) return;
 
-      // Extract values
       const propertiesData = propertyRes.value?.data || [];
       const locationsData = locationRes.value?.data || [];
       const reviewsData = reviewRes.value?.data || [];
       const propertyCoursesData = propertyCourseRes.value?.data || [];
       const allCoursesData = allCourseRes.value?.data || [];
       const amenitiesData = amenitiesRes.value?.data || [];
-      const rankData = rankRes.value?.data || [];
 
-      // Maps
       const locationMap = new Map(
         locationsData.map((loc: PropertyLocationProps) => [
           String(loc.property_id),
           loc,
         ]),
-      );
-
-      const rankMap = new Map(
-        rankData.map((ran) => [String(ran.property_id), ran]),
       );
 
       const reviewMap = new Map<string, PropertyReviewProps[]>();
@@ -148,10 +122,8 @@ const CompareProperties = ({ slugs }: { slugs?: string[] }) => {
         amenitiesData.map((amen: PropertyAmenities) => [amen.propertyId, amen]),
       );
 
-      // Merge all data
       const mergedProperties = propertiesData.map((property: PropertyProps) => {
         const location = locationMap.get(property._id);
-        const rank = rankMap.get(property._id);
         const reviews = reviewMap.get(property._id) || [];
         const propertyCourses = courseMap.get(property._id) || [];
         const amenity = amenityMap.get(property._id);
@@ -160,17 +132,14 @@ const CompareProperties = ({ slugs }: { slugs?: string[] }) => {
 
         return {
           _id: property?._id,
-          uniqueId: property._id,
           property_name: property.property_name || "",
           featured_image: property.featured_image || [],
-          category: getCategoryById(property.academic_type) || "",
+          academic_type: getCategoryById(property.academic_type) || "",
           property_type: getCategoryById(property.property_type) || "",
           est_year: property.est_year || "",
           property_slug: property.property_slug || "",
           property_logo: property.property_logo || [],
           property_description: property.property_description || "",
-          rank: rank?.rank || 0,
-          lastRank: rank?.lastRank || 0,
           address: location?.property_address || "",
           pincode: location?.property_pincode || 0,
           city: location?.property_city || "",
@@ -179,14 +148,8 @@ const CompareProperties = ({ slugs }: { slugs?: string[] }) => {
           property_city: location?.property_city || "",
           property_state: location?.property_state || "",
           property_country: location?.property_country || "",
-
-          // Reviews
           reviews,
-
-          // Amenities
           amenities: amenity?.selectedAmenities?.[0],
-
-          // Courses
           courses: mergedCourses.map((course: MergedCourse) => ({
             property_id: course.property_id,
             image: course.image || [],
@@ -200,12 +163,7 @@ const CompareProperties = ({ slugs }: { slugs?: string[] }) => {
         };
       });
 
-      // Sort by rank (higher first)
-      const sortedProperties = [...mergedProperties].sort(
-        (a, b) => (a.rank || 0) - (b.rank || 0),
-      );
-
-      setAllProperties(sortedProperties);
+      setAllProperties(mergedProperties);
       setDataLoaded(true);
     } catch (error) {
       getErrorResponse(error, true);
@@ -213,10 +171,6 @@ const CompareProperties = ({ slugs }: { slugs?: string[] }) => {
       setLoading(false);
     }
   }, [getCategoryById]);
-
-  useEffect(() => {
-    getCategories();
-  }, [getCategories]);
 
   useEffect(() => {
     getAllPropertyDetails();
@@ -261,7 +215,7 @@ const CompareProperties = ({ slugs }: { slugs?: string[] }) => {
   const removeProperty = useCallback(
     (property: PropertyProps) => {
       const updated = selectedProperties.filter(
-        (p) => p.uniqueId !== property.uniqueId,
+        (p) => p._id !== property._id,
       );
       setSelectedProperties(updated);
       navigateToCompare(updated);
@@ -316,7 +270,7 @@ const CompareProperties = ({ slugs }: { slugs?: string[] }) => {
             Array.from({ length: 3 }).map((_, index) => (
               <MainGridCard
                 key={`empty-${index}`}
-                title="Add College"
+                title="Add Inistiute"
                 onClick={() => setModalOpen(true)}
                 index={index}
               />
@@ -331,7 +285,7 @@ const CompareProperties = ({ slugs }: { slugs?: string[] }) => {
           />
         )}
 
-        {selectedProperties.length > 0 && (
+        {selectedProperties?.length > 0 && (
           <div>
             <BasicDetailTable
               selectedProperties={selectedProperties}
@@ -340,7 +294,7 @@ const CompareProperties = ({ slugs }: { slugs?: string[] }) => {
           </div>
         )}
 
-        {selectedProperties.length >= 2 && (
+        {selectedProperties?.length >= 2 && (
           <div>
             <ComparisonTable selectedProperties={selectedProperties} />
             <div
@@ -352,7 +306,7 @@ const CompareProperties = ({ slugs }: { slugs?: string[] }) => {
                     <tbody>
                       <tr className="bg-(--primary-bg) text-(--text-color) border-b border-(--border)">
                         <td className="p-4 font-semibold border-r border-(--border) w-52 sub-heading">
-                          Visit College
+                          Visit Insitute
                         </td>
                         {selectedProperties.map((prop, idx) => (
                           <td
@@ -360,13 +314,11 @@ const CompareProperties = ({ slugs }: { slugs?: string[] }) => {
                             className="text-center p-4 font-semibold text-(--text-color) border-r border-(--border) last:border-r-0 w-80"
                           >
                             <Link
-                              href={`/${generateSlug(prop.category)}/${
-                                prop.property_slug
-                              }`}
+                              href={`/${generateSlug(prop?.academic_type)}/${prop.property_slug}/overview`}
                               className="inline-flex items-center gap-2 px-4 py-2 btn-shine rounded-custom font-medium"
                             >
                               Visit
-                              <LinkIcon />
+                              <LinkIcon className="w-4 h-4" />
                             </Link>
                           </td>
                         ))}
@@ -387,9 +339,7 @@ const CompareProperties = ({ slugs }: { slugs?: string[] }) => {
                           }`}
                         >
                           <Link
-                            href={`/${generateSlug(prop.category)}/${
-                              prop.property_slug
-                            }`}
+                            href={`/${generateSlug(prop?.academic_type)}/${prop.property_slug}/overview`}
                             className="inline-flex items-center gap-2 px-4 py-2 btn-shine rounded-custom font-medium"
                           >
                             Visit

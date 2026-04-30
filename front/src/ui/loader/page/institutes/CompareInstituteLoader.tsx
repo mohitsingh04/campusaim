@@ -25,13 +25,13 @@ const ComparisonPageSkeleton = () => {
                 key={index}
                 className="p-4 flex flex-col items-center space-y-4 "
               >
-                {/* College Logo & Name */}
+                {/* institutes Logo & Name */}
                 <div className="flex flex-col items-center space-y-2">
                   <Skeleton circle height={64} width={64} />
                   <Skeleton width={140} height={20} />
                 </div>
 
-                {/* College Main Image */}
+                {/* institutes Main Image */}
                 <div className="w-full">
                   <Skeleton height={120} className="rounded-lg w-full" />
                 </div>

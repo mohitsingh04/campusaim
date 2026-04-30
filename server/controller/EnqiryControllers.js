@@ -119,7 +119,12 @@ export const addEnquiry = async (req, res) => {
       contact,
       city,
       message,
+      preferred_course
     } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ error: "Please Login" })
+    }
 
     if (!property_id) {
       return res.status(400).json({ error: "Required field is Missing" });
@@ -135,16 +140,13 @@ export const addEnquiry = async (req, res) => {
       email,
       contact,
       city,
-      message,
+      message, preferred_course
     });
 
-    // Save the new enquiry
     const savedEnquiry = await newEnquiry.save();
 
-    // Increment the enquiry count for the given property
-    await addEnquiryCount(property?._id); // Pass property_id to the count function
+    await addEnquiryCount(property?._id);
 
-    // If the enquiry was saved successfully, respond with a success message
     if (savedEnquiry) {
       return res
         .status(200)

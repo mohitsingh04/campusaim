@@ -36,6 +36,9 @@ const enquiryModel = mongoose.Schema(
       type: String,
       default: "Pending",
     },
+    preferred_course: {
+      type: String,
+    },
   },
   { timestamps: true }
 );

@@ -1,6 +1,6 @@
 import { PropertyProps } from "@/types/PropertyTypes";
 import { ReadMoreLess } from "@/ui/texts/ReadMoreLess";
-import { GlobeIcon, MapPinIcon } from "lucide-react";
+import { EarthIcon, MapPin } from "lucide-react";
 
 const Overview = ({
   property,
@@ -9,63 +9,52 @@ const Overview = ({
   property: PropertyProps | null;
   getCategoryById: (id: string | number) => string | undefined;
 }) => {
-  // console.log(property?.category)
+  const loc = [
+    property?.property_city,
+    property?.property_state,
+    property?.property_pincode,
+  ]
+    ?.filter(Boolean)
+    ?.join(", ");
+
   return (
     <div className="space-y-6 p-5 text-(--text-color)">
       <div>
         <h2 className="heading font-semibold mb-3">
           About {property?.property_name}
         </h2>
-        <p className="leading-relaxed">
-          <ReadMoreLess html={property?.property_description || ""} />
-        </p>
+        <ReadMoreLess html={property?.property_description || ""} />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-(--secondary-bg)  shadow-custom rounded-custom p-5">
+        <div className="bg-(--secondary-bg) shadow-custom rounded-custom p-5 h-full">
           <div className="flex items-center gap-2 pb-2">
-            <h3 className="sub-heading font-semibold ">Location</h3>
+            <h3 className="sub-heading font-semibold">Location</h3>
           </div>
-
-          {getCategoryById(property?.category || "") ===
-          "Online Yoga Studio" ? (
-            <p className="text-(--text-color)">
-              This is an online yoga studio. Classes can be attended from home.
+          {property?.property_address && (
+            <p className="text-(--text-color) mb-2">
+              {property.property_address}
             </p>
-          ) : (
-            <>
-              {property?.address && (
-                <p className="text-(--text-color) mb-2">{property.address}</p>
-              )}
-
-              {(property?.city || property?.state || property?.pincode) && (
-                <div className="flex items-center gap-2">
-                  <MapPinIcon className="h-4 w-4 text-(--main)" />
-                  <p>
-                    {property?.city && `${property.city}, `}
-                    {property?.state && `${property.state} `}
-                    {property?.pincode && property.pincode}
-                  </p>
-                </div>
-              )}
-
-              {property?.country && (
-                <div className="flex items-center gap-2">
-                  <GlobeIcon className="h-4 w-4 text-(--main)" />
-                  <p>{property?.country}</p>
-                </div>
-              )}
-            </>
+          )}
+          {loc && (
+            <div className="flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-(--main)" />
+              <p>{loc}</p>
+            </div>
+          )}
+          {property?.property_country && (
+            <div className="flex items-center gap-2">
+              <EarthIcon className="h-4 w-4 text-(--main)" />
+              <p>{property?.property_country}</p>
+            </div>
           )}
         </div>
-
-        <div className="bg-(--secondary-bg) shadow-custom rounded-custom p-5">
+        <div className="bg-(--secondary-bg) shadow-custom rounded-custom p-5 h-full">
           <div className="flex items-center gap-2 pb-3">
-            {/* <FaBuilding className="h-4 w-4 text-[var(--main)]" /> */}
-            <h3 className="sub-heading font-semibold ">Property Details</h3>
+            <h3 className="sub-heading font-semibold">Property Details</h3>
           </div>
           <p>Type : {getCategoryById(property?.property_type || "")}</p>
-          <p>Academic Type: {getCategoryById(property?.category || "")}</p>
+          <p>Academic Type: {getCategoryById(property?.academic_type || "")}</p>
           {property?.est_year && <p>Established: {property?.est_year}</p>}
         </div>
       </div>

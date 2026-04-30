@@ -7,8 +7,8 @@ import {
   getSuccessResponse,
 } from "@/context/Callbacks";
 import { reviewSchema } from "@/context/ValidationSchema";
+import useGetAuthUser from "@/hooks/fetch-hooks/useGetAuthUser";
 import { PropertyProps } from "@/types/PropertyTypes";
-import { UserProps } from "@/types/UserTypes";
 import ButtonGroupSend from "@/ui/buttons/ButtonGroup";
 import { InputGroup, TextareaGroup } from "@/ui/form/FormComponents";
 import HeadingLine from "@/ui/headings/HeadingLine";
@@ -22,21 +22,20 @@ import { toast } from "react-toastify";
 export default function ReviewForm({
   property,
   onSave,
-  profile,
 }: {
   property: PropertyProps | null;
   onSave: () => void;
-  profile: UserProps | null;
 }) {
+  const { authUser } = useGetAuthUser();
   const [rating, setRating] = useState(0);
   const [modalOpen, setModalOpen] = useState(false);
 
   const formik = useFormik({
     initialValues: {
-      property_id: property?.uniqueId || "",
-      name: profile?.name || "",
-      email: profile?.email || "",
-      phone: profile?.mobile_no || "",
+      property_id: property?._id || "",
+      name: authUser?.name || "",
+      email: authUser?.email || "",
+      phone: authUser?.mobile_no || "",
       review: "",
     },
     enableReinitialize: true,
@@ -137,7 +136,7 @@ export default function ReviewForm({
           />
           {getFormikError(formik, "review")}
         </div>
-        {profile ? (
+        {authUser ? (
           <ButtonGroupSend
             label="Submit Review"
             type="submit"

@@ -12,7 +12,7 @@ import HeadingLine from "@/ui/headings/HeadingLine";
 import FooterLoader from "@/ui/loader/component/FooterLoader";
 import MobileBottomBar from "@/ui/loader/component/MobileBottomBar";
 import { BottomNavBar } from "./BottomNavbar";
-import { SocialLinksComponent } from "@/common/SocailMedaiData";
+// import { SocialLinksComponent } from "@/common/SocailMedaiData";
 import { LegaLinksComponents } from "@/common/LegalLinks";
 import { CopyRightsFooter } from "./FooterNoLinks";
 import { useResponsive } from "@/hooks/useResponsive";
@@ -103,7 +103,7 @@ const Footer = () => {
       }));
       return { courses: processedCourses, locations: locs };
     },
-    staleTime: 1000 * 60 * 60,
+       staleTime: 1000 * 60 * 5,
   });
 
   const menus = useMemo(() => {
@@ -111,7 +111,7 @@ const Footer = () => {
     return {
       locations: data?.locations?.map((item: SimpleLocationProps) => ({
         name: item?.city,
-        href: `/colleges?city=${slug(item?.city || "")}&state=${slug(item?.state || "")}`,
+        href: `/institutes?city=${slug(item?.city || "")}&state=${slug(item?.state || "")}`,
       })),
       courses: data?.courses?.map((item: CourseProps) => ({
         name: item?.course_name,
@@ -175,7 +175,7 @@ const Footer = () => {
           </div>
           <hr className="border-(--border) my-8" />
           <div className="flex flex-col items-center">
-            <div className="flex flex-wrap justify-center gap-x-6 gap-y-3">
+            <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 mb-6">
               {FEATURE_LINKS.map((item, i) => (
                 <Link
                   key={i}
@@ -192,7 +192,7 @@ const Footer = () => {
                 </Link>
               ))}
             </div>
-            <SocialLinksComponent />
+            {/* <SocialLinksComponent /> */}
           </div>
           <div className="pt-8 border-t border-(--border)">
             <LegaLinksComponents />

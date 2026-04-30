@@ -10,29 +10,18 @@ import "swiper/css/autoplay";
 import { generateSlug, getErrorResponse } from "@/context/Callbacks";
 import API from "@/context/API";
 import { PropertyProps } from "@/types/PropertyTypes";
-import { CategoryProps } from "@/types/Types";
 import HeadingLine from "@/ui/headings/HeadingLine";
 import Image from "next/image";
 import Link from "next/link";
 import RelatedInstitutesSkeleton from "@/ui/loader/ui/RelatedInstitutesSkeleton";
+import { useGetAssets } from "@/context/providers/AssetsProviders";
 
-const RelatedInstitute = ({
-  property,
-  category,
-}: {
-  property: PropertyProps;
-  category: CategoryProps[];
-}) => {
+const RelatedInstitute = ({ property }: { property: PropertyProps }) => {
   const [relatedProperties, setRelatedProperties] = useState<PropertyProps[]>(
     [],
   );
   const [loading, setLoading] = useState(true);
-
-  const getCategoryById = (id?: string) => {
-    if (!id) return "";
-    const cat = category.find((item) => item._id === id);
-    return cat?.category_name || "";
-  };
+  const { getCategoryById } = useGetAssets();
 
   useEffect(() => {
     setLoading(true);
@@ -43,7 +32,7 @@ const RelatedInstitute = ({
         const response = await API.get(`/related/property`, {
           params: {
             property_id: property._id,
-            category: property.category_id,
+            academic_type: property.academic_type,
             property_type: property.property_type,
             city: property.property_city,
             state: property.property_state,
@@ -66,7 +55,7 @@ const RelatedInstitute = ({
 
   return (
     <section className="relative p-5 bg-(--primary-bg) text-(--text-color) rounded-custom overflow-hidden shadow-custom">
-      <HeadingLine title="Explore Related Colleges" />
+      <HeadingLine title="Explore Related Institutes" />
 
       <Swiper
         modules={[Autoplay]}
@@ -88,57 +77,54 @@ const RelatedInstitute = ({
         }}
         className="cursor-grab"
       >
-        {relatedProperties.map((institute, index) => (
-          <SwiperSlide key={index}>
-            <Link
-              href={`/${generateSlug(
-                getCategoryById(institute.category) || "",
-              )}/${generateSlug(institute?.property_slug || "")}/overview`}
-              className="block w-full"
-            >
-              {/* Fixed aspect ratio wrapper (2:1) */}
-              <div className="w-full aspect-2/1 relative overflow-hidden rounded-custom shadow-custom group">
-                {/* Image (normal mode, not fill) */}
-                <Image
-                  src={
-                    institute?.featured_image?.[0]
-                      ? `${process.env.NEXT_PUBLIC_MEDIA_URL}/${institute.featured_image[0]}`
-                      : "/img/default-images/campusaim-featured.png"
-                  }
-                  alt={institute?.property_name}
-                  className="object-cover w-full h-full transition-all duration-500 hover:scale-105"
-                  width={800}
-                  height={400} // 2:1 aspect
-                />
+        {relatedProperties.map((institute, index) => {
+          const relLoc = [
+            institute.property_city,
+            institute.property_state,
+            institute.property_country,
+          ]
+            .filter(Boolean)
+            .join(", ");
+          return (
+            <SwiperSlide key={index}>
+              <Link
+                href={`/${generateSlug(getCategoryById(institute.category) || "")}/${generateSlug(institute?.property_slug || "")}/overview`}
+                className="block w-full"
+              >
+                <div className="w-full aspect-2/1 relative overflow-hidden rounded-custom shadow-custom group">
+                  <Image
+                    src={
+                      institute?.featured_image?.[0]
+                        ? `${process.env.NEXT_PUBLIC_MEDIA_URL}/${institute.featured_image[0]}`
+                        : "/img/default-images/campusaim-featured.png"
+                    }
+                    alt={institute?.property_name}
+                    className="object-cover w-full h-full transition-all duration-500 hover:scale-105"
+                    width={800}
+                    height={400}
+                    priority
+                    quality={90}
+                  />
 
-                {/* Gradient Overlay */}
-                <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/30 to-transparent" />
+                  <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/30 to-transparent" />
 
-                {/* Text Content */}
-                <div className="absolute bottom-3 left-3 right-3 text-white">
-                  <h4 className="font-semibold text-sm md:text-base mb-1">
-                    {institute?.property_name}
-                  </h4>
+                  <div className="absolute bottom-3 left-3 right-3 text-white">
+                    <h4 className="font-semibold text-sm md:text-base mb-1">
+                      {institute?.property_name}
+                    </h4>
 
-                  <p className="text-xs opacity-90">
-                    {[
-                      institute.property_city,
-                      institute.property_state,
-                      institute.property_country,
-                    ]
-                      .filter(Boolean)
-                      .join(", ")}
-                  </p>
+                    {relLoc && <p className="text-xs opacity-90">{relLoc}</p>}
 
-                  <p className="text-xs opacity-80 mt-1">
-                    {getCategoryById(institute.academic_type)}
-                  </p>
+                    <p className="text-xs opacity-80 mt-1">
+                      {getCategoryById(institute.academic_type)}
+                    </p>
+                  </div>
+                  <div className="absolute inset-0 z-20 bg-linear-to-r from-transparent via-white/10 to-transparent -skew-x-12 translate-x-[-150%] group-hover:translate-x-[150%] transition-transform duration-1500 ease-in-out" />
                 </div>
-                <div className="absolute inset-0 z-20 bg-linear-to-r from-transparent via-white/10 to-transparent -skew-x-12 translate-x-[-150%] group-hover:translate-x-[150%] transition-transform duration-1500 ease-in-out" />
-              </div>
-            </Link>
-          </SwiperSlide>
-        ))}
+              </Link>
+            </SwiperSlide>
+          );
+        })}
       </Swiper>
     </section>
   );

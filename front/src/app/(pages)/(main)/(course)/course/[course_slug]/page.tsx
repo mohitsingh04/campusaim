@@ -11,7 +11,6 @@ import {
   getAverageRating,
   getErrorResponse,
   mergeCourseData,
-  safeArray,
 } from "@/context/Callbacks";
 import API from "@/context/API";
 import PropertyFilters from "@/components/property_filters/PropertyFilters";
@@ -66,7 +65,7 @@ const CourseDetails = () => {
 
     try {
       const results = await Promise.allSettled([
-        API.get<CourseProps>(`/course/seo/${course_slug}`), // now returns single course
+        API.get<CourseProps>(`/course/seo/${course_slug}`),
         API.get<{ _id: string; best_for: string }[]>(`/best-for/all`),
         API.get<{ _id: string; course_eligibility: string }[]>(
           `/course-eligibility/all`,
@@ -92,21 +91,17 @@ const CourseDetails = () => {
         categoryRes.status === "fulfilled" ? categoryRes.value.data : [];
       setCategory(categoryData);
 
-      // Best For map
       const bestForMap = new Map<string, string>();
       bestForData.forEach((r) => bestForMap.set(r._id, r.best_for));
 
-      // Course Eligibility map
       const courseEligibilityMap = new Map<string, string>();
       courseEligibilityData.forEach((k) =>
         courseEligibilityMap.set(k._id, k.course_eligibility),
       );
 
-      // Category map
       const categoryMap = new Map<string, string>();
       categoryData.forEach((c) => categoryMap.set(c._id, c.category_name));
 
-      // ⭐ DIRECT MATCHING (no mapping loop needed)
       const populatedCourse: CourseProps = {
         ...course,
         best_for: (course.best_for || [])
@@ -149,85 +144,78 @@ const CourseDetails = () => {
         API.get(`/course/${mainCourse._id}`),
       ]);
 
-      const [propertyRes, reviewRes, propertyCourseRes, allCourseRes] = results;
+      const propertyRes =
+        results[0].status === "fulfilled" ? results[0].value?.data : [];
+      const reviewsData =
+        results[1].status === "fulfilled" ? results[1].value?.data : [];
+      const propertyCoursesData =
+        results[2].status === "fulfilled" ? results[2].value?.data || [] : [];
+      const allCoursesData =
+        results[3].status === "fulfilled" ? results[3].value?.data || [] : [];
 
-      if (
-        propertyRes.status === "fulfilled" &&
-        reviewRes.status === "fulfilled" &&
-        propertyCourseRes.status === "fulfilled" &&
-        allCourseRes.status === "fulfilled"
-      ) {
-        // 👁 Log response
-        const rawProperties = propertyRes?.value?.data;
+      const rawProperties = propertyRes;
+      const propertiesArray = Array.isArray(rawProperties)
+        ? rawProperties
+        : Array.isArray(rawProperties?.data)
+          ? rawProperties.data
+          : Array.isArray(rawProperties?.properties)
+            ? rawProperties.properties
+            : [];
 
-        const propertiesArray = Array.isArray(rawProperties)
-          ? rawProperties
-          : Array.isArray(rawProperties?.data)
-            ? rawProperties.data
-            : Array.isArray(rawProperties?.properties)
-              ? rawProperties.properties
-              : [];
+      const propertiesData = propertiesArray.filter(
+        (item: PropertyProps) => item?.status === "Active",
+      );
 
-        const propertiesData = propertiesArray.filter(
-          (item: PropertyProps) => item?.status === "Active",
-        );
-
-        // others unchanged…
-        const reviewsData = reviewRes?.value?.data || [];
-        const propertyCoursesData =
-          safeArray(propertyCourseRes?.value?.data) || [];
-        const allCoursesData = safeArray(allCourseRes?.value?.data) || [];
-
-        const mergedProperties = propertiesData.map(
-          (property: PropertyProps) => {
-            const reviews = reviewsData.filter(
+      const mergedProperties = propertiesData.map((property: PropertyProps) => {
+        const reviews = Array.isArray(reviewsData)
+          ? reviewsData.filter(
               (rev: PropertyReviewProps) => rev.property_id === property._id,
-            );
+            )
+          : [];
 
-            const propertyCourses = propertyCoursesData.filter(
+        const propertyCourses = Array.isArray(propertyCoursesData)
+          ? propertyCoursesData.filter(
               (pc: PropertyCourseProps) => pc.property_id === property._id,
-            );
+            )
+          : [];
 
-            const mergedCourses = mergeCourseData(
-              propertyCourses,
-              allCoursesData,
-            );
+        const mergedCourses = mergeCourseData(propertyCourses, allCoursesData);
 
-            return {
-              uniqueId: property._id,
-              property_name: property?.property_name || "",
-              featured_image: property?.featured_image || [],
-              category: getCategoryById(property?.category) || "",
-              property_type: getCategoryById(property?.property_type) || "",
-              est_year: property?.est_year || "",
-              property_slug: property?.property_slug || "",
-              property_logo: property?.property_logo || [],
-              property_description: property?.property_description || "",
-              property_city: property?.property_city || "",
-              property_state: property?.property_state || "",
-              property_country: property?.property_country || "",
-              reviews: reviews || [],
-              average_rating: getAverageRating(reviews) || 0,
-              courses: mergedCourses?.map((course: MergedCourse) => ({
-                property_id: course.property_id,
-                image: course?.image || [],
-                course_name: course?.course_name || "",
-                course_level: getCategoryById(course?.course_level) || "",
-                course_type: getCategoryById(course?.course_type) || "",
-                course_format: getCategoryById(course?.course_format) || "",
-                duration: course?.duration || "",
-              })),
-            };
-          },
-        );
+        return {
+          uniqueId: property._id,
+          property_name: property?.property_name || "",
+          featured_image: property?.featured_image || [],
+          academic_type: getCategoryById(property?.academic_type) || "",
+          property_type: getCategoryById(property?.property_type) || "",
+          approved_by:
+            property?.approved_by?.map((item) => getCategoryById(item)) || [],
+          affiliated_by:
+            property?.affiliated_by?.map((item) => getCategoryById(item)) || [],
+          est_year: property?.est_year || "",
+          property_slug: property?.property_slug || "",
+          property_logo: property?.property_logo || [],
+          property_description: property?.property_description || "",
+          property_city: property?.property_city || "",
+          property_state: property?.property_state || "",
+          property_country: property?.property_country || "",
+          reviews: reviews,
+          average_rating: getAverageRating(reviews) || 0,
+          courses: (mergedCourses || []).map((course: MergedCourse) => ({
+            property_id: course.property_id,
+            image: course?.image || [],
+            course_name: course?.course_name || "",
+            course_level: getCategoryById(course?.course_level) || "",
+            course_type: getCategoryById(course?.course_type) || "",
+            course_format: getCategoryById(course?.course_format) || "",
+            duration: course?.duration || "",
+          })),
+        };
+      });
+      mergedProperties.sort(
+        (a: any, b: any) => (b?.average_rating || 0) - (a?.average_rating || 0),
+      );
 
-        mergedProperties.sort(
-          (a: PropertyProps, b: PropertyProps) =>
-            (b?.average_rating || 0) - (a?.average_rating || 0),
-        );
-
-        setProperties(mergedProperties);
-      }
+      setProperties(mergedProperties);
     } catch (error) {
       getErrorResponse(error, true);
       setProperties([]);
@@ -235,7 +223,6 @@ const CourseDetails = () => {
       setPropertyLoading(false);
     }
   }, [mainCourse?._id, getCategoryById]);
-
   useEffect(() => {
     getProperties();
   }, [getProperties]);
@@ -244,7 +231,7 @@ const CourseDetails = () => {
     ? `${process.env.NEXT_PUBLIC_MEDIA_URL}/course/${mainCourse.image[0]}`
     : "/img/default-images/campusaim-courses-featured.png";
 
-  console.log(mainCourse);
+  // console.log(properties);
 
   if (loading)
     return (
@@ -363,6 +350,7 @@ const CourseDetails = () => {
         <PropertyFilters
           allProperties={properties}
           propertyLoading={propertyLoading}
+          foundfor={mainCourse?.course_name || ""}
         />
       </div>
     </div>

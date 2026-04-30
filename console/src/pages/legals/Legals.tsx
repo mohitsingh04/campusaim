@@ -10,20 +10,23 @@ import LegalSkeleton from "../../ui/skeleton/LegalSkeleton";
 import { getErrorResponse } from "../../contexts/Callbacks";
 
 interface LegalValues {
-  privacyPolicy: string;
+  privacy_policy: string;
   terms: string;
   disclaimer: string;
-  cancelationPolicy: string;
+  cancelation_policy: string;
   cookies: string;
+  community_guidlines: string;
 }
 
 const LEGAL_KEYS = [
-  "privacyPolicy",
+  "privacy_policy",
   "terms",
   "disclaimer",
-  "cancelationPolicy",
+  "cancelation_policy",
   "cookies",
+  "community_guidlines",
 ] as const;
+
 type LegalKey = (typeof LEGAL_KEYS)[number];
 
 function isLegalKey(k: unknown): k is LegalKey {
@@ -31,11 +34,12 @@ function isLegalKey(k: unknown): k is LegalKey {
 }
 
 const DEFAULT_VALUES: LegalValues = {
-  privacyPolicy: "",
+  privacy_policy: "",
   terms: "",
   disclaimer: "",
-  cancelationPolicy: "",
+  cancelation_policy: "",
   cookies: "",
+  community_guidlines: "",
 };
 
 export default function LegalPage() {
@@ -43,23 +47,25 @@ export default function LegalPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const editorConfig = useMemo(() => getEditorConfig(), []);
   const rawTab = searchParams.get("tab");
-  const activeTab: LegalKey = isLegalKey(rawTab) ? rawTab : "privacyPolicy";
+  const activeTab: LegalKey = isLegalKey(rawTab) ? rawTab : "privacy_policy";
+
   const [legalLoading, setLegalLoading] = useState(true);
   const [loading, setLoading] = useState(false);
   const [legalData, setLegalData] = useState<LegalValues | null>(null);
-  const [sendMail, setSendMail] = useState(false); // ✅ new state for checkbox
+  const [sendMail, setSendMail] = useState(false);
 
   const subNavItems = [
-    { id: "privacyPolicy", label: "Privacy Policy" },
+    { id: "privacy_policy", label: "Privacy Policy" },
     { id: "terms", label: "Terms And Conditions" },
     { id: "disclaimer", label: "Disclaimer" },
-    { id: "cancelationPolicy", label: "Cancelation Policy" },
+    { id: "cancelation_policy", label: "Cancelation Policy" },
     { id: "cookies", label: "Cookies" },
+    { id: "community_guidlines", label: "Community Guidelines" },
   ];
 
   useEffect(() => {
     if (!searchParams.get("tab")) {
-      setSearchParams({ tab: "privacyPolicy" });
+      setSearchParams({ tab: "privacy_policy" });
     }
   }, [searchParams, setSearchParams]);
 
@@ -68,17 +74,20 @@ export default function LegalPage() {
   };
 
   const getData = useCallback(async () => {
+    setLegalLoading(true);
     try {
-      setLegalLoading(true);
       const res = await API.get("/legal");
       const data = res.data ?? {};
+
       const payload: LegalValues = {
-        privacyPolicy: data.privacyPolicy ?? "",
-        terms: data.terms ?? "",
-        disclaimer: data.disclaimer ?? "",
-        cancelationPolicy: data.cancelationPolicy ?? "",
-        cookies: data.cookies ?? "",
+        privacy_policy: data.privacy_policy?.content ?? "",
+        terms: data.terms?.content ?? "",
+        disclaimer: data.disclaimer?.content ?? "",
+        cancelation_policy: data.cancelation_policy?.content ?? "",
+        cookies: data.cookies?.content ?? "",
+        community_guidlines: data.community_guidlines?.content ?? "",
       };
+
       setLegalData(payload);
     } catch (error) {
       getErrorResponse(error, true);
@@ -107,19 +116,18 @@ export default function LegalPage() {
       try {
         setLoading(true);
 
-        // ✅ Include sendMail in payload
         const payload = {
           [activeTab]: values[activeTab],
-          sendMail, // <-- only true if user checked box
+          sendMail,
         };
 
-        const res = await API.patch(`/legal`, payload);
+        const res = await API.patch("/legal", payload);
 
         const successMsg =
           res?.data?.message ??
           `${
             subNavItems.find((i) => i.id === activeTab)?.label
-          } saved successfully!`;
+          } saved successfully`;
 
         toast.success(successMsg);
         await getData();
@@ -132,9 +140,7 @@ export default function LegalPage() {
     },
   });
 
-  if (legalLoading) {
-    return <LegalSkeleton />;
-  }
+  if (legalLoading) return <LegalSkeleton />;
 
   const fieldMeta = formik.getFieldMeta(activeTab);
 
@@ -148,6 +154,7 @@ export default function LegalPage() {
         ]}
       />
 
+      {/* Tabs */}
       <div className="border-b border-[var(--yp-border-primary)]">
         <nav className="flex space-x-8">
           {subNavItems.map((item) => (
@@ -167,51 +174,55 @@ export default function LegalPage() {
         </nav>
       </div>
 
+      {/* Editor */}
       <div className="bg-[var(--yp-primary)] rounded-lg shadow">
         <form onSubmit={formik.handleSubmit} className="p-6 space-y-6">
           <div>
             <label className="block mb-2 text-sm font-medium text-[var(--yp-muted)]">
               {subNavItems.find((item) => item.id === activeTab)?.label} Content
             </label>
-            <JoditEditor
-              ref={editor}
-              value={formik.values[activeTab]}
-              config={editorConfig}
-              onBlur={() => formik.setFieldTouched(activeTab, true)}
-              onChange={(newContent: string) =>
-                formik.setFieldValue(activeTab, newContent)
-              }
-            />
+
+            <div id="blog-main">
+              <JoditEditor
+                ref={editor}
+                value={formik.values[activeTab]}
+                config={editorConfig}
+                onBlur={() => formik.setFieldTouched(activeTab, true)}
+                onChange={(val: string) => formik.setFieldValue(activeTab, val)}
+              />
+            </div>
+
             {fieldMeta.touched && fieldMeta.error && (
               <p className="mt-2 text-sm text-red-600">{fieldMeta.error}</p>
             )}
           </div>
 
-          {/* ✅ Send Mail Checkbox */}
+          {/* Mail checkbox */}
           <div className="flex items-center space-x-2">
             <input
               id="sendMail"
               type="checkbox"
               checked={sendMail}
               onChange={(e) => setSendMail(e.target.checked)}
-              className="w-4 h-4 text-[var(--yp-main)] border-gray-300 rounded focus:ring-[var(--yp-main)]"
+              className="w-4 h-4"
             />
-            <label htmlFor="sendMail" className="text-sm text-[var(--yp-muted)]">
-              Do you want to send mail notification?
+            <label
+              htmlFor="sendMail"
+              className="text-sm text-[var(--yp-text-primary)]"
+            >
+              Send mail notification
             </label>
           </div>
 
-          <div className="flex justify-start">
-            <button
-              type="submit"
-              disabled={loading || formik.isSubmitting}
-              className="px-6 py-2 rounded-lg text-sm font-medium text-[var(--yp-blue-text)] bg-[var(--yp-blue-bg)]"
-            >
-              {loading || formik.isSubmitting
-                ? "Saving..."
-                : `Save ${subNavItems.find((i) => i.id === activeTab)?.label}`}
-            </button>
-          </div>
+          <button
+            type="submit"
+            disabled={loading || formik.isSubmitting}
+            className="px-6 py-2 rounded-lg text-sm font-medium text-[var(--yp-blue-text)] bg-[var(--yp-blue-bg)]"
+          >
+            {loading || formik.isSubmitting
+              ? "Saving..."
+              : `Save ${subNavItems.find((i) => i.id === activeTab)?.label}`}
+          </button>
         </form>
       </div>
     </div>

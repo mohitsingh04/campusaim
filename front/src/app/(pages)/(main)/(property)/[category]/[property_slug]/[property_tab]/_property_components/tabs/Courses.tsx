@@ -1,30 +1,77 @@
 "use client";
-import { generateSlug } from "@/context/Callbacks";
-import { PropertyCourseProps } from "@/types/PropertyTypes";
+import API from "@/context/API";
+import {
+  generateSlug,
+  getErrorResponse,
+  mergeCourseData,
+} from "@/context/Callbacks";
+import { PropertyProps } from "@/types/PropertyTypes";
+import { CourseProps } from "@/types/Types";
 import { ButtonGroup } from "@/ui/buttons/ButtonGroup";
+import TabLoading from "@/ui/loader/component/TabLoading";
+import { useQuery } from "@tanstack/react-query";
 import { ChartLineIcon, ClockIcon, GraduationCapIcon } from "lucide-react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 
 export default function CoursesTab({
-  courses,
+  property,
   getCategoryById,
 }: {
-  courses: PropertyCourseProps[];
+  property: PropertyProps | null;
   getCategoryById: (id: string | number) => string | undefined;
 }) {
-  console.log(courses);
   const { category, property_slug, property_tab } = useParams();
+
+  const { data: allCourses = [], isLoading } = useQuery<CourseProps[]>({
+    queryKey: ["courses", property?._id],
+    queryFn: async () => {
+      if (!property?._id) return [];
+
+      try {
+        const [propertyCourseRes, allCourseRes] = await Promise.allSettled([
+          API.get(`/property/property-course/${property._id}`),
+          API.get(`/course`),
+        ]);
+
+        let propertyCourseData: any[] = [];
+        let allCourseData: any[] = [];
+
+        if (propertyCourseRes.status === "fulfilled") {
+          propertyCourseData = propertyCourseRes.value?.data || [];
+        }
+
+        if (allCourseRes.status === "fulfilled") {
+          allCourseData = allCourseRes.value?.data || [];
+        }
+
+        const mergedCourses =
+          propertyCourseData.length && allCourseData.length
+            ? (mergeCourseData(
+                propertyCourseData,
+                allCourseData,
+              ) as unknown as CourseProps[])
+            : [];
+
+        return mergedCourses;
+      } catch (error) {
+        getErrorResponse(error, true);
+        throw error;
+      }
+    },
+    enabled: !!property?._id,
+    staleTime: 1000 * 60 * 5,
+  });
+
+  if (isLoading) return <TabLoading />;
   return (
     <section className="p-5">
-      {/* Course Grid */}
       <div className="max-w-6xl mx-auto grid gap-5 sm:grid-cols-2 lg:grid-cols-2 ">
-        {courses.map((course, index) => (
+        {allCourses.map((course, index) => (
           <div
             key={index}
             className="group rounded-custom shadow-custom bg-(--secondary-bg) transition-all duration-500 overflow-hidden"
           >
-            {/* Image */}
             <div className="relative w-full h-52 overflow-hidden">
               <div className="relative w-full aspect-2/1">
                 <Image
@@ -39,13 +86,11 @@ export default function CoursesTab({
                 />
               </div>
 
-              {/* Category Badge */}
-              <div className="absolute bottom-3 left-3 bg-(--main-subtle) text-(--main-emphasis) text-xs px-3 py-1 rounded-full shadow-custom">
+              <div className="absolute bottom-3 left-3 bg-(--main-emphasis) text-(--main-subtle) text-xs px-3 py-1 rounded-full shadow-custom">
                 {getCategoryById(course.course_type)}
               </div>
             </div>
 
-            {/* Content */}
             <div className="p-5 md:pt-2">
               <h3 className="sub-heading font-semibold text-(--text-color-emphasis) group-hover:text-(--main) mb-1 transition-colors">
                 {course.course_name}

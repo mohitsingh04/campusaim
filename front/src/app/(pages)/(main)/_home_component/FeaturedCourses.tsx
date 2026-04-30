@@ -111,7 +111,7 @@ export default function PopularCourses() {
       }
       return [];
     },
-    staleTime: 1000 * 60 * 30,
+    staleTime: 1000 * 60 * 5,
   });
 
   if (isLoading) return <FeaturedCoursesSkeleton />;

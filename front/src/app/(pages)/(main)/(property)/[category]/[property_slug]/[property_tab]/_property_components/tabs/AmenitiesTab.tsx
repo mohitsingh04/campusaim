@@ -5,20 +5,37 @@ import clsx from "clsx";
 
 import { CategoryIcons, SubcategoryIcons } from "@/common/AmenitiesData";
 import HeadingLine from "@/ui/headings/HeadingLine";
+import { useQuery } from "@tanstack/react-query";
+import { getErrorResponse } from "@/context/Callbacks";
+import API from "@/context/API";
+import { Grid3X3 } from "lucide-react";
+import TabLoading from "@/ui/loader/component/TabLoading";
 
 export default function AmenitiesTab({ property }: { property: any }) {
-  // Real amenities from API
-  const amenities: Record<string, any[]> = property?.amenities || {};
+  const [activeTab, setActiveTab] = useState<string>("");
+  const { data: pamenities = {}, isLoading } = useQuery<Record<string, any[]>>({
+    queryKey: ["property-amenities", property?._id],
+    queryFn: async () => {
+      if (!property?._id) return {};
+      try {
+        const response = await API.get(`/property/amenities/${property._id}`);
+        return response?.data?.selectedAmenities?.[0] || {};
+      } catch (error) {
+        getErrorResponse(error, true);
+        throw error;
+      }
+    },
+    enabled: !!property?._id,
+    staleTime: 1000 * 60 * 5,
+  });
 
-  const categories = Object.keys(amenities);
-
-  const [activeTab, setActiveTab] = useState<string>(categories[0] || "");
+  const categories = Object.keys(pamenities);
 
   useEffect(() => {
-    if (categories.length > 0) {
-      setActiveTab((prev) => prev || categories[0]);
+    if (categories.length > 0 && !activeTab) {
+      setActiveTab(categories[0]);
     }
-  }, [categories]);
+  }, [categories, activeTab]);
 
   const parseAmenity = (item: any) => {
     let label = "";
@@ -29,9 +46,7 @@ export default function AmenitiesTab({ property }: { property: any }) {
     } else if (typeof item === "object" && item !== null) {
       const key = Object.keys(item)[0];
       const value = item[key];
-
       label = key;
-
       if (Array.isArray(value)) {
         children = value;
       }
@@ -67,20 +82,21 @@ export default function AmenitiesTab({ property }: { property: any }) {
           }
         `;
 
+        const IconComponent = CategoryIcons?.[category] || Grid3X3;
+
         return (
           <button
             key={category}
             onClick={() => setActiveTab(category)}
             className={clsx(
               baseClasses,
-              isMobile ? mobileClasses : desktopClasses
+              isMobile ? mobileClasses : desktopClasses,
             )}
           >
-            {CategoryIcons[category] &&
-              React.createElement(CategoryIcons[category], {
-                className: "w-5 h-5 shrink-0",
-              })}
-            {}
+            {React.createElement(IconComponent, {
+              className: "w-5 h-5 shrink-0",
+            })}
+
             <span className="grow">{category}</span>
 
             {!isMobile && (
@@ -88,11 +104,11 @@ export default function AmenitiesTab({ property }: { property: any }) {
                 className={clsx(
                   "px-2 py-0.5 rounded-custom paragraph font-bold",
                   isActive
-                    ? "bg-[var(--main-subtle)] text-[var(--main-emphasis)]"
-                    : "bg-(--main-subtle) text-(--main-emphasis)"
+                    ? "bg-(--main-subtle) text-(--main-emphasis)"
+                    : "bg-(--main-subtle) text-(--main-emphasis)",
                 )}
               >
-                {amenities[category]?.length || 0}
+                {pamenities[category]?.length || 0}
               </span>
             )}
           </button>
@@ -100,6 +116,8 @@ export default function AmenitiesTab({ property }: { property: any }) {
       })}
     </>
   );
+
+  if (isLoading) return <TabLoading />;
 
   return (
     <div className="bg-(--primary-bg) text-(--text-color)">
@@ -131,15 +149,16 @@ export default function AmenitiesTab({ property }: { property: any }) {
                   <HeadingLine title={activeTab} />
                   <span className="paragraph font-medium">
                     <span className="text-(--main)">
-                      {amenities[activeTab]?.length || 0}
+                      {pamenities[activeTab]?.length || 0}
                     </span>{" "}
                     facilities
                   </span>
                 </div>
 
                 <div className="flex flex-col gap-4">
-                  {(amenities[activeTab] || []).map((item, index) => {
+                  {(pamenities[activeTab] || []).map((item, index) => {
                     const { label, children } = parseAmenity(item);
+                    const Icon = SubcategoryIcons[label] || Grid3X3;
 
                     return (
                       <div
@@ -147,8 +166,8 @@ export default function AmenitiesTab({ property }: { property: any }) {
                         className="bg-(--secondary-bg) hover:bg-(--main-subtle) text-(--text-color-emphasis) hover:text-(--main-emphasis) flex justify-between items-center p-3 rounded-custom shadow-custom transition-all duration-300 group"
                       >
                         <div className="flex items-center gap-4">
-                          {SubcategoryIcons[label] &&
-                            React.createElement(SubcategoryIcons[label], {
+                          {Icon &&
+                            React.createElement(Icon, {
                               className:
                                 "text-[var(--main)] group-hover:text-(--main-emphasis) w-5 h-5 shrink-0",
                             })}
@@ -174,8 +193,8 @@ export default function AmenitiesTab({ property }: { property: any }) {
                     );
                   })}
 
-                  {(!amenities[activeTab] ||
-                    amenities[activeTab].length === 0) && (
+                  {(!pamenities[activeTab] ||
+                    pamenities[activeTab].length === 0) && (
                     <p className="paragraph opacity-60">
                       No amenities in this category.
                     </p>

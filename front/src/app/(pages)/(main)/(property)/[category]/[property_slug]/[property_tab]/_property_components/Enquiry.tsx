@@ -22,40 +22,38 @@ import "react-phone-input-2/lib/style.css";
 import { phoneInputClass } from "@/common/ExtraData";
 import HeadingLine from "@/ui/headings/HeadingLine";
 import EnquirySubmitted from "@/ui/submits/EnquirySubmitted";
-import { UserProps } from "@/types/UserTypes";
-import { getProfile } from "@/context/getAssets";
 import EnquiryFormSkeleton from "@/ui/loader/ui/EnquiryFormSkeleton";
-import { toast } from "react-toastify";
+import useGetAuthUser from "@/hooks/fetch-hooks/useGetAuthUser";
+import LoginRequiredModal from "@/components/modals/LoginRequired";
 
 const EnquiryForm = ({ property }: { property: PropertyProps }) => {
   const [submitted, setSubmitted] = useState(false);
-  const [profile, setProfile] = useState<UserProps | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { authUser, authLoading } = useGetAuthUser();
+  const [notloginModal, setNotLoginModal] = useState(false);
+  const [courseList, setCourseList] = useState<{ course_name: string }[]>([]);
 
-  const getProfileUser = useCallback(async () => {
+  const getCourseList = useCallback(async () => {
     try {
-      const data = await getProfile();
-      setProfile(data);
+      const response = await API.get(`/property-course/names/${property?._id}`);
+      setCourseList(response?.data);
     } catch (error) {
       getErrorResponse(error);
-    } finally {
-      setLoading(false);
     }
-  }, []);
+  }, [property?._id]);
 
   useEffect(() => {
-    getProfileUser();
-  }, [getProfileUser]);
+    getCourseList();
+  }, [getCourseList]);
 
   const formik = useFormik({
     initialValues: {
-      userId: profile?._id || null,
+      userId: authUser?._id || "",
       property_id: property?._id || "",
       property_name: property?.property_name || "",
-      name: profile?.name || "",
-      email: profile?.email || "",
-      contact: profile?.mobile_no || "",
-      city: profile?.city || "",
+      name: authUser?.name || "",
+      email: authUser?.email || "",
+      contact: authUser?.mobile_no || "",
+      city: authUser?.city || "",
       preferred_course: "",
       message: "",
     },
@@ -63,28 +61,7 @@ const EnquiryForm = ({ property }: { property: PropertyProps }) => {
     enableReinitialize: true,
     onSubmit: async (values, { setSubmitting, resetForm }) => {
       try {
-        const selectedCourse = property?.courses?.find(
-          (c) => c.course_name === values.preferred_course,
-        );
-
-        const payload = {
-          ...values,
-          course_id: selectedCourse?._id || null,
-        };
-
-        // const response = await API.post(`/add/enquiry`, values);
-        const response = await API.post(
-          `${process.env.NEXT_PUBLIC_LEAD_API_URL}/api/external/leads`,
-          payload,
-        );
-        if (response?.data?.success === false) {
-          toast.error(response?.data?.error);
-          console.log(response);
-        } else {
-          toast.success(response?.data?.message);
-          console.log(response);
-          resetForm();
-        }
+        const response = await API.post(`/add/enquiry`, values);
         getSuccessResponse(response);
         setSubmitted(true);
         resetForm();
@@ -97,11 +74,13 @@ const EnquiryForm = ({ property }: { property: PropertyProps }) => {
   });
 
   const courseOptions =
-    getFieldDataSimple(property?.courses, "course_name") ?? [];
+    (courseList?.length || 0) > 0
+      ? getFieldDataSimple(courseList, "course_name")
+      : [];
   const finalCourseOptions = [...courseOptions, "Other"];
 
   if (submitted) return <EnquirySubmitted setSubmitted={setSubmitted} />;
-  if (loading) return <EnquiryFormSkeleton />;
+  if (authLoading) return <EnquiryFormSkeleton />;
 
   return (
     <div
@@ -156,7 +135,6 @@ const EnquiryForm = ({ property }: { property: PropertyProps }) => {
             {getFormikError(formik, "contact")}
           </div>
 
-          {/* City */}
           <div className="w-full">
             <InputGroup
               label="Your City"
@@ -169,7 +147,7 @@ const EnquiryForm = ({ property }: { property: PropertyProps }) => {
           </div>
 
           {/* Course */}
-          {property?.courses?.length > 0 && (
+          {(courseList?.length || 0) > 0 && (
             <div className="w-full">
               <SelectGroup
                 label="Preferred Course"
@@ -199,16 +177,30 @@ const EnquiryForm = ({ property }: { property: PropertyProps }) => {
 
           {/* Submit */}
           <div className="md:col-span-2 w-full">
-            <ButtonGroupSend
-              label="Send Enquiry"
-              type="submit"
-              className="w-full"
-              disable={formik.isSubmitting}
-              isSubmitting={formik.isSubmitting}
-            />
+            {authUser?._id ? (
+              <ButtonGroupSend
+                label="Send Enquiry"
+                type="submit"
+                className="w-full"
+                disable={formik.isSubmitting}
+                isSubmitting={formik.isSubmitting}
+              />
+            ) : (
+              <ButtonGroupSend
+                label="Send Enquiry"
+                type="button"
+                className="w-full"
+                onClick={() => setNotLoginModal(true)}
+                disable={false}
+              />
+            )}
           </div>
         </div>
       </form>
+      <LoginRequiredModal
+        isOpen={notloginModal}
+        onClose={() => setNotLoginModal(false)}
+      />
     </div>
   );
 };

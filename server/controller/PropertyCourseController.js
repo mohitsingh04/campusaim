@@ -512,3 +512,31 @@ export const getPropertyCourseBySlug = async (req, res) => {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
+export const getPropertyCourseCountByPropertyId = async (req, res) => {
+  try {
+    const { property_id } = req.params;
+    const propertyCourse = await PropertyCourse.find({ property_id });
+    return res.status(200).json({ courses: propertyCourse.length });
+  } catch (error) {
+    console.error(error);
+    return res.send({ error: "Internal Server Error" });
+  }
+};
+
+
+export const getPropertyCourseNameListByPropertyId = async (req, res) => {
+  try {
+    const { property_id } = req.params;
+    const propertyCourses = await PropertyCourse.find({ property_id })
+      .select("course_id")
+      .populate("course_id", "course_name");
+    const courseNames = propertyCourses.map((pc) => ({
+      course_id: pc.course_id._id,
+      course_name: pc.course_id.course_name,
+    }));
+    return res.status(200).json(courseNames);
+  } catch (error) {
+    console.error(error);
+    return res.send({ error: "Internal Server Error" });
+  }
+};

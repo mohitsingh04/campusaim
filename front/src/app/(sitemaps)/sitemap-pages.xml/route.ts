@@ -5,7 +5,7 @@ export async function GET() {
 
   const staticRoutes = [
     { path: "/", priority: 1.0, changefreq: "weekly" },
-    { path: "/colleges", priority: 0.9, changefreq: "weekly" },
+    { path: "/institutes", priority: 0.9, changefreq: "weekly" },
     { path: "/courses", priority: 0.8, changefreq: "weekly" },
     { path: "/exams", priority: 0.8, changefreq: "weekly" },
     // { path: "/blog", priority: 0.8, changefreq: "weekly" },

@@ -1,6 +1,7 @@
 "use client";
 
-import { FilterIcon, GridIcon, ListIcon } from "lucide-react";
+import { FilterIcon, Grid3X3, ListIcon, SortAsc } from "lucide-react";
+import { useState } from "react";
 
 interface ResultsHeaderProps {
   totalResults: number;
@@ -9,6 +10,9 @@ interface ResultsHeaderProps {
   viewMode: string;
   onViewModeChange: (mode: string) => void;
   onShowMobileFilters: () => void;
+  foundfor: string;
+  sortBy: string;
+  onSortChange: (sort: string) => void;
 }
 
 const ResultsHeader = ({
@@ -18,7 +22,12 @@ const ResultsHeader = ({
   viewMode,
   onViewModeChange,
   onShowMobileFilters,
+  sortBy,
+  onSortChange,
+  foundfor,
 }: ResultsHeaderProps) => {
+  const [openMenu, setOpenMenu] = useState(false);
+
   const startItem = totalResults > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0;
   const endItem = Math.min(currentPage * itemsPerPage, totalResults);
 
@@ -27,8 +36,8 @@ const ResultsHeader = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 space-y-6 gap-4 shrink-0">
         <div className="m-0 p-0 flex flex-col justify-center">
           <h1 className="heading font-bold text-(--text-color-emphasis)">
-            <span className="text-(--main)">{totalResults}</span> Yoga
-            Institutes Found
+            <span className="text-(--main)">{totalResults}</span> Institutes
+            Found For {foundfor}
           </h1>
           {totalResults > 0 && (
             <p className="leading-relaxed m-0">
@@ -48,6 +57,8 @@ const ResultsHeader = ({
           >
             <FilterIcon className="w-4 h-4 mr-2" /> Filters
           </button>
+
+          {/* Grid / List Buttons */}
           <div className="hidden md:flex items-center space-x-2">
             <button
               onClick={() => onViewModeChange("grid")}
@@ -55,7 +66,7 @@ const ResultsHeader = ({
                 viewMode === "grid" ? "text-(--main)" : ""
               }`}
             >
-              <GridIcon className="w-4 h-4" />
+              <Grid3X3 className="w-4 h-4" />
             </button>
 
             <button
@@ -66,6 +77,60 @@ const ResultsHeader = ({
             >
               <ListIcon className="w-4 h-4" />
             </button>
+          </div>
+
+          <div className="relative">
+            <button
+              onClick={() => setOpenMenu((prev) => !prev)}
+              className="px-4 py-1 border border-(--border) text-(--text-color-emphasis) rounded-full text-sm flex items-center"
+            >
+              <SortAsc className="w-4 h-4 mr-2" /> sort
+            </button>
+
+            {openMenu && (
+              <div className="absolute right-0 mt-2 bg-(--secondary-bg) border border-(--border) shadow-custom rounded-custom w-40 p-2 z-20">
+                <button
+                  onClick={() => {
+                    onSortChange("A-Z");
+                    setOpenMenu(false);
+                  }}
+                  className={`w-full text-left text-sm px-4 py-2 hover:bg-(--main-subtle) hover:text-(--main-emphasis) border border-transparent hover:border-(--main-emphasis)  rounded-custom ${
+                    sortBy === "A-Z"
+                      ? "bg-(--main-subtle) text-(--main-emphasis)"
+                      : ""
+                  }`}
+                >
+                  Sort by A-Z
+                </button>
+                <button
+                  onClick={() => {
+                    onSortChange("Z-A");
+                    setOpenMenu(false);
+                  }}
+                  className={`w-full text-left text-sm px-4 py-2 hover:bg-(--main-subtle) hover:text-(--main-emphasis) border border-transparent hover:border-(--main-emphasis)  rounded-custom ${
+                    sortBy === "Z-A "
+                      ? "bg-(--main-subtle) text-(--main-emphasis)"
+                      : ""
+                  }`}
+                >
+                  Sort by Z-A
+                </button>
+
+                <button
+                  onClick={() => {
+                    onSortChange("rating");
+                    setOpenMenu(false);
+                  }}
+                  className={`w-full text-left text-sm px-4 py-2 hover:bg-(--main-subtle) hover:text-(--main-emphasis) border border-transparent hover:border-(--main-emphasis)  rounded-custom ${
+                    sortBy === "rating"
+                      ? "bg-(--main-subtle) text-(--main-emphasis)"
+                      : ""
+                  }`}
+                >
+                  Sort by Rating
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

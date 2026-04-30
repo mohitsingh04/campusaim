@@ -6,7 +6,6 @@ import { UserProps } from "@/types/UserTypes";
 import Badge from "@/ui/badge/Badge";
 import ToggleButton from "@/ui/buttons/ToggleButton";
 import HeadingLine from "@/ui/headings/HeadingLine";
-import SidebarSkeleton from "@/ui/loader/page/blog/_components/SidebarSkeleton";
 import {
   ChartAreaIcon,
   ChevronRightIcon,
@@ -139,7 +138,7 @@ export default function SettingsOffcanvas({
     // },
   ];
 
-  if (loadingRoles) return <SidebarSkeleton />;
+  if (loadingRoles) return <></>;
 
   const content = (
     <div
