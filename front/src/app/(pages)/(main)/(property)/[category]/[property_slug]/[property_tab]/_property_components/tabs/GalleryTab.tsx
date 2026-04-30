@@ -1,75 +1,60 @@
-import { useCallback, useEffect, useState } from "react";
 import { PropertyGalleryProps, PropertyProps } from "@/types/PropertyTypes";
 import LightboxViewer from "@/ui/gallery/LightboxViewer";
 import HeadingLine from "@/ui/headings/HeadingLine";
 import { getErrorResponse } from "@/context/Callbacks";
-import Loading from "@/ui/loader/Loading";
+import { useQuery } from "@tanstack/react-query";
+import API from "@/context/API";
+import TabLoading from "@/ui/loader/component/TabLoading";
 
 export default function GalleryTab({
   property,
 }: {
   property: PropertyProps | null;
 }) {
-  const [galleries, setGalleries] = useState<PropertyGalleryProps[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: allgalleries = [], isLoading } = useQuery<
+    PropertyGalleryProps[]
+  >({
+    queryKey: ["property-gallery", property?._id],
+    queryFn: async () => {
+      if (!property?._id) return [];
 
-  const getGalleries = useCallback(async () => {
-    if (!property?.gallery) return;
-    setLoading(true);
+      try {
+        const response = await API.get(`/property/gallery/${property._id}`);
+        const data = response.data;
 
-    try {
-      const data = property.gallery;
-
-      const finalData: PropertyGalleryProps[] = (data || []).map(
-        (item: any) => {
-          const property_id = property?._id || "";
-
-          // Case 1: gallery item is a simple string
-          if (typeof item === "string") {
+        const finalData: PropertyGalleryProps[] = (data || []).map(
+          (gal: PropertyGalleryProps) => {
             return {
-              property_id,
-              title: "Gallery",
-              gallery: item.toLowerCase().endsWith(".webp")
-                ? [`${process.env.NEXT_PUBLIC_MEDIA_URL}/${item}`]
-                : [],
+              ...gal,
+              gallery: (gal.gallery || [])
+                .filter(
+                  (img: string) =>
+                    typeof img === "string" &&
+                    img.toLowerCase().endsWith(".webp"),
+                )
+                .map(
+                  (img: string) =>
+                    `${process.env.NEXT_PUBLIC_MEDIA_URL}/${img}`,
+                ),
             };
-          }
+          },
+        );
 
-          // Case 2: gallery item is an object
-          const galleryArray = Array.isArray(item?.gallery) ? item.gallery : [];
+        return finalData;
+      } catch (error) {
+        getErrorResponse(error, true);
+        throw error;
+      }
+    },
+    enabled: !!property?._id,
+    staleTime: 1000 * 60 * 5,
+  });
 
-          return {
-            property_id,
-            title: item?.title || "Gallery",
-            gallery: galleryArray
-              .filter(
-                (img: string) =>
-                  typeof img === "string" && img.toLowerCase().endsWith(".webp")
-              )
-              .map(
-                (img: string) => `${process.env.NEXT_PUBLIC_MEDIA_URL}/${img}`
-              ),
-          };
-        }
-      );
-
-      setGalleries(finalData);
-    } catch (error) {
-      getErrorResponse(error, true);
-    } finally {
-      setLoading(false);
-    }
-  }, [property?.gallery, property?._id]);
-
-  useEffect(() => {
-    getGalleries();
-  }, [getGalleries]);
-
-  if (loading) return <Loading />;
+  if (isLoading) return <TabLoading />;
 
   return (
     <div>
-      {galleries?.map((gallery, gIdx) => (
+      {allgalleries?.map((gallery, gIdx) => (
         <div key={gIdx}>
           <HeadingLine
             title={gallery?.title}

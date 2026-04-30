@@ -21,30 +21,28 @@ const poppins = Poppins({
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://campusaim.com";
 
-const title = "Campusaim";
+const title =
+  "Campusaim - Find Best Colleges, Universities, Schools & Academies in India";
 const desc =
-  "Discover verified colleges and universities, explore accredited courses, and make informed academic decisions with trusted admission insights—tailored to your goals.";
+  "Discover top colleges, universities, schools & academies in India. Compare courses, fees & locations easily with the Campusaim platform.";
 const featuredImage = [
   {
-    url: "/img/main-images/campusaim-default.png",
+    url: "/img/main-images/campusaim.png",
     width: 1200,
     height: 700,
     alt: "Campusaim",
   },
 ];
+const ICON = [{ url: "/img/logo/favicon.ico", type: "image/png" }];
 export const metadata: Metadata = {
   title: {
     default: title,
-    template: `%s - ${title}`,
+    template: `%s - Campusaim`,
   },
   description: desc,
   metadataBase: new URL(baseUrl),
   alternates: { canonical: "/" },
-  icons: {
-    icon: [{ url: "/img/logo/favicon.ico", type: "image/png" }],
-    shortcut: "/img/logo/favicon.ico",
-    apple: "/img/logo/favicon.ico",
-  },
+  icons: { icon: ICON, shortcut: ICON, apple: ICON },
   openGraph: {
     title: title,
     description: desc,

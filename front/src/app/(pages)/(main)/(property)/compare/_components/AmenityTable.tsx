@@ -21,7 +21,6 @@ export default function AmenityTable({
 }) {
   const [isOpen, setIsOpen] = useState(false);
 
-  // Extract unique amenities
   const amenitySet = new Set<string>();
   selectedProperties.forEach((property) => {
     if (property.amenities) {
@@ -36,7 +35,6 @@ export default function AmenityTable({
 
   const allAmenities = Array.from(amenitySet).sort();
 
-  // Helper for Mobile Grid Columns
   const gridCols =
     selectedProperties.length === 1
       ? "grid-cols-1"
@@ -44,7 +42,6 @@ export default function AmenityTable({
         ? "grid-cols-2"
         : "grid-cols-3";
 
-  // Helper function to check amenity existence
   const checkAmenity = (prop: PropertyProps, amenity: string) => {
     let hasAmenity = false;
     if (prop.amenities) {
@@ -68,7 +65,6 @@ export default function AmenityTable({
         isOpen ? "overflow-visible" : "overflow-hidden"
       }`}
     >
-      {/* Header */}
       <div
         className="bg-(--main-emphasis) cursor-pointer sm:px-6 px-4 py-3 transition-all duration-200 relative overflow-hidden"
         onClick={() => setIsOpen(!isOpen)}
@@ -86,7 +82,6 @@ export default function AmenityTable({
             </div>
           </div>
 
-          {/* Right Buttons */}
           <div className="flex items-center gap-2">
             <div
               className={`p-2 rounded-full bg-(--main-subtle) cursor-pointer text-(--main-emphasis) backdrop-blur-sm transition-all duration-300 hover:scale-110 ${
@@ -99,7 +94,6 @@ export default function AmenityTable({
         </div>
       </div>
 
-      {/* Content */}
       <div
         className={`transition-all duration-500 ease-in-out ${
           isOpen ? "opacity-100" : "max-h-0 opacity-0 overflow-hidden"
@@ -109,23 +103,18 @@ export default function AmenityTable({
           {allAmenities.length > 0 ? (
             <>
               <div className="hidden sm:block w-full overflow-x-auto">
-                {/* Added table-fixed here */}
                 <table className="w-full border-collapse table-fixed">
                   <thead>
                     <tr className="bg-(--primary-bg) text-(--text-color) border-b border-(--border)">
-                      {/* Fixed width for label column */}
                       <th className="p-4 font-semibold border-r border-(--border) w-52 sub-heading"></th>
                       {selectedProperties.map((p, i) => (
                         <th
                           key={i}
-                          // Fixed width for property columns
                           className="text-center p-4 font-semibold text-(--text-color) border-r border-(--border) last:border-r-0 w-80"
                         >
                           <div className="flex flex-col items-center relative">
                             <Link
-                              href={`/${generateSlug(
-                                p.category,
-                              )}/${generateSlug(p?.property_slug)}/overview`}
+                              href={`/${generateSlug(p.academic_type)}/${generateSlug(p?.property_slug)}/overview`}
                             >
                               {!p?.property_logo?.[0] ? (
                                 <div className="w-10 h-10 rounded-custom flex items-center justify-center mb-2 shadow-custom">
@@ -145,9 +134,7 @@ export default function AmenityTable({
                               )}
                             </Link>
                             <Link
-                              href={`/${generateSlug(
-                                p.category,
-                              )}/${generateSlug(p?.property_slug)}/overview`}
+                              href={`/${generateSlug(p.academic_type)}/${generateSlug(p?.property_slug)}/overview`}
                               className="paragraph font-medium text-center leading-tight wrap-break-word"
                             >
                               {p.property_name}
@@ -179,12 +166,12 @@ export default function AmenityTable({
                             >
                               <div className="flex justify-center">
                                 {hasAmenity ? (
-                                  <div className="w-8 h-8 rounded-full bg-(--success-light) flex items-center justify-center text-(--success)">
-                                    <CircleCheckIcon size={18} />
+                                  <div className="w-6 h-6 rounded-full bg-(--success) flex items-center justify-center text-(--success-subtle)">
+                                    <CircleCheckIcon size={26} />
                                   </div>
                                 ) : (
-                                  <div className="w-8 h-8 rounded-full bg-(--danger-light) flex items-center justify-center text-(--danger)">
-                                    <CircleXIcon size={18} />
+                                  <div className="w-6 h-6 rounded-full bg-(--danger) flex items-center justify-center text-(--danger-subtle)">
+                                    <CircleXIcon size={26} />
                                   </div>
                                 )}
                               </div>
@@ -198,7 +185,6 @@ export default function AmenityTable({
               </div>
 
               <div className="sm:hidden block">
-                {/* STICKY HEADER: LOGOS */}
                 <div className="sticky top-16 z-0 bg-(--primary-bg) border-b border-(--border)">
                   <div className={`grid ${gridCols} bg-(--primary-bg)`}>
                     {selectedProperties.map((p, i) => (
@@ -209,9 +195,7 @@ export default function AmenityTable({
                         }`}
                       >
                         <Link
-                          href={`/${generateSlug(p.category)}/${generateSlug(
-                            p?.property_slug,
-                          )}/overview`}
+                          href={`/${generateSlug(p.academic_type)}/${generateSlug(p?.property_slug)}/overview`}
                         >
                           {!p?.property_logo?.[0] ? (
                             <div className="w-8 h-8 rounded-custom flex items-center justify-center shadow-custom bg-(--secondary-bg) mb-1">
@@ -238,11 +222,9 @@ export default function AmenityTable({
                   </div>
                 </div>
 
-                {/* SCROLLABLE DATA ROWS */}
                 <div className="divide-y divide-(--border)">
                   {allAmenities.map((amenity, idx) => (
                     <div key={idx} className="bg-(--primary-bg)">
-                      {/* Row Label */}
                       <div className="p-2 flex items-center justify-center gap-2 bg-(--secondary-bg) text-(--text-color-emphasis) border-b border-(--border)">
                         <BuildingIcon size={14} />
                         <span className="text-xs font-bold uppercase tracking-wider text-center">
@@ -250,7 +232,6 @@ export default function AmenityTable({
                         </span>
                       </div>
 
-                      {/* Row Data (Check/X Grid) */}
                       <div className={`grid ${gridCols}`}>
                         {selectedProperties.map((prop, pIdx) => {
                           const hasAmenity = checkAmenity(prop, amenity);

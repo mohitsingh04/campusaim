@@ -1,4 +1,5 @@
 "use client";
+import API from "@/context/API";
 import { getErrorResponse } from "@/context/Callbacks";
 import {
   PropertyAccommodationProps,
@@ -6,67 +7,64 @@ import {
 } from "@/types/PropertyTypes";
 import LightboxViewer from "@/ui/gallery/LightboxViewer";
 import HeadingLine from "@/ui/headings/HeadingLine";
-import Loading from "@/ui/loader/Loading";
+import TabLoading from "@/ui/loader/component/TabLoading";
 import { ReadMoreLess } from "@/ui/texts/ReadMoreLess";
-import { useCallback, useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 export default function AccommodationTab({
   property,
 }: {
   property: PropertyProps | null;
 }) {
-  const [accommodations, setAccommodations] = useState<
+  const { data: allAccommodations = [], isLoading } = useQuery<
     PropertyAccommodationProps[]
-  >([]);
-  const [loading, setLoading] = useState(true);
+  >({
+    queryKey: ["accommodations", property?._id],
+    queryFn: async () => {
+      if (!property?._id) return [];
 
-  const getAccomodation = useCallback(async () => {
-    if (!property?.accomodation) return;
-    setLoading(true);
+      try {
+        const response = await API.get(`/accomodation/${property._id}`);
+        const data = response.data || [];
 
-    try {
-      const data = property.accomodation;
+        const finalData: PropertyAccommodationProps[] = data.map(
+          (item: PropertyAccommodationProps) => {
+            const imagesArray = Array.isArray(item?.accomodation_images)
+              ? item.accomodation_images
+              : [];
 
-      const finalData: PropertyAccommodationProps[] = (data || []).map(
-        (item: PropertyAccommodationProps) => {
-          const accomodationImagesArray = Array.isArray(
-            item?.accomodation_images
-          )
-            ? item.accomodation_images
-            : [];
+            return {
+              ...item,
+              accomodation_images: imagesArray
+                .filter(
+                  (img: string) =>
+                    typeof img === "string" &&
+                    img.toLowerCase().endsWith(".webp"),
+                )
+                .map(
+                  (img: string) =>
+                    `${process.env.NEXT_PUBLIC_MEDIA_URL}/${img}`,
+                ),
+            };
+          },
+        );
 
-          return {
-            ...item,
-            accomodation_images: accomodationImagesArray
-              .filter(
-                (img: string) =>
-                  typeof img === "string" && img.toLowerCase().endsWith(".webp")
-              )
-              .map(
-                (img: string) => `${process.env.NEXT_PUBLIC_MEDIA_URL}/${img}`
-              ),
-          };
-        }
-      );
+        return finalData;
+      } catch (error) {
+        getErrorResponse(error, true);
+        throw error;
+      }
+    },
+    enabled: !!property?._id,
+    staleTime: 1000 * 60 * 5,
+  });
 
-      setAccommodations(finalData);
-    } catch (error) {
-      getErrorResponse(error, true);
-    } finally {
-      setLoading(false);
-    }
-  }, [property?.accomodation]);
-
-  useEffect(() => {
-    getAccomodation();
-  }, [getAccomodation]);
-
-  if (loading) return <Loading />;
+  if (isLoading) return <TabLoading />;
 
   return (
     <div className="space-y-3">
       <div className="space-y-6 max-w-6xl mx-auto">
-        {accommodations.map((acc, accIndex) => (
+        {allAccommodations.map((acc, accIndex) => (
           <div key={accIndex} className="p-5 shadow-custom transition">
             <HeadingLine title={acc?.accomodation_name} />
             <ReadMoreLess html={acc?.accomodation_description} />

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { SocialLinksComponent } from "@/common/SocailMedaiData";
+// import { SocialLinksComponent } from "@/common/SocailMedaiData";
 import {
   getErrorResponse,
   getSuccessResponse,
@@ -193,7 +193,7 @@ const ContactUs = () => {
               <h3 className="heading font-semibold">Follow along</h3>
               <p>@campusaim</p>
             </div>
-            <SocialLinksComponent classNames="gap-2" size="w-10 h-10" />
+            {/* <SocialLinksComponent classNames="gap-2" size="w-10 h-10" /> */}
           </div>
 
           <div className="col-span-1 md:col-span-4 min-h-[350px] relative group shadow-custom rounded-custom">

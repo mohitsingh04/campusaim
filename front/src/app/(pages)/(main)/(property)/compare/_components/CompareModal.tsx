@@ -26,6 +26,7 @@ export default function CompareModal({
   onClose: () => void;
   selectedProperties: PropertyProps[];
 }) {
+  console.log(selectedProperties);
   const [draftSelectedProperties, setDraftSelectedProperties] = useState<
     PropertyProps[]
   >([]);
@@ -35,9 +36,7 @@ export default function CompareModal({
   const availableProperties = useMemo(() => {
     return allProperties.filter(
       (property) =>
-        !draftSelectedProperties.some(
-          (p) => p.uniqueId === property.uniqueId,
-        ) &&
+        !draftSelectedProperties.some((p) => p?._id === property?._id) &&
         (searchTerm === "" ||
           property.property_name
             .toLowerCase()
@@ -60,7 +59,7 @@ export default function CompareModal({
 
   const handleRemoveProperty = (property: PropertyProps) => {
     setDraftSelectedProperties(
-      draftSelectedProperties.filter((p) => p.uniqueId !== property.uniqueId),
+      draftSelectedProperties.filter((p) => p?._id !== property?._id),
     );
   };
 
@@ -75,8 +74,6 @@ export default function CompareModal({
       router.push(`/compare/${slugs}`);
     }
   };
-
-  console.log(draftSelectedProperties);
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
@@ -126,9 +123,9 @@ export default function CompareModal({
 
             {draftSelectedProperties.length > 0 && (
               <div className="flex items-center gap-2 overflow-x-auto pb-2 hide-scrollbar whitespace-nowrap mask-linear-fade">
-                {draftSelectedProperties.map((property) => (
+                {draftSelectedProperties.map((property, index) => (
                   <div
-                    key={property.uniqueId}
+                    key={index}
                     className="shrink-0 flex items-center gap-2 bg-(--secondary-bg) text-(--text-color-emphasis) pl-3 pr-2 py-1.5 rounded-custom"
                   >
                     <span className="text-sm font-medium">
@@ -148,11 +145,11 @@ export default function CompareModal({
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-(--secondary-bg)">
-          {availableProperties.length > 0 ? (
+          {availableProperties?.length > 2 ? (
             <div className="grid grid-cols-1 gap-4">
-              {availableProperties.map((property) => (
+              {availableProperties.map((property, idx) => (
                 <div
-                  key={property.uniqueId}
+                  key={idx}
                   onClick={() => handleAddProperty(property)}
                   className={`group relative flex flex-col sm:flex-row gap-3 sm:gap-4 p-3 rounded-custom bg-(--primary-bg) shadow-custom transition-all duration-300 cursor-pointer ${
                     draftSelectedProperties.length >= 3
@@ -178,7 +175,7 @@ export default function CompareModal({
 
                     <div className="flex flex-col gap-2 sm:hidden min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        <Badge label={property?.category} color="main" />
+                        <Badge label={property?.academic_type} color="main" />
                       </div>
                       <h3 className="text-base font-semibold text-(--text-color-emphasis) leading-tight line-clamp-2">
                         {property.property_name}
@@ -189,7 +186,7 @@ export default function CompareModal({
                   <div className="flex-1 flex flex-col justify-center gap-2 min-w-0">
                     <div className="hidden sm:flex flex-col gap-2">
                       <div className="flex flex-wrap items-center gap-2">
-                        <Badge label={property?.category} color="main" />
+                        <Badge label={property?.academic_type} color="main" />
                       </div>
                       <h3 className="text-base font-semibold text-(--text-color-emphasis) leading-tight group-hover:text-(--main) transition-colors truncate">
                         {property.property_name}
@@ -214,11 +211,11 @@ export default function CompareModal({
                       {/* <div className="flex items-center gap-2 text-sm">
                         <span className="text-(--text-color)">YP Rank:</span>
                         <div className="flex items-center gap-1 font-semibold text-(--text-color-emphasis)">
-                          <span>#{property?.rank || "N/A"}</span>
+                          <span>{property?.rank || "N/A"}</span>
                           {(property?.rank || 0) < (property?.lastRank || 0) ? (
-                            <TrendingUp className="w-4 h-4 text-(--success)" />
+                            <LuTrendingUp className="w-4 h-4 text-(--success)" />
                           ) : (
-                            <TrendingDown className="w-4 h-4 text-(--danger)" />
+                            <LuTrendingDown className="w-4 h-4 text-(--danger)" />
                           )}
                         </div>
                       </div> */}

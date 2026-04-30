@@ -1,27 +1,24 @@
 "use client";
 
-import { PropertyProps } from "@/types/PropertyTypes";
+import { PropertyProps, PropertyReviewProps } from "@/types/PropertyTypes";
 import { useState } from "react";
 import ReviewForm from "./ReviewForm";
-import { getAverageRating, getRatingDistribution } from "@/context/Callbacks";
+import {
+  getAverageRating,
+  getErrorResponse,
+  getRatingDistribution,
+} from "@/context/Callbacks";
 import ReadMoreLessNoBlur from "@/ui/texts/ReadMoreLessNoBlur";
-import { UserProps } from "@/types/UserTypes";
 import { StarIcon, UserIcon } from "lucide-react";
+import TabLoading from "@/ui/loader/component/TabLoading";
+import API from "@/context/API";
+import { useQuery } from "@tanstack/react-query";
 
 export default function ReviewsTab({
   property,
-  getProperty,
-  profile,
 }: {
   property: PropertyProps | null;
-  getProperty: () => void;
-  profile: UserProps | null;
 }) {
-  const [showReviewForm, setShowReviewForm] = useState(false);
-  const safeReviews = Array.isArray(property?.reviews) ? property.reviews : [];
-  const rating = getAverageRating(safeReviews);
-  const ratingDistribution = getRatingDistribution(safeReviews);
-
   const renderStars = (rating: number) => {
     return Array(5)
       .fill(0)
@@ -36,6 +33,33 @@ export default function ReviewsTab({
         />
       ));
   };
+
+  const {
+    data: reviews,
+    isLoading,
+    refetch,
+  } = useQuery<PropertyReviewProps[]>({
+    queryKey: ["property-reviews", property?._id],
+    queryFn: async () => {
+      if (!property?._id) return [];
+      try {
+        const response = await API.get(`/review/property/${property._id}`);
+        return response.data || [];
+      } catch (error) {
+        getErrorResponse(error, true);
+        throw error;
+      }
+    },
+    enabled: !!property?._id,
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const safeReviews = Array.isArray(reviews) ? reviews : [];
+  const rating = getAverageRating(safeReviews);
+  const ratingDistribution = getRatingDistribution(safeReviews);
+
+  if (isLoading) return <TabLoading />;
 
   return (
     <div className="p-4 mt-6 text-(--text-color)">
@@ -90,11 +114,7 @@ export default function ReviewsTab({
       </div>
 
       {showReviewForm ? (
-        <ReviewForm
-          property={property}
-          onSave={getProperty}
-          profile={profile}
-        />
+        <ReviewForm property={property} onSave={refetch} />
       ) : (
         <div className="space-y-6 mt-6">
           {safeReviews.map((review, index) => (

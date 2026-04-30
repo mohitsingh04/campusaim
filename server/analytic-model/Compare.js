@@ -8,10 +8,10 @@ const CompareSchema = mongoose.Schema(
       required: true,
     },
     userId: {
-      type: Number,
+      type: mongoose.Schema.Types.ObjectId,
     },
     properties: {
-      type: [Number],
+      type: [mongoose.Schema.Types.ObjectId],
       required: true,
     },
     count: { type: Number },

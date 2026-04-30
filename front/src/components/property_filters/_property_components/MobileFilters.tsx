@@ -31,7 +31,8 @@ const MobileFilters = ({
         <div className="flex items-center justify-between px-4 py-3">
           <span className="font-semibold flex items-center">
             <FilterIcon className="w-4 h-4 mr-2 text-(--main)" /> Filters
-          </span>{" "}
+          </span>
+
           <button onClick={onClose} className="p-2 text-(--main)">
             <span className="sr-only">Close filters</span>
             <XIcon className="w-6 h-6" />

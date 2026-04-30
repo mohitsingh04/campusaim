@@ -48,6 +48,7 @@ function normalizeAffiliatedBy(affiliated_by) {
         if (Array.isArray(parsed)) affiliatedByArray = parsed;
         else if (typeof parsed === "string" && parsed.trim()) affiliatedByArray = [parsed];
       } catch (err) {
+        console.log(err);
         if (affiliated_by.includes(",")) {
           affiliatedByArray = affiliated_by.split(",").map((s) => s.trim()).filter(Boolean);
         } else if (affiliated_by.trim()) {
@@ -77,6 +78,7 @@ function normalizeApprovedBy(approved_by) {
         if (Array.isArray(parsed)) approvedByArray = parsed;
         else if (typeof parsed === "string" && parsed.trim()) approvedByArray = [parsed];
       } catch (err) {
+        console.log(err);
         if (approved_by.includes(",")) {
           approvedByArray = approved_by.split(",").map((s) => s.trim()).filter(Boolean);
         } else if (approved_by.trim()) {
@@ -1108,5 +1110,71 @@ export const getPropertiesByCategoryName = async (req, res) => {
       message: "Server Error while fetching properties by category name",
       error: error.message,
     });
+  }
+};
+
+
+export const getPropertyTabExistence = async (req, res) => {
+  try {
+    const { property_id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(property_id)) {
+      return res.status(400).json({ error: "Invalid property_id" });
+    }
+    const propertyExists = await Property.exists({ _id: property_id });
+    if (!propertyExists) {
+      return res.status(404).json({ error: "Property not found" });
+    }
+
+    const [
+      courseTab,
+      galleryTab,
+      accomodationTab,
+      amenityDoc,
+      teachersTab,
+      faqTab,
+      scholarshipTab,
+      admissionProcessTab,
+      loadProcessTab,
+      announcementTab,
+      qnaTab,
+      RankingTabDocs,
+    ] = await Promise.all([
+      PropertyCourse.exists({ property_id }),
+      Gallery.exists({ propertyId: property_id }),
+      Accomodation.exists({ property_id }),
+      Amenities.findOne({ propertyId:property_id }).select("selectedAmenities"),
+      Teachers.exists({ property_id }),
+      Faqs.exists({ property_id }),
+      Scholarship.exists({ property_id }),
+      AdmissionProcess.exists({ property_id }),
+      LoanProcess.exists({ property_id }),
+      Announcement.exists({ property_id }),
+      QnA.exists({ property_id }),
+      Ranking.exists({ property_id }),
+    ]);
+
+    const amenitiesTab =
+      amenityDoc &&
+      amenityDoc.selectedAmenities &&
+      Object.keys(amenityDoc.selectedAmenities?.[0]).length > 0;
+
+
+    return res.status(200).json({
+      courseTab: !!courseTab,
+      galleryTab: !!galleryTab,
+      accomodationTab: !!accomodationTab,
+      amenitiesTab: !!amenitiesTab,
+      teachersTab: !!teachersTab,
+      faqTab: !!faqTab,
+      scholarshipTab: !!scholarshipTab,
+      admissionProcessTab: !!admissionProcessTab,
+      loadProcessTab: !!loadProcessTab,
+      announcementTab: !!announcementTab,
+      qnaTab: !!qnaTab,
+      RankingTabDocs: !!RankingTabDocs,
+    });
+  } catch (error) {
+    console.error("Property Menu Error:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 };

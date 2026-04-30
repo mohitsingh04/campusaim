@@ -75,7 +75,7 @@ export default function Navbar() {
   const { examLoading, examMenuData } = useExamMenuData();
   const universityMenu = usePropertyMenuData({
     category,
-    basePath: "/colleges",
+    basePath: "/institutes",
   });
   const [token, setToken] = useState("");
   const { authUser } = useGetAuthUser();
@@ -105,7 +105,7 @@ export default function Navbar() {
   const menuItems: NavbarMenuItemProps[] = [
     {
       name: "Institutes",
-      href: "/colleges",
+      href: "/institutes",
       dropdownContent: universityMenu.propertyMenuData,
     },
     {

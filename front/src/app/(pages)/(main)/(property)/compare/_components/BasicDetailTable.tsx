@@ -9,8 +9,6 @@ import {
   MapPinIcon,
   PlusIcon,
   StarIcon,
-  TrendingDownIcon,
-  TrendingUpIcon,
   XIcon,
 } from "lucide-react";
 import Image from "next/image";
@@ -39,7 +37,6 @@ export default function BasicDetailTable({
         isOpen ? "overflow-visible sm:overflow-hidden" : "overflow-hidden"
       }`}
     >
-      {/* Header Section (Same for both) */}
       <div
         className="bg-(--main-emphasis) cursor-pointer sm:px-6 px-4 py-3 transition-all duration-200 relative overflow-hidden"
         onClick={() => setIsOpen(!isOpen)}
@@ -52,7 +49,8 @@ export default function BasicDetailTable({
                 className="text-(--white)! mb-0!"
               />
               <p className="ml-3 text-(--white)! text-xs sm:text-base">
-                Overview of {selectedProperties.length} selected colleges
+                Overview of {selectedProperties?.length} selected Yoga
+                Institutes
               </p>
             </div>
           </div>
@@ -94,23 +92,19 @@ export default function BasicDetailTable({
         </div>
       </div>
 
-      {/* Content Container */}
       <div
         className={`transition-all duration-500 ease-in-out ${
           isOpen ? "opacity-100" : "max-h-0 opacity-0 overflow-hidden"
         }`}
       >
         <div className="hidden sm:block w-full overflow-x-auto">
-          {/* Added table-fixed to ensure equal widths */}
           <table className="w-full border-collapse table-fixed">
             <thead>
               <tr className="bg-(--primary-bg) border-b border-(--border)">
-                {/* Fixed width for the Label column */}
                 <th className="text-left p-4 font-semibold text-(--text-color) border-r border-(--border) w-52 heading-sm"></th>
                 {selectedProperties.map((p, i) => (
                   <th
                     key={i}
-                    // Fixed width for property columns to ensure they are identical
                     className="text-center p-4 font-semibold text-(--text-color) border-r border-(--border) last:border-r-0 w-80"
                   >
                     <div className="flex flex-col items-center relative">
@@ -123,11 +117,8 @@ export default function BasicDetailTable({
                       >
                         <XIcon size={12} />
                       </button>
-
                       <Link
-                        href={`/${generateSlug(p.category)}/${generateSlug(
-                          p?.property_slug,
-                        )}/overview`}
+                        href={`/${generateSlug(p.academic_type)}/${generateSlug(p?.property_slug)}/overview`}
                       >
                         {!p?.property_logo?.[0] ? (
                           <div className="w-10 h-10 rounded-custom flex items-center justify-center mb-2 shadow-custom">
@@ -147,9 +138,7 @@ export default function BasicDetailTable({
                         )}
                       </Link>
                       <Link
-                        href={`/${generateSlug(p.category)}/${generateSlug(
-                          p?.property_slug,
-                        )}/overview`}
+                        href={`/${generateSlug(p.academic_type)}/${generateSlug(p?.property_slug)}/overview`}
                         className="paragraph font-medium text-center leading-tight wrap-break-word"
                       >
                         {p.property_name}
@@ -160,32 +149,6 @@ export default function BasicDetailTable({
               </tr>
             </thead>
             <tbody className="divide-y divide-(--border)">
-              {/* Desktop Rows (Rank, Type, City, State, Country, Rating, Est) */}
-              <tr>
-                <td className="font-semibold p-4 text-(--text-color) bg-(--primary-bg) border-r border-(--border)">
-                  <div className="flex items-center gap-3">
-                    <div className="w-7 h-7 bg-(--main-subtle) text-(--main-emphasis) rounded-custom flex items-center justify-center shadow-custom">
-                      <GraduationCapIcon size={14} />
-                    </div>
-                    <span className="heading-sm">YP Rank</span>
-                  </div>
-                </td>
-                {selectedProperties.map((p, i) => (
-                  <td
-                    key={i}
-                    className="text-center p-4 border-r border-(--border) last:border-r-0"
-                  >
-                    <span className="inline-flex gap-2 text-(--text-color-emphasis)">
-                      <p className="font-semibold">#{p?.rank}</p>
-                      {(p?.rank || 0) < (p?.lastRank || 0) ? (
-                        <TrendingUpIcon className="w-5 h-5 text-(--success)" />
-                      ) : (
-                        <TrendingDownIcon className="w-5 h-5 text-(--danger)" />
-                      )}
-                    </span>
-                  </td>
-                ))}
-              </tr>
               <tr>
                 <td className="font-semibold p-4 text-(--text-color) bg-(--primary-bg) border-r border-(--border)">
                   <div className="flex items-center gap-3">
@@ -201,7 +164,7 @@ export default function BasicDetailTable({
                     className="text-center p-4 border-r border-(--border) last:border-r-0"
                   >
                     <span className="inline-flex gap-2 text-(--text-color-emphasis)">
-                      {p.category || "Not Available"}
+                      {p.academic_type || "Not Available"}
                     </span>
                   </td>
                 ))}
@@ -347,7 +310,6 @@ export default function BasicDetailTable({
                   i < selectedProperties.length - 1 ? "border-r" : ""
                 }`}
               >
-                {/* Close Button */}
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -360,9 +322,7 @@ export default function BasicDetailTable({
 
                 {/* Logo */}
                 <Link
-                  href={`/${generateSlug(p.category)}/${generateSlug(
-                    p?.property_slug,
-                  )}/overview`}
+                  href={`/${generateSlug(p.academic_type)}/${generateSlug(p?.property_slug)}/overview`}
                 >
                   {!p?.property_logo?.[0] ? (
                     <div className="w-12 h-12 rounded-custom flex items-center justify-center shadow-custom bg-(--secondary-bg)">
@@ -393,33 +353,6 @@ export default function BasicDetailTable({
               <div className="p-2 flex items-center justify-center gap-2 bg-(--secondary-bg) text-(--text-color-empahsis) border border-(--border)">
                 <GraduationCapIcon size={14} />
                 <span className="text-xs font-bold uppercase tracking-wider">
-                  YP Rank
-                </span>
-              </div>
-              <div className={`grid ${gridCols}`}>
-                {selectedProperties.map((p, i) => (
-                  <div
-                    key={i}
-                    className={`p-3 text-center flex items-center justify-center gap-1 border-(--border) ${
-                      i < selectedProperties.length - 1 ? "border-r" : ""
-                    }`}
-                  >
-                    <span className="font-bold text-sm">#{p?.rank}</span>
-                    {(p?.rank || 0) < (p?.lastRank || 0) ? (
-                      <TrendingUpIcon className="w-4 h-4 text-(--success)" />
-                    ) : (
-                      <TrendingDownIcon className="w-4 h-4 text-(--danger)" />
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* DATA BLOCK: ACADEMIC TYPE */}
-            <div className="bg-(--primary-bg)">
-              <div className="p-2 flex items-center justify-center gap-2 bg-(--secondary-bg) text-(--text-color-empahsis) border border-(--border)">
-                <GraduationCapIcon size={14} />
-                <span className="text-xs font-bold uppercase tracking-wider">
                   Academic Type
                 </span>
               </div>
@@ -431,13 +364,12 @@ export default function BasicDetailTable({
                       i < selectedProperties.length - 1 ? "border-r" : ""
                     }`}
                   >
-                    {p.category || "N/A"}
+                    {p.academic_type || "N/A"}
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* DATA BLOCK: INSTITUTION TYPE */}
             <div className="bg-(--primary-bg)">
               <div className="p-2 flex items-center justify-center gap-2 bg-(--secondary-bg) text-(--text-color-empahsis) border border-(--border)">
                 <Building2Icon size={14} />
@@ -459,7 +391,6 @@ export default function BasicDetailTable({
               </div>
             </div>
 
-            {/* DATA BLOCK: CITY */}
             <div className="bg-(--primary-bg)">
               <div className="p-2 flex items-center justify-center gap-2 bg-(--secondary-bg) text-(--text-color-empahsis) border border-(--border)">
                 <MapPinIcon size={14} />
@@ -480,8 +411,46 @@ export default function BasicDetailTable({
                 ))}
               </div>
             </div>
-
-            {/* DATA BLOCK: RATING */}
+            <div className="bg-(--primary-bg)">
+              <div className="p-2 flex items-center justify-center gap-2 bg-(--secondary-bg) text-(--text-color-empahsis) border border-(--border)">
+                <MapPinIcon size={14} />
+                <span className="text-xs font-bold uppercase tracking-wider">
+                  City
+                </span>
+              </div>
+              <div className={`grid ${gridCols}`}>
+                {selectedProperties.map((p, i) => (
+                  <div
+                    key={i}
+                    className={`p-3 text-center text-sm border-(--border) ${
+                      i < selectedProperties.length - 1 ? "border-r" : ""
+                    }`}
+                  >
+                    {p.state || "N/A"}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="bg-(--primary-bg)">
+              <div className="p-2 flex items-center justify-center gap-2 bg-(--secondary-bg) text-(--text-color-empahsis) border border-(--border)">
+                <MapPinIcon size={14} />
+                <span className="text-xs font-bold uppercase tracking-wider">
+                  City
+                </span>
+              </div>
+              <div className={`grid ${gridCols}`}>
+                {selectedProperties.map((p, i) => (
+                  <div
+                    key={i}
+                    className={`p-3 text-center text-sm border-(--border) ${
+                      i < selectedProperties.length - 1 ? "border-r" : ""
+                    }`}
+                  >
+                    {p.country || "N/A"}
+                  </div>
+                ))}
+              </div>
+            </div>
             <div className="bg-(--primary-bg)">
               <div className="p-2 flex items-center justify-center gap-2 bg-(--secondary-bg) text-(--text-color-empahsis) border border-(--border)">
                 <StarIcon size={14} />
@@ -506,8 +475,6 @@ export default function BasicDetailTable({
                 ))}
               </div>
             </div>
-
-            {/* DATA BLOCK: ESTABLISHED */}
             <div className="bg-(--primary-bg)">
               <div className="p-2 flex items-center justify-center gap-2 bg-(--secondary-bg) text-(--text-color-empahsis) border border-(--border)">
                 <CalendarIcon size={14} />

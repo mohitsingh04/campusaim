@@ -38,7 +38,7 @@ const CheckboxFilter: React.FC<CheckboxFilterProps> = ({
   };
 
   const filteredItems = items.filter((item) =>
-    matchesMultiWordSearch(item.name, searchTerm)
+    matchesMultiWordSearch(item.name, searchTerm),
   );
 
   return (
@@ -79,7 +79,7 @@ const CheckboxFilter: React.FC<CheckboxFilterProps> = ({
             );
           })
         ) : (
-          <div className="text-(--text-color-emphasis) text-center py-4">
+          <div className="text-center py-4">
             No {filterType} options match your search
           </div>
         )}

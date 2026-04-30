@@ -29,6 +29,7 @@ export interface CourseProps {
   requirements: string[];
   best_for: string[];
   course_slug?: string;
+  faqs: FaqProps[];
 }
 
 export interface ExamProps {

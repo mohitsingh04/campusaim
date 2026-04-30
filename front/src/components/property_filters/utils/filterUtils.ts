@@ -7,7 +7,7 @@ import { PropertyProps, PropertyReviewProps } from "@/types/PropertyTypes";
 
 export const matchesMultiWordSearch = (
   itemName: string,
-  searchTerm: string
+  searchTerm: string,
 ): boolean => {
   if (!searchTerm?.trim()) return true;
 
@@ -19,28 +19,17 @@ export const matchesMultiWordSearch = (
   return searchWords.every((word) => itemSlug.includes(word));
 };
 
-// Helper function to calculate average rating
 export const calculateAverageRating = (
-  reviews: PropertyReviewProps[] | undefined
+  reviews: PropertyReviewProps[] | undefined,
 ): number => {
   if (!reviews || reviews.length === 0) return 0;
 
   const totalRating = reviews.reduce(
     (sum, review) => sum + (review.rating || 0),
-    0
+    0,
   );
   return totalRating / reviews.length;
 };
-
-// // Helper function to get rating range for a property
-// const getRatingRange = (averageRating: number): number => {
-//   if (averageRating >= 5) return 5;
-//   if (averageRating >= 4) return 4;
-//   if (averageRating >= 3) return 3;
-//   if (averageRating >= 2) return 2;
-//   if (averageRating >= 1) return 1;
-//   return 0;
-// };
 
 export const createDynamicFilterOptions = (
   institutes: PropertyProps[],
@@ -54,23 +43,24 @@ export const createDynamicFilterOptions = (
     course_type: [],
     course_format: [],
     rating: [],
-    category: [],
+    academic_type: [],
+    approved_by: [],
+    affiliated_by: [],
     property_type: [],
-  }
+  },
 ): DynamicFilterOptionsProps => {
-  // For location filters (country, state, city), use unfiltered data
   const countries = [
     ...new Set(
       institutes
         .map((inst) => inst.property_country)
         .filter((country): country is string =>
-          Boolean(country && country.trim())
-        )
+          Boolean(country && country.trim()),
+        ),
     ),
   ];
 
   const getStatesForCountries = (
-    selectedCountries: string[] = []
+    selectedCountries: string[] = [],
   ): string[] => {
     let filteredInstitutes = institutes;
 
@@ -78,8 +68,9 @@ export const createDynamicFilterOptions = (
       filteredInstitutes = institutes.filter((inst) =>
         selectedCountries.some(
           (selected) =>
-            generateSlug(inst.property_country || "") === generateSlug(selected)
-        )
+            generateSlug(inst.property_country || "") ===
+            generateSlug(selected),
+        ),
       );
     }
 
@@ -87,14 +78,14 @@ export const createDynamicFilterOptions = (
       ...new Set(
         filteredInstitutes
           .map((inst) => inst.property_state)
-          .filter((state): state is string => Boolean(state && state.trim()))
+          .filter((state): state is string => Boolean(state && state.trim())),
       ),
     ];
   };
 
   const getCitiesForLocation = (
     selectedCountries: string[] = [],
-    selectedStates: string[] = []
+    selectedStates: string[] = [],
   ): string[] => {
     let filteredInstitutes = institutes;
 
@@ -102,8 +93,9 @@ export const createDynamicFilterOptions = (
       filteredInstitutes = filteredInstitutes.filter((inst) =>
         selectedCountries.some(
           (selected) =>
-            generateSlug(inst.property_country || "") === generateSlug(selected)
-        )
+            generateSlug(inst.property_country || "") ===
+            generateSlug(selected),
+        ),
       );
     }
 
@@ -111,8 +103,8 @@ export const createDynamicFilterOptions = (
       filteredInstitutes = filteredInstitutes.filter((inst) =>
         selectedStates.some(
           (selected) =>
-            generateSlug(inst.property_state || "") === generateSlug(selected)
-        )
+            generateSlug(inst.property_state || "") === generateSlug(selected),
+        ),
       );
     }
 
@@ -120,12 +112,11 @@ export const createDynamicFilterOptions = (
       ...new Set(
         filteredInstitutes
           .map((inst) => inst.property_city)
-          .filter((city): city is string => Boolean(city && city.trim()))
+          .filter((city): city is string => Boolean(city && city.trim())),
       ),
     ];
   };
 
-  // Helper function to get states with counts for selected countries
   const getStatesWithCounts = (selectedCountries: string[] = []) => {
     let filteredInstitutes = institutes;
 
@@ -133,8 +124,9 @@ export const createDynamicFilterOptions = (
       filteredInstitutes = institutes.filter((inst) =>
         selectedCountries.some(
           (selected) =>
-            generateSlug(inst.property_country || "") === generateSlug(selected)
-        )
+            generateSlug(inst.property_country || "") ===
+            generateSlug(selected),
+        ),
       );
     }
 
@@ -142,7 +134,7 @@ export const createDynamicFilterOptions = (
       ...new Set(
         filteredInstitutes
           .map((inst) => inst.property_state)
-          .filter((state): state is string => Boolean(state && state.trim()))
+          .filter((state): state is string => Boolean(state && state.trim())),
       ),
     ];
 
@@ -150,15 +142,14 @@ export const createDynamicFilterOptions = (
       name: state,
       count: filteredInstitutes.filter(
         (inst) =>
-          generateSlug(inst.property_state || "") === generateSlug(state)
+          generateSlug(inst.property_state || "") === generateSlug(state),
       ).length,
     }));
   };
 
-  // Helper function to get cities with counts for selected countries and states
   const getCitiesWithCounts = (
     selectedCountries: string[] = [],
-    selectedStates: string[] = []
+    selectedStates: string[] = [],
   ) => {
     let filteredInstitutes = institutes;
 
@@ -166,8 +157,9 @@ export const createDynamicFilterOptions = (
       filteredInstitutes = filteredInstitutes.filter((inst) =>
         selectedCountries.some(
           (selected) =>
-            generateSlug(inst.property_country || "") === generateSlug(selected)
-        )
+            generateSlug(inst.property_country || "") ===
+            generateSlug(selected),
+        ),
       );
     }
 
@@ -175,8 +167,8 @@ export const createDynamicFilterOptions = (
       filteredInstitutes = filteredInstitutes.filter((inst) =>
         selectedStates.some(
           (selected) =>
-            generateSlug(inst.property_state || "") === generateSlug(selected)
-        )
+            generateSlug(inst.property_state || "") === generateSlug(selected),
+        ),
       );
     }
 
@@ -184,32 +176,29 @@ export const createDynamicFilterOptions = (
       ...new Set(
         filteredInstitutes
           .map((inst) => inst.property_city)
-          .filter((city): city is string => Boolean(city && city.trim()))
+          .filter((city): city is string => Boolean(city && city.trim())),
       ),
     ];
 
     return cities.map((city) => ({
       name: city,
       count: filteredInstitutes.filter(
-        (inst) => generateSlug(inst.property_city || "") === generateSlug(city)
+        (inst) => generateSlug(inst.property_city || "") === generateSlug(city),
       ).length,
     }));
   };
 
-  // For other filters, use filtered data based on current filters (excluding the filter being calculated)
   const getFilteredInstitutesForCount = (
-    excludeFilterType: keyof FiltersProps
+    excludeFilterType: keyof FiltersProps,
   ) => {
     return institutes.filter((institute) => {
-      // Apply search term
       const matchesSearch = matchesMultiWordSearch(
         institute.property_name,
-        searchTerm
+        searchTerm,
       );
 
-      // Apply all filters except the one we're calculating counts for
       const filtersToApply = Object.entries(currentFilters).filter(
-        ([key]) => key !== excludeFilterType
+        ([key]) => key !== excludeFilterType,
       );
 
       return (
@@ -224,7 +213,7 @@ export const createDynamicFilterOptions = (
                 filterValues.some(
                   (c) =>
                     generateSlug(institute.property_country || "") ===
-                    generateSlug(c)
+                    generateSlug(c),
                 )
               );
             case "state":
@@ -233,7 +222,7 @@ export const createDynamicFilterOptions = (
                 filterValues.some(
                   (s) =>
                     generateSlug(institute.property_state || "") ===
-                    generateSlug(s)
+                    generateSlug(s),
                 )
               );
             case "city":
@@ -242,7 +231,7 @@ export const createDynamicFilterOptions = (
                 filterValues.some(
                   (c) =>
                     generateSlug(institute.property_city || "") ===
-                    generateSlug(c)
+                    generateSlug(c),
                 )
               );
             case "course_name":
@@ -250,32 +239,32 @@ export const createDynamicFilterOptions = (
                 institute.courses.some(
                   (course) =>
                     generateSlug(course.course_name || "") ===
-                    generateSlug(name)
-                )
+                    generateSlug(name),
+                ),
               );
             case "course_level":
               return filterValues.some((level) =>
                 institute.courses.some(
                   (course) =>
                     generateSlug(course.course_level || "") ===
-                    generateSlug(level)
-                )
+                    generateSlug(level),
+                ),
               );
             case "course_type":
               return filterValues.some((type) =>
                 institute.courses.some(
                   (course) =>
                     generateSlug(course.course_type || "") ===
-                    generateSlug(type)
-                )
+                    generateSlug(type),
+                ),
               );
             case "course_format":
               return filterValues.some((format) =>
                 institute.courses.some(
                   (course) =>
                     generateSlug(course.course_format || "") ===
-                    generateSlug(format)
-                )
+                    generateSlug(format),
+                ),
               );
             case "rating":
               const averageRating = calculateAverageRating(institute.reviews);
@@ -286,12 +275,13 @@ export const createDynamicFilterOptions = (
                   averageRating < selectedRating + 1
                 );
               });
-            case "category":
+            case "academic_type":
               return (
-                institute.category &&
+                institute.academic_type &&
                 filterValues.some(
                   (cat) =>
-                    generateSlug(institute.category || "") === generateSlug(cat)
+                    generateSlug(institute?.academic_type || "") ===
+                    generateSlug(cat),
                 )
               );
             case "property_type":
@@ -300,7 +290,25 @@ export const createDynamicFilterOptions = (
                 filterValues.some(
                   (type) =>
                     generateSlug(institute.property_type || "") ===
-                    generateSlug(type)
+                    generateSlug(type),
+                )
+              );
+            case "affiliated_by":
+              return (
+                Array.isArray(institute.affiliated_by) &&
+                institute.affiliated_by.some((affiliation) =>
+                  filterValues.some(
+                    (type) => generateSlug(affiliation) === generateSlug(type),
+                  ),
+                )
+              );
+            case "approved_by":
+              return (
+                Array.isArray(institute.approved_by) &&
+                institute.approved_by.some((appr) =>
+                  filterValues.some(
+                    (type) => generateSlug(appr) === generateSlug(type),
+                  ),
                 )
               );
             default:
@@ -316,10 +324,10 @@ export const createDynamicFilterOptions = (
   const courseNames = [
     ...new Set(
       filteredForCourseNames.flatMap((inst) =>
-        inst.courses
-          .map((course) => course.course_name)
-          .filter((name): name is string => Boolean(name && name.trim()))
-      )
+        inst?.courses
+          ?.map((course) => course.course_name)
+          ?.filter((name): name is string => Boolean(name && name.trim())),
+      ),
     ),
   ];
 
@@ -329,8 +337,8 @@ export const createDynamicFilterOptions = (
       filteredForCourseLevels.flatMap((inst) =>
         inst.courses
           .map((course) => course.course_level)
-          .filter((level): level is string => Boolean(level && level.trim()))
-      )
+          .filter((level): level is string => Boolean(level && level.trim())),
+      ),
     ),
   ];
 
@@ -340,8 +348,8 @@ export const createDynamicFilterOptions = (
       filteredForCourseTypes.flatMap((inst) =>
         inst.courses
           .map((course) => course.course_type)
-          .filter((type): type is string => Boolean(type && type.trim()))
-      )
+          .filter((type): type is string => Boolean(type && type.trim())),
+      ),
     ),
   ];
 
@@ -353,20 +361,21 @@ export const createDynamicFilterOptions = (
         inst.courses
           .map((course) => course.course_format)
           .filter((format): format is string =>
-            Boolean(format && format.trim())
-          )
-      )
+            Boolean(format && format.trim()),
+          ),
+      ),
     ),
   ];
 
-  const filteredForCategories = getFilteredInstitutesForCount("category");
-  const categories = [
+  const filteredForAcademicType =
+    getFilteredInstitutesForCount("academic_type");
+  const academicsTypes = [
     ...new Set(
-      filteredForCategories
-        .map((inst) => inst.category)
-        .filter((category): category is string =>
-          Boolean(category && category.trim())
-        )
+      filteredForAcademicType
+        .map((inst) => inst?.academic_type)
+        .filter((academic_type): academic_type is string =>
+          Boolean(academic_type && academic_type.trim()),
+        ),
     ),
   ];
 
@@ -375,11 +384,26 @@ export const createDynamicFilterOptions = (
   const propertyTypes = [
     ...new Set(
       filteredForPropertyTypes
-        .map((inst) => inst.property_type)
-        .filter((type): type is string => Boolean(type && type.trim()))
+        .map((inst) => inst?.property_type)
+        .filter((type): type is string => Boolean(type && type.trim())),
     ),
   ];
-
+  const filteredForAffilatedBy = getFilteredInstitutesForCount("affiliated_by");
+  const affilatedBy = [
+    ...new Set(
+      filteredForPropertyTypes
+        .flatMap((inst) => inst?.affiliated_by || [])
+        .filter((type): type is string => Boolean(type && type.trim())),
+    ),
+  ];
+  const filteredForApprovedBy = getFilteredInstitutesForCount("approved_by");
+  const approvedBy = [
+    ...new Set(
+      filteredForPropertyTypes
+        .flatMap((inst) => inst?.approved_by || [])
+        .filter((type): type is string => Boolean(type && type.trim())),
+    ),
+  ];
   // Calculate rating counts
   const filteredForRating = getFilteredInstitutesForCount("rating");
   const ratingCounts = [1, 2, 3, 4, 5].map((rating) => {
@@ -393,10 +417,9 @@ export const createDynamicFilterOptions = (
   return {
     countries: countries.map((country) => ({
       name: country,
-      // For location filters, always use unfiltered data count
       count: institutes.filter(
         (inst) =>
-          generateSlug(inst.property_country || "") === generateSlug(country)
+          generateSlug(inst.property_country || "") === generateSlug(country),
       ).length,
     })),
     getStatesForCountries,
@@ -408,8 +431,8 @@ export const createDynamicFilterOptions = (
       count: filteredForCourseNames.filter((inst) =>
         inst.courses.some(
           (course) =>
-            generateSlug(course.course_name || "") === generateSlug(name)
-        )
+            generateSlug(course.course_name || "") === generateSlug(name),
+        ),
       ).length,
     })),
     courseLevels: courseLevels.map((level) => ({
@@ -417,8 +440,8 @@ export const createDynamicFilterOptions = (
       count: filteredForCourseLevels.filter((inst) =>
         inst.courses.some(
           (course) =>
-            generateSlug(course.course_level || "") === generateSlug(level)
-        )
+            generateSlug(course.course_level || "") === generateSlug(level),
+        ),
       ).length,
     })),
     courseTypes: courseTypes.map((type) => ({
@@ -426,8 +449,8 @@ export const createDynamicFilterOptions = (
       count: filteredForCourseTypes.filter((inst) =>
         inst.courses.some(
           (course) =>
-            generateSlug(course.course_type || "") === generateSlug(type)
-        )
+            generateSlug(course.course_type || "") === generateSlug(type),
+        ),
       ).length,
     })),
     courseFormats: courseFormats.map((format) => ({
@@ -435,22 +458,47 @@ export const createDynamicFilterOptions = (
       count: filteredForCourseFormats.filter((inst) =>
         inst.courses.some(
           (course) =>
-            generateSlug(course.course_format || "") === generateSlug(format)
-        )
+            generateSlug(course.course_format || "") === generateSlug(format),
+        ),
       ).length,
     })),
-    categories: categories.map((category) => ({
-      name: category,
-      value: category,
-      count: filteredForCategories.filter(
-        (inst) => generateSlug(inst.category || "") === generateSlug(category)
+    academicType: academicsTypes.map((academic_type) => ({
+      name: academic_type,
+      value: academic_type,
+      count: filteredForAcademicType.filter(
+        (inst) =>
+          generateSlug(inst?.academic_type || "") ===
+          generateSlug(academic_type),
       ).length,
     })),
     propertyTypes: propertyTypes.map((type) => ({
       name: type,
       value: type,
       count: filteredForPropertyTypes.filter(
-        (inst) => generateSlug(inst.property_type || "") === generateSlug(type)
+        (inst) =>
+          generateSlug(inst?.property_type || "") === generateSlug(type),
+      ).length,
+    })),
+    affiliatedBy: affilatedBy.map((affl) => ({
+      name: affl,
+      value: affl,
+      count: filteredForAffilatedBy.filter(
+        (inst) =>
+          Array.isArray(inst?.affiliated_by) &&
+          inst.affiliated_by.some(
+            (item) => generateSlug(item) === generateSlug(affl),
+          ),
+      ).length,
+    })),
+    approvedBy: approvedBy.map((appr) => ({
+      name: appr,
+      value: appr,
+      count: filteredForApprovedBy.filter(
+        (inst) =>
+          Array.isArray(inst?.approved_by) &&
+          inst.approved_by.some(
+            (item) => generateSlug(item) === generateSlug(appr),
+          ),
       ).length,
     })),
     ratingCounts,
@@ -460,13 +508,12 @@ export const createDynamicFilterOptions = (
 export const filterInstitutes = (
   institutes: PropertyProps[],
   searchTerm: string,
-  filters: FiltersProps
+  filters: FiltersProps,
 ): PropertyProps[] => {
   return institutes.filter((institute) => {
-    // Search term matching
     const matchesSearch = matchesMultiWordSearch(
       institute.property_name,
-      searchTerm
+      searchTerm,
     );
 
     const matchesCountry =
@@ -474,7 +521,7 @@ export const filterInstitutes = (
       (institute.property_country &&
         filters.country.some(
           (c) =>
-            generateSlug(institute.property_country || "") === generateSlug(c)
+            generateSlug(institute.property_country || "") === generateSlug(c),
         ));
 
     const matchesState =
@@ -482,14 +529,15 @@ export const filterInstitutes = (
       (institute.property_state &&
         filters.state.some(
           (s) =>
-            generateSlug(institute.property_state || "") === generateSlug(s)
+            generateSlug(institute.property_state || "") === generateSlug(s),
         ));
 
     const matchesCity =
       filters.city.length === 0 ||
       (institute.property_city &&
         filters.city.some(
-          (c) => generateSlug(institute.property_city || "") === generateSlug(c)
+          (c) =>
+            generateSlug(institute.property_city || "") === generateSlug(c),
         ));
 
     const matchesCourseName =
@@ -497,8 +545,8 @@ export const filterInstitutes = (
       filters.course_name.some((name) =>
         institute.courses.some(
           (course) =>
-            generateSlug(course.course_name || "") === generateSlug(name)
-        )
+            generateSlug(course.course_name || "") === generateSlug(name),
+        ),
       );
 
     const matchesCourseLevel =
@@ -506,8 +554,8 @@ export const filterInstitutes = (
       filters.course_level.some((level) =>
         institute.courses.some(
           (course) =>
-            generateSlug(course.course_level || "") === generateSlug(level)
-        )
+            generateSlug(course.course_level || "") === generateSlug(level),
+        ),
       );
 
     const matchesCourseType =
@@ -515,8 +563,8 @@ export const filterInstitutes = (
       filters.course_type.some((type) =>
         institute.courses.some(
           (course) =>
-            generateSlug(course.course_type || "") === generateSlug(type)
-        )
+            generateSlug(course.course_type || "") === generateSlug(type),
+        ),
       );
 
     const matchesCourseFormat =
@@ -524,28 +572,26 @@ export const filterInstitutes = (
       filters.course_format.some((format) =>
         institute.courses.some(
           (course) =>
-            generateSlug(course.course_format || "") === generateSlug(format)
-        )
+            generateSlug(course.course_format || "") === generateSlug(format),
+        ),
       );
 
-    // Fixed rating filter - now uses overall average rating
     const averageRating = calculateAverageRating(institute.reviews);
     const matchesRating =
       filters.rating.length === 0 ||
       filters.rating.some((rating) => {
         const selectedRating = parseFloat(rating);
-        // Show properties with average rating >= selected rating and < selected rating + 1
-        // For example, if 3 is selected, show properties with rating 3.0 to 3.99
         return (
           averageRating >= selectedRating && averageRating < selectedRating + 1
         );
       });
 
     const matchesCategory =
-      filters.category.length === 0 ||
-      (institute.category &&
-        filters.category.some(
-          (cat) => generateSlug(institute.category || "") === generateSlug(cat)
+      filters.academic_type.length === 0 ||
+      (institute.academic_type &&
+        filters.academic_type.some(
+          (cat) =>
+            generateSlug(institute?.academic_type || "") === generateSlug(cat),
         ));
 
     const matchesPropertyType =
@@ -553,7 +599,23 @@ export const filterInstitutes = (
       (institute.property_type &&
         filters.property_type.some(
           (type) =>
-            generateSlug(institute.property_type || "") === generateSlug(type)
+            generateSlug(institute?.property_type || "") === generateSlug(type),
+        ));
+    const matchesAffilatedBy =
+      filters.affiliated_by.length === 0 ||
+      (Array.isArray(institute.affiliated_by) &&
+        filters.affiliated_by.some((type) =>
+          institute.affiliated_by.some(
+            (affiliation) => generateSlug(affiliation) === generateSlug(type),
+          ),
+        ));
+    const matchesApprveddBy =
+      filters.approved_by.length === 0 ||
+      (Array.isArray(institute.approved_by) &&
+        filters.approved_by.some((type) =>
+          institute.approved_by.some(
+            (approv) => generateSlug(approv) === generateSlug(type),
+          ),
         ));
 
     return (
@@ -567,14 +629,16 @@ export const filterInstitutes = (
       matchesCourseFormat &&
       matchesRating &&
       matchesCategory &&
-      matchesPropertyType
+      matchesPropertyType &&
+      matchesAffilatedBy &&
+      matchesApprveddBy
     );
   });
 };
 
 export const getVisiblePageNumbers = (
   currentPage: number,
-  totalPages: number
+  totalPages: number,
 ): (number | string)[] => {
   const maxVisiblePages = 5;
   const pages: (number | string)[] = [];

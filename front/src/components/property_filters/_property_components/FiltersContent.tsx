@@ -17,7 +17,7 @@ interface FiltersContentProps {
   onCheckboxFilter: (filterType: keyof FiltersProps, value: string) => void;
   onFilterSearchChange: (
     filterType: keyof FilterSearchTermsProps,
-    value: string
+    value: string,
   ) => void;
   onClearAll: () => void;
 }
@@ -83,13 +83,13 @@ const FiltersContent = ({
   onClearAll,
 }: FiltersContentProps) => {
   const availableStates = dynamicFilterOptions.getStatesWithCounts(
-    filters.country
+    filters.country,
   );
 
   // Get cities with proper counts from unfiltered data
   const availableCities = dynamicFilterOptions.getCitiesWithCounts(
     filters.country,
-    filters.state
+    filters.state,
   );
 
   // Rating options with counts from dynamic filter options
@@ -130,7 +130,6 @@ const FiltersContent = ({
         0,
     },
   ];
-  // ✅ Move to top (above FiltersContent)
 
   return (
     <div>
@@ -147,7 +146,7 @@ const FiltersContent = ({
         </button>
       </div>
 
-      <div className="p-5">
+      <div className="p-5  flex flex-col gap-2 divide-y divide-(--border)">
         {dynamicFilterOptions.countries.length > 0 && (
           <FilterSection
             title="Country"
@@ -198,6 +197,28 @@ const FiltersContent = ({
               selectedItems={filters.city}
               searchTerm={filterSearchTerms.city}
               onSearchChange={(value) => onFilterSearchChange("city", value)}
+              onFilterChange={
+                onCheckboxFilter as (filterType: string, value: string) => void
+              }
+            />
+          </FilterSection>
+        )}
+
+        {/* Course Filters */}
+        {dynamicFilterOptions.courseNames.length > 0 && (
+          <FilterSection
+            title="Course Name"
+            isExpanded={expandedFilters.course_name}
+            onToggle={() => onToggleFilter("course_name")}
+          >
+            <CheckboxFilter
+              items={dynamicFilterOptions.courseNames}
+              filterType="course_name"
+              selectedItems={filters.course_name}
+              searchTerm={filterSearchTerms.course_name}
+              onSearchChange={(value) =>
+                onFilterSearchChange("course_name", value)
+              }
               onFilterChange={
                 onCheckboxFilter as (filterType: string, value: string) => void
               }
@@ -269,32 +290,74 @@ const FiltersContent = ({
         )}
 
         {/* Rating Filter */}
-        <FilterSection
-          title="Overall Rating"
-          isExpanded={expandedFilters.rating}
-          onToggle={() => onToggleFilter("rating")}
-        >
-          <RatingFilter
-            ratingOptions={ratingOptions}
-            selectedRatings={filters.rating}
-            onCheckboxFilter={onCheckboxFilter}
-          />
-        </FilterSection>
-
-        {/* Category Filter */}
-        {dynamicFilterOptions.categories.length > 0 && (
+        {filters.rating?.length > 0 && (
           <FilterSection
-            title="Category"
-            isExpanded={expandedFilters.category}
-            onToggle={() => onToggleFilter("category")}
+            title="Overall Rating"
+            isExpanded={expandedFilters.rating}
+            onToggle={() => onToggleFilter("rating")}
+          >
+            <RatingFilter
+              ratingOptions={ratingOptions}
+              selectedRatings={filters.rating}
+              onCheckboxFilter={onCheckboxFilter}
+            />
+          </FilterSection>
+        )}
+
+        {dynamicFilterOptions.academicType.length > 0 && (
+          <FilterSection
+            title="Academic Types"
+            isExpanded={expandedFilters.academic_type}
+            onToggle={() => onToggleFilter("academic_type")}
           >
             <CheckboxFilter
-              items={dynamicFilterOptions.categories}
-              filterType="category"
-              selectedItems={filters.category}
-              searchTerm={filterSearchTerms.category}
+              items={dynamicFilterOptions.academicType}
+              filterType="academic_type"
+              selectedItems={filters.academic_type}
+              searchTerm={filterSearchTerms.academic_type}
               onSearchChange={(value) =>
-                onFilterSearchChange("category", value)
+                onFilterSearchChange("academic_type", value)
+              }
+              onFilterChange={
+                onCheckboxFilter as (filterType: string, value: string) => void
+              }
+            />
+          </FilterSection>
+        )}
+
+        {dynamicFilterOptions.affiliatedBy.length > 0 && (
+          <FilterSection
+            title="Affilated By"
+            isExpanded={expandedFilters.affiliated_by}
+            onToggle={() => onToggleFilter("affiliated_by")}
+          >
+            <CheckboxFilter
+              items={dynamicFilterOptions.affiliatedBy}
+              filterType="affiliated_by"
+              selectedItems={filters.affiliated_by}
+              searchTerm={filterSearchTerms.affiliated_by}
+              onSearchChange={(value) =>
+                onFilterSearchChange("affiliated_by", value)
+              }
+              onFilterChange={
+                onCheckboxFilter as (filterType: string, value: string) => void
+              }
+            />
+          </FilterSection>
+        )}
+        {dynamicFilterOptions.approvedBy.length > 0 && (
+          <FilterSection
+            title="Approved By"
+            isExpanded={expandedFilters.approved_by}
+            onToggle={() => onToggleFilter("approved_by")}
+          >
+            <CheckboxFilter
+              items={dynamicFilterOptions.approvedBy}
+              filterType="approved_by"
+              selectedItems={filters.approved_by}
+              searchTerm={filterSearchTerms.approved_by}
+              onSearchChange={(value) =>
+                onFilterSearchChange("approved_by", value)
               }
               onFilterChange={
                 onCheckboxFilter as (filterType: string, value: string) => void

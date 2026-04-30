@@ -20,7 +20,7 @@ export default function CategorySection() {
       const response = await API.get(`/property/counts/category`);
       return response.data;
     },
-    staleTime: 1000 * 60 * 60,
+    staleTime: 1000 * 60 * 5,
   });
 
   const statsData = useMemo(() => {
@@ -38,7 +38,7 @@ export default function CategorySection() {
           text: "text-(--blue-emphasis)",
           textSub: "text-(--blue-subtle)",
         },
-        href: "/yoga-institutes",
+        href: "/institutes",
       },
       {
         value: propertyCounts["school"] || 0,
@@ -46,7 +46,7 @@ export default function CategorySection() {
           "Top-rated studios offering authentic daily classes, weekend workshops, and expert guidance for all levels of practice.",
         label: "School",
         icon: SchoolIcon,
-        href: "/colleges?category=school",
+        href: "/institutes?academic_type=school",
         colors: {
           sub: "bg-(--gray-subtle)",
           emphasis: "bg-(--gray-emphasis)",
@@ -66,7 +66,7 @@ export default function CategorySection() {
           text: "text-(--purple-emphasis)",
           textSub: "text-(--purple-subtle)",
         },
-        href: "/colleges?category=college",
+        href: "/institutes?academic_type=college",
       },
       {
         value: propertyCounts["university"] || 0,
@@ -80,7 +80,7 @@ export default function CategorySection() {
           text: "text-(--danger-emphasis)",
           textSub: "text-(--danger-subtle)",
         },
-        href: "/colleges?category=university",
+        href: "/institutes?academic_type=university",
       },
       {
         value: propertyCounts["coaching"] || 0,
@@ -94,7 +94,7 @@ export default function CategorySection() {
           text: "text-(--warning-emphasis)",
           textSub: "text-(--warning-subtle)",
         },
-        href: "/colleges?category=coaching",
+        href: "/institutes?academic_type=coaching",
       },
     ];
   }, [propertyCounts]);

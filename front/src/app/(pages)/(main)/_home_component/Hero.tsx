@@ -11,12 +11,12 @@ import SearchModal from "@/components/search_modal/SearchModal";
 const HeroTags = [
   {
     title: "Colleges",
-    href: "/colleges?category=college",
+    href: "/institutes?academic_type=college",
     external: false,
   },
   {
     title: "Universities",
-    href: "/universities?category=university",
+    href: "/institutes?academic_type=university",
     external: false,
   },
   {

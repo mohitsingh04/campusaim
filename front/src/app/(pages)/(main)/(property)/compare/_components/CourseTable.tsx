@@ -63,7 +63,7 @@ export default function CourseTable({
       : selectedProperties.length === 2
         ? "grid-cols-2"
         : "grid-cols-3";
-  console.log(selectedProperties);
+
   return (
     <div
       className={`bg-(--secondary-bg) sm:rounded-t-xl shadow-custom border border-(--border) transition-all duration-300 ${
@@ -83,12 +83,10 @@ export default function CourseTable({
                 className="text-(--white)! mb-0!"
               />
               <p className="ml-3 text-(--white)! text-xs sm:text-base">
-                Compare courses across {selectedProperties.length} colleges
+                Compare courses across {selectedProperties.length} Institutes
               </p>
             </div>
           </div>
-
-          {/* Right Buttons */}
           <div className="flex items-center gap-2">
             <div
               className={`p-2 rounded-full bg-(--main-subtle) cursor-pointer text-(--main-emphasis) backdrop-blur-sm transition-all duration-300 hover:scale-110 ${
@@ -101,17 +99,15 @@ export default function CourseTable({
         </div>
       </div>
 
-      {/* Content */}
       <div
         className={`transition-all duration-500 ease-in-out ${
-          isOpen
-            ? "max-h-[3000px] opacity-100"
-            : "max-h-0 opacity-0 overflow-hidden"
+          isOpen ? "max-h-750 opacity-100" : "max-h-0 opacity-0 overflow-hidden"
         }`}
       >
         <div className="p-0">
           {allCourses.length > 0 ? (
             <>
+              {/* Desktop View */}
               <div className="hidden sm:block w-full overflow-x-auto">
                 <div className="px-4 py-3 bg-(--primary-bg) text-(--text-color-emphasis) border-b border-(--border)">
                   <label className="sub-heading font-semibold mb-1">
@@ -149,9 +145,7 @@ export default function CourseTable({
                         >
                           <div className="flex flex-col items-center relative">
                             <Link
-                              href={`/${generateSlug(
-                                p.category,
-                              )}/${generateSlug(p?.property_slug)}/overview`}
+                              href={`/${generateSlug(p.academic_type)}/${generateSlug(p?.property_slug)}/overview`}
                             >
                               {!p?.property_logo?.[0] ? (
                                 <div className="w-10 h-10 rounded-custom flex items-center justify-center mb-2 shadow-custom">
@@ -171,9 +165,7 @@ export default function CourseTable({
                               )}
                             </Link>
                             <Link
-                              href={`/${generateSlug(
-                                p.category,
-                              )}/${generateSlug(p?.property_slug)}/overview`}
+                              href={`/${generateSlug(p.academic_type)}/${generateSlug(p?.property_slug)}/overview`}
                               className="paragraph font-medium text-center leading-tight wrap-break-word"
                             >
                               {p.property_name}
@@ -201,34 +193,40 @@ export default function CourseTable({
                             (c: PropertyCourseProps) =>
                               c.course_name === selectedCourseId,
                           );
-                          let displayValue = "Not Available";
-                          if (course) {
+
+                          let displayValue = "";
+
+                          if (!course) {
+                            displayValue = "Course Not Available";
+                          } else {
                             switch (field.key) {
                               case "Course Name":
-                                displayValue = course.course_name || "N/A";
+                                displayValue = course.course_name || "Not Available";
                                 break;
                               case "Short Name":
-                                displayValue =
-                                  course.course_short_name || "N/A";
+                                displayValue = course.course_short_name || "Not Available";
                                 break;
                               case "Duration":
-                                displayValue = course.duration || "N/A";
+                                displayValue = course.duration || "Not Available";
                                 break;
                               case "Course Type":
-                                displayValue = course.course_type || "N/A";
+                                displayValue = course.course_type || "Not Available";
                                 break;
                               case "Degree Type":
-                                displayValue = course.degree_type || "N/A";
+                                displayValue = course.degree_type || "Not Available";
                                 break;
                               case "Program Type":
-                                displayValue = course.program_type || "N/A";
+                                displayValue = course.program_type || "Not Available";
                                 break;
+                              default:
+                                displayValue = "Not Available";
                             }
                           }
+
                           return (
                             <td
                               key={pIdx}
-                              className="text-center p-4 border-r border-(--border) last:border-r-0"
+                              className={`text-center p-4 border-r border-(--border) last:border-r-0 ${!course ? "text-red-500 opacity-70" : ""}`}
                             >
                               <span className="inline-flex gap-2 text-(--text-color-emphasis)">
                                 {displayValue}
@@ -242,6 +240,7 @@ export default function CourseTable({
                 </table>
               </div>
 
+              {/* Mobile View */}
               <div className="sm:hidden block">
                 <div className="sticky top-16 bg-(--primary-bg) shadow-md border-b border-(--border)">
                   <div className="px-4 py-3 bg-(--primary-bg) border-b border-(--border)">
@@ -277,9 +276,7 @@ export default function CourseTable({
                         }`}
                       >
                         <Link
-                          href={`/${generateSlug(p.category)}/${generateSlug(
-                            p?.property_slug,
-                          )}/overview`}
+                          href={`/${generateSlug(p.academic_type)}/${generateSlug(p?.property_slug)}/overview`}
                         >
                           {!p?.property_logo?.[0] ? (
                             <div className="w-10 h-10 rounded-custom flex items-center justify-center shadow-custom bg-(--secondary-bg)">
@@ -309,7 +306,7 @@ export default function CourseTable({
                 <div className="divide-y divide-(--border)">
                   {courseFields.map((field, idx) => (
                     <div key={idx} className="bg-(--primary-bg)">
-                      <div className="p-2 flex items-center justify-center gap-2 bg-(--secondary-bg) text-(--text-color-empahsis) border border-(--border)">
+                      <div className="p-2 flex items-center justify-center gap-2 bg-(--secondary-bg) text-(--text-color-emphasis) border border-(--border)">
                         <field.icon size={14} />
                         <span className="text-xs font-bold uppercase tracking-wider">
                           {field.label}
@@ -321,38 +318,44 @@ export default function CourseTable({
                             (c: PropertyCourseProps) =>
                               c.course_name === selectedCourseId,
                           );
-                          let displayValue = "Not Available";
-                          if (course) {
+
+                          let displayValue = "";
+
+                          if (!course) {
+                            displayValue = "Course Not Available";
+                          } else {
                             switch (field.key) {
                               case "Course Name":
-                                displayValue = course.course_name || "N/A";
+                                displayValue = course.course_name || "Not Available";
                                 break;
                               case "Short Name":
-                                displayValue =
-                                  course.course_short_name || "N/A";
+                                displayValue = course.course_short_name || "Not Available";
                                 break;
                               case "Duration":
-                                displayValue = course.duration || "N/A";
+                                displayValue = course.duration || "Not Available";
                                 break;
                               case "Course Type":
-                                displayValue = course.course_type || "N/A";
+                                displayValue = course.course_type || "Not Available";
                                 break;
                               case "Degree Type":
-                                displayValue = course.degree_type || "N/A";
+                                displayValue = course.degree_type || "Not Available";
                                 break;
                               case "Program Type":
-                                displayValue = course.program_type || "N/A";
+                                displayValue = course.program_type || "Not Available";
                                 break;
+                              default:
+                                displayValue = "Not Available";
                             }
                           }
+
                           return (
                             <div
                               key={pIdx}
-                              className={`p-3 text-center text-sm border-(--border) ${
+                              className={`p-3 text-center text-[10px] sm:text-sm border-(--border) ${
                                 pIdx < selectedProperties.length - 1
                                   ? "border-r"
                                   : ""
-                              }`}
+                              } ${!course ? "text-(--danger) opacity-70 font-medium" : ""}`}
                             >
                               {displayValue}
                             </div>

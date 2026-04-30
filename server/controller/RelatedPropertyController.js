@@ -7,12 +7,10 @@ export const getPropertyRelatedToPropertyCourse = async (req, res) => {
     const { property_course_id } = req.params;
     const { limit = 10 } = req.query;
 
-    // 1️⃣ Get property-course relations
     const propertyCourses = await PropertyCourse.find({
       course_id: property_course_id,
     });
 
-    // 2️⃣ Extract property IDs
     const propertyIds = [
       ...new Set(propertyCourses.map((item) => item.property_id.toString())),
     ];
@@ -25,7 +23,6 @@ export const getPropertyRelatedToPropertyCourse = async (req, res) => {
       });
     }
 
-    // 3️⃣ Fetch related properties
     const relatedProperties = await Property.find({
       _id: { $in: propertyIds },
     })
@@ -36,12 +33,10 @@ export const getPropertyRelatedToPropertyCourse = async (req, res) => {
       ...new Set(relatedProperties.map((item) => item._id)),
     ].filter(Boolean);
 
-    // 4️⃣ Fetch locations based on property_id
     const relatedLocations = await Location.find({
       property_id: { $in: locationIds },
     }).lean();
 
-    // 5️⃣ Merge location data into each property
     const finalData = relatedProperties.map((prop) => {
       const mainLoc = relatedLocations.find(
         (loc) => loc.property_id?.toString() === prop._id.toString()
@@ -54,10 +49,7 @@ export const getPropertyRelatedToPropertyCourse = async (req, res) => {
         property_country: mainLoc?.property_country || null,
       };
     });
-    console.log(finalData)
-    // 6️⃣ Send response
     return res.status(200).json({
-      success: true,
       count: finalData.length,
       properties: finalData,
     });

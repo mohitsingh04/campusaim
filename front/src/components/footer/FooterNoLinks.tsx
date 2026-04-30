@@ -12,8 +12,8 @@ export const CopyRightsFooter = () => {
     <div className="text-center text-sm">
       <p className="mb-10 md:mb-2 text-(--text-color-emphasis)">
         © {year}{" "}
-        <Link href="/" title={"Yogprerna"} className="text-gradient">
-          Yogprerna
+        <Link href="/" title={"Campusaim"} className="text-gradient">
+          Campusaim
         </Link>
         , Inc. All Rights Reserved.
       </p>

@@ -55,7 +55,7 @@ export default function BrowseByLocation() {
       );
       return res.data || [];
     },
-    staleTime: 1000 * 60 * 60,
+    staleTime: 1000 * 60 * 5,
   });
 
   if (isLoading) return <LocationSkeleton />;
@@ -108,7 +108,7 @@ export default function BrowseByLocation() {
             return (
               <SwiperSlide key={index}>
                 <Link
-                  href={`/colleges?state=${generateSlug(location.state)}&city=${generateSlug(location.city)}`}
+                  href={`/institutes?state=${generateSlug(location.state)}&city=${generateSlug(location.city)}`}
                 >
                   <div className="group relative rounded-custom overflow-hidden cursor-pointer">
                     <div className="relative aspect-3/4 sm:aspect-4/5 overflow-hidden">
@@ -128,7 +128,7 @@ export default function BrowseByLocation() {
                       <div className="absolute top-4 right-4 translate-x-10 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition backdrop-blur-md p-2 rounded-full text-(--main-subtle)">
                         <ArrowUpRight size={20} />
                       </div>
-                     <div className="absolute inset-x-0 bottom-0 p-5 text-(--white)">
+                      <div className="absolute inset-x-0 bottom-0 p-5 text-(--white)">
                         <h3 className="font-bold text-lg truncate">
                           {location.city}
                         </h3>
@@ -141,7 +141,6 @@ export default function BrowseByLocation() {
                           <span>{location.count} Institutes</span>
                         </div>
                       </div>
-                    
                     </div>
                     <div className="absolute inset-0 z-20 bg-linear-to-r from-transparent via-white/10 to-transparent -skew-x-12 translate-x-[-150%] group-hover:translate-x-[150%] transition-transform duration-1500 ease-in-out" />
                   </div>

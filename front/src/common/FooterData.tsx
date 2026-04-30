@@ -1,51 +1,51 @@
 export const FooterStates = [
   {
     name: "Uttarakhand",
-    href: "/college?state=india",
+    href: "/institutes?state=india",
   },
   // {
   //   name: "Uttar Pradesh",
-  //   href: "/college?state=united-states",
+  //   href: "/institutes?state=united-states",
   // },
   // {
   //   name: "Nepal",
-  //   href: "/college?state=nepal",
+  //   href: "/institutes?state=nepal",
   // },
   // {
   //   name: "Canada",
-  //   href: "/college?state=canada",
+  //   href: "/institutes?state=canada",
   // },
   // {
   //   name: "Russia",
-  //   href: "/college?state=russia",
+  //   href: "/institutes?state=russia",
   // },
   // {
   //   name: "peru",
-  //   href: "/college?state=peru",
+  //   href: "/institutes?state=peru",
   // },
   // {
   //   name: "Spain",
-  //   href: "/college?state=spain",
+  //   href: "/institutes?state=spain",
   // },
   // {
   //   name: "Thailand",
-  //   href: "/college?state=thailand",
+  //   href: "/institutes?state=thailand",
   // },
   // {
   //   name: "Ireland",
-  //   href: "/college?state=ireland",
+  //   href: "/institutes?state=ireland",
   // },
 ];
 export const CategoriesList = [
   {
     name: "University",
-    href: "/college?category=univerisity",
+    href: "/institutes?academic_type=univerisity",
   },
-  { name: "College", href: "/college?category=college" },
-  { name: "Schools", href: "/college?category=school" },
+  { name: "College", href: "/institutes?academic_type=college" },
+  { name: "Schools", href: "/institutes?academic_type=school" },
   {
     name: "Coaching",
-    href: "/college?category=coaching",
+    href: "/institutes?academic_type=coaching",
   },
 ];
 

@@ -20,6 +20,7 @@ export const getAllPropertyScholarship = async (req, res) => {
 export const getPropertyScholarshipByPropertyId = async (req, res) => {
     try {
         const { property_id } = req.params;
+        console.log(property_id);
         const scholarship = await PropertyScholarship.find({ property_id: property_id });
         if (!scholarship) {
             return res.status(404).json({ error: "Scholarship Not Found" });
@@ -55,7 +56,7 @@ export const AddPropertyScholarship = async (req, res) => {
         const newScholarship = new PropertyScholarship({
             userId,
             property_id,
-            scholarship,
+            scholarship: updatedScholarship,
         });
 
         await newScholarship.save();

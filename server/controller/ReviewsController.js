@@ -216,3 +216,66 @@ export const deleteReview = async (req, res) => {
     return res.status(500).json({ error: "Internal Server Error." });
   }
 };
+
+export const getPropertyRatingStats = async (req, res) => {
+  try {
+    const { property_id } = req.params;
+
+    const result = await Review.aggregate([
+      {
+        $match: {
+          property_id: new mongoose.Types.ObjectId(property_id),
+        },
+      },
+      {
+        $group: {
+          _id: "$rating",
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          rating: "$_id",
+          count: 1,
+        },
+      },
+      {
+        $sort: { rating: -1 },
+      },
+    ]);
+
+    const summary = await Review.aggregate([
+      {
+        $match: {
+          property_id: new mongoose.Types.ObjectId(property_id),
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          averageRating: { $avg: "$rating" },
+          totalReviews: { $sum: 1 },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          averageRating: { $round: ["$averageRating", 1] },
+          totalReviews: 1,
+        },
+      },
+    ]);
+
+    return res.status(200).json({
+      distribution: result,
+      summary: summary[0] || {
+        averageRating: 0,
+        totalReviews: 0,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Something went wrong" });
+  }
+};
