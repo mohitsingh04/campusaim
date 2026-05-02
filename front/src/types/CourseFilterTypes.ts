@@ -1,37 +1,33 @@
 import { FilterOptionProps } from "./Types";
 
 export interface courseFilterProps {
-	course_level: string[];
-	course_type: string[];
-	certification_type: string[];
-	duration: string[];
-	program_type: string[];
-	degree_type: string[];
+  course_type: string[];
+  duration: string[];
+  program_type: string[];
+  degree_type: string[];
+  specialization: string[];
 }
 
 export interface ExpandedCourseFiltersProps {
-	course_level: boolean;
-	course_type: boolean;
-	certification_type: boolean;
-	duration: boolean;
-	degree_type: boolean;
-	program_type: boolean;
+  course_type: boolean;
+  duration: boolean;
+  degree_type: boolean;
+  program_type: boolean;
+  specialization: boolean;
 }
 
 export interface FilterCourseSearchTermsProps {
-	course_type: string;
-	certification_type: string;
-	course_level: string;
-	duration: string;
-	program_type: string;
-	degree_type: string;
+  course_type: string;
+  duration: string;
+  program_type: string;
+  degree_type: string;
+  specialization: string;
 }
 
 export interface DynamicFilterCourseOptionsProps {
-	courseLevels: FilterOptionProps[];
-	courseTypes: FilterOptionProps[];
-	certificationType: FilterOptionProps[];
-	durationsLists: FilterOptionProps[];
-	degreeTypes: FilterOptionProps[];
-	programTypes: FilterOptionProps[];
+  courseTypes: FilterOptionProps[];
+  durationsLists: FilterOptionProps[];
+  degreeTypes: FilterOptionProps[];
+  programTypes: FilterOptionProps[];
+  specializationList: FilterOptionProps[];
 }

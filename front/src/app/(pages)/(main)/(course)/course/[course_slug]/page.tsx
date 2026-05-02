@@ -6,7 +6,7 @@ import ListItem from "@/ui/list/ListItem";
 import { ReadMoreLess } from "@/ui/texts/ReadMoreLess";
 import { ButtonGroup } from "@/ui/buttons/ButtonGroup";
 import { useParams } from "next/navigation";
-import { CategoryProps, CourseProps } from "@/types/Types";
+import { CourseProps } from "@/types/Types";
 import {
   getAverageRating,
   getErrorResponse,
@@ -23,10 +23,12 @@ import Image from "next/image";
 import HeadingLine from "@/ui/headings/HeadingLine";
 import CourseEnquiryForm from "./_course_compoents/CourseEnquiryForm";
 import InsitutesLoader from "@/ui/loader/page/institutes/Institutes";
-import { UserProps } from "@/types/UserTypes";
-import { getProfile } from "@/context/getAssets";
 import CourseDetailSkeleton from "@/ui/loader/page/courses/CourseDetailSkeleton";
-import { AwardIcon, BarChartIcon, ZapIcon } from "lucide-react";
+import { AwardIcon, BarChartIcon, ClockIcon, ZapIcon } from "lucide-react";
+import useGetAuthUser from "@/hooks/fetch-hooks/useGetAuthUser";
+import { useGetAssets } from "@/context/providers/AssetsProviders";
+import FaqComponents from "@/ui/accordions/FaqComponents";
+import FaqJsonSchema from "@/components/json_schemas/FaqJsonSchema";
 
 type MergedCourse = PropertyCourseProps & Partial<CourseProps>;
 
@@ -35,30 +37,9 @@ const CourseDetails = () => {
   const [mainCourse, setMainCourse] = useState<CourseProps | null>(null);
   const [loading, setLoading] = useState(true);
   const [properties, setProperties] = useState<PropertyProps[]>([]);
-  const [category, setCategory] = useState<CategoryProps[]>([]);
   const [propertyLoading, setPropertyLoading] = useState(true);
-  const [profile, setProfile] = useState<UserProps | null>(null);
-
-  const getProfileUser = useCallback(async () => {
-    try {
-      const data = await getProfile();
-      setProfile(data);
-    } catch (error) {
-      getErrorResponse(error);
-    }
-  }, []);
-
-  useEffect(() => {
-    getProfileUser();
-  }, [getProfileUser]);
-
-  const getCategoryById = useCallback(
-    (id: string) => {
-      const cat = category?.find((item) => item._id === id);
-      return cat?.category_name;
-    },
-    [category],
-  );
+  const { authUser } = useGetAuthUser();
+  const { getCategoryById } = useGetAssets();
 
   const getCourses = useCallback(async () => {
     setLoading(true);
@@ -70,11 +51,9 @@ const CourseDetails = () => {
         API.get<{ _id: string; course_eligibility: string }[]>(
           `/course-eligibility/all`,
         ),
-        API.get<CategoryProps[]>(`/category`),
       ]);
 
-      const [courseRes, bestForRes, courseEligibilityRes, categoryRes] =
-        results;
+      const [courseRes, bestForRes, courseEligibilityRes] = results;
       if (courseRes.status !== "fulfilled") {
         console.error("Failed to fetch course:", courseRes.reason);
         return;
@@ -87,9 +66,6 @@ const CourseDetails = () => {
         courseEligibilityRes.status === "fulfilled"
           ? courseEligibilityRes.value.data
           : [];
-      const categoryData =
-        categoryRes.status === "fulfilled" ? categoryRes.value.data : [];
-      setCategory(categoryData);
 
       const bestForMap = new Map<string, string>();
       bestForData.forEach((r) => bestForMap.set(r._id, r.best_for));
@@ -98,9 +74,6 @@ const CourseDetails = () => {
       courseEligibilityData.forEach((k) =>
         courseEligibilityMap.set(k._id, k.course_eligibility),
       );
-
-      const categoryMap = new Map<string, string>();
-      categoryData.forEach((c) => categoryMap.set(c._id, c.category_name));
 
       const populatedCourse: CourseProps = {
         ...course,
@@ -111,13 +84,13 @@ const CourseDetails = () => {
         course_eligibility: (course.course_eligibility || [])
           .map((id: any) => courseEligibilityMap.get(id))
           .filter(Boolean) as string[],
-        specialization:
-          course.specialization?.map((item: string) => categoryMap.get(item)) ||
-          [],
-        course_type: categoryMap.get(course.course_type) ?? course.course_type,
-        degree_type: categoryMap.get(course.degree_type) ?? course.degree_type,
+        specialization: (course?.specialization || [])
+          .map((item: string) => getCategoryById(item || ""))
+          .filter(Boolean) as string[],
+        course_type: getCategoryById(course.course_type) ?? course.course_type,
+        degree_type: getCategoryById(course.degree_type) ?? course.degree_type,
         program_type:
-          categoryMap.get(course.program_type) ?? course.program_type,
+          getCategoryById(course.program_type) ?? course.program_type,
       };
 
       setMainCourse(populatedCourse);
@@ -126,7 +99,7 @@ const CourseDetails = () => {
     } finally {
       setLoading(false);
     }
-  }, [course_slug]);
+  }, [course_slug, getCategoryById]);
 
   useEffect(() => {
     getCourses();
@@ -231,8 +204,6 @@ const CourseDetails = () => {
     ? `${process.env.NEXT_PUBLIC_MEDIA_URL}/course/${mainCourse.image[0]}`
     : "/img/default-images/campusaim-courses-featured.png";
 
-  // console.log(properties);
-
   if (loading)
     return (
       <>
@@ -243,6 +214,10 @@ const CourseDetails = () => {
 
   return (
     <div className="bg-(--secondary-bg) text-(--text-color) py-6 px-2 sm:px-8">
+      <FaqJsonSchema
+        faqs={mainCourse?.faqs || []}
+        slug={mainCourse?.course_slug || ""}
+      />
       <div className="mb-10 grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="order-1 lg:order-2">
           <div className=" bg-(--primary-bg) rounded-custom overflow-hidden shadow-custom sticky top-28">
@@ -263,6 +238,8 @@ const CourseDetails = () => {
                 <div className="ml-3">
                   <h1 className="heading font-semibold text-(--text-color-emphasis)">
                     {mainCourse?.course_name}
+                    {mainCourse?.course_short_name &&
+                      ` - (${mainCourse?.course_short_name})`}
                   </h1>
                 </div>
               </div>
@@ -280,21 +257,21 @@ const CourseDetails = () => {
           </div>
         </div>
 
-        {/* MAIN CONTENT — DESKTOP FIRST (order-2 on mobile) */}
         <div className="lg:col-span-2 space-y-6 order-2 lg:order-1">
           <h1 className="heading font-extrabold text-(--text-color-emphasis) mb-4 hidden md:block">
             {mainCourse?.course_name}
+            {mainCourse?.course_short_name &&
+              ` - (${mainCourse?.course_short_name})`}
           </h1>
 
-          {/* Course Information */}
           <div className="bg-(--primary-bg) p-5 rounded-custom shadow-custom">
             <HeadingLine title="Course Information" />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <InfoCard
-                Icon={BarChartIcon}
-                title="Degree Type"
-                value={mainCourse?.degree_type || ""}
+                Icon={ZapIcon}
+                title="Course Type"
+                value={mainCourse?.course_type || ""}
               />
               <InfoCard
                 Icon={AwardIcon}
@@ -302,14 +279,18 @@ const CourseDetails = () => {
                 value={mainCourse?.program_type || ""}
               />
               <InfoCard
-                Icon={ZapIcon}
-                title="Course Type"
-                value={mainCourse?.course_type || ""}
+                Icon={BarChartIcon}
+                title="Degree Type"
+                value={mainCourse?.degree_type || ""}
+              />
+              <InfoCard
+                Icon={ClockIcon}
+                title="Duration"
+                value={mainCourse?.duration || ""}
               />
             </div>
           </div>
 
-          {/* Best For & Coure Eligibility */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-(--primary-bg) p-5 rounded-custom shadow-custom">
               <HeadingLine title="Coure Eligibility" />
@@ -338,12 +319,17 @@ const CourseDetails = () => {
             </div>
           </div>
 
-          {/* Description */}
           <div className="bg-(--primary-bg) p-5 rounded-custom shadow-custom">
             <HeadingLine title="Overview" />
             <ReadMoreLess html={mainCourse?.description || ""} />
           </div>
-          <CourseEnquiryForm course={mainCourse} profile={profile} />
+          {(mainCourse?.faqs?.length || 0) > 0 && (
+            <div className="bg-(--primary-bg) p-5 rounded-custom shadow-custom">
+              <HeadingLine title="Frequently Asked Questions" />
+              <FaqComponents faqs={mainCourse?.faqs || []} />
+            </div>
+          )}
+          <CourseEnquiryForm course={mainCourse} profile={authUser} />
         </div>
       </div>
       <div className="">

@@ -6,22 +6,50 @@ import CourseCard from "./_courses_components/CourseCard";
 import MobileFiltersCanvas from "./_courses_components/MobileFilters";
 import ResultsHeader from "./_courses_components/ResultsHeader";
 import { useSearchParams, useRouter } from "next/navigation";
-import { CategoryProps, CourseProps } from "@/types/Types";
+import { CourseProps } from "@/types/Types";
 import {
   createDynamicFilterOptions,
   filterdCourses,
 } from "./utils/filterUtils";
 import API from "@/context/API";
-// import ActiveFilterTags from "./_courses_components/ActiveFilters";
 import {
   courseFilterProps,
   ExpandedCourseFiltersProps,
   FilterCourseSearchTermsProps,
 } from "@/types/CourseFilterTypes";
-import { generateSlug, getErrorResponse } from "@/context/Callbacks";
+import {
+  generateSlug,
+  getErrorResponse,
+  shuffleArray,
+} from "@/context/Callbacks";
 import Pagination from "@/ui/pagination/Pagination";
 import InsitutesLoader from "@/ui/loader/page/institutes/Institutes";
 import { GraduationCapIcon } from "lucide-react";
+import { useGetAssets } from "@/context/providers/AssetsProviders";
+
+const getInitialFilters = (): courseFilterProps => ({
+  course_type: [],
+  duration: [],
+  degree_type: [],
+  program_type: [],
+  specialization: [],
+});
+
+const getInitialSearchTerms = (): FilterCourseSearchTermsProps => ({
+  course_type: "",
+  duration: "",
+  degree_type: "",
+  program_type: "",
+  specialization: "",
+});
+
+const ExpandedFilterTerms: ExpandedCourseFiltersProps = {
+  course_type: true,
+  duration: true,
+  degree_type: true,
+  program_type: true,
+  specialization: true,
+};
 
 const ITEMS_PER_PAGE = 12;
 
@@ -34,21 +62,12 @@ export default function CoursesPage() {
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [allCourses, setAllCourses] = useState<CourseProps[]>([]);
-  const [category, setCategory] = useState<CategoryProps[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState("default");
+  const { getCategoryById } = useGetAssets();
 
   const initializeFiltersFromURL = useCallback((): courseFilterProps => {
-    const urlFilters: courseFilterProps = {
-      certification_type: [],
-      course_level: [],
-      course_type: [],
-      duration: [],
-      degree_type: [], // ✅ ADD
-      program_type: [], // ✅ ADD
-    };
-
-    // Parse URL parameters
+    const urlFilters = getInitialFilters();
     Object.keys(urlFilters).forEach((key) => {
       const param = searchParams.get(key);
       if (param) {
@@ -62,45 +81,27 @@ export default function CoursesPage() {
   }, [searchParams]);
 
   const [expandedFilters, setExpandedFilters] =
-    useState<ExpandedCourseFiltersProps>({
-      course_level: true,
-      course_type: true,
-      certification_type: true,
-      duration: true,
-      degree_type: true, // ✅
-      program_type: true, // ✅
-    });
+    useState<ExpandedCourseFiltersProps>(ExpandedFilterTerms);
 
   const [filters, setFilters] = useState<courseFilterProps>(
     initializeFiltersFromURL,
   );
 
   const [filterSearchTerms, setFilterSearchTerms] =
-    useState<FilterCourseSearchTermsProps>({
-      course_level: "",
-      course_type: "",
-      certification_type: "",
-      duration: "",
-      degree_type: "", // ✅
-      program_type: "", // ✅
-    });
+    useState<FilterCourseSearchTermsProps>(getInitialSearchTerms());
 
-  // Update URL when filters change - Fixed to prevent render cycle issues
   const updateURL = useCallback(
     (newFilters: courseFilterProps, page: number = 1) => {
       const params = new URLSearchParams();
 
-      // Add search term if exists
       if (searchTerm) {
         params.set("search", searchTerm);
       }
 
-      // Add page if not first page
       if (page > 1) {
         params.set("page", page.toString());
       }
 
-      // Add filters
       Object.entries(newFilters).forEach(([key, values]) => {
         if (values.length > 0) {
           params.set(key, values.join(","));
@@ -109,7 +110,6 @@ export default function CoursesPage() {
 
       const newURL = params.toString() ? `?${params.toString()}` : "";
 
-      // Use setTimeout to avoid updating during render
       setTimeout(() => {
         router.push(`/courses${newURL}`, { scroll: false });
       }, 0);
@@ -117,7 +117,6 @@ export default function CoursesPage() {
     [router, searchTerm],
   );
 
-  // Initialize from URL on mount
   useEffect(() => {
     const urlSearchTerm = searchParams.get("search") || "";
     const urlPage = parseInt(searchParams.get("page") || "1");
@@ -127,37 +126,8 @@ export default function CoursesPage() {
     setFilters(initializeFiltersFromURL());
   }, [searchParams, initializeFiltersFromURL]);
 
-  const getCategories = useCallback(async () => {
-    try {
-      const response = await API.get(`/category`);
-      setCategory(response.data);
-    } catch (error) {
-      getErrorResponse(error, true);
-    }
-  }, []);
-
-  useEffect(() => {
-    getCategories();
-  }, [getCategories]);
-
-  const getCategoryById = useCallback(
-    (id: string) => {
-      const cat = category?.find((item) => item._id === id);
-      return cat?.category_name;
-    },
-    [category],
-  );
   const getAllCourseDetails = useCallback(async () => {
     setLoading(true);
-
-    const shuffleArray = <T,>(array: T[]): T[] => {
-      const shuffled = [...array];
-      for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-      }
-      return shuffled;
-    };
 
     try {
       const [allCourseRes, allCourseSeoRes] = await Promise.allSettled([
@@ -183,13 +153,15 @@ export default function CoursesPage() {
             course_type: getCategoryById(course.course_type),
             degree_type: getCategoryById(course.degree_type),
             program_type: getCategoryById(course.program_type),
+            specialization: course?.specialization?.map((item) =>
+              getCategoryById(item),
+            ),
             course_slug: seoMatch
               ? seoMatch.slug
               : generateSlug(course.course_name),
           };
         });
 
-        // 🔀 Shuffle before setting state
         setAllCourses(shuffleArray(mergedCourses));
       }
     } catch (error) {
@@ -203,7 +175,6 @@ export default function CoursesPage() {
     getAllCourseDetails();
   }, [getAllCourseDetails]);
 
-  // Dynamic filter options
   const dynamicFilterOptions = useMemo(
     () => createDynamicFilterOptions(allCourses, searchTerm, filters),
     [allCourses, searchTerm, filters],
@@ -242,27 +213,9 @@ export default function CoursesPage() {
   );
 
   const clearFilters = () => {
-    const emptyFilters: courseFilterProps = {
-      course_level: [],
-      course_type: [],
-      certification_type: [],
-      duration: [],
-      degree_type: [], // ✅
-      program_type: [], // ✅
-    };
-
-    setFilters(emptyFilters);
-    setFilterSearchTerms({
-      course_level: "",
-      course_type: "",
-      certification_type: "",
-      duration: "",
-      degree_type: "", // ✅
-      program_type: "", // ✅
-    });
-
-    setCurrentPage(1);
-    updateURL(emptyFilters, 1);
+    setFilters(getInitialFilters());
+    setFilterSearchTerms(getInitialSearchTerms());
+    updateURL(getInitialFilters(), 1);
   };
 
   const toggleFilter = (filterType: keyof ExpandedCourseFiltersProps) => {
@@ -291,20 +244,6 @@ export default function CoursesPage() {
       return newFilters;
     });
   };
-
-  // const removeFilterTag = (
-  //   filterType: keyof courseFilterProps,
-  //   value: string
-  // ) => {
-  //   setFilters((prev) => {
-  //     const newFiltersForRemove = {
-  //       ...prev,
-  //       [filterType]: prev[filterType].filter((item) => item !== value),
-  //     };
-  //     updateURL(newFiltersForRemove, currentPage);
-  //     return newFiltersForRemove;
-  //   });
-  // };
 
   const handleFilterSearchChange = (
     filterType: keyof FilterCourseSearchTermsProps,
@@ -353,11 +292,6 @@ export default function CoursesPage() {
             </div>
 
             <div className="flex-1 flex flex-col overflow-hidden">
-              {/* <ActiveFilterTags
-                filters={filters}
-                onRemoveFilter={removeFilterTag}
-                onClearAll={clearFilters}
-              /> */}
               <ResultsHeader
                 totalResults={filteredCoursesFound.length}
                 currentPage={currentPage}

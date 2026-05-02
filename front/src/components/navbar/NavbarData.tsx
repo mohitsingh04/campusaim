@@ -13,57 +13,90 @@ interface UsePropertyMenuDataProps {
   academicType?: string;
 }
 
-export function useCoursesMenuData() {
+export function useCoursesMenuData({
+  categories,
+}: {
+  categories: CategoryProps[];
+}) {
   const [courseMenuData, setCourseMenuData] = useState<any>(null);
-  const [courseLoading, setCoursesLoading] = useState(true);
+  const [courseLoading, setCourseLoading] = useState(true);
+
+  const getCategoryById = useCallback(
+    (_id: string) => {
+      if (!categories?.length) return null;
+      return categories.find((item) => item._id === _id)?.category_name || null;
+    },
+    [categories],
+  );
 
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        setCoursesLoading(true);
+        setCourseLoading(true);
 
-        const courseRes = await API.get("/course");
+        const [courseRes, seoRes] = await Promise.all([
+          API.get("/course"),
+          API.get("/all/seo?type=course"),
+        ]);
+
         const courses: CourseProps[] = courseRes.data;
-
-        const seoRes = await API.get("/all/seo?type=course");
         const seoList: SeoProps[] = seoRes.data;
 
-        const links = courses
-          .map((course) => {
-            const matchedSeo = seoList.find(
-              (seo) => seo.course_id === course._id,
-            );
+        const menuData: Record<string, any> = {};
 
-            if (!matchedSeo?.slug) return null;
+        courses.forEach((course) => {
+          const programType = getCategoryById(course.program_type) || "Other";
 
-            return {
-              name: course.course_name,
-              href: `/course/${matchedSeo.slug}`,
+          if (!menuData[programType]) {
+            menuData[programType] = {
+              courses: {
+                title: "Courses",
+                links: [],
+                viewAll: `/courses?type=${generateSlug(programType)}`,
+              },
+              // universities: {
+              //   title: "Universities",
+              //   links: [],
+              //   viewAll: `/universities?type=${generateSlug(programType)}`,
+              // },
+              // exams: {
+              //   title: "Exams",
+              //   links: [],
+              //   viewAll: `/exams?type=${generateSlug(programType)}`,
+              // },
             };
-          })
-          .filter(Boolean)
-          .slice(0, 30);
+          }
 
-        const formattedMenu = {
-          "Popular Courses": {
-            main: {
-              title: "Popular Courses",
-              links,
-              viewAll: "/courses",
-            },
-          },
-        };
+          // 2. Find SEO Slug for the course
+          const matchedSeo = seoList.find(
+            (seo) => seo.course_id === course._id,
+          );
 
-        setCourseMenuData(formattedMenu);
+          if (matchedSeo?.slug) {
+            // 3. Push to links (Currently mapping to 'courses' sub-category)
+            if (menuData[programType].courses.links.length < 10) {
+              menuData[programType].courses.links.push({
+                name: course.course_name,
+                href: `/course/${matchedSeo.slug}`,
+              });
+            }
+          }
+
+          // Note: If you have separate API calls for Exams and Universities,
+          // you would fetch and map them into menuData[programType].exams.links
+          // and menuData[programType].universities.links here.
+        });
+
+        setCourseMenuData(menuData);
       } catch (err) {
         getErrorResponse(err, true);
       } finally {
-        setCoursesLoading(false);
+        setCourseLoading(false);
       }
     };
 
     fetchCourses();
-  }, []);
+  }, [getCategoryById]);
 
   return { courseMenuData, courseLoading };
 }

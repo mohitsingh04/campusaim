@@ -488,7 +488,7 @@ export function CourseEdit() {
             {/* Program Type */}
             <div>
               <label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
-                Program Type
+                Program Type (Stream)
               </label>
 
               <Select
