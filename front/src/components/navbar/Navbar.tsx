@@ -71,9 +71,11 @@ export default function Navbar() {
     useState<NavbarMobileDetailMenuState | null>(null);
 
   const [activeAccordion, setActiveAccordion] = useState<string | null>(null);
-  const { courseMenuData, courseLoading } = useCoursesMenuData();
   const { examLoading, examMenuData } = useExamMenuData();
   const { allCategories } = useGetAssets();
+  const { courseMenuData, courseLoading } = useCoursesMenuData({
+    categories: allCategories,
+  });
   const universityMenu = usePropertyMenuData({ categories: allCategories });
   const [token, setToken] = useState("");
   const { authUser } = useGetAuthUser();
@@ -90,7 +92,7 @@ export default function Navbar() {
   const menuItems: NavbarMenuItemProps[] = [
     {
       name: "Institutes",
-      href: "/institutes",
+      href: "/colleges",
       dropdownContent: universityMenu?.propertyMenuData,
     },
     {
@@ -212,15 +214,15 @@ export default function Navbar() {
                         item.name === "Courses" ||
                         item.name === "Exams") && (
                         <div className="absolute top-full left-0 right-0 bg-(--primary-bg) shadow-custom border-t border-(--border)">
-                          {(item.name === "Courses" ||
-                            item.name === "Exams") && (
+                          {item.name === "Exams" && (
                             <SinglePanelDropdown
                               handleDesktopMouseLeave={handleDesktopMouseLeave}
                               dropdonwItem={item}
                               isLoading={item.isLoading}
                             />
                           )}
-                          {item.name === "Institutes" && (
+                          {(item.name === "Institutes" ||
+                            item.name === "Courses") && (
                             <SubMenuPanelDropdown
                               handleDesktopMouseLeave={handleDesktopMouseLeave}
                               setActiveDesktopSubMenu={setActiveDesktopSubMenu}

@@ -15,7 +15,6 @@ export interface CategoryProps {
 }
 
 export interface CourseProps {
-  uniqueId: string;
   course_name: string;
   image: string[];
   course_type: string;
@@ -30,6 +29,7 @@ export interface CourseProps {
   best_for: string[];
   course_slug?: string;
   faqs: FaqProps[];
+  specialization: string[];
 }
 
 export interface ExamProps {

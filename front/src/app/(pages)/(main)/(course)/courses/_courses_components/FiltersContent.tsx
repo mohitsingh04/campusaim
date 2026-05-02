@@ -50,26 +50,6 @@ const FiltersContent = ({
       </div>
 
       <div className="p-5">
-        {dynamicFilterOptions.courseLevels.length > 0 && (
-          <FilterSection
-            title="Course Level"
-            isExpanded={expandedFilters.course_level}
-            onToggle={() => onToggleFilter("course_level")}
-          >
-            <CheckboxFilter
-              items={dynamicFilterOptions.courseLevels}
-              filterType="course_level"
-              selectedItems={filters.course_level}
-              searchTerm={filterSearchTerms.course_level}
-              onSearchChange={(value) =>
-                onFilterSearchChange("course_level", value)
-              }
-              onFilterChange={
-                onCheckboxFilter as (filterType: string, value: string) => void
-              }
-            />
-          </FilterSection>
-        )}
         {dynamicFilterOptions.programTypes?.length > 0 && (
           <FilterSection
             title="Program Type"
@@ -128,19 +108,19 @@ const FiltersContent = ({
             />
           </FilterSection>
         )}
-        {dynamicFilterOptions.certificationType.length > 0 && (
+        {dynamicFilterOptions.specializationList.length > 0 && (
           <FilterSection
-            title="Certification Type"
-            isExpanded={expandedFilters.certification_type}
-            onToggle={() => onToggleFilter("certification_type")}
+            title="Specializations"
+            isExpanded={expandedFilters.specialization}
+            onToggle={() => onToggleFilter("specialization")}
           >
             <CheckboxFilter
-              items={dynamicFilterOptions.certificationType}
-              filterType="certification_type"
-              selectedItems={filters.certification_type}
-              searchTerm={filterSearchTerms.certification_type}
+              items={dynamicFilterOptions.specializationList}
+              filterType="specialization"
+              selectedItems={filters.specialization}
+              searchTerm={filterSearchTerms.specialization}
               onSearchChange={(value) =>
-                onFilterSearchChange("certification_type", value)
+                onFilterSearchChange("specialization", value)
               }
               onFilterChange={
                 onCheckboxFilter as (filterType: string, value: string) => void
