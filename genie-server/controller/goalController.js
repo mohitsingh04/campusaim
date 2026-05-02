@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import Goal from "../models/goal.js";
-import User from "../models/userModel.js";
 import RegularUser from "../models/regularUser.js";
 import { getDataFromToken } from "../helper/getDataFromToken.js";
 import { createNotification } from "../services/notification.service.js";

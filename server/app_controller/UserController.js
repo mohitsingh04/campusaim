@@ -647,9 +647,6 @@ export const generatePartnerInvite = async (req, res) => {
 // Register the Partner via Invite Link
 export const registerPartnerViaInvite = async (req, res) => {
     try {
-        const niche = await Niche.findOne({ name: "Education" }).select("_id name").lean();
-        const nicheId = niche?._id;
-
         const { token } = req.params;
         const { username, name, email, mobile_no: rawMobileNo, password } = req.body;
 
@@ -670,6 +667,9 @@ export const registerPartnerViaInvite = async (req, res) => {
         if (!invite) {
             return res.status(400).json({ error: "Invite link expired or invalid" });
         }
+
+        const createdByAdmin = await RegularUser.findById({ _id: invite?.createdBy }).select("name email nicheId");
+        const adminNicheId = createdByAdmin?.nicheId;
 
         // ---------------- VALIDATION ----------------
         if (await RegularUser.exists({ email })) {
@@ -703,7 +703,7 @@ export const registerPartnerViaInvite = async (req, res) => {
 
         // ---------------- CREATE USER ----------------
         const newUser = await RegularUser.create({
-            nicheId,
+            nicheId: adminNicheId,
             uniqueId,
             username,
             name,
@@ -721,7 +721,6 @@ export const registerPartnerViaInvite = async (req, res) => {
             message: "Partner registered successfully",
             userId: newUser._id,
         });
-
     } catch (err) {
         console.error("Register Partner Error:", err);
 

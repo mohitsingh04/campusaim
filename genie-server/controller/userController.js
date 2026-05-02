@@ -1240,3 +1240,40 @@ export const becomeAPartner = async (req, res) => {
         return res.status(500).json({ error: "Internal Server Error" });
     }
 };
+
+// Update User Niche
+export const updateUserNiche = async (req, res) => {
+    try {
+        const authUserId = await getDataFromToken(req);
+
+        if (!authUserId || !mongoose.Types.ObjectId.isValid(authUserId)) {
+            return res.status(401).json({ success: false, message: "Unauthorized" });
+        }
+
+        const { nicheId } = req.body;
+
+        if (!nicheId || !mongoose.Types.ObjectId.isValid(nicheId)) {
+            return res.status(400).json({ success: false, message: "Valid nicheId is required" });
+        }
+
+        // Use findByIdAndUpdate for a direct atomic update
+        const updatedUser = await RegularUser.findByIdAndUpdate(
+            authUserId,
+            { $set: { nicheId: nicheId } },
+            { new: true, runValidators: false } // new: true returns the updated doc
+        );
+
+        if (!updatedUser) {
+            return res.status(404).json({ success: false, message: "User not found." });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Niche updated successfully",
+            data: { nicheId: updatedUser.nicheId }
+        });
+    } catch (err) {
+        console.error("updateUserNiche error:", err);
+        return res.status(500).json({ success: false, error: "Internal Server Error" });
+    }
+};

@@ -1,7 +1,7 @@
 // controllers/supportController.js
 import mongoose from "mongoose";
 import Support from "../models/support.js";
-import User from "../models/userModel.js";
+import RegularUser from "../models/regularUser.js";
 import { getDataFromToken } from "../helper/getDataFromToken.js";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
@@ -21,7 +21,7 @@ export const createSupport = async (req, res) => {
         if (!mongoose.Types.ObjectId.isValid(authId))
             return res.status(400).json({ success: false, message: "Invalid user id" });
 
-        const authUser = await User.findById(authId).select("_id email");
+        const authUser = await RegularUser.findById(authId).select("_id email");
         if (!authUser) return res.status(404).json({ success: false, message: "User not found" });
 
         let { name, email, category, subject, message } = req.body;

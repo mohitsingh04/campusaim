@@ -1,31 +1,34 @@
-import User from "../../models/userModel.js";
+import RegularUser from "../../models/regularUser.js";
 import { createNotification } from "../../services/notification.service.js";
+import { getRoleIds } from "../../utils/profileRole.util.js";
+import { mapRoleForApp } from "../../utils/roleMapper.js";
 
-// ---------------- Notify Lead has been added ---------------- //
+/* ================= LEAD CREATED ================= */
 export const notifyLeadCreated = async ({ authUser, leadIds, leadName }) => {
     try {
-        const admins = await User.find({
-            role: "admin"
+        // 🔥 get admin role id
+        const adminRoleId = await getRoleIds("admin");
+
+        const admins = await RegularUser.find({
+            role: adminRoleId
         }).select("_id").lean();
 
         if (!admins.length) return;
 
         const count = leadIds.length;
         const actorName = authUser?.name || "A team member";
+        const actorRole = mapRoleForApp(authUser.role?.role);
 
-        // 1. Dynamic Title
         const title = count === 1 ? "New Lead Added" : "Bulk Leads Added";
 
-        // 2. Professional Message
         const message = count === 1
-            ? `${actorName} added a new lead: ${leadName}.`
-            : `${actorName} successfully uploaded ${count} leads to the system.`;
+            ? `${actorName} (${actorRole}) added a new lead: ${leadName}.`
+            : `${actorName} (${actorRole}) uploaded ${count} leads to the system.`;
 
-        // 3. Dispatch notifications to all admins
         await Promise.all(
             admins.map(admin =>
                 createNotification({
-                    receiverId: admin._id, // Updated field name
+                    receiverId: admin._id,
                     senderId: authUser._id,
                     type: "lead_created",
                     title,
@@ -33,7 +36,7 @@ export const notifyLeadCreated = async ({ authUser, leadIds, leadName }) => {
                     link: "/dashboard/leads/all",
                     meta: {
                         leadIds,
-                        addedBy: authUser.role
+                        addedBy: actorRole
                     }
                 })
             )
@@ -44,33 +47,33 @@ export const notifyLeadCreated = async ({ authUser, leadIds, leadName }) => {
     }
 };
 
-// ---------------- Notify Lead was assigned ---------------- //
+/* ================= LEAD ASSIGNMENT ================= */
 export const notifyLeadAssignment = async ({ assignToUser, authUser, leadIds }) => {
     try {
         const count = leadIds.length;
         const isMultiple = count > 1;
 
-        // 1. Dynamic Title: "New Lead Assigned" vs "5 New Leads Assigned"
+        const actorRole = mapRoleForApp(authUser.role?.role);
+
         const title = isMultiple
             ? `${count} New Leads Assigned`
             : "New Lead Assigned";
 
-        // 2. Dynamic Message: "Admin John assigned a lead to you"
         const message = isMultiple
-            ? `${authUser.name} (${authUser.role}) assigned ${count} leads to your bucket.`
-            : `${authUser.name} (${authUser.role}) assigned a new lead to you.`;
+            ? `${authUser.name} (${actorRole}) assigned ${count} leads to you.`
+            : `${authUser.name} (${actorRole}) assigned a new lead to you.`;
 
         await createNotification({
             receiverId: assignToUser._id,
             senderId: authUser._id,
             type: "lead_assigned",
-            title,   // e.g., "12 New Leads Assigned"
-            message, // e.g., "Admin Sarah assigned 12 leads to your bucket."
+            title,
+            message,
             link: `/dashboard/leads/all`,
             meta: {
                 leadIds,
                 count,
-                assignedByRole: authUser.role // Useful for FE styling
+                assignedByRole: actorRole
             }
         });
 
@@ -79,27 +82,29 @@ export const notifyLeadAssignment = async ({ assignToUser, authUser, leadIds }) 
     }
 };
 
-// ---------------- Notity Counselor assigned to temaleader ---------------- //
+/* ================= COUNSELOR ASSIGNMENT ================= */
 export const notifyCounselorAssignment = async ({ counselor, teamLeader, authUser }) => {
     try {
-        // 🔔 Notify the Team Leader
+        const actorRole = mapRoleForApp(authUser.role?.role);
+
+        // 🔔 Notify Team Leader
         await createNotification({
             receiverId: teamLeader._id,
             senderId: authUser._id,
             type: "team_member_added",
             title: "New Counselor Assigned",
-            message: `${counselor.name} has been added to your team by ${authUser.name}.`,
+            message: `${counselor.name} has been added to your team by ${authUser.name} (${actorRole}).`,
             link: `/dashboard/users/counselors/assigned`,
             meta: { counselorId: counselor._id }
         });
 
-        // 🔔 Notify the Counselor
+        // 🔔 Notify Counselor
         await createNotification({
             receiverId: counselor._id,
             senderId: authUser._id,
-            type: "counselor_assigned", // Using your existing enum type
+            type: "counselor_assigned",
             title: "Team Leader Assigned",
-            message: `${authUser.name} has assigned ${teamLeader.name} as your Team Leader.`,
+            message: `${authUser.name} (${actorRole}) assigned ${teamLeader.name} as your Team Leader.`,
             link: `/dashboard/settings?tab=profile`,
             meta: { teamLeaderId: teamLeader._id }
         });

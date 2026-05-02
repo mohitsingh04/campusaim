@@ -55,7 +55,6 @@ export default function AddTeamLeader() {
     name: "",
     email: "",
     mobile_no: "",
-    bio: "",
     role: teamLeader?._id, // ✅ default value
   };
 

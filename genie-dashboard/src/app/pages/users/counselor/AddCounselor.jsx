@@ -56,7 +56,6 @@ export default function AddCounselor() {
         name: "",
         email: "",
         mobile_no: "",
-        bio: "",
         role: counselor?._id, // ✅ default value
     };
 

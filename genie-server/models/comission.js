@@ -8,11 +8,10 @@ const comissionSchema = new mongoose.Schema({
         required: true,
     },
 
-    // type: {
-    //     type: String,
-    //     enum: ["flat", "percentage"],
-    //     default: "flat",
-    // },
+    type: {
+        type: String,
+        enum: ["global", "course-wise"],
+    },
 
     globalAmount: {
         type: Number,

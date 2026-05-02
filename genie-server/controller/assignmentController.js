@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import User from "../models/userModel.js";
 import RegularUser from "../models/regularUser.js";
 import Lead from "../models/leadsModel.js";
 import { getDataFromToken } from "../helper/getDataFromToken.js";
@@ -29,12 +28,12 @@ export const assignLeads = async (req, res) => {
             return res.status(400).json({ error: "No valid lead IDs provided" });
         }
 
-        const authUser = await User
+        const authUser = await RegularUser
             .findById(authUserId)
             .select("_id name role")
             .populate("role", "role");
 
-        const assignToUser = await User
+        const assignToUser = await RegularUser
             .findById(assignToId)
             .select("_id role teamLeader")
             .populate("role", "role");

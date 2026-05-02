@@ -25,7 +25,8 @@ import {
     getPartnerInvite,
     registerPartnerViaInvite,
     toggleUserStatus,
-    updateUser
+    updateUser,
+    updateUserNiche
 } from "../controller/userController.js";
 
 const userRouter = express.Router();
@@ -83,5 +84,8 @@ userRouter.post("/auth/partner/register/:token", registerPartnerViaInvite);
 
 // Become a partner
 userRouter.post("/become-a-partner", becomeAPartner);
+
+// Update User Niche
+userRouter.put("/users/update-niche", updateUserNiche);
 
 export default userRouter;

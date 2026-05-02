@@ -1,32 +1,44 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Breadcrumbs from "../../components/ui/BreadCrumb/Breadcrumbs";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import toast from "react-hot-toast";
-import { API } from "../../services/API";
-import FormInput from "../../components/ui/Form/FormInput";
+import { API, CampusaimAPI } from "../../services/API";
 import { capitalizeWords } from "../../utils/format";
 import FormTextarea from "../../components/ui/Form/FormTextarea";
 
+const validationSchema = Yup.object({
+    _id: Yup.string().required("Category is required"), // ✅ MUST
+    name: Yup.string()
+        .required("Name is required.")
+        .min(2),
+});
+
+const initialValues = {
+    _id: "", // ✅ category id will go here
+    name: "",
+    description: "",
+};
+
 export default function AddNiche() {
     const navigate = useNavigate();
+    const [category, setCategory] = useState([]);
 
-    const validationSchema = Yup.object({
-        name: Yup.string()
-            .required("Name is required.")
-            .trim("Name cannot start or end with spaces.")
-            .matches(
-                /^(?! )[A-Za-z]+(?: [A-Za-z]+)*$/,
-                "Name can contain only alphabets and single spaces, without leading or trailing spaces."
-            ).min(2, "Name must contain at least 2 characters"),
-    });
-
-    const initialValues = {
-        name: "",
-        description: "",
-    };
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const res = await CampusaimAPI.get("/category");
+                const filteredCat = res.data.filter((a) => a.parent_category === "Academic Type");
+                setCategory(filteredCat);
+            } catch (error) {
+                toast.error("Internal server error.");
+                console.error(error)
+            }
+        };
+        fetchCategories();
+    }, []);
 
     const handleSubmit = async (values) => {
         try {
@@ -49,6 +61,8 @@ export default function AddNiche() {
         validationSchema,
         onSubmit: handleSubmit,
     });
+
+    const stripHtml = (html) => html?.replace(/<[^>]+>/g, "") || "";
 
     return (
         <>
@@ -75,15 +89,32 @@ export default function AddNiche() {
                     <h2 className="text-lg font-semibold text-gray-900 mb-6">Add Niche</h2>
                     <form onSubmit={formik.handleSubmit} noValidate className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {/* Name */}
-                            <FormInput
-                                label="Name"
-                                name="name"
-                                placeholder="Enter niche"
-                                formik={formik}
-                                transform={capitalizeWords}
-                                trimOnBlur
-                            />
+                            <select
+                                name="_id"
+                                value={formik.values._id}
+                                onChange={(e) => {
+                                    const id = e.target.value;
+                                    const selected = category.find(c => c._id === id);
+
+                                    formik.setFieldValue("_id", id);
+                                    formik.setFieldValue("name", selected?.category_name || "");
+
+                                    // ✅ NEW: autofill description
+                                    formik.setFieldValue(
+                                        "description",
+                                        stripHtml(selected?.description)
+                                    );
+                                }}
+                                onBlur={formik.handleBlur}
+                                className="border rounded-md px-2 py-1 w-full"
+                            >
+                                <option value="">Select Category</option>
+                                {category.map((item) => (
+                                    <option key={item._id} value={item._id}>
+                                        {item.category_name}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
 
                         {/* Description */}

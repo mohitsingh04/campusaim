@@ -1,18 +1,24 @@
 import mongoose from "mongoose";
-import Comission from "../models/comission.js"; // your config model
+import Comission from "../models/comission.js";
 import ComissionEarning from "../models/comissionEarning.js";
 
 export const handleCommission = async (lead) => {
     try {
         console.log("🔥 handleCommission CALLED");
 
-        if (!lead || !lead._id) return;
+        if (!lead || !lead._id) {
+            console.log("❌ Invalid lead");
+            return;
+        }
 
         const { _id: leadId, name, contact, admission, status, createdBy } = lead;
 
-        if (status !== "converted") return;
+        if (status !== "converted") {
+            console.log("⏭ Skipped: not converted");
+            return;
+        }
 
-        const partnerId = createdBy; // ✅ partner = lead owner
+        const partnerId = createdBy;
         const courseId = admission?.courseId;
 
         if (
@@ -26,10 +32,7 @@ export const handleCommission = async (lead) => {
         }
 
         // 🔒 Duplicate protection
-        const exists = await ComissionEarning.exists({
-            leadId,
-            partnerId
-        });
+        const exists = await ComissionEarning.exists({ leadId, partnerId });
 
         if (exists) {
             console.log("⚠️ Commission already exists");
@@ -37,26 +40,40 @@ export const handleCommission = async (lead) => {
         }
 
         // 🔍 Fetch config
-        const config = await Comission.findOne({
-            partnerId: partnerId
-        });
+        const config = await Comission.findOne({ partnerId }).lean();
 
         if (!config) {
             console.log("❌ No commission config found");
             return;
         }
 
-        let amount = null;
+        console.log("⚙️ Config:", config);
 
-        // ✅ SAME LOGIC (no type)
+        let amount = null;
+        let type = null;
+
         const match = config.courseCommissions?.find(
             (c) => String(c.courseId) === String(courseId)
         );
 
-        if (match) amount = match.amount;
+        console.log("🔍 Match:", match);
 
-        if (amount === null && config.globalAmount != null) {
+        // ✅ FIX: ignore 0 / null / undefined
+        if (
+            match &&
+            typeof match.amount === "number" &&
+            match.amount > 0
+        ) {
+            amount = match.amount;
+            type = "course-wise";
+            console.log("✅ Using COURSE amount:", amount);
+        } else if (
+            typeof config.globalAmount === "number" &&
+            config.globalAmount > 0
+        ) {
             amount = config.globalAmount;
+            type = "global";
+            console.log("✅ Using GLOBAL amount:", amount);
         }
 
         if (amount === null) {
@@ -65,19 +82,21 @@ export const handleCommission = async (lead) => {
         }
 
         // ✅ CREATE ENTRY
-        await ComissionEarning.create({
+        const created = await ComissionEarning.create({
             partnerId,
             leadId,
             courseId,
             amount,
+            type,
             leadSnapshot: { name, contact },
             comissionSnapshot: {
-                globalAmount: config.globalAmount || null,
-                courseAmount: amount,
+                globalAmount: config.globalAmount ?? null,
+                courseAmount:
+                    match && match.amount > 0 ? match.amount : null,
             },
         });
 
-        console.log("✅ Commission CREATED:");
+        console.log("🎉 Commission CREATED:", created._id);
 
     } catch (err) {
         console.error("❌ handleCommission error:", err);

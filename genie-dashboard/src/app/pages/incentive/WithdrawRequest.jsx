@@ -281,16 +281,16 @@ export default function WithdrawRequest() {
                     <div className="flex flex-col">
                         <div className="flex items-center gap-2">
                             <span className="font-semibold text-sm text-gray-900">
-                                {row?.userId?.name || "-"}
+                                {row?.user?.name || "-"}
                             </span>
                         </div>
 
                         <span className="text-xs text-gray-400">
-                            {row?.userId?.email || "-"}
+                            {row?.user?.email || "-"}
                         </span>
 
                         <span className="text-xs text-gray-400">
-                            {row?.userId?.contact || "-"}
+                            {row?.user?.contact || "-"}
                         </span>
                     </div>
                 );

@@ -80,7 +80,7 @@ export default function UpdateStatusModal({
                         collegeId: values.collegeId,
                     };
                 }
-                
+
                 await API.put(`/leads/update-status/${lead._id}`, payload);
 
                 toast.success("Status updated");
@@ -176,13 +176,11 @@ export default function UpdateStatusModal({
                             className="w-full border p-2 rounded"
                         >
                             <option value="">Select User</option>
-                            {users
-                                // .filter((u) => u.role === "counselor")
-                                .map((u) => (
-                                    <option key={u.value} value={u.value}>
-                                        {u.label}
-                                    </option>
-                                ))}
+                            {users.map((u) => (
+                                <option key={u.value} value={u.value}>
+                                    {u.label}
+                                </option>
+                            ))}
                         </select>
 
                         <select

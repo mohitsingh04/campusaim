@@ -1,4 +1,4 @@
-import User from "../models/userModel.js";
+import RegularUser from "../models/regularUser.js";
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 import crypto from "crypto";
@@ -55,7 +55,7 @@ export const sendResetEmail = async ({ email, userId }) => {
 
         const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex");
 
-        await User.findByIdAndUpdate(userId, {
+        await RegularUser.findByIdAndUpdate(userId, {
             $set: {
                 forgotOrResetPasswordToken: hashedToken,
                 forgotOrResetPasswordTokenExpiry: Date.now() + 60 * 60 * 1000, // 1 hour

@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import User from "../models/userModel.js";
 import RegularUser from "../models/regularUser.js";
 import Role from "../models/role.js";
 import Lead from "../models/leadsModel.js";

@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import User from "../models/userModel.js";
 import Lead from "../models/leadsModel.js";
 import RegularUser from "../models/regularUser.js";
 import { getRoleMap, mapRoleForApp, getDbRoleKey, getRoleId } from "../utils/roleMapper.js";
@@ -203,29 +202,33 @@ export const addOrUpdateLeadConversation = async (req, res) => {
             next_follow_up_date: followUpDate
         });
 
-        // 🔥 Mark previous follow-up as completed
-        await LeadConversation.updateOne(
+        const lastPendingSession = await LeadConversation.findOne(
             {
                 lead_id,
-                "sessions.next_follow_up_date": { $ne: null },
-                "sessions.follow_up_completed": false
+                "sessions.next_follow_up_date": { $ne: null }
             },
-            {
-                $set: {
-                    "sessions.$[elem].follow_up_completed": true,
-                    "sessions.$[elem].follow_up_completed_at": new Date(),
-                    "sessions.$[elem].follow_up_completed_by": userId // ✅ IMPORTANT
-                }
-            },
-            {
-                arrayFilters: [
-                    {
-                        "elem.next_follow_up_date": { $ne: null },
-                        "elem.follow_up_completed": false
+            { sessions: { $slice: -1 } }
+        ).lean();
+
+        if (
+            lastPendingSession?.sessions?.length &&
+            lastPendingSession.sessions[0].next_follow_up_date &&
+            !lastPendingSession.sessions[0].follow_up_completed
+        ) {
+            await LeadConversation.updateOne(
+                {
+                    lead_id,
+                    "sessions._id": lastPendingSession.sessions[0]._id
+                },
+                {
+                    $set: {
+                        "sessions.$.follow_up_completed": true,
+                        "sessions.$.follow_up_completed_at": new Date(),
+                        "sessions.$.follow_up_completed_by": userId
                     }
-                ]
-            }
-        );
+                }
+            );
+        }
 
         // ---------------- SAVE SESSION ----------------
         const conversation = await LeadConversation.findOneAndUpdate(

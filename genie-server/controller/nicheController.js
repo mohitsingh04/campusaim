@@ -74,14 +74,21 @@ export const getNicheOptions = async (req, res) => {
 export const getNicheById = async (req, res) => {
     try {
         const { id } = req.params;
-        if (!mongoose.isValidObjectId(id)) {
-            return res.status(400).json({ message: "Niche id not find." });
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ error: "Invalid niche ID." });
         }
 
-        const niche = await Niche.find(id);
-        return res.status(201).json(niche);
+        const niche = await Niche.findById(id);
+
+        if (!niche) {
+            return res.status(404).json({ error: "Niche not found." });
+        }
+
+        return res.status(200).json(niche);
+
     } catch (error) {
-        console.error("Error fetching niche by id:", error);
+        console.error("Error fetching niche by ID:", error);
         return res.status(500).json({ error: "Internal Server Error." });
     }
 };
@@ -116,16 +123,18 @@ export const addNiche = async (req, res) => {
             return res.status(401).json({ error: "Unauthorized." });
         }
 
-        const { name, description } = req.body;
+        const { _id, name, description } = req.body;
+
+        if (!_id || !mongoose.Types.ObjectId.isValid(_id)) {
+            return res.status(400).json({ error: "Valid category ID is required." });
+        }
 
         if (!name?.trim()) {
             return res.status(400).json({ error: "Niche name is required." });
         }
 
-        const slug = generateSlug(name);
-
-        // 🚫 Duplicate niche check
-        const existingNiche = await Niche.exists({ slug });
+        // ✅ duplicate check by _id
+        const existingNiche = await Niche.exists({ _id });
         if (existingNiche) {
             return res.status(409).json({
                 error: "Niche already exists.",
@@ -133,19 +142,20 @@ export const addNiche = async (req, res) => {
         }
 
         const niche = await Niche.create({
+            _id: new mongoose.Types.ObjectId(_id), // ✅ SAME AS CATEGORY ID
             name: name.trim(),
             description,
-            slug,
+            slug: generateSlug(name),
         });
 
         return res.status(201).json({
             message: "Niche added successfully.",
             niche,
         });
+
     } catch (error) {
         console.error("Error adding niche:", error);
 
-        // Mongo unique index safety net
         if (error.code === 11000) {
             return res.status(409).json({
                 error: "Niche already exists.",
@@ -160,27 +170,32 @@ export const updateNiche = async (req, res) => {
     try {
         const { id } = req.params;
 
+        // ✅ Validate ID
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({ error: "Invalid niche ID." });
         }
 
-        const { name, status, description } = req.body;
+        // ❗ DO NOT accept name or slug updates
+        const { description, status } = req.body;
 
-        if (!name?.trim()) {
-            return res.status(400).json({ error: "Niche name is required." });
+        // ✅ Build safe update payload
+        const updatePayload = {
+            ...(description !== undefined && { description: description.trim() }),
+            ...(status !== undefined && { status }),
+        };
+
+        // 🚨 Prevent empty updates
+        if (Object.keys(updatePayload).length === 0) {
+            return res.status(400).json({
+                error: "Nothing to update.",
+            });
         }
 
+        // ✅ Update
         const updatedNiche = await Niche.findByIdAndUpdate(
             id,
-            {
-                name: name.trim(),
-                description: description?.trim() || "",
-                status: status ?? "active",
-            },
-            {
-                new: true,
-                runValidators: true,
-            }
+            updatePayload,
+            { new: true, runValidators: true }
         );
 
         if (!updatedNiche) {

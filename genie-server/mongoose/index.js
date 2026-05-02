@@ -1,16 +1,3 @@
-// import mongoose from "mongoose";
-// import dotenv from "dotenv";
-
-// dotenv.config();
-
-// // Leads Database URL
-// export const db = mongoose.createConnection(process.env.MONGO_URI);
-
-// // Server Database URL
-// export const connectDB = async () => {
-//     await mongoose.connect(process.env.CAMPUSAIM_MONGO_URI); // SAME as server
-// };
-
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 
@@ -21,8 +8,11 @@ if (!process.env.MONGO_URI || !process.env.CAMPUSAIM_MONGO_URI) {
     throw new Error("Missing database environment variables");
 }
 
-// ✅ External DB (Genie)
+// ✅ Genie DB
 export const db = mongoose.createConnection(process.env.MONGO_URI);
+
+// ✅ CampusAim DB (profile)
+export const campusaimDB = mongoose.createConnection(process.env.CAMPUSAIM_MONGO_URI);
 
 // ✅ Wrap external DB connection in promise (IMPORTANT)
 export const connectGenieDB = async () => {

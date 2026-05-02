@@ -3,7 +3,6 @@ import LeadConversation from "../models/leadConversation.js";
 import path from "path";
 import sharp from "sharp";
 import fs from "fs";
-import User from "../models/userModel.js";
 import { getDataFromToken } from "../helper/getDataFromToken.js";
 import mongoose from "mongoose";
 import XLSX from "xlsx";
@@ -466,9 +465,11 @@ export const addLead = async (req, res) => {
             name,
             email,
             contact,
+            category,
             address = "",
             city = "",
             state = "",
+            country = "",
             pincode = "",
             academics = {},
             preferences = {},
@@ -481,6 +482,19 @@ export const addLead = async (req, res) => {
                 error: "Name, email and contact are required",
             });
         }
+
+        console.log(name,
+            email,
+            contact,
+            category,
+            address,
+            city,
+            state,
+            country,
+            pincode,
+            academics,
+            preferences,
+            ref_code)
 
         const sanitizedName = String(name).trim();
         const sanitizedEmail = String(email).trim().toLowerCase();
@@ -519,9 +533,11 @@ export const addLead = async (req, res) => {
             name: sanitizedName,
             email: sanitizedEmail,
             contact: sanitizedContact,
+            category,
             address: address?.trim() || "",
-            city: city?.trim() || preferences?.preferredCity || "",
+            city: city?.trim() || "",
             state: state?.trim() || "",
+            country: country?.trim() || "",
             pincode: pincode?.trim() || "",
 
             academics: {
@@ -533,9 +549,10 @@ export const addLead = async (req, res) => {
             },
 
             preferences: {
-                courseName: preferences?.courseName?.trim() || undefined,
-                courseType: sanitizeEnum(preferences?.courseType, COURSE_TYPES),
-                specialization: preferences?.specialization?.trim() || undefined,
+                preferredProperty: preferences?.preferredProperty || undefined,
+                preferredCourse: preferences?.preferredCourse || undefined,
+
+                preferredCountry: preferences?.preferredCountry?.trim() || undefined,
                 preferredState: preferences?.preferredState?.trim() || undefined,
                 preferredCity: preferences?.preferredCity?.trim() || undefined,
                 collegeType:

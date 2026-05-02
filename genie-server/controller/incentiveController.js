@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import Incentive from "../models/incentive.js";
-import User from "../models/userModel.js";
 import RegularUser from "../models/regularUser.js";
 import { getDataFromToken } from "../helper/getDataFromToken.js";
 import axios from "axios";

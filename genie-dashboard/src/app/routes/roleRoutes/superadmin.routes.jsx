@@ -43,8 +43,8 @@ export const superadminRoutes = [
     /* ===== NICHE ===== */
     { path: "niche/all", element: <AllNiche /> },
     { path: "niche/add", element: <AddNiche /> },
-    { path: "niche/edit/:slug", element: <EditNiche /> },
-    { path: "niche/view/:slug", element: <ViewNiche /> },
+    { path: "niche/edit/:id", element: <EditNiche /> },
+    { path: "niche/view/:id", element: <ViewNiche /> },
 
     /* ===== QUESTIONS SETS ===== */
     { path: "question-set/all", element: <AllQuestionSet /> },

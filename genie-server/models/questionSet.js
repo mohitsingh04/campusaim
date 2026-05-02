@@ -24,7 +24,7 @@ const QuestionOptionSchema = new mongoose.Schema(
         },
         action: {
             type: String,
-            enum: ["CONTINUE", "STOP_CONVERSATION", "JUMP", "END"],
+            enum: ["CONTINUE", "STOP_CONVERSATION", "JUMP", "END", "CAPTURE_TEXT"],
             default: "CONTINUE",
         },
         jumpTo: {

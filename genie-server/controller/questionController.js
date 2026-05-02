@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 import Question from "../models/question.js";
 import { getDataFromToken } from "../helper/getDataFromToken.js";
-import User from "../models/userModel.js";
 import generateSlug from "../utils/generateSlug.js";
 
 export const getQuestionById = async (req, res) => {

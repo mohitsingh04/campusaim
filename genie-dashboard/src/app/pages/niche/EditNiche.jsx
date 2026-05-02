@@ -1,125 +1,107 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Breadcrumbs from "../../components/ui/BreadCrumb/Breadcrumbs";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { useFormik } from "formik";
-import * as Yup from "yup";
+import *as Yup from "yup";
 import toast from "react-hot-toast";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { API } from "../../services/API";
 import EditNicheSkeleton from "./Skeleton/EditNicheSkeleton";
-import FormInput from "../../components/ui/Form/FormInput";
-import { capitalizeWords } from "../../utils/format";
 import FormSelect from "../../components/ui/Form/FormSelect";
 import FormTextarea from "../../components/ui/Form/FormTextarea";
-
-const fetchNiche = async (slug) => {
-  if (!slug) throw new Error("Invalid slug");
-  const { data } = await API.get(`/niche/${slug}/get`);
-  return data;
-};
-
-const updateNiche = async ({ id, values }) => {
-  const { data } = await API.put(`/niche/${id}`, values);
-  return data;
-};
 
 /* ======================
    VALIDATION
 ====================== */
-
 const validationSchema = Yup.object({
-  name: Yup.string()
-    .required("Name is required.")
-    .trim("Name cannot start or end with spaces.")
-    .matches(
-      /^(?! )[A-Za-z]+(?: [A-Za-z]+)*$/,
-      "Name can contain only alphabets and single spaces."
-    )
-    .min(2, "Name must contain at least 2 characters"),
+  status: Yup.string().required("Status is required"),
+  description: Yup.string().nullable(),
 });
 
 /* ======================
    COMPONENT
 ====================== */
-
 export default function EditNiche() {
-  const { slug } = useParams();
+
+  const { id } = useParams();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
+
+  const [niche, setNiche] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
   /* ======================
      FETCH NICHE
   ====================== */
+  useEffect(() => {
+    const fetchNiche = async () => {
+      try {
+        if (!id) return;
 
-  const { data: niche, isLoading, isError } = useQuery({
-    queryKey: ["niche", slug],
-    queryFn: () => fetchNiche(slug),
-    enabled: Boolean(slug),
-    staleTime: 1000 * 60 * 5,
-    onError: () => toast.error("Failed to fetch niche"),
-  });
+        const { data } = await API.get(`/niche/${id}`);
+        setNiche(data);
 
-  /* ======================
-     UPDATE MUTATION
-  ====================== */
+      } catch (error) {
+        toast.error("Failed to fetch niche");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const updateMutation = useMutation({
-    mutationFn: updateNiche,
-
-    onSuccess: (data) => {
-      toast.success(data?.message || "Niche updated successfully");
-
-      queryClient.invalidateQueries({ queryKey: ["niche"] });
-      queryClient.invalidateQueries({ queryKey: ["niche", slug] });
-
-      navigate("/dashboard/niche/all");
-    },
-
-    onError: (error) => {
-      const message =
-        error?.response?.data?.error || "Something went wrong!";
-      toast.error(message);
-    },
-  });
+    fetchNiche();
+  }, [id]);
 
   /* ======================
      FORM
   ====================== */
-
   const formik = useFormik({
     enableReinitialize: true,
 
     initialValues: {
-      name: niche?.name ?? "",
-      description: niche?.description ?? "",
-      status: niche?.status ?? "",
+      name: niche?.name || "", // read-only
+      description: niche?.description || "",
+      status: niche?.status || "active",
     },
 
     validationSchema,
 
-    onSubmit: (values) => {
-      updateMutation.mutate({
-        id: niche?._id,
-        values,
-      });
+    onSubmit: async (values) => {
+      try {
+        setSubmitting(true);
+
+        // ✅ DO NOT send name
+        const payload = {
+          description: values.description,
+          status: values.status,
+        };
+
+        const { data } = await API.put(`/niche/${id}`, payload);
+
+        toast.success(data?.message || "Niche updated successfully");
+
+        navigate("/dashboard/niche/all");
+
+      } catch (error) {
+        toast.error(error?.response?.data?.error || "Something went wrong!");
+      } finally {
+        setSubmitting(false);
+      }
     },
   });
 
-  if (isLoading) return <EditNicheSkeleton />;
+  if (loading) return <EditNicheSkeleton />;
 
-  if (isError) {
+  if (!niche) {
     return (
       <div className="p-6 text-center text-red-500">
-        Failed to load niche
+        Niche not found
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
 
       <Breadcrumbs
         items={[
@@ -138,26 +120,28 @@ export default function EditNiche() {
         ]}
       />
 
-      {/* Form */}
-
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <form onSubmit={formik.handleSubmit} noValidate className="space-y-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-6">
+        <form onSubmit={formik.handleSubmit} className="space-y-6">
+
+          <h2 className="text-lg font-semibold text-gray-900">
             Edit Niche
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Name */}
-            <FormInput
-              label="Name"
-              name="name"
-              placeholder="Enter niche"
-              formik={formik}
-              transform={capitalizeWords}
-              trimOnBlur
-            />
 
-            {/* Status */}
+            {/* ✅ CATEGORY (READ ONLY) */}
+            <div>
+              <label className="block text-sm font-medium mb-1.5 text-gray-700">
+                Category
+              </label>
+              <input
+                value={formik.values.name}
+                disabled
+                className="w-full border rounded-lg px-3 py-2 bg-gray-100 cursor-not-allowed"
+              />
+            </div>
+
+            {/* ✅ STATUS */}
             <FormSelect
               label="Status"
               name="status"
@@ -168,9 +152,10 @@ export default function EditNiche() {
                 { value: "inactive", label: "Inactive" },
               ]}
             />
+
           </div>
 
-          {/* Description */}
+          {/* ✅ DESCRIPTION */}
           <FormTextarea
             label="Description"
             name="description"
@@ -179,19 +164,16 @@ export default function EditNiche() {
             formik={formik}
           />
 
-          {/* Submit */}
-
           <div className="flex justify-end mt-4">
             <button
               type="submit"
-              disabled={updateMutation.isPending}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:cursor-not-allowed"
+              disabled={submitting}
+              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
             >
-              {updateMutation.isPending
-                ? "Updating..."
-                : "Update"}
+              {submitting ? "Updating..." : "Update"}
             </button>
           </div>
+
         </form>
       </div>
     </div>

@@ -3,6 +3,8 @@ import WithdrawRequest from "../models/withdrawRequest.js";
 import IncentiveEarning from "../models/incentiveEarning.js";
 import { getDataFromToken } from "../helper/getDataFromToken.js";
 import ComissionEarning from "../models/comissionEarning.js";
+import RegularUser from "../models/regularUser.js";
+import { getRoleMap, mapRoleForApp, getDbRoleKey, getRoleId } from "../utils/roleMapper.js";
 
 // ---------------- CREATE REQUEST ----------------
 export const requestWithdraw = async (req, res) => {
@@ -96,22 +98,76 @@ export const requestWithdraw = async (req, res) => {
 // ---------------- GET REQUESTS (ADMIN) ----------------
 export const getWithdrawRequests = async (req, res) => {
     try {
+        /* ================= FETCH REQUESTS ================= */
         const requests = await WithdrawRequest.find()
-            .populate("userId", "name email contact")
             .populate({
                 path: "earnings",
                 populate: { path: "leadId", select: "name contact email" }
             })
-            .sort({ createdAt: -1 });
+            .sort({ createdAt: -1 })
+            .lean();
 
+        if (!requests.length) {
+            return res.json({
+                success: true,
+                count: 0,
+                data: []
+            });
+        }
+
+        /* ================= COLLECT USER IDS ================= */
+        const userIds = [
+            ...new Set(
+                requests
+                    .map(r => r.userId?.toString())
+                    .filter(Boolean)
+            )
+        ];
+
+        /* ================= FETCH USERS (PROFILE DB) ================= */
+        const users = await RegularUser.find({
+            _id: { $in: userIds }
+        })
+            .select("_id name email mobile_no role")
+            .populate("role", "role") // ✅ needed for mapRoleForApp
+            .lean();
+
+        /* ================= CREATE MAP ================= */
+        const userMap = new Map(
+            users.map(u => [
+                u._id.toString(),
+                {
+                    _id: u._id,
+                    name: u.name,
+                    email: u.email,
+                    contact: u.mobile_no,
+                    role: mapRoleForApp(u.role?.role) // 🔥 normalize role
+                }
+            ])
+        );
+
+        /* ================= MERGE ================= */
+        const enrichedRequests = requests.map(r => ({
+            ...r,
+            user: r.userId
+                ? userMap.get(r.userId.toString()) || null
+                : null
+        }));
+
+        /* ================= RESPONSE ================= */
         return res.json({
             success: true,
-            count: requests.length,
-            data: requests
+            count: enrichedRequests.length,
+            data: enrichedRequests
         });
 
     } catch (err) {
-        return res.status(500).json({ success: false, error: "Server error" });
+        console.error("Withdraw requests error:", err);
+
+        return res.status(500).json({
+            success: false,
+            error: "Server error"
+        });
     }
 };
 

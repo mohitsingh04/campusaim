@@ -41,21 +41,15 @@ const ContactHistorySchema = new Schema(
 );
 
 /* -------------------------------------------------- */
-/* Course Preference Sub-Schema                       */
+/* Preference Sub-Schema                       */
 /* -------------------------------------------------- */
-const CoursePreferenceSchema = new Schema(
+const PreferenceSchema = new Schema(
     {
-        courseName: { type: String, trim: true, maxlength: 120 },
+        preferredProperty: { type: Schema.Types.ObjectId },
+        preferredCourse: { type: Schema.Types.ObjectId },
 
-        courseType: {
-            type: String,
-            enum: ["UG", "PG", "Diploma", "Certificate", "PhD", "Other"],
-        },
-
-        specialization: { type: String, trim: true, maxlength: 120 },
-
+        preferredCountry: { type: String, trim: true, maxlength: 80 },
         preferredState: { type: String, trim: true, maxlength: 80 },
-
         preferredCity: { type: String, trim: true, maxlength: 80 },
 
         collegeType: {
@@ -199,17 +193,22 @@ const LeadSchema = new Schema(
             set: (v) => v || null,
         },
 
+        category: {
+            type: Schema.Types.ObjectId
+        },
+
         /* 📍 Address */
         address: { type: String, trim: true, maxlength: 150 },
         city: { type: String, trim: true, maxlength: 80 },
         state: { type: String, trim: true, maxlength: 80 },
+        country: { type: String, trim: true, maxlength: 80 },
         pincode: { type: String, trim: true },
 
         /* 🎓 Academic Details */
         academics: AcademicSchema,
 
-        /* 🎯 Course Preferences */
-        preferences: CoursePreferenceSchema,
+        /* 🎯 Course & Institution Preferences */
+        preferences: PreferenceSchema,
 
         /* 📊 Activity Tracking */
         lastActivity: {

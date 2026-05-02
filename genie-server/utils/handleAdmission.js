@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import Incentive from "../models/incentive.js";
 import IncentiveEarning from "../models/incentiveEarning.js";
-import User from "../models/userModel.js";
+import RegularUser from "../models/regularUser.js";
 
 export const handleAdmission = async (lead) => {
     try {
@@ -49,62 +49,64 @@ export const handleAdmission = async (lead) => {
         // ================================
         // ✅ FUNCTION: CREATE INCENTIVE
         // ================================
+        // ================================
+        // ✅ FUNCTION: CREATE INCENTIVE
+        // ================================
         const createIncentive = async (targetUserId, role = "USER") => {
             try {
                 console.log(`➡️ Processing incentive for ${role}:`, targetUserId);
 
-                // 🔒 Duplicate check
                 const exists = await IncentiveEarning.exists({
                     leadId,
                     userId: targetUserId
                 });
-
-                console.log("🔍 Existing incentive?", !!exists);
 
                 if (exists) {
                     console.log("⚠️ Skipped: Already exists");
                     return;
                 }
 
-                // 🔍 Fetch incentive config
                 const incentive = await Incentive.findOne({
                     userId: targetUserId
                 }).lean();
-
-                console.log("📊 Incentive config:", incentive);
 
                 if (!incentive) {
                     console.log("❌ No incentive config found");
                     return;
                 }
 
-                let amount = null;
+                console.log("📊 Incentive config:", incentive);
 
-                // 1️⃣ Try course-wise first
+                let amount = null;
+                let type = null;
+
+                // 🔍 find course match
                 const match = incentive.courseIncentives?.find(
                     (c) => String(c.courseId) === String(courseId)
                 );
 
-                if (match) {
+                console.log("🔍 Match:", match);
+
+                // ✅ FIX: ignore 0/null/undefined
+                if (
+                    match &&
+                    typeof match.amount === "number" &&
+                    match.amount > 0
+                ) {
                     amount = match.amount;
-                }
-
-                // 2️⃣ Fallback to global
-                if (amount === null && incentive.globalAmount != null) {
+                    type = "course-wise";
+                    console.log("✅ Using COURSE incentive:", amount);
+                } else if (
+                    typeof incentive.globalAmount === "number" &&
+                    incentive.globalAmount > 0
+                ) {
                     amount = incentive.globalAmount;
+                    type = "global";
+                    console.log("✅ Using GLOBAL incentive:", amount);
                 }
-
-                console.log("💰 Calculated amount:", amount);
 
                 if (amount === null) {
-                    console.log("❌ No amount resolved", {
-                        courseId: String(courseId),
-                        available: incentive.courseIncentives?.map(c => ({
-                            id: String(c.courseId),
-                            amount: c.amount
-                        })),
-                        globalAmount: incentive.globalAmount
-                    });
+                    console.log("❌ No amount resolved");
                     return;
                 }
 
@@ -113,16 +115,17 @@ export const handleAdmission = async (lead) => {
                     leadId,
                     courseId,
                     amount,
-                    type: incentive.type,
+                    type,
                     leadSnapshot: { name, contact },
                     incentiveSnapshot: {
-                        type: incentive.type,
-                        globalAmount: incentive.globalAmount || null,
-                        courseAmount: amount,
+                        type,
+                        globalAmount: incentive.globalAmount ?? null,
+                        courseAmount:
+                            match && match.amount > 0 ? match.amount : null,
                     },
                 });
 
-                console.log("✅ Incentive CREATED:", created._id);
+                console.log("🎉 Incentive CREATED:", created._id);
 
             } catch (err) {
                 console.error("❌ createIncentive error:", err);
@@ -137,7 +140,7 @@ export const handleAdmission = async (lead) => {
         // ================================
         // ✅ TEAM LEADER
         // ================================
-        const counselor = await User.findById(userId).lean();
+        const counselor = await RegularUser.findById(userId).lean();
 
         console.log("👤 Counselor Data:", counselor);
 
@@ -156,81 +159,3 @@ export const handleAdmission = async (lead) => {
         console.error("❌ handleAdmission error:", err);
     }
 };
-
-// import mongoose from "mongoose";
-// import Incentive from "../models/incentive.js";
-// import IncentiveEarning from "../models/incentiveEarning.js";
-
-// export const handleAdmission = async (lead) => {
-//     try {
-//         const { _id: leadId, name, contact, admission } = lead;
-
-//         const counselorId = admission?.counselorId;
-//         const courseId = admission?.courseId;
-
-//         console.log("🔥 handleAdmission CALLED", {
-//             leadId,
-//             courseId,
-//             counselorId
-//         });
-
-//         if (
-//             !counselorId ||
-//             !courseId ||
-//             !mongoose.Types.ObjectId.isValid(counselorId) ||
-//             !mongoose.Types.ObjectId.isValid(courseId)
-//         ) {
-//             console.log("❌ Invalid data for incentive", { counselorId, courseId });
-//             return;
-//         }
-
-//         const exists = await IncentiveEarning.exists({ leadId });
-//         if (exists) return;
-
-//         const incentive = await Incentive.findOne({ counselorId }).lean();
-//         if (!incentive) return;
-
-//         let amount = null;
-
-//         if (incentive.type === "global") {
-//             amount = incentive.globalAmount;
-//         }
-
-//         if (incentive.type === "course-wise") {
-//             const match = incentive.courseIncentives?.find(
-//                 (c) => String(c.courseId) === String(courseId)
-//             );
-//             if (match) amount = match.amount;
-//         }
-
-//         if (amount === null) {
-//             console.log("❌ No incentive match found");
-//             return;
-//         }
-
-//         const result = await IncentiveEarning.findOneAndUpdate(
-//             { leadId },
-//             {
-//                 $setOnInsert: {
-//                     counselorId,
-//                     leadId,
-//                     courseId,
-//                     amount,
-//                     type: incentive.type,
-//                     leadSnapshot: { name, contact },
-//                     incentiveSnapshot: {
-//                         type: incentive.type,
-//                         globalAmount: incentive.globalAmount || null,
-//                         courseAmount: amount,
-//                     },
-//                 },
-//             },
-//             { upsert: true, new: true }
-//         );
-
-//         console.log("✅ Incentive added:", result._id);
-
-//     } catch (err) {
-//         console.error("Incentive calc error:", err);
-//     }
-// };

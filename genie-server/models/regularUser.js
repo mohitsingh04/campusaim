@@ -1,6 +1,11 @@
 import mongoose from "mongoose";
+import { campusaimDB } from "../mongoose/index.js";
 
 const userSchema = new mongoose.Schema({
+    nicheId: {
+        type: mongoose.Schema.Types.ObjectId,
+        default: null
+    },
     uniqueId: {
         type: Number,
         required: true,
@@ -87,5 +92,5 @@ const userSchema = new mongoose.Schema({
     lastLoginAt: { type: Date, default: null },
 });
 
-const RegularUser = mongoose.models.user || mongoose.model("user", userSchema);
+const RegularUser = campusaimDB.models.user || campusaimDB.model("user", userSchema);
 export default RegularUser;

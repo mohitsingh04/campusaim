@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useRef } from "react";
+import React, { useEffect, useMemo, useState, useRef,useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
     CheckCircle2,
@@ -11,7 +11,6 @@ import {
     XCircle,
 } from "lucide-react";
 
-import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 
@@ -28,56 +27,63 @@ import useDebounce from "../../utils/useDebounce";
 
 const ITEMS_PER_PAGE = 10;
 
-/* =========================
-   API (INLINE — NOT SEPARATE)
-========================= */
-
-const fetchNiche = async ({ page, search }) => {
-    try {
-        const { data } = await API.get("/niche", {
-            params: {
-                page,
-                limit: ITEMS_PER_PAGE,
-                search,
-            },
-        });
-        return data;
-    } catch (error) {
-        throw new Error(error?.response?.data?.message || "Failed to fetch niche data");
-    }
-};
-
-const deleteNiche = async (id) => {
-    try {
-        return await API.delete(`/niche/${id}`);
-    } catch (error) {
-        throw new Error(error?.response?.data?.message || "Failed to delete niche");
-    }
-};
-
 export default function AllNiche() {
     const navigate = useNavigate();
-    const queryClient = useQueryClient();
-
     const [searchParams, setSearchParams] = useSearchParams();
 
-    // Enforce a minimum of 1 to prevent ?page=0 or NaN errors
     const pageFromURL = Math.max(1, parseInt(searchParams.get("page")) || 1);
 
     const [searchTerm, setSearchTerm] = useState("");
     const debouncedSearch = useDebounce(searchTerm, 500);
-
-    // Track previous search to prevent erroneous URL overwrites on mount
     const prevSearchRef = useRef(debouncedSearch);
 
+    const [niche, setNiche] = useState([]);
+    const [pagination, setPagination] = useState({});
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
+
     const [selectedNiche, setSelectedNiche] = useState(new Set());
+
+    /* =========================
+           FETCH FUNCTION
+        ========================== */
+
+    const fetchNiche = useCallback(async () => {
+        try {
+            setIsLoading(true);
+            setError(null);
+
+            const { data } = await API.get("/niche", {
+                params: {
+                    page: pageFromURL,
+                    limit: ITEMS_PER_PAGE,
+                    search: debouncedSearch,
+                },
+            });
+
+            setNiche(data?.data || []);
+            setPagination(data?.pagination || {});
+        } catch (err) {
+            console.error(err);
+            setError(err?.response?.data?.message || "Failed to fetch niche");
+        } finally {
+            setIsLoading(false);
+        }
+    }, [pageFromURL, debouncedSearch]);
+
+    /* =========================
+       EFFECT: FETCH
+    ========================== */
+
+    useEffect(() => {
+        fetchNiche();
+    }, [fetchNiche]);
 
     /* =========================
        RESET PAGE ON SEARCH
     ========================== */
 
     useEffect(() => {
-        // Only trigger a page reset if the search query explicitly changes.
         if (prevSearchRef.current !== debouncedSearch) {
             setSearchParams((prev) => {
                 const params = new URLSearchParams(prev);
@@ -89,45 +95,38 @@ export default function AllNiche() {
     }, [debouncedSearch, setSearchParams]);
 
     /* =========================
-       FETCH DATA
-    ========================== */
-
-    const { data, isLoading, isError } = useQuery({
-        queryKey: ["niche", pageFromURL, debouncedSearch],
-
-        queryFn: () =>
-            fetchNiche({
-                page: pageFromURL,
-                search: debouncedSearch,
-            }),
-        // Assumption: React Query v5 based on keepPreviousData import
-        placeholderData: keepPreviousData,
-        staleTime: 1000 * 60 * 5,
-    });
-
-    const niche = data?.data || [];
-    const pagination = data?.pagination || {};
-
-    /* =========================
        DELETE
     ========================== */
 
-    const deleteMutation = useMutation({
-        mutationFn: deleteNiche,
-
-        onSuccess: () => {
+    const deleteNiche = async (id) => {
+        try {
+            await API.delete(`/niche/${id}`);
             toast.success("Niche deleted successfully");
-            setSelectedNiche(new Set()); // Clear selection on successful delete
+            setSelectedNiche(new Set());
 
-            queryClient.invalidateQueries({
-                queryKey: ["niche"],
-            });
-        },
+            // ✅ REFETCH AFTER DELETE
+            fetchNiche();
+        } catch (error) {
+            toast.error(error?.response?.data?.message || "Delete failed");
+        }
+    };
 
-        onError: (error) => {
-            toast.error(error.message || "Delete failed");
-        },
-    });
+    const confirmDelete = async (id) => {
+        const result = await Swal.fire({
+            title: "Are you sure?",
+            text: "This action cannot be undone",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, delete",
+            customClass: { popup: "swal2-small" },
+        });
+
+        if (result.isConfirmed) deleteNiche(id);
+    };
+
+    /* =========================
+       BULK EXPORT
+    ========================== */
 
     const handleBulkAction = (action) => {
         if (!selectedNiche.size) {
@@ -139,60 +138,38 @@ export default function AllNiche() {
             selectedNiche.has(row._id)
         );
 
-        switch (action) {
-            case "export":
-                exportSelectedRows(selectedRows);
-                break;
-
-            default:
-                toast.error("Invalid action");
-        }
+        if (action === "export") exportSelectedRows(selectedRows);
     };
 
     const exportSelectedRows = (rows) => {
         try {
             const headers = ["Name", "Status"];
-
-            const csvRows = rows.map((row) => [
-                row.name || "",
-                row.status || "",
-            ]);
+            const csvRows = rows.map((r) => [r.name || "", r.status || ""]);
 
             const csvContent =
-                [headers, ...csvRows]
-                    .map((e) => e.join(","))
-                    .join("\n");
+                [headers, ...csvRows].map((e) => e.join(",")).join("\n");
 
-            const blob = new Blob([csvContent], {
-                type: "text/csv;charset=utf-8;",
-            });
-
+            const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
             const url = URL.createObjectURL(blob);
 
             const link = document.createElement("a");
             link.href = url;
             link.download = "niche-export.csv";
-
-            document.body.appendChild(link);
             link.click();
-            document.body.removeChild(link);
 
-            // Clean up the object URL to prevent memory leaks
             URL.revokeObjectURL(url);
 
             toast.success("Export successful");
-        } catch (error) {
-            console.error("Export error:", error);
+        } catch {
             toast.error("Export failed");
         }
     };
 
     /* =========================
-       PAGE CHANGE
+       PAGINATION
     ========================== */
 
     const handlePageChange = (page) => {
-        // Use functional state update to preserve any other URL parameters
         setSearchParams((prev) => {
             const params = new URLSearchParams(prev);
             params.set("page", page.toString());
@@ -213,45 +190,18 @@ export default function AllNiche() {
     };
 
     const handleSelectAll = () => {
-        if (!niche.length) return;
-
         const pageIds = niche.map((row) => row._id);
         const allSelected = pageIds.every((id) => selectedNiche.has(id));
-        const next = new Set(selectedNiche);
 
-        if (allSelected) pageIds.forEach((id) => next.delete(id));
-        else pageIds.forEach((id) => next.add(id));
+        const next = new Set(selectedNiche);
+        pageIds.forEach((id) =>
+            allSelected ? next.delete(id) : next.add(id)
+        );
 
         setSelectedNiche(next);
     };
 
-    /* =========================
-       DELETE CONFIRM
-    ========================== */
-
-    const confirmDelete = async (id) => {
-        try {
-            const result = await Swal.fire({
-                title: "Are you sure?",
-                text: "This action cannot be undone",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonText: "Yes, delete",
-                customClass: { popup: "swal2-small" },
-            });
-
-            if (!result.isConfirmed) return;
-
-            deleteMutation.mutate(id);
-        } catch (error) {
-            console.error("Delete confirmation error:", error);
-        }
-    };
-
-    /* =========================
-       TABLE COLUMNS
-    ========================== */
-
+    /* ========== TABLE COLUMNS ========== */
     const columns = useMemo(
         () => [
             {
@@ -291,7 +241,7 @@ export default function AllNiche() {
                             Icon={Eye}
                             variant="neutral"
                             onClick={() =>
-                                navigate(`/dashboard/niche/view/${row.slug}`)
+                                navigate(`/dashboard/niche/view/${row._id}`)
                             }
                         />
 
@@ -300,7 +250,7 @@ export default function AllNiche() {
                             Icon={SquarePen}
                             variant="primary"
                             onClick={() =>
-                                navigate(`/dashboard/niche/edit/${row.slug}`)
+                                navigate(`/dashboard/niche/edit/${row._id}`)
                             }
                         />
 
@@ -317,10 +267,7 @@ export default function AllNiche() {
         [navigate]
     );
 
-    /* =========================
-       STATS
-    ========================== */
-
+    /* ========== STATS ========== */
     const statsData = useMemo(() => {
         let active = 0;
         let inactive = 0;
@@ -363,14 +310,6 @@ export default function AllNiche() {
             },
         ];
     }, [niche, pagination.total]);
-
-    if (isError) {
-        return (
-            <div className="p-6 text-center text-red-500">
-                Failed to load niche data
-            </div>
-        );
-    }
 
     return (
         <div className="space-y-6">
