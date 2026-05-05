@@ -91,6 +91,8 @@ const RelatedBlogs = ({ blog }: { blog?: BlogsProps | null }) => {
     getBlogs();
   }, [getBlogs]);
 
+  if (blogs?.length <= 0) return;
+
   return (
     <div className="space-y-4 sticky top-15">
       <div className="bg-(--primary-bg) text-(--text-color) rounded-custom shadow-custom p-5">

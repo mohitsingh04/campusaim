@@ -2,24 +2,16 @@ import InsitutesLoader from "@/ui/loader/page/institutes/Institutes";
 import { Metadata } from "next";
 import { ReactNode, Suspense } from "react";
 
-const title = "Top College & University Courses";
-const keywords = [
-  "college courses",
-  "university courses",
-  "top courses after 12th",
-  "UG courses",
-  "PG courses",
-  "diploma courses",
-  "online courses",
-];
+const title = "Entrance Exams Details";
+const keywords = ["entrance exams", "competitive exams", "admission exams"];
 const description =
-  "Explore top college and university courses at CampusAim. Compare fees, eligibility, admissions, duration, careers, and specialisations in one place online today.";
+  "Explore top entrance exams in India with exam dates, eligibility, syllabus, application process, admit card, results, and preparation details at Campusaim.";
 const featuredImage = [
   {
     url: "/img/main-images/campusaim.png",
     width: 1200,
     height: 700,
-    alt: "Courses Campusaim",
+    alt: "Exams Campusaim",
   },
 ];
 export const metadata: Metadata = {
@@ -27,12 +19,12 @@ export const metadata: Metadata = {
   description: description,
   keywords: keywords,
   alternates: {
-    canonical: "/courses",
+    canonical: "/exams",
   },
   openGraph: {
     title: title,
     description: description,
-    url: "/courses",
+    url: "/exams",
     siteName: "Campusaim",
     images: featuredImage,
     type: "website",

@@ -5,17 +5,18 @@ export async function GET() {
 
   const staticRoutes = [
     { path: "/", priority: 1.0, changefreq: "weekly" },
-    { path: "/institutes", priority: 0.9, changefreq: "weekly" },
-    { path: "/courses", priority: 0.8, changefreq: "weekly" },
-    { path: "/exams", priority: 0.8, changefreq: "weekly" },
-    // { path: "/blog", priority: 0.8, changefreq: "weekly" },
-    // { path: "/events", priority: 0.8, changefreq: "weekly" },
-    // { path: "/news-and-updates", priority: 0.8, changefreq: "weekly" },
+    { path: "/colleges", priority: 0.9, changefreq: "weekly" },
+    { path: "/universities", priority: 0.9, changefreq: "weekly" },
+    { path: "/schools", priority: 0.9, changefreq: "weekly" },
+    { path: "/coachings", priority: 0.9, changefreq: "weekly" },
+    { path: "/courses", priority: 0.9, changefreq: "weekly" },
+    { path: "/exams", priority: 0.9, changefreq: "weekly" },
     { path: "/auth/register", priority: 0.8, changefreq: "weekly" },
     { path: "/auth/login", priority: 0.8, changefreq: "weekly" },
     { path: "/about-us", priority: 0.8, changefreq: "weekly" },
     { path: "/contact-us", priority: 0.8, changefreq: "weekly" },
     { path: "/cancellation-policy", priority: 0.8, changefreq: "weekly" },
+    { path: "/community-guidelines", priority: 0.8, changefreq: "weekly" },
     { path: "/cookies", priority: 0.8, changefreq: "weekly" },
     { path: "/disclaimer", priority: 0.8, changefreq: "weekly" },
     { path: "/terms-and-conditions", priority: 0.8, changefreq: "weekly" },
@@ -34,7 +35,7 @@ ${staticRoutes
     <lastmod>${now}</lastmod>
     <changefreq>${changefreq}</changefreq>
     <priority>${priority}</priority>
-  </url>`
+  </url>`,
   )
   .join("")}
 </urlset>`;

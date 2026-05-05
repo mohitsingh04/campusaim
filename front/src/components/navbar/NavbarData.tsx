@@ -1,93 +1,45 @@
 import { useCallback, useEffect, useState } from "react";
 import API from "@/context/API";
-import { CategoryProps, CourseProps, SeoProps } from "@/types/Types";
-import {
-  generateSlug,
-  getErrorResponse,
-  shuffleArray,
-} from "@/context/Callbacks";
-import { PropertyProps } from "@/types/PropertyTypes";
-
-interface UsePropertyMenuDataProps {
-  categories: CategoryProps[] | undefined;
-  academicType?: string;
-}
+import { CategoryProps, ExamProps, SeoProps } from "@/types/Types";
+import { getErrorResponse } from "@/context/Callbacks";
 
 export function useCoursesMenuData({
   categories,
+  enabled = false,
 }: {
-  categories: CategoryProps[];
+  categories: CategoryProps[] | undefined;
+  enabled?: boolean;
 }) {
   const [courseMenuData, setCourseMenuData] = useState<any>(null);
-  const [courseLoading, setCourseLoading] = useState(true);
+  const [courseLoading, setCourseLoading] = useState(false);
 
-  const getCategoryById = useCallback(
-    (_id: string) => {
-      if (!categories?.length) return null;
-      return categories.find((item) => item._id === _id)?.category_name || null;
+  const getCategoryName = useCallback(
+    (input: CategoryProps | string | undefined) => {
+      if (!input) return null;
+
+      if (typeof input === "object" && "category_name" in input) {
+        return input.category_name;
+      }
+
+      if (typeof input === "string" && categories) {
+        const found = categories.find((item) => item._id === input);
+        return found?.category_name || null;
+      }
+
+      return null;
     },
     [categories],
   );
 
   useEffect(() => {
-    const fetchCourses = async () => {
+    if (!enabled || courseMenuData) return;
+
+    const fetchProperties = async () => {
       try {
         setCourseLoading(true);
-
-        const [courseRes, seoRes] = await Promise.all([
-          API.get("/course"),
-          API.get("/all/seo?type=course"),
-        ]);
-
-        const courses: CourseProps[] = courseRes.data;
-        const seoList: SeoProps[] = seoRes.data;
-
-        const menuData: Record<string, any> = {};
-
-        courses.forEach((course) => {
-          const programType = getCategoryById(course.program_type) || "Other";
-
-          if (!menuData[programType]) {
-            menuData[programType] = {
-              courses: {
-                title: "Courses",
-                links: [],
-                viewAll: `/courses?type=${generateSlug(programType)}`,
-              },
-              // universities: {
-              //   title: "Universities",
-              //   links: [],
-              //   viewAll: `/universities?type=${generateSlug(programType)}`,
-              // },
-              // exams: {
-              //   title: "Exams",
-              //   links: [],
-              //   viewAll: `/exams?type=${generateSlug(programType)}`,
-              // },
-            };
-          }
-
-          // 2. Find SEO Slug for the course
-          const matchedSeo = seoList.find(
-            (seo) => seo.course_id === course._id,
-          );
-
-          if (matchedSeo?.slug) {
-            // 3. Push to links (Currently mapping to 'courses' sub-category)
-            if (menuData[programType].courses.links.length < 10) {
-              menuData[programType].courses.links.push({
-                name: course.course_name,
-                href: `/course/${matchedSeo.slug}`,
-              });
-            }
-          }
-
-          // Note: If you have separate API calls for Exams and Universities,
-          // you would fetch and map them into menuData[programType].exams.links
-          // and menuData[programType].universities.links here.
-        });
-
-        setCourseMenuData(menuData);
+        const res = await API.get("/menu/courses");
+        const courses = res?.data;
+        setCourseMenuData(courses);
       } catch (err) {
         getErrorResponse(err, true);
       } finally {
@@ -95,94 +47,57 @@ export function useCoursesMenuData({
       }
     };
 
-    fetchCourses();
-  }, [getCategoryById]);
+    fetchProperties();
+  }, [enabled, courseMenuData, getCategoryName]);
 
   return { courseMenuData, courseLoading };
 }
-
 export function usePropertyMenuData({
   categories,
-  academicType,
-}: UsePropertyMenuDataProps) {
+  enabled = false,
+}: {
+  categories: CategoryProps[] | undefined;
+  enabled?: boolean;
+}) {
   const [propertyMenuData, setPropertyMenuData] = useState<any>(null);
-  const [propertyLoading, setPropertyLoading] = useState(true);
+  const [propertyLoading, setPropertyLoading] = useState(false);
 
-  const getCategoryById = useCallback(
-    (_id: number | string) => {
-      if (!categories?.length) return null;
-      return categories.find((item) => item._id === _id)?.category_name || null;
+  const getCategoryName = useCallback(
+    (input: CategoryProps | string | undefined) => {
+      if (!input) return null;
+
+      if (typeof input === "object" && "category_name" in input) {
+        return input.category_name;
+      }
+
+      if (typeof input === "string" && categories) {
+        const found = categories.find((item) => item._id === input);
+        return found?.category_name || null;
+      }
+
+      return null;
     },
     [categories],
   );
 
   useEffect(() => {
-    if (!categories?.length) return;
+    if (!enabled || propertyMenuData) return;
 
     const fetchProperties = async () => {
       try {
         setPropertyLoading(true);
-
-        const res = await API.get("/property");
-
-        const properties: PropertyProps[] = shuffleArray(res.data)
-          .filter((p: any) => {
-            if (!academicType) return true;
-
-            const academicCategory = getCategoryById(p?.academic_type);
-            if (!academicCategory) return false;
-
-            return generateSlug(academicCategory) === academicType;
-          })
-          .map((item: any) => {
-            const categoryName = getCategoryById(item?.academic_type);
-            const propertyTypeName = getCategoryById(item?.property_type);
-
-            if (!categoryName || !propertyTypeName) return null;
-
-            return {
-              ...item,
-              academic_type: categoryName,
-              property_type: propertyTypeName,
-            };
-          })
-          .filter(Boolean);
-
-        const menuData: Record<string, any> = {};
-
-        properties.forEach((p) => {
-          if (!menuData[p?.academic_type]) {
-            menuData[p?.academic_type] = {};
-          }
-
-          if (!menuData[p?.academic_type][p?.property_type]) {
-            menuData[p?.academic_type][p?.property_type] = {
-              title: p?.property_type,
-              links: [],
-              viewAll: `${p?.academic_type === "University" ? "universities" : `${generateSlug(p?.academic_type)}s`}?property_type=${generateSlug(p?.property_type)}`,
-            };
-          }
-
-          menuData[p?.academic_type][p?.property_type].links.push({
-            name: p?.property_name,
-            href: `/${generateSlug(p?.academic_type)}/${p?.property_slug}/overview`,
-          });
-
-          menuData[p?.academic_type][p?.property_type].links = menuData[
-            p?.academic_type
-          ][p?.property_type].links.slice(0, 10);
-        });
-
-        setPropertyMenuData(menuData);
-      } catch (error) {
-        getErrorResponse(error, true);
+        const res = await API.get("/menu/property");
+        const properties = res?.data;
+        setPropertyMenuData(properties);
+      } catch (err) {
+        getErrorResponse(err, true);
       } finally {
         setPropertyLoading(false);
       }
     };
 
     fetchProperties();
-  }, [categories, academicType, getCategoryById]);
+  }, [enabled, propertyMenuData, getCategoryName]);
 
   return { propertyMenuData, propertyLoading };
 }
@@ -196,13 +111,13 @@ export function useExamMenuData() {
       try {
         setExamLoading(true);
 
-        const courseRes = await API.get("/exam");
-        const courses: CourseProps[] = courseRes.data;
+        const examRes = await API.get("/exam");
+        const allExams: ExamProps[] = examRes.data;
 
         const seoRes = await API.get("/all/seo?type=exam");
         const seoList: SeoProps[] = seoRes.data;
 
-        const links = courses
+        const links = allExams
           .map((exam) => {
             const matchedSeo = seoList.find((seo) => seo.exam_id === exam._id);
 

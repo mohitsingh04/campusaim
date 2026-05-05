@@ -1,24 +1,19 @@
-"use client";
-
-import React, { useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { redirect } from "next/navigation";
 import { generateSlug } from "@/context/Callbacks";
-import InstituteDetailLoader from "@/ui/loader/page/institutes/InstituteDetail";
 
-export default function Page() {
-  const { category, property_slug } = useParams<{
+interface PageProps {
+  params: Promise<{
     category: string;
     property_slug: string;
-  }>();
-  const router = useRouter();
+  }>;
+}
 
-  useEffect(() => {
-    if (category && property_slug) {
-      router.replace(
-        `/${generateSlug(category)}/${generateSlug(property_slug)}/overview`
-      );
-    }
-  }, [category, property_slug, router]);
-
-  return <InstituteDetailLoader />;
+export default async function Page({ params }: PageProps) {
+  const { category, property_slug } = await params;
+  if (category && property_slug) {
+    const cleanCategory = generateSlug(category);
+    const cleanSlug = generateSlug(property_slug);
+    redirect(`/${cleanCategory}/${cleanSlug}/overview`);
+  }
+  return null;
 }

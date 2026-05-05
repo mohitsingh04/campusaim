@@ -41,7 +41,7 @@ export const usePropertyTabsData = ({
   tabexistence,
 }: {
   property: PropertyProps | null;
-  getCategoryById: (id: string | number) => string | undefined;
+  getCategoryById: (id: string) => string | undefined;
   tabexistence: any;
 }) => {
   const tabs = useMemo(() => {
@@ -70,8 +70,8 @@ export const usePropertyTabsData = ({
         tab: <GalleryTab property={property} />,
       },
       {
-        id: "accomodation",
-        label: "Accomodation",
+        id: "hostel",
+        label: "Hostel",
         icon: BedIcon,
         show: !!tabexistence?.accomodationTab,
         tab: <AccommodationTab property={property} />,

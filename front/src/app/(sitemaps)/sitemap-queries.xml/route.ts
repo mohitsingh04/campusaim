@@ -21,7 +21,7 @@ export async function GET() {
     const allProperties: PropertyProps[] =
       propertyRes.status === "fulfilled"
         ? propertyRes.value.data.filter(
-            (p: PropertyProps) => p.status === "Active"
+            (p: PropertyProps) => p.status === "Active",
           )
         : [];
 
@@ -34,28 +34,26 @@ export async function GET() {
     if (!allProperties.length || !allCategories.length) {
       return new Response(
         '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>',
-        { headers: { "Content-Type": "application/xml" } }
+        { headers: { "Content-Type": "application/xml" } },
       );
     }
 
     const normalize = (val?: string) => val?.toString().trim().toLowerCase();
 
-    const getCategoryName = (id: string | number) => {
-      const found = allCategories.find(
-        (c) => String(c.uniqueId) === String(id)
-      );
+    const getCategoryName = (id: string) => {
+      const found = allCategories.find((c) => String(c._id) === String(id));
       return found?.category_name?.trim() || "";
     };
 
     const finalProperties = allProperties.map((property) => {
       const location = allLocations.find(
-        (loc) => Number(loc.property_id) === property.uniqueId
+        (loc) => loc.property_id === property._id,
       );
 
       return {
         ...property,
         ...location,
-        category: getCategoryName(property.category),
+        academic_type: getCategoryName(property.academic_type),
         property_type: getCategoryName(property.property_type),
       };
     });
@@ -63,7 +61,9 @@ export async function GET() {
     const types = ["top", "best"];
     const numbers = [3, 5, 10, 20, 50, 100];
 
-    const categoryList = (await getFieldDataSimple(finalProperties, "category"))
+    const categoryList = (
+      await getFieldDataSimple(finalProperties, "academic_type")
+    )
       .map(normalize)
       .filter(Boolean);
 
@@ -81,17 +81,17 @@ export async function GET() {
 
     for (const cat of categoryList) {
       const related = finalProperties.filter(
-        (p) => normalize(p.category) === cat
+        (p) => normalize(p.academic_type) === cat,
       );
 
       if (!related.length) continue;
 
       const cities = (await getFieldDataSimple(related, "property_city")).map(
-        normalize
+        normalize,
       );
 
       const states = (await getFieldDataSimple(related, "property_state")).map(
-        normalize
+        normalize,
       );
 
       const countries = (
@@ -122,7 +122,7 @@ export async function GET() {
     <lastmod>${now}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
-  </url>`
+  </url>`,
       )
       .join("");
 
@@ -139,7 +139,7 @@ ${urls}
 
     return new Response(
       '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>',
-      { headers: { "Content-Type": "application/xml" } }
+      { headers: { "Content-Type": "application/xml" } },
     );
   }
 }

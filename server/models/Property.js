@@ -42,25 +42,31 @@ const PropertySchema = new mongoose.Schema(
     },
     academic_type: {
       type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
     },
     property_slug: {
       type: String,
       unique: true,
     },
-    approved_by: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Category"
-    }],
-    affiliated_by: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Category"
-    }],
+    approved_by: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Category",
+      },
+    ],
+    affiliated_by: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Category",
+      },
+    ],
     status: {
       type: String,
       default: "Pending",
     },
     property_type: {
       type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
     },
     property_website: {
       type: String,
@@ -78,7 +84,7 @@ const PropertySchema = new mongoose.Schema(
       default: false,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const Property = regularDatabase.model("Property", PropertySchema);

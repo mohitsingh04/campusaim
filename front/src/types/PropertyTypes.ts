@@ -5,6 +5,7 @@ export interface PropertyProps {
   _id: string;
   uniqueId: number;
   verified: boolean;
+  property_score: number;
   rank: number;
   lastRank: number;
   claimed: boolean;
@@ -93,7 +94,7 @@ export interface PropertyLocationProps {
 }
 
 export interface PropertyGalleryProps {
-  property_id: string;
+  propertyId: string;
   title: string;
   gallery: string[];
 }

@@ -88,7 +88,7 @@ const Footer = () => {
     queryKey: ["footer-assets"],
     queryFn: async () => {
       const [courRes, seosRes, locsRes] = await Promise.allSettled([
-        API.get("/course"),
+        API.get("/course?limit=5"),
         API.get("/all/seo?type=course"),
         API.get("/property/unique/location/pairs?limit=9&sort=desc"),
       ]);

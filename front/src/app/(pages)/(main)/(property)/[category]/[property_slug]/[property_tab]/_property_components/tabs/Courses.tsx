@@ -19,7 +19,7 @@ export default function CoursesTab({
   getCategoryById,
 }: {
   property: PropertyProps | null;
-  getCategoryById: (id: string | number) => string | undefined;
+  getCategoryById: (id: string) => string | undefined;
 }) {
   const { category, property_slug, property_tab } = useParams();
 

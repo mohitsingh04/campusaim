@@ -15,14 +15,17 @@ export interface CategoryProps {
 }
 
 export interface CourseProps {
+  _id: string;
   course_name: string;
   image: string[];
   course_type: string;
   course_short_name: string;
   duration: string;
-  course_level: string;
   description: string;
   [key: string]: any;
+  program_type: string;
+  degree_type: string;
+  status: string;
   property_id: string;
   key_outcomes: string[];
   requirements: string[];
@@ -30,6 +33,7 @@ export interface CourseProps {
   course_slug?: string;
   faqs: FaqProps[];
   specialization: string[];
+  course_eligibility: string[];
 }
 
 export interface ExamProps {
@@ -48,7 +52,7 @@ export interface ExamProps {
   application_form_link: string;
   isDeleted: boolean;
   status: string;
-  faqs: FAQProps;
+  faqs: FAQProps[];
 }
 
 export interface EventProps {

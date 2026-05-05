@@ -149,7 +149,6 @@ export default function CoursesPage() {
 
           return {
             ...course,
-            course_level: getCategoryById(course.course_level),
             course_type: getCategoryById(course.course_type),
             degree_type: getCategoryById(course.degree_type),
             program_type: getCategoryById(course.program_type),

@@ -17,14 +17,14 @@ export async function generateMetadata({
   params,
 }: {
   params: Promise<{
-    course_slug: string;
+    exam_slug: string;
   }>;
 }): Promise<Metadata> {
-  const { course_slug } = await params;
+  const { exam_slug } = await params;
   let property = null;
 
   try {
-    const res = await API.get(`/course/seo/${course_slug}`, {
+    const res = await API.get(`/exam/seo/${exam_slug}`, {
       headers: { origin: BASE_URL },
     });
     property = res.data;
@@ -33,26 +33,26 @@ export async function generateMetadata({
   }
 
   if (!property) {
-    return { title: "Course Details for all college and university" };
+    return { title: "Entrance Exam Information" };
   }
 
-  const title = property.course_name;
+  const title = property.exam_name;
   const description =
     stripHtml(property?.seo?.meta_description, 160) ||
     stripHtml(property?.description, 160) ||
-    "Explore course details including eligibility, fees, admission process, duration, syllabus, career opportunities, and top colleges & universities at Campusaim.";
+    "Get complete entrance exam information, including eligibility, syllabus, exam pattern, application process, important dates, admit card, results, and counselling updates.";
   const keywords =
     property?.seo?.primary_focus_keyword?.length > 0
       ? extractKeywords(property?.seo?.primary_focus_keyword)
-      : [title, "college courses", "university courses"];
-  const canonical = `${BASE_URL}/course/${
+      : [title, "entrance exam details", "admission course details"];
+  const canonical = `${BASE_URL}/exam/${
     property?.seo?.slug
       ? property?.seo?.slug
       : generateSlug(property?.course_name)
   }`;
 
   const ogImage = property?.image?.[0]
-    ? `${MEDIA_URL}/course/${property?.image?.[0]}`
+    ? `${MEDIA_URL}/exam/${property?.image?.[0]}`
     : DEFAULT_IMAGE;
 
   const featuredImage = [
@@ -60,7 +60,7 @@ export async function generateMetadata({
       url: ogImage,
       width: 1200,
       height: 700,
-      alt: title || "Course Featured Image",
+      alt: title || "Exam Featured Image",
     },
   ];
   return {

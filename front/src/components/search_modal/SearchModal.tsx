@@ -24,7 +24,6 @@ import HeadingLine from "@/ui/headings/HeadingLine";
 import { useSpeechToText } from "@/hooks/useSpeechtoText";
 import {
   BuildingIcon,
-  CalendarsIcon,
   ChevronRightIcon,
   FileSearchIcon,
   GraduationCapIcon,
@@ -64,31 +63,24 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  const { properties, courses, blogs, events, news, keywordsList } =
-    useSearchFetch();
-  const {
-    finalProps,
-    finalCourses,
-    finalBlogs,
-    finalEvents,
-    finalNews,
-    finalKeywords,
-  } = useSearchFilter({
-    properties,
-    courses,
-    blogs,
-    events,
-    news,
-    keywordsList,
-    query: "",
-    localSearch: searchTerm,
+  const { properties, courses, blogs, news, keywordsList } = useSearchFetch({
+    isFetch: isOpen,
   });
+  const { finalProps, finalCourses, finalBlogs, finalNews, finalKeywords } =
+    useSearchFilter({
+      properties,
+      courses,
+      blogs,
+      news,
+      keywordsList,
+      query: "",
+      localSearch: searchTerm,
+    });
 
   const [results, setResults] = useState<
     { Icon: LucideIcon; title: string; href: string }[]
   >([]);
 
-  /* 🎙️ voice → input sync */
   useEffect(() => {
     if (transcript) {
       setSearchTerm(transcript.trim());
@@ -115,11 +107,6 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
         title: item.title,
         href: `/blog/${generateSlug(item?.blog_slug)}`,
       })),
-      ...finalEvents.map((item: any) => ({
-        Icon: CalendarsIcon,
-        title: item.title,
-        href: `/event/${generateSlug(item?.event_slug)}`,
-      })),
       ...finalNews.map((item: any) => ({
         Icon: NewspaperIcon,
         title: item.title,
@@ -133,14 +120,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
     ];
 
     setResults(combinedResults);
-  }, [
-    finalProps,
-    finalCourses,
-    finalBlogs,
-    finalEvents,
-    finalNews,
-    finalKeywords,
-  ]);
+  }, [finalProps, finalCourses, finalBlogs, finalNews, finalKeywords]);
 
   const handleStoreSearch = useCallback(async (query: string) => {
     try {
@@ -232,7 +212,8 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                     <div className="p-3 grid gap-2">
                       <div className="flex justify-between text-xs">
                         <span className="flex items-center gap-2">
-                          <FileSearchIcon className="w-4 h-4 text-(--main)"/> Suggestions
+                          <FileSearchIcon className="w-4 h-4 text-(--main)" />{" "}
+                          Suggestions
                         </span>
                         <span>{results.length} results</span>
                       </div>

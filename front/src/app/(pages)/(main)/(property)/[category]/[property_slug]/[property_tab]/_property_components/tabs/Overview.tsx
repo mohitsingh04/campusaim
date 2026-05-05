@@ -7,7 +7,7 @@ const Overview = ({
   getCategoryById,
 }: {
   property: PropertyProps | null;
-  getCategoryById: (id: string | number) => string | undefined;
+  getCategoryById: (id: string) => string | undefined;
 }) => {
   const loc = [
     property?.property_city,

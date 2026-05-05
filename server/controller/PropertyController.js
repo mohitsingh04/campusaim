@@ -46,11 +46,15 @@ function normalizeAffiliatedBy(affiliated_by) {
       try {
         const parsed = JSON.parse(affiliated_by);
         if (Array.isArray(parsed)) affiliatedByArray = parsed;
-        else if (typeof parsed === "string" && parsed.trim()) affiliatedByArray = [parsed];
+        else if (typeof parsed === "string" && parsed.trim())
+          affiliatedByArray = [parsed];
       } catch (err) {
         console.log(err);
         if (affiliated_by.includes(",")) {
-          affiliatedByArray = affiliated_by.split(",").map((s) => s.trim()).filter(Boolean);
+          affiliatedByArray = affiliated_by
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean);
         } else if (affiliated_by.trim()) {
           affiliatedByArray = [affiliated_by.trim()];
         }
@@ -76,11 +80,15 @@ function normalizeApprovedBy(approved_by) {
       try {
         const parsed = JSON.parse(approved_by);
         if (Array.isArray(parsed)) approvedByArray = parsed;
-        else if (typeof parsed === "string" && parsed.trim()) approvedByArray = [parsed];
+        else if (typeof parsed === "string" && parsed.trim())
+          approvedByArray = [parsed];
       } catch (err) {
         console.log(err);
         if (approved_by.includes(",")) {
-          approvedByArray = approved_by.split(",").map((s) => s.trim()).filter(Boolean);
+          approvedByArray = approved_by
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean);
         } else if (approved_by.trim()) {
           approvedByArray = [approved_by.trim()];
         }
@@ -104,7 +112,8 @@ async function resolveCategoryId(input) {
   }
 
   if (typeof input === "object" && input !== null && input._id) {
-    if (mongoose.Types.ObjectId.isValid(String(input._id))) return String(input._id);
+    if (mongoose.Types.ObjectId.isValid(String(input._id)))
+      return String(input._id);
   }
 
   const maybeNum = Number(input);
@@ -148,7 +157,13 @@ export const addProperty = async (req, res) => {
       property_description,
     } = req.body;
 
-    if (!userId && !property_name && !property_short_name && !property_email && !property_mobile_no) {
+    if (
+      !userId &&
+      !property_name &&
+      !property_short_name &&
+      !property_email &&
+      !property_mobile_no
+    ) {
       return res.status(400).json({ error: "All Fields Required" });
     }
 
@@ -156,7 +171,7 @@ export const addProperty = async (req, res) => {
 
     const allCategories = await Category.find();
     const currentCategory = allCategories.filter(
-      (item) => item._id === academic_type
+      (item) => item._id === academic_type,
     );
 
     if (currentCategory?.[0]?.category_name === "Online Yoga Studio") {
@@ -208,7 +223,7 @@ export const addProperty = async (req, res) => {
     if (property_description) {
       updatedDescription = await downloadImageAndReplaceSrc(
         property_description,
-        uniqueId
+        uniqueId,
       );
     }
 
@@ -331,7 +346,7 @@ export const getPropertiesMultipleObjectId = async (req, res) => {
     const categories = await Category.find();
     const matchCategory = (id) => {
       const cat = categories.find(
-        (item) => Number(item?.uniqueId) === Number(id)
+        (item) => Number(item?.uniqueId) === Number(id),
       );
       return cat?.category_name || null;
     };
@@ -357,11 +372,11 @@ export const getPropertiesMultipleObjectId = async (req, res) => {
     // Merge data
     const result = properties.map((property) => {
       const propertyLocation = locations.find(
-        (loc) => loc.property_id === property.uniqueId
+        (loc) => loc.property_id === property.uniqueId,
       );
 
       const propertyReviews = reviews.filter(
-        (rev) => rev.property_id === property.uniqueId
+        (rev) => rev.property_id === property.uniqueId,
       );
 
       return {
@@ -409,7 +424,8 @@ export const updateProperty = async (req, res) => {
 
     // fetch existing property
     const existProperty = await Property.findById(objectId);
-    if (!existProperty) return res.status(404).json({ error: "Property not found." });
+    if (!existProperty)
+      return res.status(404).json({ error: "Property not found." });
 
     // normalize phone and check conflicts
     const formattedAltMobile = normalizePhone(property_alt_mobile_no);
@@ -430,22 +446,28 @@ export const updateProperty = async (req, res) => {
 
       if (existProperty.property_mobile_no === formattedAltMobile) {
         return res.status(400).json({
-          error: "Alternate mobile number cannot be the same as the property's primary mobile number.",
+          error:
+            "Alternate mobile number cannot be the same as the property's primary mobile number.",
         });
       }
     }
 
     let updatedDescription = property_description;
     if (property_description) {
-      updatedDescription = await downloadImageAndReplaceSrc(property_description, existProperty?.uniqueId);
+      updatedDescription = await downloadImageAndReplaceSrc(
+        property_description,
+        existProperty?.uniqueId,
+      );
     }
 
     const scoringCategory = await findCategoryForScoring(academic_type);
 
     let score = 0;
-    if (!existProperty?.property_alt_mobile_no && property_alt_mobile_no) score += 1;
+    if (!existProperty?.property_alt_mobile_no && property_alt_mobile_no)
+      score += 1;
     if (!existProperty?.property_website && property_website) score += 1;
-    if (!existProperty?.property_description && property_description) score += 1;
+    if (!existProperty?.property_description && property_description)
+      score += 1;
 
     if (!existProperty?.academic_type) {
       if (scoringCategory?.category_name === "Online Yoga Studio") {
@@ -454,8 +476,16 @@ export const updateProperty = async (req, res) => {
         score += 1;
       }
     } else {
-      const existingAcademicCat = await Category.findById(existProperty.academic_type).lean().catch(() => null);
-      if (existingAcademicCat && existingAcademicCat.category_name === "Online Yoga Studio" && scoringCategory?.category_name !== "Online Yoga Studio") {
+      const existingAcademicCat = await Category.findById(
+        existProperty.academic_type,
+      )
+        .lean()
+        .catch(() => null);
+      if (
+        existingAcademicCat &&
+        existingAcademicCat.category_name === "Online Yoga Studio" &&
+        scoringCategory?.category_name !== "Online Yoga Studio"
+      ) {
         score -= 38;
       }
     }
@@ -472,9 +502,12 @@ export const updateProperty = async (req, res) => {
       property_website,
     };
 
-    if (affiliated_by !== undefined) updatedFields.affiliated_by = normalizedAffiliatedBy;
-    if (approved_by !== undefined) updatedFields.approved_by = normalizedApprovedBy;
-    if (formattedAltMobile) updatedFields.property_alt_mobile_no = formattedAltMobile;
+    if (affiliated_by !== undefined)
+      updatedFields.affiliated_by = normalizedAffiliatedBy;
+    if (approved_by !== undefined)
+      updatedFields.approved_by = normalizedApprovedBy;
+    if (formattedAltMobile)
+      updatedFields.property_alt_mobile_no = formattedAltMobile;
 
     if (updatedFields.academic_type !== undefined) {
       const resolved = await resolveCategoryId(updatedFields.academic_type);
@@ -486,7 +519,8 @@ export const updateProperty = async (req, res) => {
     }
 
     Object.keys(updatedFields).forEach((k) => {
-      if (updatedFields[k] === undefined || updatedFields[k] === null) delete updatedFields[k];
+      if (updatedFields[k] === undefined || updatedFields[k] === null)
+        delete updatedFields[k];
     });
 
     if (Object.keys(updatedFields).length === 0) {
@@ -496,7 +530,7 @@ export const updateProperty = async (req, res) => {
     const updatedProperty = await Property.findOneAndUpdate(
       { _id: objectId },
       { $set: updatedFields },
-      { new: true }
+      { new: true },
     );
 
     await addPropertyScore({
@@ -654,13 +688,13 @@ export const PropertySlugGenerator = async (req, res) => {
 
     for (const property of properties) {
       const locat = locations?.find(
-        (item) => item?.property_id === property?.uniqueId
+        (item) => item?.property_id === property?.uniqueId,
       );
 
       if (!locat) continue;
 
       const baseSlug = `${generateSlug(property?.property_name)}-${generateSlug(
-        locat?.property_city
+        locat?.property_city,
       )}`;
       let slug = baseSlug;
       let counter = 2;
@@ -675,17 +709,17 @@ export const PropertySlugGenerator = async (req, res) => {
         if (!conflict && property.property_slug.startsWith(baseSlug)) {
           // Keep the existing slug, but ensure Seo matches
           const seoDoc = seos.find(
-            (s) => s?.property_id === property?.uniqueId
+            (s) => s?.property_id === property?.uniqueId,
           );
           if (seoDoc && seoDoc.slug !== property.property_slug) {
             await PropertySeo.findOneAndUpdate(
               { property_id: property?.uniqueId },
-              { $set: { slug: property.property_slug } }
+              { $set: { slug: property.property_slug } },
             );
             console.log(
               "SEO synced:",
               property.property_slug,
-              property.uniqueId
+              property.uniqueId,
             );
           }
           continue;
@@ -706,18 +740,18 @@ export const PropertySlugGenerator = async (req, res) => {
       const updatePropertySlug = await Property.findOneAndUpdate(
         { uniqueId: property?.uniqueId },
         { $set: { property_slug: generateSlug(slug) } },
-        { new: true }
+        { new: true },
       );
 
       await PropertySeo.findOneAndUpdate(
         { property_id: property?.uniqueId },
-        { $set: { slug: generateSlug(slug) } }
+        { $set: { slug: generateSlug(slug) } },
       );
 
       console.log(
         "Updated:",
         updatePropertySlug?.property_slug,
-        updatePropertySlug?.uniqueId
+        updatePropertySlug?.uniqueId,
       );
     }
 
@@ -894,7 +928,7 @@ export const getRelatedProperties = async (req, res) => {
         status: "Active",
       })
         .select(
-          "_id property_name property_slug featured_image academic_type category status"
+          "_id property_name property_slug featured_image academic_type category status",
         )
         .lean();
     };
@@ -912,7 +946,7 @@ export const getRelatedProperties = async (req, res) => {
             status: "Active",
           })
             .select(
-              "_id property_name property_slug featured_image academic_type category status"
+              "_id property_name property_slug featured_image academic_type category status",
             )
             .lean(),
       },
@@ -925,7 +959,7 @@ export const getRelatedProperties = async (req, res) => {
             status: "Active",
           })
             .select(
-              "_id property_name property_slug featured_image academic_type category status"
+              "_id property_name property_slug featured_image academic_type category status",
             )
             .lean(),
       },
@@ -987,7 +1021,7 @@ export const getRelatedProperties = async (req, res) => {
     }).lean();
 
     const locationMap = Object.fromEntries(
-      locations.map((l) => [l.property_id.toString(), l])
+      locations.map((l) => [l.property_id.toString(), l]),
     );
 
     const response = selected.map((p) => {
@@ -1006,7 +1040,6 @@ export const getRelatedProperties = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
-
 
 export const getPropertyCategoryCounts = async (req, res) => {
   try {
@@ -1078,33 +1111,32 @@ export const getPropertiesByCategoryName = async (req, res) => {
     const { names, limit } = req.query;
 
     if (!names) {
-      return res.status(400).json({ message: "Category names are required.", });
+      return res.status(400).json({ message: "Category names are required." });
     }
 
     const nameArray = names.split(",").map((name) => name.trim());
     const categories = await Category.find({
       category_name: {
-        $in: nameArray.map(name => new RegExp(`^${name}$`, "i"))
-      }
+        $in: nameArray.map((name) => new RegExp(`^${name}$`, "i")),
+      },
     }).select("_id");
 
     if (!categories || categories.length === 0) {
       return res.status(404).json({
         message: "None of the specified categories were found.",
-        attemptedNames: nameArray
+        attemptedNames: nameArray,
       });
     }
 
-    const categoryIds = categories.map(cat => cat._id);
+    const categoryIds = categories.map((cat) => cat._id);
     const resultLimit = limit ? parseInt(limit, 10) : 0;
     const properties = await Property.find({
-      academic_type: { $in: categoryIds }
+      academic_type: { $in: categoryIds },
     })
       .sort({ createdAt: -1 })
       .limit(resultLimit);
 
     return res.status(200).json(properties);
-
   } catch (error) {
     return res.status(500).json({
       message: "Server Error while fetching properties by category name",
@@ -1112,7 +1144,6 @@ export const getPropertiesByCategoryName = async (req, res) => {
     });
   }
 };
-
 
 export const getPropertyTabExistence = async (req, res) => {
   try {
@@ -1142,7 +1173,9 @@ export const getPropertyTabExistence = async (req, res) => {
       PropertyCourse.exists({ property_id }),
       Gallery.exists({ propertyId: property_id }),
       Accomodation.exists({ property_id }),
-      Amenities.findOne({ propertyId:property_id }).select("selectedAmenities"),
+      Amenities.findOne({ propertyId: property_id }).select(
+        "selectedAmenities",
+      ),
       Teachers.exists({ property_id }),
       Faqs.exists({ property_id }),
       Scholarship.exists({ property_id }),
@@ -1158,7 +1191,6 @@ export const getPropertyTabExistence = async (req, res) => {
       amenityDoc.selectedAmenities &&
       Object.keys(amenityDoc.selectedAmenities?.[0]).length > 0;
 
-
     return res.status(200).json({
       courseTab: !!courseTab,
       galleryTab: !!galleryTab,
@@ -1173,6 +1205,51 @@ export const getPropertyTabExistence = async (req, res) => {
       qnaTab: !!qnaTab,
       RankingTabDocs: !!RankingTabDocs,
     });
+  } catch (error) {
+    console.error("Property Menu Error:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+export const getPropertyMenuData = async (req, res) => {
+  try {
+    const properties = await Property.find({})
+      .select("property_name property_slug academic_type property_type")
+      .populate("academic_type", "category_name")
+      .populate("property_type", "category_name")
+      .lean();
+
+    const menuData = {};
+
+    const shuffled = properties.sort(() => 0.5 - Math.random());
+
+    for (const p of shuffled) {
+      const catName = p?.academic_type?.category_name;
+      const typeName = p?.property_type?.category_name;
+
+      if (!catName || !typeName) continue;
+
+      if (!menuData[catName]) {
+        menuData[catName] = {};
+      }
+
+      if (!menuData[catName][typeName]) {
+        menuData[catName][typeName] = {
+          title: typeName,
+          links: [],
+          viewAll: `${catName === "University" ? "universities" : `${generateSlug(catName)}s`}?property_type=${generateSlug(typeName)}`,
+        };
+      }
+
+      if (menuData[catName][typeName].links.length < 10) {
+        menuData[catName][typeName].links.push({
+          name: p.property_name,
+          href: `/${generateSlug(catName)}/${p.property_slug}/overview`,
+        });
+      }
+    }
+
+    return res.status(200).json(menuData);
   } catch (error) {
     console.error("Property Menu Error:", error);
     return res.status(500).json({ error: "Internal Server Error" });

@@ -204,6 +204,12 @@ const CourseDetails = () => {
     ? `${process.env.NEXT_PUBLIC_MEDIA_URL}/course/${mainCourse.image[0]}`
     : "/img/default-images/campusaim-courses-featured.png";
 
+  const gridCount = [
+    mainCourse?.specialization?.length,
+    mainCourse?.course_eligibility?.length,
+    mainCourse?.best_for?.length,
+  ]?.filter(Boolean)?.length;
+
   if (loading)
     return (
       <>
@@ -291,32 +297,42 @@ const CourseDetails = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-(--primary-bg) p-5 rounded-custom shadow-custom">
-              <HeadingLine title="Coure Eligibility" />
-              <ul className="space-y-3">
-                {mainCourse?.course_eligibility.map((item: any, index: any) => (
-                  <ListItem key={index} text={item} type="include" />
-                ))}
-              </ul>
-            </div>
-            <div className="bg-(--primary-bg) p-5 rounded-custom shadow-custom">
-              <HeadingLine title="Coure Specialization" />
-              <ul className="space-y-3">
-                {mainCourse?.specialization?.map((item: any, index: any) => (
-                  <ListItem key={index} text={item} type="include" />
-                ))}
-              </ul>
-            </div>
+          <div
+            className={`grid grid-cols-1 md:grid-cols-${gridCount || 1} gap-6`}
+          >
+            {(mainCourse?.course_eligibility?.length || 0) > 0 && (
+              <div className="bg-(--primary-bg) p-5 rounded-custom shadow-custom">
+                <HeadingLine title="Coure Eligibility" />
+                <ul className="space-y-3">
+                  {mainCourse?.course_eligibility.map(
+                    (item: any, index: any) => (
+                      <ListItem key={index} text={item} type="include" />
+                    ),
+                  )}
+                </ul>
+              </div>
+            )}
+            {(mainCourse?.specialization?.length || 0) > 0 && (
+              <div className="bg-(--primary-bg) p-5 rounded-custom shadow-custom">
+                <HeadingLine title="Coure Specialization" />
+                <ul className="space-y-3">
+                  {mainCourse?.specialization?.map((item: any, index: any) => (
+                    <ListItem key={index} text={item} type="include" />
+                  ))}
+                </ul>
+              </div>
+            )}
 
-            <div className="bg-(--primary-bg) p-5 rounded-custom shadow-custom">
-              <HeadingLine title="Best For" />
-              <ul className="space-y-3">
-                {mainCourse?.best_for.map((item, index) => (
-                  <ListItem key={index} text={item} type="include" />
-                ))}
-              </ul>
-            </div>
+            {(mainCourse?.best_for?.length || 0) > 0 && (
+              <div className="bg-(--primary-bg) p-5 rounded-custom shadow-custom">
+                <HeadingLine title="Best For" />
+                <ul className="space-y-3">
+                  {mainCourse?.best_for.map((item, index) => (
+                    <ListItem key={index} text={item} type="include" />
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
 
           <div className="bg-(--primary-bg) p-5 rounded-custom shadow-custom">

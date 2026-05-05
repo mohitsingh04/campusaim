@@ -27,7 +27,7 @@ const BlogCourse = () => {
 
         const mergedCourses = allCoursesData.map((course: CourseProps) => {
           const seoMatch = seoData.find(
-            (seo: any) => seo.course_id === course._id
+            (seo: any) => seo.course_id === course._id,
           );
 
           return {
@@ -54,10 +54,10 @@ const BlogCourse = () => {
         <HeadingLine title="Courses" />
 
         <div className="space-y-4">
-          {courses.map((courseItem) => {
+          {courses.map((courseItem, index) => {
             return (
               <Link
-                key={courseItem.uniqueId}
+                key={index}
                 href={`/course/${courseItem.course_slug}`}
                 className="flex space-x-3 group bg-(--secondary-bg) shadow-custom p-2 rounded-custom transition-colors items-center"
               >

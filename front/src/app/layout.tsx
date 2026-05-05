@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Montserrat, Poppins } from "next/font/google";
-import Script from "next/script";
 import { ToastContainer } from "react-toastify";
 import "../css/globals.css";
 import Providers from "@/context/providers/Provider";
+import OrganizationSchema from "@/components/json_schemas/OrganizationSchema";
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
@@ -71,11 +71,7 @@ export default function RootLayout({
         <noscript></noscript>
         <ToastContainer />
         <Providers>{children}</Providers>
-        <Script
-          src="https://kit.fontawesome.com/87f0afa689.js"
-          crossOrigin="anonymous"
-          strategy="afterInteractive"
-        />
+        <OrganizationSchema />
       </body>
     </html>
   );

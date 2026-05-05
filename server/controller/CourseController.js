@@ -4,6 +4,8 @@ import Course from "../models/Courses.js";
 import { autoAddAllSeo } from "./AllSeoController.js";
 import AllSeo from "../models/AllSeo.js";
 import mongoose from "mongoose";
+import PropertyCourse from "../models/PropertyCourse.js";
+import Property from "../models/Property.js";
 
 function normalizeObjectIdArray(input) {
   let arr = [];
@@ -19,7 +21,7 @@ function normalizeObjectIdArray(input) {
       else if (parsed) arr = [parsed];
     } catch {
       arr = input.includes(",")
-        ? input.split(",").map(s => s.trim())
+        ? input.split(",").map((s) => s.trim())
         : [input.trim()];
     }
   } else {
@@ -27,10 +29,9 @@ function normalizeObjectIdArray(input) {
   }
 
   return arr
-    .map(id => String(id).trim())
-    .filter(id => mongoose.Types.ObjectId.isValid(id));
+    .map((id) => String(id).trim())
+    .filter((id) => mongoose.Types.ObjectId.isValid(id));
 }
-
 
 function normalizeToStringArray(value) {
   let arr = [];
@@ -42,8 +43,7 @@ function normalizeToStringArray(value) {
       try {
         const parsed = JSON.parse(value);
         if (Array.isArray(parsed)) arr = parsed.map((v) => String(v));
-        else if (typeof parsed === "string" && parsed.trim())
-          arr = [parsed];
+        else if (typeof parsed === "string" && parsed.trim()) arr = [parsed];
       } catch (err) {
         console.log(err);
         if (value.includes(",")) {
@@ -76,7 +76,8 @@ export const generateSlug = (text) => {
 
 export const getCourse = async (req, res) => {
   try {
-    const courses = await Course.find();
+    const { limit } = req.query;
+    const courses = await Course.find()?.limit(limit);
     return res.status(200).json(courses);
   } catch (err) {
     console.error("Error fetching courses:", err);
@@ -135,7 +136,7 @@ export const addCourse = async (req, res) => {
       description,
       best_for,
       course_eligibility,
-      faqs
+      faqs,
     } = req.body;
 
     if (!course_name) {
@@ -160,7 +161,10 @@ export const addCourse = async (req, res) => {
 
     let updatedDescription = description;
     if (description) {
-      updatedDescription = await downloadImageAndReplaceSrcNonProperty(description, "course");
+      updatedDescription = await downloadImageAndReplaceSrcNonProperty(
+        description,
+        "course",
+      );
     }
 
     const newCourse = new Course({
@@ -225,7 +229,7 @@ export const updateCourse = async (req, res) => {
       description,
       best_for,
       status,
-      faqs
+      faqs,
     } = req.body;
 
     const courseSlug = generateSlug(course_name);
@@ -235,10 +239,14 @@ export const updateCourse = async (req, res) => {
       best_for !== undefined ? normalizeObjectIdArray(best_for) : undefined;
 
     const normalizedCourseEligibility =
-      course_eligibility !== undefined ? normalizeObjectIdArray(course_eligibility) : undefined;
+      course_eligibility !== undefined
+        ? normalizeObjectIdArray(course_eligibility)
+        : undefined;
 
     const normalizedSpecialization =
-      specialization !== undefined ? normalizeObjectIdArray(specialization) : undefined;
+      specialization !== undefined
+        ? normalizeObjectIdArray(specialization)
+        : undefined;
 
     const normalizedCourseType =
       course_type !== undefined
@@ -260,7 +268,7 @@ export const updateCourse = async (req, res) => {
     if (description) {
       updatedDescription = await downloadImageAndReplaceSrcNonProperty(
         description,
-        "course"
+        "course",
       );
     }
 
@@ -311,13 +319,13 @@ export const updateCourse = async (req, res) => {
     }
     const parsedFaqs = faqs ? JSON.parse(faqs) : [];
     if (parsedFaqs?.length > 0) {
-      updateObj.faqs = parsedFaqs
+      updateObj.faqs = parsedFaqs;
     }
 
     const courseUpdated = await Course.findByIdAndUpdate(
       objectId,
       { $set: updateObj },
-      { new: true }
+      { new: true },
     );
 
     // SEO update (non-blocking)
@@ -366,7 +374,7 @@ export const softDeleteCourse = async (req, res) => {
 
     await Course.findOneAndUpdate(
       { _id: objectId },
-      { $set: { isDeleted: true, status: "Suspended" } }
+      { $set: { isDeleted: true, status: "Suspended" } },
     );
 
     return res.status(200).json({ message: "Moved to Archives Courses." });
@@ -386,7 +394,7 @@ export const restoreCourse = async (req, res) => {
 
     await Course.findOneAndUpdate(
       { _id: objectId },
-      { $set: { isDeleted: false, status: "Active" } }
+      { $set: { isDeleted: false, status: "Active" } },
     );
 
     return res.status(200).json({ message: "Course is Recover successfully." });
@@ -429,6 +437,116 @@ export const getCourseWithSeoBySlug = async (req, res) => {
     });
   } catch (error) {
     console.error("getCourseWithSeoBySlug error:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+export const getCourseMenuData = async (req, res) => {
+  try {
+    const courses = await Course.find({})
+      .select("course_name course_slug program_type")
+      .populate("program_type", "category_name")
+      .lean();
+
+    const courseSeo = await AllSeo.find({ type: "course" }).lean();
+
+    const propertyCourses = await PropertyCourse.find({}).lean();
+
+    const properties = await Property.find({})
+      .select("property_name academic_type property_slug")
+      .populate("academic_type", "category_name")
+      .lean();
+
+    const seoMap = new Map(
+      courseSeo.map((seo) => [seo.course_id.toString(), seo]),
+    );
+
+    const propertyMap = new Map(properties.map((p) => [p._id.toString(), p]));
+
+    const courseToPropertyMap = new Map();
+
+    for (const pc of propertyCourses) {
+      const courseId = pc.course_id.toString();
+      const propertyId = pc.property_id.toString();
+
+      if (!courseToPropertyMap.has(courseId)) {
+        courseToPropertyMap.set(courseId, []);
+      }
+
+      courseToPropertyMap.get(courseId).push(propertyId);
+    }
+
+    const menuData = {};
+    const shuffled = [...courses].sort(() => Math.random() - 0.5);
+
+    for (const course of shuffled) {
+      const programType = course?.program_type?.category_name;
+      if (!programType) continue;
+
+      if (!menuData[programType]) {
+        menuData[programType] = {
+          courses: {
+            title: "Courses",
+            links: [],
+            viewAll: `/courses?type=${generateSlug(programType)}`,
+          },
+          universities: {
+            title: "Universities",
+            links: [],
+            viewAll: `/colleges?type=${generateSlug(programType)}`,
+          },
+          _uniSet: new Set(),
+        };
+      }
+
+      const programBlock = menuData[programType];
+
+      const matchedSeo = seoMap.get(course._id.toString());
+
+      if (matchedSeo?.slug) {
+        if (programBlock.courses.links.length < 10) {
+          programBlock.courses.links.push({
+            name: course.course_name,
+            href: `/course/${matchedSeo.slug}`,
+          });
+        }
+      }
+
+      const propertyIds = courseToPropertyMap.get(course._id.toString()) || [];
+
+      for (const propertyId of propertyIds) {
+        const property = propertyMap.get(propertyId);
+        if (!property) continue;
+        const catName = property?.academic_type?.category_name;
+
+        if (!programBlock._uniSet.has(propertyId)) {
+          if (programBlock.universities.links.length < 10) {
+            programBlock.universities.links.push({
+              name: property.property_name,
+              href: `/${generateSlug(catName)}/${property?.property_slug}/overview`,
+            });
+            programBlock._uniSet.add(propertyId);
+          }
+        }
+      }
+    }
+
+    const finalMenuData = {};
+
+    for (const [programType, value] of Object.entries(menuData)) {
+      const hasUniversities = value.universities.links.length > 0;
+
+      if (!hasUniversities) {
+        delete value.universities;
+      }
+
+      delete value._uniSet;
+
+      finalMenuData[programType] = value;
+    }
+
+    return res.status(200).json(finalMenuData);
+  } catch (error) {
+    console.error("Property Menu Error:", error);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
