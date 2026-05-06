@@ -225,8 +225,8 @@ export const FORM_SCHEMA = {
             { name: "exam.location", label: "Preferred Coaching Location", type: FIELD_TYPES.INPUT, placeholder: "Enter interested location" },
             { name: "exam.mode", label: "Coaching Mode", type: FIELD_TYPES.SELECT, options: ["Online", "Offline"] },
             { name: "exam.batch", label: "Preferred Batch", type: FIELD_TYPES.SELECT, options: ["Morning", "Evening"] },
-            { name: "exam.hostel", label: "Hostel Required?", type: FIELD_TYPES.SELECT, options: ["Yes", "No"] },
-            { name: "exam.transport", label: "Transportation Required?", type: FIELD_TYPES.SELECT, options: ["Yes", "No"] }
+            { name: "exam.hostel", label: "Hostel Required?", type: FIELD_TYPES.SELECT, options: ["Yes", "No"], renderIf: (values) => values?.exam?.mode === "Offline" },
+            { name: "exam.transport", label: "Transportation Required?", type: FIELD_TYPES.SELECT, options: ["Yes", "No"], renderIf: (values) => values?.exam?.mode === "Offline" }
         ]
     }
 };

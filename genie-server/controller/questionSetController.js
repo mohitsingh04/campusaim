@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import QuestionSet from "../models/questionSet.js";
 import { getDataFromToken } from "../helper/getDataFromToken.js";
 import generateSlug from "../utils/generateSlug.js";
+import RegularUser from "../models/regularUser.js";
 
 export const getQuestionSet = async (req, res) => {
     try {
@@ -57,31 +58,61 @@ export const getQuestionSet = async (req, res) => {
     }
 };
 
-export const getQuestionSetBySlug = async (req, res) => {
+export const getQuestionSetById = async (req, res) => {
     try {
-        const { slug } = req.params;
+        const { id } = req.params;
 
-        if (!slug) {
-            return res.status(400).json({ error: "Slug is required." });
+        // ---------- VALIDATION ----------
+        if (!id) {
+            return res.status(400).json({
+                error: "Question-Set Id is required.",
+            });
         }
 
-        const questionSet = await QuestionSet.findOne({ slug })
-            .populate("nicheId", "name slug status") // populate niche
-            .populate("createdBy", "name email")     // optional but recommended
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                error: "Invalid Question-Set Id.",
+            });
+        }
+
+        // ---------- FETCH QUESTION SET ----------
+        const questionSet = await QuestionSet.findById(id)
+            .populate("nicheId", "name slug status")
             .lean();
 
         if (!questionSet) {
-            return res.status(404).json({ error: "Question set not found." });
+            return res.status(404).json({
+                error: "Question set not found.",
+            });
         }
 
+        // ---------- MANUAL USER POPULATE ----------
+        let createdBy = null;
+
+        if (
+            questionSet.createdBy &&
+            mongoose.Types.ObjectId.isValid(questionSet.createdBy)
+        ) {
+            createdBy = await RegularUser.findById(questionSet.createdBy)
+                .select("name email")
+                .lean();
+        }
+
+        questionSet.createdBy = createdBy;
+
+        // ---------- FILTER + SORT QUESTIONS ----------
         questionSet.questions = (questionSet.questions || [])
-            .filter(q => q.isActive !== false)
+            .filter((q) => q.isActive !== false)
             .sort((a, b) => a.order - b.order);
 
         return res.status(200).json(questionSet);
+
     } catch (error) {
         console.error("Error fetching question set:", error);
-        return res.status(500).json({ error: "Internal Server Error." });
+
+        return res.status(500).json({
+            error: "Internal Server Error.",
+        });
     }
 };
 
@@ -90,9 +121,7 @@ export const getQuestionSetByNicheId = async (req, res) => {
         const { nicheId } = req.params;
 
         if (!mongoose.Types.ObjectId.isValid(nicheId)) {
-            return res
-                .status(400)
-                .json({ success: false, message: "Invalid nicheId" });
+            return res.status(400).json({ success: false, error: "Invalid nicheId" });
         }
 
         const questions = await QuestionSet.find({ nicheId })
@@ -108,7 +137,7 @@ export const getQuestionSetByNicheId = async (req, res) => {
         console.error("getQuestionSetByNicheId:", error);
         return res.status(500).json({
             success: false,
-            message: "Internal Server Error",
+            error: "Internal Server Error",
         });
     }
 };
@@ -182,61 +211,53 @@ export const createQuestionSet = async (req, res) => {
 
 export const updateQuestion = async (req, res) => {
     try {
-        const { slug } = req.params;
-        const {
-            nicheId,
-            order,
-            title,
-            questionText,
-            options,
-            isActive,
-        } = req.body;
+        const { id } = req.params;
 
-        if (!slug?.trim()) {
-            return res.status(400).json({ message: "Slug is required" });
+        const { nicheId, order, title, questionText, options, isActive } = req.body;
+
+        // ---------- VALIDATION ----------
+        if (!id) {
+            return res.status(400).json({ error: "Question Id is required", });
         }
 
-        if (!mongoose.isValidObjectId(nicheId)) {
-            return res.status(400).json({ message: "Invalid nicheId" });
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ error: "Invalid Question Id", });
+        }
+
+        if (!mongoose.Types.ObjectId.isValid(nicheId)) {
+            return res.status(400).json({ error: "Invalid nicheId" });
         }
 
         if (!Number.isInteger(Number(order)) || Number(order) < 1) {
-            return res
-                .status(400)
-                .json({ message: "Order must be a positive integer" });
+            return res.status(400).json({ error: "Order must be a positive integer" });
         }
 
         if (!title?.trim()) {
-            return res.status(400).json({ message: "Title is required" });
+            return res.status(400).json({ error: "Title is required" });
         }
 
         if (!questionText?.trim()) {
-            return res.status(400).json({ message: "Question text is required" });
+            return res.status(400).json({ error: "Question text is required" });
         }
 
         if (!Array.isArray(options) || options.length < 2) {
-            return res
-                .status(400)
-                .json({ message: "At least 2 options are required" });
+            return res.status(400).json({ error: "At least 2 options are required" });
         }
 
-        const normalizedSlug = slug.trim().toLowerCase();
-
-        const duplicate = await QuestionSet.exists({
+        // ---------- DUPLICATE ORDER CHECK ----------
+        const duplicateOrder = await QuestionSet.exists({
+            _id: { $ne: id },
             nicheId,
-            slug: normalizedSlug,
-            order: { $ne: Number(order) },
+            order: Number(order),
         });
 
-        if (duplicate) {
-            return res.status(409).json({
-                message:
-                    "Another question with same slug already exists in this niche",
-            });
+        if (duplicateOrder) {
+            return res.status(409).json({ error: "Another question already exists with this order in this niche" });
         }
 
-        const updatedQuestion = await QuestionSet.findOneAndUpdate(
-            { slug: normalizedSlug },
+        // ---------- UPDATE ----------
+        const updatedQuestion = await QuestionSet.findByIdAndUpdate(
+            id,
             {
                 $set: {
                     nicheId,
@@ -244,6 +265,7 @@ export const updateQuestion = async (req, res) => {
                     title: title.trim(),
                     questionText: questionText.trim(),
                     isActive: isActive || "pending",
+
                     options: options.map((o) => ({
                         label: o.label?.trim(),
                         value: o.value?.trim().toLowerCase(),
@@ -252,11 +274,14 @@ export const updateQuestion = async (req, res) => {
                     })),
                 },
             },
-            { new: true, runValidators: true }
+            {
+                new: true,
+                runValidators: true,
+            }
         );
 
         if (!updatedQuestion) {
-            return res.status(404).json({ message: "Question not found" });
+            return res.status(404).json({ error: "Question-Set not found" });
         }
 
         return res.status(200).json({
@@ -266,7 +291,9 @@ export const updateQuestion = async (req, res) => {
         });
     } catch (error) {
         console.error("Update Question Error:", error);
-        return res.status(500).json({ message: "Internal server error" });
+        return res.status(500).json({
+            error: "Internal server error",
+        });
     }
 };
 

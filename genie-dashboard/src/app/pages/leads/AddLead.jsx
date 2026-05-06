@@ -401,6 +401,13 @@ const AddLead = () => {
         formik.setFieldValue("preferences.preferredCourse", "");
     }, [selectedProperty]);
 
+    useEffect(() => {
+        if (formik.values.exam.mode === "Online") {
+            formik.setFieldValue("exam.hostel", "");
+            formik.setFieldValue("exam.transport", "");
+        }
+    }, [formik.values.exam.mode]);
+
     const schema = FORM_SCHEMA[categoryKey] || {
         basic: [],
         academics: [],

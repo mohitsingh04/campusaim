@@ -5,7 +5,7 @@ import * as Yup from "yup";
 import toast from "react-hot-toast";
 import { API } from "../../services/API";
 import { useAuth } from "../../context/AuthContext";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import TemplateQuestionsModal from "../../components/modal/TemplateQuestionsModal";
 import FormInput from "../../components/ui/Form/FormInput";
@@ -217,8 +217,9 @@ export default function AddQuestion() {
                         <button
                             type="button"
                             onClick={() => setShowTemplateModal(true)}
-                            className="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 border border-blue-600 rounded-md hover:bg-blue-50 whitespace-nowrap"
+                            className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-xl shadow-sm hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 transition-all"
                         >
+                            <Plus className="h-5 w-5" />
                             Add Questions from template
                         </button>
                     </div>

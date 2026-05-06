@@ -1124,6 +1124,7 @@ export const registerPartnerViaInvite = async (req, res) => {
         /* ------------------ NOTIFICATION ------------------ */
         try {
             const admins = await User.find({
+                organizationId: invite.organizationId,
                 role: "admin",
             }).select("_id");
 
@@ -1131,6 +1132,7 @@ export const registerPartnerViaInvite = async (req, res) => {
                 await Promise.all(
                     admins.map((admin) =>
                         createNotification({
+                            organizationId: invite.organizationId, // Scoped to org
                             receiverId: admin._id,                // New field name
                             senderId: newUser._id,               // The new partner
                             type: "partner_registered",
@@ -1207,6 +1209,7 @@ export const becomeAPartner = async (req, res) => {
         /* ------------------ NOTIFICATION ------------------ */
         try {
             const admins = await User.find({
+                organizationId: invite.organizationId,
                 role: "admin",
             }).select("_id");
 
@@ -1214,6 +1217,7 @@ export const becomeAPartner = async (req, res) => {
                 await Promise.all(
                     admins.map((admin) =>
                         createNotification({
+                            organizationId: invite.organizationId,
                             receiverId: admin._id,                // New field name
                             senderId: newUser._id,               // The new partner
                             type: "partner_registered",

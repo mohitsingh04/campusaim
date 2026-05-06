@@ -10,7 +10,6 @@ import { mapRowToLead } from "../utils/mapRowToLead.js";
 import { buildLeadTimeline } from "../utils/leadTimeline.js";
 import { detectLeadSource } from "../utils/detectLeadSource.js";
 import { notifyLeadCreated } from "../helper/notification/notificationHelper.js";
-import { createNotification } from "../services/notification.service.js";
 import { updateGoalProgress } from "../utils/updateGoalProgress.js";
 import { normalizeIndianPhone } from "../utils/normalizePhone.js";
 import { handleAdmission } from "../utils/handleAdmission.js";
@@ -267,7 +266,7 @@ export const getUserLeads = async (req, res) => {
         // 🔎 Auth user with role
         const authUser = await RegularUser.findById(authUserId)
             .populate("role", "role")
-            .select("_id role")
+            .select("_id role organizationId")
             .lean();
 
         if (!authUser) {
@@ -285,7 +284,7 @@ export const getUserLeads = async (req, res) => {
         // 🔎 Target user
         const targetUser = await RegularUser.findById(userId)
             .populate("role", "role")
-            .select("_id role teamLeader createdBy")
+            .select("_id role organizationId teamLeader createdBy")
             .lean();
 
         if (!targetUser) {
@@ -293,6 +292,14 @@ export const getUserLeads = async (req, res) => {
         }
 
         const targetAppRole = mapRoleForApp(targetUser.role?.role);
+
+        // 🔐 Organization boundary
+        if (
+            authUser.organizationId.toString() !==
+            targetUser.organizationId.toString()
+        ) {
+            return res.status(403).json({ error: "Access denied" });
+        }
 
         /* ---------------- PERMISSION RULES ---------------- */
 
@@ -316,6 +323,7 @@ export const getUserLeads = async (req, res) => {
         /* ---------------- FETCH LEADS ---------------- */
 
         const leads = await Lead.find({
+            organizationId: authUser.organizationId,
             $or: [
                 { createdBy: targetUser._id },
                 { assignedTo: targetUser._id }
@@ -737,6 +745,7 @@ export const addLead = async (req, res) => {
 
         /* ------------------ Notification ------------------ */
         await notifyLeadCreated({
+            organizationId: authUser?.organizationId,
             authUser,
             leadIds: [newLead._id],
             leadName: newLead.name
@@ -762,7 +771,7 @@ export const updateLead = async (req, res) => {
         }
 
         const actor = await RegularUser.findById(senderId)
-            .select("_id name role")
+            .select("_id name role organizationId")
             .lean();
 
         if (!actor) {
@@ -1426,6 +1435,7 @@ export const addbulkLeads = async (req, res) => {
         if (insertedLeads.length) {
             try {
                 await notifyLeadCreated({
+                    organizationId: user.organizationId,
                     authUser: user,
                     leadIds: insertedLeads.map(l => l._id)
                 });

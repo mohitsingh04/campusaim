@@ -11,14 +11,14 @@ import { useQuery } from "@tanstack/react-query";
    API FUNCTION
 ========================= */
 
-const fetchQuestionSet = async (slug) => {
-  const { data } = await API.get(`/question-set/${slug}`);
+const fetchQuestionSet = async (id) => {
+  const { data } = await API.get(`/question-set/${id}`);
   return data;
 };
 
 export default function ViewQuestionSet() {
   const navigate = useNavigate();
-  const { slug } = useParams();
+  const { id } = useParams();
 
   /* =========================
      FETCH QUESTION
@@ -28,9 +28,9 @@ export default function ViewQuestionSet() {
     data: questionSet,
     isLoading,
   } = useQuery({
-    queryKey: ["question-set", slug],
-    queryFn: () => fetchQuestionSet(slug),
-    enabled: !!slug,
+    queryKey: ["question-set", id],
+    queryFn: () => fetchQuestionSet(id),
+    enabled: !!id,
     onError: () => {
       toast.error("Failed to fetch Question");
     },
@@ -62,7 +62,7 @@ export default function ViewQuestionSet() {
         actions={[
           {
             label: "Edit",
-            to: `/dashboard/question-set/edit/${slug}`,
+            to: `/dashboard/question-set/edit/${id}`,
             Icon: Pencil,
             variant: "success",
           },

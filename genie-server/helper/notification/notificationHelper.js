@@ -4,12 +4,13 @@ import { getRoleIds } from "../../utils/profileRole.util.js";
 import { mapRoleForApp } from "../../utils/roleMapper.js";
 
 /* ================= LEAD CREATED ================= */
-export const notifyLeadCreated = async ({ authUser, leadIds, leadName }) => {
+export const notifyLeadCreated = async ({ organizationId = null, authUser, leadIds, leadName }) => {
     try {
         // 🔥 get admin role id
         const adminRoleId = await getRoleIds("Property Manager");
 
         const admins = await RegularUser.find({
+            organizationId,
             role: adminRoleId
         }).select("_id").lean();
 
@@ -28,6 +29,7 @@ export const notifyLeadCreated = async ({ authUser, leadIds, leadName }) => {
         await Promise.all(
             admins.map(admin =>
                 createNotification({
+                    organizationId,
                     receiverId: admin._id,
                     senderId: authUser._id,
                     type: "lead_created",
@@ -48,7 +50,7 @@ export const notifyLeadCreated = async ({ authUser, leadIds, leadName }) => {
 };
 
 /* ================= LEAD ASSIGNMENT ================= */
-export const notifyLeadAssignment = async ({ assignToUser, authUser, leadIds }) => {
+export const notifyLeadAssignment = async ({ organizationId = null, assignToUser, authUser, leadIds }) => {
     try {
         const count = leadIds.length;
         const isMultiple = count > 1;
@@ -64,6 +66,7 @@ export const notifyLeadAssignment = async ({ assignToUser, authUser, leadIds }) 
             : `${authUser.name} (${actorRole}) assigned a new lead to you.`;
 
         await createNotification({
+            organizationId,
             receiverId: assignToUser._id,
             senderId: authUser._id,
             type: "lead_assigned",
@@ -83,12 +86,13 @@ export const notifyLeadAssignment = async ({ assignToUser, authUser, leadIds }) 
 };
 
 /* ================= COUNSELOR ASSIGNMENT ================= */
-export const notifyCounselorAssignment = async ({ counselor, teamLeader, authUser }) => {
+export const notifyCounselorAssignment = async ({ organizationId = null, counselor, teamLeader, authUser }) => {
     try {
         const actorRole = mapRoleForApp(authUser.role?.role);
 
         // 🔔 Notify Team Leader
         await createNotification({
+            organizationId,
             receiverId: teamLeader._id,
             senderId: authUser._id,
             type: "team_member_added",
@@ -100,6 +104,7 @@ export const notifyCounselorAssignment = async ({ counselor, teamLeader, authUse
 
         // 🔔 Notify Counselor
         await createNotification({
+            organizationId,
             receiverId: counselor._id,
             senderId: authUser._id,
             type: "counselor_assigned",

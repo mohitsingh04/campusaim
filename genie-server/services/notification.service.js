@@ -1,6 +1,7 @@
 import Notification from "../models/notificationModel.js";
 
 export const createNotification = async ({
+    organizationId = null,
     receiverId,      // Changed from userId
     senderId = null,
     type,
@@ -15,6 +16,7 @@ export const createNotification = async ({
         }
 
         const notification = await Notification.create({
+            organizationId,
             receiverId,
             senderId,
             type,
