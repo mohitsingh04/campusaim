@@ -31,6 +31,7 @@ import AssignLeadModal from "../../components/modal/AssignLeadModal";
 import { ActionIconButton } from "../../components/ui/Button/ActionIconButton";
 import useDebounce from "../../utils/useDebounce";
 import LeadStatusBadge from "../../components/ui/Badge/LeadStatusBadge";
+import { maskPhone } from "../../utils/maskPhone";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -38,6 +39,9 @@ export default function AllLead() {
     const navigate = useNavigate();
     const { authUser } = useAuth();
     const role = authUser?.appRole;
+    const organizationId = authUser?.organizationId;
+
+    const hasFetched = useRef(false);
 
     // Stores the complete unpaginated dataset from the backend
     const [allLeads, setAllLeads] = useState([]);
@@ -91,16 +95,19 @@ export default function AllLead() {
             setAllLeads(leadsData);
             setLeadConversations(conversationMap);
         } catch (err) {
-            console.error(err);
-            toast.error(err?.response?.data?.message || "Failed to load leads");
+            console.error(err.response);
+            toast.error(err?.response?.data?.error || "Failed to load leads");
         } finally {
             setIsLoading(false);
         }
     }, [debouncedSearch, statusFilter, assignedFilter, todayFilter, followupFilter]);
 
     useEffect(() => {
-        if (authUser?._id) fetchData();
-    }, [authUser?._id, fetchData]);
+        if (!authUser?._id || hasFetched.current) return;
+
+        hasFetched.current = true;
+        fetchData();
+    }, [authUser?._id]);
 
     useEffect(() => {
         setSearchParams((prev) => {
@@ -354,6 +361,10 @@ export default function AllLead() {
 
                             <span className="text-xs text-gray-400">
                                 {maskEmail(lead.email)}
+                            </span>
+
+                            <span className="text-xs text-gray-400">
+                                {maskPhone(lead.contact)}
                             </span>
                         </div>
                     );

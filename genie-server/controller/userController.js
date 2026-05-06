@@ -17,6 +17,7 @@ import { getRoleId } from "../utils/roleMapper.js";
 import RegularUser from "../models/regularUser.js";
 import { hasRole } from "../utils/roleCheck.util.js";
 import { getRoleIds } from "../utils/profileRole.util.js";
+import Organization from "../models/organization.js";
 
 // Utility to fetch users with role filtering
 export const getUsersByRole = async ({ role = null, search = "" }) => {
@@ -1275,5 +1276,72 @@ export const updateUserNiche = async (req, res) => {
     } catch (err) {
         console.error("updateUserNiche error:", err);
         return res.status(500).json({ success: false, error: "Internal Server Error" });
+    }
+};
+
+// Update User Organization
+export const updateUserOrganization = async (req, res) => {
+    try {
+        const authUserId = await getDataFromToken(req);
+
+        // ---------- Validation ----------
+        if (!authUserId || !mongoose.Types.ObjectId.isValid(authUserId)) {
+            return res.status(401).json({ success: false, message: "Unauthorized" });
+        }
+
+        const { name } = req.body;
+
+        if (!name || typeof name !== "string" || name.trim().length < 2) {
+            return res.status(400).json({
+                success: false,
+                message: "Valid organization name is required"
+            });
+        }
+
+        // ---------- Get User ----------
+        const user = await RegularUser.findById(authUserId).select("organizationId");
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        let organization;
+
+        // ---------- CASE 1: User already has organization → UPDATE NAME ----------
+        if (user.organizationId) {
+            organization = await Organization.findByIdAndUpdate(
+                user.organizationId,
+                { $set: { name: name.trim() } },
+                { new: true }
+            );
+        }
+
+        // ---------- CASE 2: First time → CREATE + ASSIGN ----------
+        else {
+            organization = await Organization.create({
+                name: name.trim(),
+                owner: authUserId
+            });
+
+            // atomic update
+            await RegularUser.findByIdAndUpdate(authUserId, {
+                $set: { organizationId: organization._id }
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Organization saved successfully",
+            data: {
+                organizationId: organization._id,
+                name: organization.name
+            }
+        });
+
+    } catch (err) {
+        console.error("updateUserOrganization error:", err);
+        return res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
     }
 };

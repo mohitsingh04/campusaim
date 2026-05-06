@@ -26,8 +26,10 @@ import {
     registerPartnerViaInvite,
     toggleUserStatus,
     updateUser,
-    updateUserNiche
+    updateUserNiche,
+    updateUserOrganization
 } from "../controller/userController.js";
+import { fetchMyOrganization } from "../controller/organizationController.js";
 
 const userRouter = express.Router();
 
@@ -87,5 +89,9 @@ userRouter.post("/become-a-partner", becomeAPartner);
 
 // Update User Niche
 userRouter.put("/users/update-niche", updateUserNiche);
+
+// Update User Organization
+userRouter.get("/my-organization", fetchMyOrganization);
+userRouter.put("/users/update-organization", updateUserOrganization);
 
 export default userRouter;

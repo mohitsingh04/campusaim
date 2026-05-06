@@ -295,6 +295,12 @@ export const getAdminDashboard = async (req, res) => {
             return res.status(403).json({ message: "Access denied" });
         }
 
+        if (!admin.organizationId) {
+            return res.status(400).json({ message: "Organization not found" });
+        }
+
+        const orgId = new mongoose.Types.ObjectId(admin.organizationId);
+
         const roleName = admin.role?.role;
         const appRole = mapRoleForApp(roleName);
 
@@ -334,13 +340,14 @@ export const getAdminDashboard = async (req, res) => {
         ] = await Promise.all([
 
             /* TEAM */
-            RegularUser.countDocuments({ role: partnerRoleId }),
-            RegularUser.countDocuments({ role: teamLeaderRoleId }),
-            RegularUser.countDocuments({ role: counselorRoleId }),
+            RegularUser.countDocuments({ role: partnerRoleId, organizationId: orgId }),
+            RegularUser.countDocuments({ role: teamLeaderRoleId, organizationId: orgId }),
+            RegularUser.countDocuments({ role: counselorRoleId, organizationId: orgId }),
 
             /* ACTIVE */
             RegularUser.countDocuments({
                 role: partnerRoleId,
+                organizationId: orgId,
                 $or: [
                     { lastLoginAt: { $gte: activeSince } },
                     { updatedAt: { $gte: activeSince } }
@@ -348,6 +355,7 @@ export const getAdminDashboard = async (req, res) => {
             }),
             RegularUser.countDocuments({
                 role: teamLeaderRoleId,
+                organizationId: orgId,
                 $or: [
                     { lastLoginAt: { $gte: activeSince } },
                     { updatedAt: { $gte: activeSince } }
@@ -355,6 +363,7 @@ export const getAdminDashboard = async (req, res) => {
             }),
             RegularUser.countDocuments({
                 role: counselorRoleId,
+                organizationId: orgId,
                 $or: [
                     { lastLoginAt: { $gte: activeSince } },
                     { updatedAt: { $gte: activeSince } }
@@ -362,22 +371,24 @@ export const getAdminDashboard = async (req, res) => {
             }),
 
             /* LEADS */
-            Lead.countDocuments({ createdAt: { $gte: start, $lte: end } }),
-            Lead.countDocuments({ status: "new", createdAt: { $gte: start, $lte: end } }),
-            Lead.countDocuments({ status: "converted", createdAt: { $gte: start, $lte: end } }),
-            Lead.countDocuments({ status: "contacted", createdAt: { $gte: start, $lte: end } }),
-            Lead.countDocuments({ status: "lost", createdAt: { $gte: start, $lte: end } }),
+            Lead.countDocuments({ createdAt: { $gte: start, $lte: end }, organizationId: orgId }),
+            Lead.countDocuments({ status: "new", createdAt: { $gte: start, $lte: end }, organizationId: orgId }),
+            Lead.countDocuments({ status: "converted", createdAt: { $gte: start, $lte: end }, organizationId: orgId }),
+            Lead.countDocuments({ status: "contacted", createdAt: { $gte: start, $lte: end }, organizationId: orgId }),
+            Lead.countDocuments({ status: "lost", createdAt: { $gte: start, $lte: end }, organizationId: orgId }),
 
             /* TODAY */
-            Lead.countDocuments({ createdAt: { $gte: todayStart, $lte: todayEnd } }),
+            Lead.countDocuments({ createdAt: { $gte: todayStart, $lte: todayEnd }, organizationId: orgId }),
 
             /* ALERTS */
             Lead.countDocuments({
                 $or: [{ assignedTo: null }, { assignedTo: { $exists: false } }],
-                status: { $nin: ["converted", "contacted", "lost"] }
+                status: { $nin: ["converted", "contacted", "lost"] },
+                organizationId: orgId
             }),
 
             Lead.countDocuments({
+                organizationId: orgId,
                 status: { $nin: ["converted", "lost"] },
                 $or: [
                     { lastActivity: { $lt: staleThreshold } },
@@ -387,10 +398,12 @@ export const getAdminDashboard = async (req, res) => {
 
             /* PIPELINE */
             Lead.countDocuments({
+                organizationId: orgId,
                 status: { $nin: ["converted", "lost"] }
             }),
 
             Lead.countDocuments({
+                organizationId: orgId,
                 assignedTo: { $ne: null },
                 createdAt: { $gte: start, $lte: end }
             }),
@@ -400,6 +413,7 @@ export const getAdminDashboard = async (req, res) => {
                 { $unwind: "$sessions" },
                 {
                     $match: {
+                        organizationId: orgId, // 🔥 REQUIRED
                         "sessions.next_follow_up_date": {
                             $gte: todayStart,
                             $lte: todayEnd,
@@ -410,8 +424,19 @@ export const getAdminDashboard = async (req, res) => {
                 {
                     $lookup: {
                         from: "leads",
-                        localField: "lead_id",
-                        foreignField: "_id",
+                        let: { leadId: "$lead_id" },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            { $eq: ["$_id", "$$leadId"] },
+                                            { $eq: ["$organizationId", orgId] } // 🔥 enforce org boundary
+                                        ]
+                                    }
+                                }
+                            }
+                        ],
                         as: "lead",
                     },
                 },
@@ -439,7 +464,7 @@ export const getAdminDashboard = async (req, res) => {
 
         /* TREND */
         const trendRaw = await Lead.aggregate([
-            { $match: { createdAt: { $gte: start, $lte: end } } },
+            { $match: { createdAt: { $gte: start, $lte: end }, organizationId: orgId } },
             {
                 $group: {
                     _id: {

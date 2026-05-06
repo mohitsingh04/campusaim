@@ -11,6 +11,8 @@ export default function SettingPage() {
   const navigate = useNavigate();
   const [category, setCategory] = useState([]);
   const [selectedNiche, setSelectedNiche] = useState("");
+  const [organization, setOrganization] = useState("");
+  const [myOrg, setMyOrg] = useState("");
 
   const isNicheLocked = Boolean(authUser?.nicheId);
 
@@ -34,6 +36,46 @@ export default function SettingPage() {
       setSelectedNiche(authUser.nicheId);
     }
   }, [authUser]);
+
+  const handleUpdateOrganization = async () => {
+    try {
+      if (!organization.trim()) {
+        return toast.error("Please add organization name.");
+      }
+
+      const res = await API.put("/users/update-organization", {
+        name: organization
+      });
+
+      setAuthUser(prev => ({
+        ...prev,
+        organizationId: res.data.data.organizationId
+      }));
+
+      toast.success("Organization updated successfully");
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Failed to update organization");
+    }
+  };
+
+  useEffect(() => {
+    const fetchMyOrg = async () => {
+      try {
+        const res = await API.get("/my-organization");
+        setMyOrg(res?.data.data);
+      } catch (error) {
+        toast.error("Internal server error.");
+        console.error(error)
+      }
+    };
+    fetchMyOrg();
+  }, []);
+
+  useEffect(() => {
+    if (myOrg?.name) {
+      setOrganization(myOrg.name);
+    }
+  }, [myOrg]);
 
   // ✅ update niche handler
   const handleUpdateNiche = async () => {
@@ -114,40 +156,63 @@ export default function SettingPage() {
           <div><p className="text-gray-500">Country</p><p className="font-medium">{country || "N/A"}</p></div>
           <div><p className="text-gray-500">Joined</p><p className="font-medium">{createdAt ? new Date(createdAt).toLocaleDateString() : "N/A"}</p></div>
 
-          {/* ✅ Niche Select + Update */}
-          <div>
-            <p className="text-gray-500">Category</p>
-            <div className="flex gap-2 mt-1">
-              <select
-                className="border rounded-md px-2 py-1 w-full disabled:bg-gray-100 disabled:cursor-not-allowed"
-                value={selectedNiche}
-                onChange={(e) => setSelectedNiche(e.target.value)}
-                disabled={isNicheLocked}
-              >
-                <option value="">Select Category</option>
-                {category.map((item) => (
-                  <option key={item._id} value={item._id}>{item.category_name}</option>
-                ))}
-              </select>
+          {appRole === "admin" ? (
+            <>
+              {/* ✅ Organization Select + Update */}
+              <div>
+                <p className="text-gray-500">Organization</p>
+                <div className="flex gap-2 mt-1">
+                  <input
+                    type="text"
+                    placeholder="Enter your organization name"
+                    className="border rounded-md px-2 py-1 w-full disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    value={organization}
+                    onChange={(e) => setOrganization(e.target.value)}
+                  />
 
-              <button
-                onClick={handleUpdateNiche}
-                disabled={isNicheLocked}
-                className={`px-3 py-1 rounded-md text-white ${isNicheLocked
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-blue-600 hover:bg-blue-700"
-                  }`}
-              >
-                Save
-              </button>
-            </div>
+                  <button onClick={handleUpdateOrganization} className="px-3 py-1 rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                    Save
+                  </button>
+                </div>
+              </div>
 
-            <p className={`text-xs mt-1 ${isNicheLocked ? "text-gray-500" : "text-red-500"}`}>
-              {isNicheLocked
-                ? "Category is locked and cannot be changed."
-                : "Select your category carefully. This action is permanent."}
-            </p>
-          </div>
+              {/* ✅ Niche Select + Update */}
+              <div>
+                <p className="text-gray-500">Category</p>
+                <div className="flex gap-2 mt-1">
+                  <select
+                    className="border rounded-md px-2 py-1 w-full disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    value={selectedNiche}
+                    onChange={(e) => setSelectedNiche(e.target.value)}
+                    disabled={isNicheLocked}
+                  >
+                    <option value="">Select Category</option>
+                    {category.map((item) => (
+                      <option key={item._id} value={item._id}>{item.category_name}</option>
+                    ))}
+                  </select>
+
+                  <button
+                    onClick={handleUpdateNiche}
+                    disabled={isNicheLocked}
+                    className={`px-3 py-1 rounded-md text-white ${isNicheLocked
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-blue-600 hover:bg-blue-700"
+                      }`}
+                  >
+                    Save
+                  </button>
+                </div>
+
+                <p className={`text-xs mt-1 ${isNicheLocked ? "text-gray-500" : "text-red-500"}`}>
+                  {isNicheLocked
+                    ? "Category is locked and cannot be changed."
+                    : "Select your category carefully. This action is permanent."}
+                </p>
+              </div>
+            </>)
+            : null
+          }
 
         </div>
       </div>

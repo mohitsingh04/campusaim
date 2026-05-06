@@ -37,8 +37,9 @@ const normalizeMobile = (input = "") => {
 export const addUser = async (req, res) => {
     try {
         const adminId = await getDataFromToken(req);
-        const admin = await RegularUser.findById(adminId).select("_id nicheId name").lean();
+        const admin = await RegularUser.findById(adminId).select("_id nicheId name organizationId").lean();
         const nicheId = admin?.nicheId;
+        const organizationId = admin?.organizationId;
 
         const { username, name, email, mobile_no: rawMobileNo, role } = req.body;
         const mobile_no = normalizeMobile(rawMobileNo);
@@ -74,7 +75,9 @@ export const addUser = async (req, res) => {
         };
 
         // PASSWORD
-        const password = generatePassword();
+        // ⚠️ Default password logic
+        const isDevelopment = process.env.NODE_ENV === "development";
+        const password = isDevelopment ? "123456" : generatePassword();
 
         const salt = await bcryptjs.genSalt(10);
         const hashedPassword = await bcryptjs.hash(password, salt);
@@ -103,6 +106,7 @@ export const addUser = async (req, res) => {
 
         const newUser = new RegularUser({
             nicheId,
+            organizationId,
             uniqueId,
             username: sanitizedUsername,
             name,
@@ -116,7 +120,9 @@ export const addUser = async (req, res) => {
         const savedUser = await newUser.save();
 
         // SEND ACCESS EMAIL
-        await sendAccessEmail({ email, password, role: roleData?.role });
+        if (!isDevelopment) {
+            await sendAccessEmail({ email, password, role: roleData?.role });
+        }
 
         const { password: _, ...safeUser } = savedUser._doc;
 
@@ -191,42 +197,64 @@ export const updateUser = async (req, res) => {
 // Controller to fetch counselors and teamleaders
 export const fetchCounselorsAndTeamleaders = async (req, res) => {
     try {
-        // 1. Fetch both role IDs in parallel
-        const [counselorRoleId, teamLeaderRoleId] = await Promise.all([
-            getRoleIds("counselor"),
-            getRoleIds("team leader") // make sure exact role name matches DB
-        ]);
+        const authUserId = await getDataFromToken(req);
 
-        // 2. Validate ObjectIds (defensive)
-        if (
-            !mongoose.Types.ObjectId.isValid(counselorRoleId) ||
-            !mongoose.Types.ObjectId.isValid(teamLeaderRoleId)
-        ) {
+        if (!mongoose.Types.ObjectId.isValid(authUserId)) {
+            return res.status(400).json({ success: false, message: "Unauthorized" });
+        }
+
+        const admin = await RegularUser.findById(authUserId)
+            .select("_id organizationId")
+            .lean();
+
+        if (!admin || !admin.organizationId) {
             return res.status(400).json({
                 success: false,
-                message: "Invalid role IDs"
+                message: "Admin not found or organization missing."
             });
         }
 
-        // 3. Fetch users in single query (better performance)
+        const orgId = admin.organizationId;
+
+        // FETCH ROLE IDS IN PARALLEL
+        const [counselorRoleId, teamLeaderRoleId] = await Promise.all([
+            getRoleIds("Counselor"),
+            getRoleIds("Team Leader") // ⚠️ use normalized slug
+        ]);
+
+        if (!counselorRoleId || !teamLeaderRoleId) {
+            return res.status(400).json({
+                success: false,
+                message: "Roles not found"
+            });
+        }
+
+        const roleIds = [counselorRoleId, teamLeaderRoleId];
+
+        // 🔥 CRITICAL: ADD organizationId FILTER
         const users = await RegularUser.find({
-            role: { $in: [counselorRoleId, teamLeaderRoleId] }
+            organizationId: orgId,
+            role: { $in: roleIds }
         })
-            .select("_id name email mobile_no status role teamLeader")
-            .populate("role", "role") // ✅ get role name
-            .populate("teamLeader", "name email")
+            .select("_id name email mobile_no status role teamLeader verified")
+            .populate("role", "role")
+            .populate({
+                path: "teamLeader",
+                match: { organizationId: orgId }, // 🔒 prevent cross-org population
+                select: "name email"
+            })
             .lean();
 
-        // 4. Split into groups (O(n), no extra DB calls)
+        // SPLIT USERS (safe ObjectId comparison)
         const counselors = [];
         const teamleaders = [];
 
         for (const user of users) {
             const roleId = user.role?._id?.toString();
 
-            if (roleId === counselorRoleId) {
+            if (roleId === counselorRoleId.toString()) {
                 counselors.push(user);
-            } else if (roleId === teamLeaderRoleId) {
+            } else if (roleId === teamLeaderRoleId.toString()) {
                 teamleaders.push(user);
             }
         }
@@ -242,6 +270,7 @@ export const fetchCounselorsAndTeamleaders = async (req, res) => {
                 teamleaders
             }
         });
+
     } catch (error) {
         console.error("Error fetching counselors & teamleaders:", error);
 
@@ -322,19 +351,22 @@ export const fetchAdminById = async (req, res) => {
             });
         }
 
+        const adminOrgId = admin?.organizationId;
+        const baseQuery = { organizationId: adminOrgId };
+
         // ---------------- PARALLEL FETCH ----------------
         const [partners, counselors, teamleaders, location] = await Promise.all([
 
-            RegularUser.find({ role: roleIds.partnerRoleId })
+            RegularUser.find({ ...baseQuery, role: roleIds.partnerRoleId })
                 .select("_id name email mobile_no ref_code status isVerified")
                 .lean(),
 
-            RegularUser.find({ role: roleIds.counselorRoleId })
+            RegularUser.find({ ...baseQuery, role: roleIds.counselorRoleId })
                 .select("_id name email mobile_no status isVerified teamLeader")
                 .populate("teamLeader", "name email")
                 .lean(),
 
-            RegularUser.find({ role: roleIds.teamLeaderRoleId })
+            RegularUser.find({ ...baseQuery, role: roleIds.teamLeaderRoleId })
                 .select("_id name email mobile_no status isVerified")
                 .lean(),
 
@@ -366,10 +398,41 @@ export const fetchAdminById = async (req, res) => {
 // Controller to fetch counselors
 export const fetchCounselors = async (req, res) => {
     try {
+        const authUserId = await getDataFromToken(req);
+
+        if (!mongoose.Types.ObjectId.isValid(authUserId)) {
+            return res.status(400).json({ success: false, message: "Unauthorized" });
+        }
+
+        const admin = await RegularUser.findById(authUserId)
+            .select("_id name email nicheId organizationId")
+            .lean();
+
+        if (!admin || !admin.organizationId) {
+            return res.status(400).json({
+                success: false,
+                message: "Admin not found or organization missing."
+            });
+        }
+
+        const orgId = admin.organizationId;
+
+        // ROLE ID
         const counselorRoleId = await getRoleIds("counselor");
 
-        const counselors = await RegularUser.find({ role: counselorRoleId })
-            .populate("teamLeader", "name email") // ✅ IMPORTANT FIX
+        if (!counselorRoleId) {
+            return res.status(400).json({
+                success: false,
+                message: "Counselor role not found."
+            });
+        }
+
+        // 🔥 FIX: filter by organizationId + role
+        const counselors = await RegularUser.find({
+            organizationId: orgId,
+            role: counselorRoleId
+        })
+            .populate("teamLeader", "name email")
             .select("_id name email mobile_no status teamLeader verified")
             .lean();
 
@@ -378,6 +441,7 @@ export const fetchCounselors = async (req, res) => {
             count: counselors.length,
             data: counselors
         });
+
     } catch (error) {
         console.error("Error fetching counselors:", error);
         return res.status(500).json({
@@ -425,15 +489,49 @@ export const fetchCounselorById = async (req, res) => {
 // Controller to fetch teamLeader
 export const fetchTeamLeader = async (req, res) => {
     try {
+        const authUserId = await getDataFromToken(req);
+
+        if (!mongoose.Types.ObjectId.isValid(authUserId)) {
+            return res.status(400).json({ success: false, message: "Unauthorized" });
+        }
+
+        const admin = await RegularUser.findById(authUserId)
+            .select("_id name email nicheId organizationId")
+            .lean();
+
+        if (!admin || !admin.organizationId) {
+            return res.status(400).json({
+                success: false,
+                message: "Admin not found or organization missing."
+            });
+        }
+
+        const orgId = admin.organizationId;
+
+        // ROLE ID
         const teamleaderRoleId = await getRoleIds("Team Leader");
 
-        const teamleaders = await RegularUser.find({ role: teamleaderRoleId }).select("-password").lean();
+        if (!teamleaderRoleId) {
+            return res.status(400).json({
+                success: false,
+                message: "Team Leader role not found."
+            });
+        }
+
+        // 🔥 FIX: add organization filter
+        const teamleaders = await RegularUser.find({
+            organizationId: orgId,
+            role: teamleaderRoleId
+        })
+            .select("-password")
+            .lean();
 
         return res.status(200).json({
             success: true,
             count: teamleaders.length,
             data: teamleaders
         });
+
     } catch (error) {
         console.error("Error fetching team leaders:", error);
         return res.status(500).json({
@@ -481,15 +579,43 @@ export const fetchTeamLeaderById = async (req, res) => {
 // Controller to fetch Partner
 export const fetchPartner = async (req, res) => {
     try {
+        const authUserId = await getDataFromToken(req);
+
+        if (!mongoose.Types.ObjectId.isValid(authUserId)) {
+            return res.status(400).json({ success: false, message: "Unauthorized" });
+        }
+
+        const admin = await RegularUser.findById(authUserId)
+            .select("_id name email nicheId organizationId")
+            .lean();
+
+        if (!admin || !admin.organizationId) {
+            return res.status(400).json({ success: false, message: "Admin not found or organization missing." });
+        }
+
+        const orgId = admin.organizationId;
+
+        // ROLE ID (ensure always array-safe)
         const partnerRoleId = await getRoleIds("partner");
 
-        const partners = await RegularUser.find({ role: partnerRoleId }).select("-password").lean();
+        if (!partnerRoleId) {
+            return res.status(400).json({ success: false, message: "Partner role not found." });
+        }
+
+        // 🔥 FILTER BY organizationId + role
+        const partners = await RegularUser.find({
+            organizationId: orgId,
+            role: partnerRoleId
+        })
+            .select("-password")
+            .lean();
 
         return res.status(200).json({
             success: true,
             count: partners.length,
             data: partners
         });
+
     } catch (error) {
         console.error("Error fetching partners:", error);
         return res.status(500).json({
@@ -668,8 +794,9 @@ export const registerPartnerViaInvite = async (req, res) => {
             return res.status(400).json({ error: "Invite link expired or invalid" });
         }
 
-        const createdByAdmin = await RegularUser.findById({ _id: invite?.createdBy }).select("name email nicheId");
+        const createdByAdmin = await RegularUser.findById({ _id: invite?.createdBy }).select("name email nicheId organizationId");
         const adminNicheId = createdByAdmin?.nicheId;
+        const adminOrgId = createdByAdmin?.organizationId;
 
         // ---------------- VALIDATION ----------------
         if (await RegularUser.exists({ email })) {
@@ -704,6 +831,7 @@ export const registerPartnerViaInvite = async (req, res) => {
         // ---------------- CREATE USER ----------------
         const newUser = await RegularUser.create({
             nicheId: adminNicheId,
+            organizationId: adminOrgId,
             uniqueId,
             username,
             name,

@@ -7,7 +7,7 @@ import { mapRoleForApp } from "../../utils/roleMapper.js";
 export const notifyLeadCreated = async ({ authUser, leadIds, leadName }) => {
     try {
         // 🔥 get admin role id
-        const adminRoleId = await getRoleIds("admin");
+        const adminRoleId = await getRoleIds("Property Manager");
 
         const admins = await RegularUser.find({
             role: adminRoleId

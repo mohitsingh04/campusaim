@@ -2,6 +2,10 @@ import mongoose from "mongoose";
 import { campusaimDB } from "../mongoose/index.js";
 
 const userSchema = new mongoose.Schema({
+    organizationId: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true
+    },
     nicheId: {
         type: mongoose.Schema.Types.ObjectId,
         default: null

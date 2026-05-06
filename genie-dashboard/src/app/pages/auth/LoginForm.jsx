@@ -153,11 +153,11 @@ const LoginForm = () => {
             </div>
 
             {/* Forgot Password */}
-            <div className="flex justify-end">
+            {/* <div className="flex justify-end">
               <Link to="/forgot-password" className="text-blue-600 text-sm hover:underline">
                 Forgot Password?
               </Link>
-            </div>
+            </div> */}
 
             {/* Error Message */}
             {error && (

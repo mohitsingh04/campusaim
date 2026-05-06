@@ -97,6 +97,8 @@ export default function ViewAdmin() {
         counselors: <UserList users={adminData?.counselors || []} role="counselor" />,
     };
 
+    console.log(adminData)
+
     return (
         <div className="space-y-6">
             <Breadcrumbs
