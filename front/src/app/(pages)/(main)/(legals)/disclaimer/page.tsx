@@ -4,13 +4,12 @@ import "@/css/Blogs.css";
 import { Metadata } from "next";
 import LegalNotFound from "../_legalComponents/LegalNotFound";
 
-const BASE_URL =
-  process.env.NEXT_PUBLIC_BASE_URL ?? "https://www.campusaim.com";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 const title = "Disclaimer";
-const keywords = ["Campusaim Disclaimer"];
+const keywords = ["campusaim disclaimer"];
 const description =
-  "Campusaim’s Disclaimer explains our content accuracy, yoga guidance limitations, and user responsibility for personal decisions.";
+  "Read the Campusaim disclaimer regarding educational content, admissions guidance, third-party information, and liability limitations.";
 const canonical = "/disclaimer";
 const featuredImage = [
   {

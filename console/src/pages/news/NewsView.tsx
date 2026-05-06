@@ -3,10 +3,18 @@ import { Breadcrumbs } from "../../ui/breadcrumbs/Breadcrumbs";
 import { API } from "../../contexts/API";
 import { useParams } from "react-router-dom";
 import toast from "react-hot-toast";
-import { Calendar, Clock, CheckCircle } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  CheckCircle,
+  HelpCircle,
+  ChevronUp,
+  ChevronDown,
+} from "lucide-react";
 import { formatDate, formatDateWithoutTime } from "../../contexts/Callbacks";
 import ViewSkeleton from "../../ui/skeleton/ViewSkeleton";
 import ReadMoreLess from "../../ui/read-more/ReadMoreLess";
+import { FAQProps } from "../../types/types";
 
 const MetaDetail = ({ icon: Icon, label, value }: any) => (
   <div className="flex items-start space-x-3 text-sm">
@@ -22,6 +30,7 @@ export default function NewsView() {
   const { objectId } = useParams();
   const [news, setNews] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchNews = async () => {
@@ -81,6 +90,49 @@ export default function NewsView() {
           <div className="p-8 lg:p-12 grid grid-cols-1 lg:grid-cols-4 gap-12">
             <div className="lg:col-span-3 lg:order-1">
               <ReadMoreLess children={news?.content} />
+              {/* FAQ Section */}
+              {news?.faqs && news.faqs.length > 0 && (
+                <div className="mt-5 space-y-4">
+                  <h3 className="flex items-center gap-2 text-lg font-semibold text-[var(--yp-text-primary)] mb-4">
+                    <HelpCircle className="text-[var(--yp-main)]" />
+                    Frequently Asked Questions
+                  </h3>
+                  <div className="space-y-3">
+                    {news.faqs.map((faq: FAQProps, index: number) => (
+                      <div
+                        key={index}
+                        className="border border-[var(--yp-border-primary)] rounded-lg overflow-hidden"
+                      >
+                        <button
+                          onClick={() =>
+                            setOpenFaqIndex(
+                              openFaqIndex === index ? null : index,
+                            )
+                          }
+                          className="w-full flex items-center justify-between p-4 text-left bg-[var(--yp-input-primary)] hover:bg-[var(--yp-secondary)] transition-colors"
+                        >
+                          <span className="font-medium text-[var(--yp-text-primary)]">
+                            {faq.question}
+                          </span>
+                          {openFaqIndex === index ? (
+                            <ChevronUp size={18} />
+                          ) : (
+                            <ChevronDown size={18} />
+                          )}
+                        </button>
+                        {openFaqIndex === index && (
+                          <div className="p-4 border-t border-[var(--yp-border-primary)] bg-[var(--yp-primary)]">
+                            <div
+                              className="text-sm text-[var(--yp-text-secondary)] prose prose-sm max-w-none"
+                              dangerouslySetInnerHTML={{ __html: faq.answer }}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="lg:col-span-1 lg:order-2">

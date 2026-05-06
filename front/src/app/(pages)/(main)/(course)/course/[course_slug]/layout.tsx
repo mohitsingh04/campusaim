@@ -11,6 +11,7 @@ import React, { Suspense } from "react";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 const MEDIA_URL = process.env.NEXT_PUBLIC_MEDIA_URL;
+const DEFAULT_IMAGE = `${BASE_URL}/img/main-images/campusaim.png`;
 
 export async function generateMetadata({
   params,
@@ -32,42 +33,56 @@ export async function generateMetadata({
   }
 
   if (!property) {
-    return { title: "Course Not Found" };
+    return { title: "Course Details for all college and university" };
   }
 
+  const title = property.course_name;
+  const description =
+    stripHtml(property?.seo?.meta_description, 160) ||
+    stripHtml(property?.description, 160) ||
+    "Explore course details including eligibility, fees, admission process, duration, syllabus, career opportunities, and top colleges & universities at Campusaim.";
   const keywords =
     property?.seo?.primary_focus_keyword?.length > 0
       ? extractKeywords(property?.seo?.primary_focus_keyword)
-      : [property?.title];
+      : [title, "college courses", "university courses"];
+  const canonical = `${BASE_URL}/course/${
+    property?.seo?.slug
+      ? property?.seo?.slug
+      : generateSlug(property?.course_name)
+  }`;
 
+  const ogImage = property?.image?.[0]
+    ? `${MEDIA_URL}/course/${property?.image?.[0]}`
+    : DEFAULT_IMAGE;
+
+  const featuredImage = [
+    {
+      url: ogImage,
+      width: 1200,
+      height: 700,
+      alt: title || "Course Featured Image",
+    },
+  ];
   return {
-    title: property.course_name,
-    description:
-      stripHtml(property?.seo?.meta_description, 160) ||
-      stripHtml(property?.description, 160) ||
-      "Discover a peaceful yoga Studio with expert instructors, calming ambience, and classes for all levels. Reconnect your mind, body, and soul.",
-    keywords,
+    title: title,
+    description: description,
+    keywords: keywords,
     alternates: {
-      canonical: `${BASE_URL}/course/${
-        property?.seo?.slug
-          ? property?.seo?.slug
-          : generateSlug(property?.course_name)
-      }`,
+      canonical: canonical,
     },
     openGraph: {
-      title: property.course_name,
-      description:
-        stripHtml(property?.seo?.meta_description, 160) ||
-        stripHtml(property?.description, 160) ||
-        "Discover a peaceful yoga Studio with expert instructors, calming ambience, and classes for all levels. Reconnect your mind, body, and soul.",
-      images: property.image?.[0]
-        ? [
-            {
-              url: `${MEDIA_URL}/course/${property.image[0]}`,
-              alt: property.course_name || "Property Image",
-            },
-          ]
-        : undefined,
+      title: title,
+      description: description,
+      url: canonical,
+      siteName: "Campusaim",
+      images: featuredImage,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: title,
+      description: description,
+      images: featuredImage,
     },
   };
 }

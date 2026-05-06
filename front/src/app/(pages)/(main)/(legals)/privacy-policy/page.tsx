@@ -4,13 +4,12 @@ import "@/css/Blogs.css";
 import { Metadata } from "next";
 import LegalNotFound from "../_legalComponents/LegalNotFound";
 
-const BASE_URL =
-  process.env.NEXT_PUBLIC_BASE_URL ?? "https://www.campusaim.com";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 const title = "Privacy Policy";
-const keywords = ["Campusaim Privacy Policy"];
+const keywords = ["privacy policy", "campusaim privacy policy"];
 const description =
-  "At Campusaim, your privacy matters. Learn how we collect, use, and protect your personal information securely.";
+  "Learn how Campusaim collects, stores, protects, and uses your personal information while ensuring privacy, security, and transparency online.";
 const canonical = "/privacy-policy";
 const featuredImage = [
   {

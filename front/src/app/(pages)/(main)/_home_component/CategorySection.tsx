@@ -5,7 +5,6 @@ import { HeadingProps } from "@/ui/headings/MainHeading";
 import AcademicTypeSkeleton from "@/ui/loader/page/landing/_components/AcademicTypeSkeleton";
 import {
   Backpack,
-  GlobeIcon,
   GraduationCapIcon,
   SchoolIcon,
   UniversityIcon,
@@ -27,23 +26,9 @@ export default function CategorySection() {
     if (!propertyCounts) return [];
     return [
       {
-        description:
-          "Explore a wide network of trusted and certified yoga training centers offering deep, transformative courses across India.",
-        value: propertyCounts.allProperties || 0,
-        label: "All Institutes",
-        icon: GlobeIcon,
-        colors: {
-          sub: "bg-(--blue-subtle)",
-          emphasis: "bg-(--blue-emphasis)",
-          text: "text-(--blue-emphasis)",
-          textSub: "text-(--blue-subtle)",
-        },
-        href: "/institutes",
-      },
-      {
         value: propertyCounts["school"] || 0,
         description:
-          "Top-rated studios offering authentic daily classes, weekend workshops, and expert guidance for all levels of practice.",
+          "Explore top-rated schools offering quality education, academic excellence, co-curricular activities, and strong foundations for student growth and success.",
         label: "School",
         icon: SchoolIcon,
         href: "/schools",
@@ -57,7 +42,7 @@ export default function CategorySection() {
       {
         value: propertyCounts["college"] || 0,
         description:
-          "Colleges offering structured academic programs, practical learning opportunities, and electives to support your educational and career goals.",
+          "Find the best colleges with industry-focused courses, experienced faculty, practical learning opportunities, and career-oriented programs for students.",
         label: "College",
         icon: GraduationCapIcon,
         colors: {
@@ -71,7 +56,7 @@ export default function CategorySection() {
       {
         value: propertyCounts["university"] || 0,
         description:
-          "Pursue a formal degree or diploma! Universities offering accredited programs, certified courses, and recognized academic learning.",
+          "Discover recognized universities offering undergraduate, postgraduate, diploma, and professional programs with modern campus facilities and academic support.",
         label: "University",
         icon: UniversityIcon,
         colors: {
@@ -85,8 +70,8 @@ export default function CategorySection() {
       {
         value: propertyCounts["coaching"] || 0,
         description:
-          "Learn yoga anytime, anywhere! Access high-quality, live, and on-demand classes with expert online trainers from the comfort of your home.",
-        label: "Coaching",
+          "Browse leading coaching institutes for competitive exams, entrance preparation, skill development, and career-focused training programs across multiple fields.",
+        label: "Coaching Institutes",
         icon: Backpack,
         colors: {
           sub: "bg-(--warning-subtle)",
@@ -105,14 +90,14 @@ export default function CategorySection() {
     <section className="relative bg-(--primary-bg) py-10 px-4 sm:px-8 overflow-hidden">
       <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-6">
         <HeadingProps
-          tag="Find Your Yoga Fit"
-          title=" Browse by "
+          tag="Explore Top Educational Categories"
+          title="Browse by "
           activetitle="Academic Type"
-          subtitle="Trusted institutes. Top-rated studios. Certified education. Filter by your goal."
+          subtitle="Find trusted institutes for better learning and career growth."
         />
       </div>
 
-      <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+      <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {statsData.map((item) => (
           <CategoryCard key={item.label} item={item} />
         ))}

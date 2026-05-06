@@ -49,8 +49,7 @@ export default function BasicDetailTable({
                 className="text-(--white)! mb-0!"
               />
               <p className="ml-3 text-(--white)! text-xs sm:text-base">
-                Overview of {selectedProperties?.length} selected Yoga
-                Institutes
+                Overview of {selectedProperties?.length} selected Institutes
               </p>
             </div>
           </div>

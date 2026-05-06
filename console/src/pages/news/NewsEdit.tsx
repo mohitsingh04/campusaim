@@ -1,5 +1,13 @@
 import { useEffect, useRef, useMemo, useState } from "react";
-import { Upload, X } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronUp,
+  HelpCircle,
+  Plus,
+  Trash2,
+  Upload,
+  X,
+} from "lucide-react";
 import JoditEditor from "jodit-react";
 import { useFormik } from "formik";
 import { getEditorConfig } from "../../contexts/JoditEditorConfig";
@@ -15,6 +23,11 @@ import {
   getStatusAccodingToField,
 } from "../../contexts/Callbacks";
 
+interface FAQProps {
+  question: string;
+  answer: string;
+}
+
 export function NewsEdit() {
   const editor = useRef(null);
   const redirector = useNavigate();
@@ -24,6 +37,11 @@ export function NewsEdit() {
   const [existingImage, setExistingImage] = useState<string | null>(null);
   const { status } = useOutletContext<DashboardOutletContextProps>();
   const [mainNews, setMainNews] = useState<NewsProps>();
+  const [currentFaq, setCurrentFaq] = useState<FAQProps>({
+    question: "",
+    answer: "",
+  });
+  const [openAccordion, setOpenAccordion] = useState<number | null>(null);
 
   const formik = useFormik({
     initialValues: {
@@ -31,6 +49,7 @@ export function NewsEdit() {
       content: mainNews?.content || "",
       featured_image: null as File | null,
       status: mainNews?.status || "Drafted",
+      faqs: (mainNews as any)?.faqs || ([] as FAQProps[]),
     },
     enableReinitialize: true,
     validationSchema: newsValidation,
@@ -42,11 +61,12 @@ export function NewsEdit() {
       if (values.featured_image) {
         formData.append("featured_image", values.featured_image);
       }
+      formData.append("faqs", JSON.stringify(values.faqs));
 
       try {
         const response = await API.patch(
           `/news-and-updates/${objectId}`,
-          formData
+          formData,
         );
         toast.success(response.data.message || "News updated successfully");
         redirector("/dashboard/news-and-updates");
@@ -66,7 +86,7 @@ export function NewsEdit() {
           setExistingImage(
             `${import.meta.env.VITE_MEDIA_URL}/news-and-updates/${
               data.featured_image[0]
-            }`
+            }`,
           );
         }
       } catch (error) {
@@ -76,6 +96,26 @@ export function NewsEdit() {
 
     fetchNews();
   }, [objectId]);
+
+  const addFaqToList = () => {
+    if (!currentFaq.question.trim() || !currentFaq.answer.trim()) {
+      return toast.error("Please provide both a question and an answer.");
+    }
+    formik.setFieldValue("faqs", [...formik.values.faqs, currentFaq]);
+    setCurrentFaq({ question: "", answer: "" });
+  };
+
+  const removeFaqFromList = (index: number) => {
+    const filtered = formik.values.faqs.filter(
+      (_: any, i: number) => i !== index,
+    );
+    formik.setFieldValue("faqs", filtered);
+    if (openAccordion === index) setOpenAccordion(null);
+  };
+
+  const toggleAccordion = (index: number) => {
+    setOpenAccordion(openAccordion === index ? null : index);
+  };
 
   return (
     <div>
@@ -129,7 +169,7 @@ export function NewsEdit() {
                     <option value={item?.parent_status} key={index}>
                       {item?.parent_status}
                     </option>
-                  )
+                  ),
                 )}
               </select>
               {getFormikError(formik, "status")}
@@ -231,6 +271,106 @@ export function NewsEdit() {
                 }
               />
               {getFormikError(formik, "content")}
+            </div>
+
+            <div className="space-y-4 pt-6 border-t border-[var(--yp-border-primary)]">
+              <h3 className="text-md font-semibold text-[var(--yp-text-primary)]">
+                Blog FAQs
+              </h3>
+
+              {/* Single FAQ Entry Form */}
+              <div className="p-4 border border-[var(--yp-border-primary)] bg-[var(--yp-input-primary)] rounded-xl space-y-4">
+                <div>
+                  <label className="block text-xs font-medium text-[var(--yp-text-secondary)] mb-1">
+                    Question
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Enter a common question..."
+                    value={currentFaq.question}
+                    onChange={(e) =>
+                      setCurrentFaq({ ...currentFaq, question: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-[var(--yp-border-primary)] rounded-lg bg-[var(--yp-primary)] text-[var(--yp-text-primary)]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[var(--yp-text-secondary)] mb-1">
+                    Answer
+                  </label>
+                  <div className="rounded-lg overflow-hidden border border-[var(--yp-border-primary)]">
+                    <JoditEditor
+                      value={currentFaq.answer}
+                      config={editorConfig}
+                      onBlur={(newContent) =>
+                        setCurrentFaq({ ...currentFaq, answer: newContent })
+                      }
+                    />
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={addFaqToList}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-[var(--yp-blue-text)] bg-[var(--yp-blue-bg)]"
+                >
+                  <Plus size={16} /> Add FAQ to List
+                </button>
+              </div>
+
+              {/* Accordion List of FAQs */}
+              {formik.values.faqs.length > 0 && (
+                <div className="mt-4 space-y-2">
+                  <label className="block text-xs font-bold text-[var(--yp-muted)] uppercase tracking-wider mb-2">
+                    Added FAQs
+                  </label>
+                  {formik.values.faqs.map((faq: FAQProps, index: number) => (
+                    <div
+                      key={index}
+                      className="border border-[var(--yp-border-primary)] rounded-lg overflow-hidden bg-[var(--yp-primary)]"
+                    >
+                      <div
+                        className="flex items-center justify-between p-3 cursor-pointer hover:bg-[var(--yp-input-primary)] transition-colors"
+                        onClick={() => toggleAccordion(index)}
+                      >
+                        <div className="flex items-center gap-3">
+                          <HelpCircle
+                            size={16}
+                            className="text-[var(--yp-blue-text)]"
+                          />
+                          <span className="text-sm font-medium text-[var(--yp-text-primary)]">
+                            {faq.question}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeFaqFromList(index);
+                            }}
+                            className="text-red-500 hover:text-red-700 p-1"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                          {openAccordion === index ? (
+                            <ChevronUp size={16} />
+                          ) : (
+                            <ChevronDown size={16} />
+                          )}
+                        </div>
+                      </div>
+
+                      {openAccordion === index && (
+                        <div className="p-3 border-t border-[var(--yp-border-primary)] bg-[var(--yp-input-primary)] text-sm text-[var(--yp-text-secondary)]">
+                          <div
+                            dangerouslySetInnerHTML={{ __html: faq.answer }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Submit */}

@@ -7,9 +7,8 @@ import API from "@/context/API";
 import { formatDate, getErrorResponse } from "@/context/Callbacks";
 import HeadingLine from "@/ui/headings/HeadingLine";
 import { NewsProps } from "@/types/NewsTypes";
-import { CalendarIcon } from "lucide-react";
 
-const RelatedNews = ({ news }: { news: NewsProps | null }) => {
+const RelatedNews = ({ news }: { news?: NewsProps | null }) => {
   const [newsList, setNewsList] = useState<NewsProps[]>([]);
 
   const getRelatedNews = useCallback(async () => {
@@ -33,7 +32,7 @@ const RelatedNews = ({ news }: { news: NewsProps | null }) => {
         .filter(
           (item: NewsProps) =>
             item?.status === "Published" &&
-            seoData.some((seo) => seo.news_id === item._id)
+            seoData.some((seo) => seo.news_id === item._id),
         )
         .map((item: NewsProps) => {
           const seoMatch = seoData.find((seo) => seo.news_id === item._id);
@@ -41,7 +40,7 @@ const RelatedNews = ({ news }: { news: NewsProps | null }) => {
         });
 
       const otherNews = validNews.filter(
-        (item: NewsProps) => item._id !== news?._id
+        (item: NewsProps) => item._id !== news?._id,
       );
 
       const shuffledRelated = [...otherNews].sort(() => Math.random() - 0.5);
@@ -57,34 +56,30 @@ const RelatedNews = ({ news }: { news: NewsProps | null }) => {
     getRelatedNews();
   }, [getRelatedNews]);
 
+  if (newsList.length <= 0) return;
+
   return (
-    <div className="space-y-4 sticky top-15">
+    <div className="space-y-4">
       <div className="bg-(--primary-bg) text-(--text-color) rounded-custom shadow-custom p-5">
         <HeadingLine title="Related News" />
 
         <div className="space-y-4">
-          {newsList.length === 0 && (
-            <p className="paragraph text-center opacity-75">
-              No related news found
-            </p>
-          )}
-
           {newsList.map((n) => (
             <Link
               key={n._id}
               href={`/news-and-updates/${n.news_slug}`}
-              className="flex space-x-3 group bg-(--secondary-bg) shadow-custom p-2 rounded-custom transition-colors"
+              className="flex space-x-3 group bg-(--secondary-bg) shadow-custom p-2 rounded-custom transition-colors items-center"
             >
-              <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 relative">
+              <div className="w-20 aspect-2/1 rounded-custom overflow-hidden shrink-0 relative">
                 <Image
                   src={
                     n?.featured_image?.[0]
                       ? `${process.env.NEXT_PUBLIC_MEDIA_URL}/news-and-updates/${n.featured_image[0]}`
-                      : "/img/default-images/yp-blogs.webp"
+                      : "/img/default-images/campusaim-courses-featured.png"
                   }
                   alt={n.title}
                   fill
-                  sizes="64px"
+                  sizes="80px"
                   className="object-cover transform group-hover:scale-105 transition-transform duration-300"
                 />
               </div>
@@ -94,10 +89,9 @@ const RelatedNews = ({ news }: { news: NewsProps | null }) => {
                   {n.title}
                 </h4>
 
-                <div className="flex items-center space-x-1 pt-1">
-                  <CalendarIcon className="h-3 w-3 text-(--main)" />
-                  <span className="paragraph">{formatDate(n.createdAt)}</span>
-                </div>
+                <p className="text-sm text-gradient font-medium pt-1">
+                  {formatDate(n.createdAt)}
+                </p>
               </div>
             </Link>
           ))}

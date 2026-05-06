@@ -41,6 +41,7 @@ import {
   getPropertyByUniqueId,
   getPropertyByUserId,
   getPropertyCategoryCounts,
+  getPropertyMenuData,
   getPropertyTabExistence,
   getRelatedProperties,
   PropertySlugGenerator,
@@ -78,6 +79,7 @@ import {
   getCourse,
   getCourseById,
   getCourseByObjectId,
+  getCourseMenuData,
   getCourseWithSeoBySlug,
   restoreCourse,
   softDeleteCourse,
@@ -112,7 +114,7 @@ import {
   updatePropertyCourse,
   getPropertyCourseBySlug,
   getPropertyCourseCountByPropertyId,
-  getPropertyCourseNameListByPropertyId
+  getPropertyCourseNameListByPropertyId,
 } from "../controller/PropertyCourseController.js";
 import {
   getCity,
@@ -166,7 +168,6 @@ import {
   deleteBlog,
   getAllBlogs,
   getBlogById,
-  getBlogByUniqueId,
   getBlogWithSeoBySlug,
   UpdateBlog,
 } from "../controller/BlogsController.js";
@@ -215,15 +216,74 @@ import {
   PropertyVerifyEmailOtpMatch,
   sendPropertyVerifyEmailOTP,
 } from "../controller/PropertyVerificationController.js";
-import { addExam, deleteExam, getExam, getExamById, getExamWithSeoBySlug, restoreExam, softDeleteExam, updateExam } from "../controller/ExamController.js";
-import { AddAdmissionProcess, deleteAdmissionProcess, EditAdmissionProcess, getAdmissionProcessByPropertyId, getAllAdmissionProcess } from "../controller/AdmissionProcessController.js";
-import { AddLoanProcess, deleteLoanProcess, EditLoanProcess, getAllLoanProcess, getLoanProcessByPropertyId } from "../controller/LoanProcessController.js";
-import { AddAnnouncement, deleteAnnouncement, EditAnnouncement, getAllAnnouncement, getAnnouncementByPropertyId } from "../controller/AnnouncementController.js";
-import { addQnA, deleteQnA, getQnA, getQnAById, getQnAByPropertyId, updateQnA } from "../controller/QnaController.js";
-import { addRanking, deleteRanking, editRanking, getAllRanking, getRankingByPropertyId } from "../controller/RankingController.js";
-import { addScholarship, deleteScholarship, getScholarship, getScholarshipById, getScholarshipWithSeoBySlug, updateScholarship } from "../controller/ScholarshipController.js";
-import { CreateBestFor, deleteBestFor, getAllBestFor, getBestForById, updateBestFor } from "../controller/BestForController.js";
-import { CreateCourseEligibility, deleteCourseEligibility, getAllCourseEligibility, getCourseEligibilityById, updateCourseEligibility } from "../controller/CourseEligibilityController.js";
+import {
+  addExam,
+  deleteExam,
+  getExam,
+  getExamById,
+  getExamWithSeoBySlug,
+  restoreExam,
+  softDeleteExam,
+  updateExam,
+} from "../controller/ExamController.js";
+import {
+  AddAdmissionProcess,
+  deleteAdmissionProcess,
+  EditAdmissionProcess,
+  getAdmissionProcessByPropertyId,
+  getAllAdmissionProcess,
+} from "../controller/AdmissionProcessController.js";
+import {
+  AddLoanProcess,
+  deleteLoanProcess,
+  EditLoanProcess,
+  getAllLoanProcess,
+  getLoanProcessByPropertyId,
+} from "../controller/LoanProcessController.js";
+import {
+  AddAnnouncement,
+  deleteAnnouncement,
+  EditAnnouncement,
+  getAllAnnouncement,
+  getAnnouncementByPropertyId,
+} from "../controller/AnnouncementController.js";
+import {
+  addQnA,
+  deleteQnA,
+  getQnA,
+  getQnAById,
+  getQnAByPropertyId,
+  updateQnA,
+} from "../controller/QnaController.js";
+import {
+  addRanking,
+  deleteRanking,
+  editRanking,
+  getAllRanking,
+  getRankingByPropertyId,
+} from "../controller/RankingController.js";
+import {
+  addScholarship,
+  deleteScholarship,
+  getScholarship,
+  getScholarshipById,
+  getScholarshipWithSeoBySlug,
+  updateScholarship,
+} from "../controller/ScholarshipController.js";
+import {
+  CreateBestFor,
+  deleteBestFor,
+  getAllBestFor,
+  getBestForById,
+  updateBestFor,
+} from "../controller/BestForController.js";
+import {
+  CreateCourseEligibility,
+  deleteCourseEligibility,
+  getAllCourseEligibility,
+  getCourseEligibilityById,
+  updateCourseEligibility,
+} from "../controller/CourseEligibilityController.js";
 
 const router = express.Router();
 router.use(bodyParser.json());
@@ -252,7 +312,7 @@ router.patch(
   Authorize,
   courseUpload,
   processImage,
-  updateCourse
+  updateCourse,
 );
 router.delete("/course/:objectId", Authorize, deleteCourse);
 router.get("/course/:objectId", getCourseById);
@@ -261,11 +321,10 @@ router.get("/course/soft/:objectId", Authorize, softDeleteCourse);
 router.get("/course/restore/:objectId", Authorize, restoreCourse);
 router.post("/course/create/enquiry", createCourseEnquiry);
 router.get("/course/seo/:slug", getCourseWithSeoBySlug);
+router.get("/menu/courses", getCourseMenuData);
 
 // ?Exam Route
-const examUpload = examUploadMulter.fields([
-  { name: "image", maxCount: 1 },
-]);
+const examUpload = examUploadMulter.fields([{ name: "image", maxCount: 1 }]);
 router.get("/exam", getExam);
 router.post("/exam", Authorize, examUpload, processImage, addExam);
 router.patch(
@@ -273,7 +332,7 @@ router.patch(
   Authorize,
   examUpload,
   processImage,
-  updateExam
+  updateExam,
 );
 router.get("/exam/:objectId", getExamById);
 router.get("/exam/restore/:objectId", Authorize, restoreExam);
@@ -302,7 +361,7 @@ router.patch(
   Authorize,
   categoryUpload,
   processImage,
-  updateCategory
+  updateCategory,
 );
 router.delete("/category/:objectId", Authorize, deleteCategory);
 router.get("/category/:objectId", getCategoryById);
@@ -327,7 +386,7 @@ router.get("/enquiry/archive/:objectId", getArchiveEnquiryByObjectId);
 router.get("/property/enquiry/:property_id", getEnquiryByPropertyId);
 router.get(
   "/property/archive/enquiry/:property_id",
-  getArchiveEnquiryByPropertyId
+  getArchiveEnquiryByPropertyId,
 );
 
 //? Property Route
@@ -342,14 +401,14 @@ router.patch(
   Authorize,
   propertyUpload,
   processImage,
-  updateProperty
+  updateProperty,
 );
 router.patch(
   "/property/images/:objectId",
   Authorize,
   propertyUpload,
   processImage,
-  updatePropertyImages
+  updatePropertyImages,
 );
 router.delete("/property/:objectId", Authorize, deleteProperty);
 router.get("/property/uniqueId/:uniqueId", getPropertyByUniqueId);
@@ -361,13 +420,14 @@ router.get("/related/property", getRelatedProperties);
 router.get("/filter-by-category/property", getPropertiesByCategoryName);
 router.get("/property/counts/category", getPropertyCategoryCounts);
 router.get("/property/tab/existence/:property_id", getPropertyTabExistence);
+router.get("/menu/property", getPropertyMenuData);
 
 //? Property Verification
 router.post("/property/verify/email", sendPropertyVerifyEmailOTP);
 router.post("/property/verify/email/otp", PropertyVerifyEmailOtpMatch);
 router.post(
   "/property/verify/consent/:userId",
-  PropertyConsentAndUserRoleUpdation
+  PropertyConsentAndUserRoleUpdation,
 );
 
 //? Location Route
@@ -386,7 +446,7 @@ router.patch(
   Authorize,
   teacherProfile,
   processImage,
-  updateTeacher
+  updateTeacher,
 );
 router.delete("/teacher/:objectId", Authorize, deleteTeacher);
 router.get("/teacher/:objectId", getTeacherById);
@@ -403,20 +463,31 @@ router.patch(
   Authorize,
   accomodationUpload,
   processImage,
-  AddAccomodationImages
+  AddAccomodationImages,
 );
 router.post(
   `/accomodation/images/remove/:objectId`,
   Authorize,
-  removeAccomodationImages
+  removeAccomodationImages,
 );
 
 //? Property Scholarship Route
 router.get("/property-scholarship", getAllPropertyScholarship);
-router.get("/property-scholarship/:property_id", getPropertyScholarshipByPropertyId);
+router.get(
+  "/property-scholarship/:property_id",
+  getPropertyScholarshipByPropertyId,
+);
 router.post("/property-scholarship", Authorize, AddPropertyScholarship);
-router.patch("/property-scholarship/:objectId", Authorize, EditPropertyScholarship);
-router.delete("/delete-property-scholarship/:objectId", Authorize, deletePropertyScholarship);
+router.patch(
+  "/property-scholarship/:objectId",
+  Authorize,
+  EditPropertyScholarship,
+);
+router.delete(
+  "/delete-property-scholarship/:objectId",
+  Authorize,
+  deletePropertyScholarship,
+);
 
 //? Ranking Route
 router.get("/ranking", getAllRanking);
@@ -444,7 +515,11 @@ router.get("/admission_process", getAllAdmissionProcess);
 router.get("/admission_process/:property_id", getAdmissionProcessByPropertyId);
 router.post("/admission_process", Authorize, AddAdmissionProcess);
 router.patch("/admission_process/:objectId", Authorize, EditAdmissionProcess);
-router.delete("/delete-admission-process/:objectId", Authorize, deleteAdmissionProcess);
+router.delete(
+  "/delete-admission-process/:objectId",
+  Authorize,
+  deleteAdmissionProcess,
+);
 
 //? Review Route
 router.get("/review", getReview);
@@ -465,7 +540,7 @@ router.patch(
   Authorize,
   galleryUpdate,
   processImage,
-  updateGallery
+  updateGallery,
 );
 router.delete("/gallery/:objectId", Authorize, deleteGallery);
 router.get("/gallery/:objectId", getGalleryById);
@@ -475,7 +550,7 @@ router.post(
   Authorize,
   gallery,
   processImage,
-  addNewGalleryImages
+  addNewGalleryImages,
 );
 router.post("/gallery/remove/:objectId", Authorize, removeGalleryImages);
 router.patch("/gallery/update/title", Authorize, EditGalleryTitle);
@@ -511,13 +586,13 @@ router.patch(
   "/property-course/:objectId",
   Authorize,
   courseUpload,
-  updatePropertyCourse
+  updatePropertyCourse,
 );
 router.get("/property-course/:objectId", getPropertyCourseById);
 router.get("/property-course/uniqueId/:uniqueId", getPropertyCourseByUniqueId);
 router.get(
   "/property/property-course/:propertyId",
-  getPropertyCourseByPropertyId
+  getPropertyCourseByPropertyId,
 );
 router.delete("/property-course/:objectId", Authorize, deletePropertyCourse);
 router.get("/property-course/slug/:slug", getPropertyCourseBySlug);
@@ -529,7 +604,6 @@ router.get(
   "/property-course/names/:property_id",
   getPropertyCourseNameListByPropertyId,
 );
-
 
 //? amenties
 router.post("/amenities", Authorize, addAmenities);
@@ -550,13 +624,12 @@ router.get("/blog/seo/:slug", getBlogWithSeoBySlug);
 router.post("/blog", Authorize, blogUpload, processImage, CreateBlog);
 router.delete("/blog/:objectId", Authorize, deleteBlog);
 router.get("/blog/:objectId", getBlogById);
-router.get("/blog/id/:uniqueId", getBlogByUniqueId);
 router.patch(
   "/blog/:objectId",
   Authorize,
   blogUpload,
   processImage,
-  UpdateBlog
+  UpdateBlog,
 );
 
 //? Blog Enquiry
@@ -595,8 +668,16 @@ router.delete(`/best-for/:objectId`, Authorize, deleteBestFor);
 router.post(`/course-eligibility`, Authorize, CreateCourseEligibility);
 router.get(`/course-eligibility/all`, getAllCourseEligibility);
 router.get(`/course-eligibility/id/:objectId`, getCourseEligibilityById);
-router.patch(`/course-eligibility/:objectId`, Authorize, updateCourseEligibility);
-router.delete(`/course-eligibility/:objectId`, Authorize, deleteCourseEligibility);
+router.patch(
+  `/course-eligibility/:objectId`,
+  Authorize,
+  updateCourseEligibility,
+);
+router.delete(
+  `/course-eligibility/:objectId`,
+  Authorize,
+  deleteCourseEligibility,
+);
 
 //? Property SLug
 router.patch(`/property/slug/generate`, PropertySlugGenerator);
@@ -613,14 +694,14 @@ router.post(
   Authorize,
   newsUpload,
   processImage,
-  createNewsAndUpdates
+  createNewsAndUpdates,
 );
 router.patch(
   "/news-and-updates/:objectId",
   Authorize,
   newsUpload,
   processImage,
-  updateNewsAndUpdates
+  updateNewsAndUpdates,
 );
 router.get("/news-and-updates", getAllNewsAndUpdates);
 router.get("/news-and-updates/seo/:slug", getNewsAndUpdatesWithSeoBySlug);
@@ -635,18 +716,18 @@ router.post(
   "/property/verification/upload/doc",
   Authorize,
   verificationDoc,
-  uploadPropertyVerificationDocs
+  uploadPropertyVerificationDocs,
 );
 router.get(
   "/property/verification/doc/:property_id",
   Authorize,
-  getPropertyVerifcationDoc
+  getPropertyVerifcationDoc,
 );
 
 //? Related Properties
 router.get(
   `/related/property/course/:property_course_id`,
-  getPropertyRelatedToPropertyCourse
+  getPropertyRelatedToPropertyCourse,
 );
 
 export default router;

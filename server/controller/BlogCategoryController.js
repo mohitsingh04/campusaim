@@ -15,11 +15,7 @@ export const createBlogCategory = async (req, res) => {
       });
     }
 
-    const lastCategory = await BlogCategory.findOne().sort({ uniqueId: -1 });
-    const uniqueId = lastCategory ? lastCategory.uniqueId + 1 : 1;
-
     const newCategory = new BlogCategory({
-      uniqueId,
       blog_category: blog_category,
       parent_category,
     });
@@ -91,7 +87,7 @@ export const updateBlogCategory = async (req, res) => {
         parent_category,
         status: status || "updated",
       },
-      { new: true }
+      { new: true },
     );
 
     if (!updatedCategory) {

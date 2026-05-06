@@ -1,56 +1,64 @@
+"use client";
+import { originalTestimonials } from "@/common/TestimonialsData";
 import API from "@/context/API";
-import { getErrorResponse, isDateEnded } from "@/context/Callbacks";
+import {
+  generateSlug,
+  getAverageRating,
+  getErrorResponse,
+} from "@/context/Callbacks";
+import { useGetAssets } from "@/context/providers/AssetsProviders";
 import { PropertyProps } from "@/types/PropertyTypes";
 import { CourseProps, EventProps } from "@/types/Types";
 import React, { useCallback, useEffect, useState } from "react";
-import CountUp from "react-countup";
 
 const StatsSection = () => {
   const [property, setProperty] = useState<PropertyProps[]>([]);
   const [course, setCourse] = useState<CourseProps[]>([]);
   const [events, setEvents] = useState<EventProps[]>([]);
   const [loading, setLoading] = useState(true);
+  const { getCategoryById } = useGetAssets();
 
   const getData = useCallback(async () => {
     try {
       const results = await Promise.allSettled([
         API.get("/property"),
         API.get("/course"),
-        API.get("/event"),
+        API.get("/exam"),
       ]);
 
       const [propertyRes, courseRes, eventRes] = results;
 
       if (propertyRes.status === "fulfilled") {
         const propertyData = propertyRes.value?.data || [];
-        setProperty(
-          propertyData.filter((item: PropertyProps) => item.status === "Active")
-        );
+        const finalData = propertyData
+          ?.map((item: PropertyProps) => {
+            if (item.status !== "Active") return null;
+            return {
+              ...item,
+              academic_type: getCategoryById(item?.academic_type),
+            };
+          })
+          .filter(Boolean);
+        setProperty(finalData as PropertyProps[]);
       }
 
       if (courseRes.status === "fulfilled") {
         const courseData = courseRes.value?.data || [];
         setCourse(
-          courseData.filter((item: CourseProps) => item.status === "Active")
+          courseData.filter((item: CourseProps) => item.status === "Active"),
         );
       }
 
       if (eventRes.status === "fulfilled") {
         const eventData = eventRes.value?.data || [];
-        const activeEvents = eventData.filter((event: EventProps) => {
-          if (event?.status !== "Active") return false;
-          return isDateEnded(
-            event?.schedule?.[event?.schedule?.length - 1]?.date
-          );
-        });
-        setEvents(activeEvents);
+        setEvents(eventData);
       }
     } catch (error) {
       getErrorResponse(error);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [getCategoryById]);
 
   useEffect(() => {
     getData();
@@ -58,50 +66,71 @@ const StatsSection = () => {
 
   const stats = [
     {
-      number: property.length,
-      title: "Verified Institutions",
+      number: property?.filter(
+        (item) =>
+          generateSlug(item?.academic_type) === generateSlug("college") ||
+          generateSlug(item?.academic_type) === generateSlug("university"),
+      ).length,
+      title: "College & University",
       description:
-        "Accredited colleges and universities providing recognized academic programs.",
+        "Explore trusted colleges and universities offering quality education and strong career opportunities.",
+    },
+    {
+      number: property?.filter(
+        (item) => generateSlug(item?.academic_type) === generateSlug("school"),
+      ).length,
+      title: "Schools",
+      description:
+        "Find top schools with strong academics, experienced faculty, and holistic development programs.",
+    },
+    {
+      number: property?.filter(
+        (item) =>
+          generateSlug(item?.academic_type) === generateSlug("coaching"),
+      ).length,
+      title: "Coaching Institutes",
+      description:
+        "Discover coaching institutes for competitive exams and career-focused learning.",
     },
     {
       number: course.length,
       title: "Academic Programs",
       description:
-        "Undergraduate, postgraduate, diploma, and doctoral courses across multiple disciplines.",
+        "Browse undergraduate, postgraduate, diploma, and certification courses.",
     },
     {
       number: events.length,
-      title: "Student Users",
+      title: "Entrance Exams",
       description:
-        "Students and learners using Campusaim to research colleges and academic options.",
+        "Stay updated with major entrance exams for colleges and professional courses.",
+    },
+    {
+      number: getAverageRating(originalTestimonials),
+      title: "Student Reviews",
+      description:
+        "Read genuine student experiences before choosing your institution.",
     },
   ];
 
   return (
-    <section className="py-24 px-4 sm:px-8 relative overflow-hidden">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-16 text-center divide-y md:divide-y-0 md:divide-x divide-gray-200">
+    <section className="py-12 px-4 sm:px-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {stats.map((stat, index) => (
           <div
             key={index}
-            className="flex flex-col items-center px-4 py-8 md:py-0"
+            className="bg-(--secondary-bg) rounded-custom p-8 shadow-custom text-center group"
           >
-            <h2 className="text-6xl font-black mb-4 bg-clip-text text-transparent bg-(--main)">
-              {loading ? (
-                "0+"
-              ) : (
-                <>
-                  <CountUp start={0} end={stat.number} duration={2} />+
-                </>
-              )}
+            <h2 className="text-5xl font-black mb-4 text-(--main)">
+              {loading ? "0+" : `${stat.number}+`}
             </h2>
-
-            <h3 className="sub-heading font-bold mb-3 text-(--text-color-emphasis) uppercase tracking-wider text-sm font-serif">
+            <h3 className="text-sm font-semibold tracking-widest uppercase text-(--text-color-emphasis) mb-3">
               {stat.title}
             </h3>
-
-            <p className="leading-relaxed max-w-xs mx-auto">
+            <p className="text-sm leading-relaxed text-(--text-color)">
               {stat.description}
             </p>
+
+            <div className="mt-6 h-1 w-0 bg-(--main) group-hover:w-full transition-all duration-300" />
           </div>
         ))}
       </div>

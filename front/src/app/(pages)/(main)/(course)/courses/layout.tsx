@@ -2,16 +2,46 @@ import InsitutesLoader from "@/ui/loader/page/institutes/Institutes";
 import { Metadata } from "next";
 import { ReactNode, Suspense } from "react";
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://www.campusaim.com";
-
+const title = "Top College & University Courses";
+const keywords = [
+  "college courses",
+  "university courses",
+  "top courses after 12th",
+  "UG courses",
+  "PG courses",
+  "diploma courses",
+  "online courses",
+];
+const description =
+  "Explore top college and university courses at CampusAim. Compare fees, eligibility, admissions, duration, careers, and specialisations in one place online today.";
+const featuredImage = [
+  {
+    url: "/img/main-images/campusaim.png",
+    width: 1200,
+    height: 700,
+    alt: "Courses Campusaim",
+  },
+];
 export const metadata: Metadata = {
-  title: "Courses",
-  description:
-    "Discover yoga courses for all levels — beginner to expert. Learn online or offline with certified yoga training and teacher programs.",
-  keywords: ["Courses", "Yoga Courses"],
-  metadataBase: new URL(baseUrl),
+  title: title,
+  description: description,
+  keywords: keywords,
   alternates: {
     canonical: "/courses",
+  },
+  openGraph: {
+    title: title,
+    description: description,
+    url: "/courses",
+    siteName: "Campusaim",
+    images: featuredImage,
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: title,
+    description: description,
+    images: featuredImage,
   },
 };
 

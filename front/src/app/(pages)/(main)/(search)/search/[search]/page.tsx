@@ -15,7 +15,6 @@ import Loading from "@/ui/loader/Loading";
 import {
   BookOpenIcon,
   BuildingIcon,
-  CalendarIcon,
   GraduationCapIcon,
   NewspaperIcon,
   SearchIcon,
@@ -33,31 +32,23 @@ export default function Page() {
 
   const currentPage = Number(searchParams.get("page") || 1);
 
-  const { properties, courses, blogs, events, news, keywordsList, loading } =
-    useSearchFetch();
-  const {
-    finalProps,
-    finalCourses,
-    finalBlogs,
-    finalEvents,
-    finalNews,
-    finalKeywords,
-  } = useSearchFilter({
-    properties,
-    courses,
-    blogs,
-    events,
-    news,
-    keywordsList,
-    query: search,
-  });
+  const { properties, courses, blogs, news, keywordsList, loading } =
+    useSearchFetch({ isFetch: true });
+  const { finalProps, finalCourses, finalBlogs, finalNews, finalKeywords } =
+    useSearchFilter({
+      properties,
+      courses,
+      blogs,
+      news,
+      keywordsList,
+      query: search,
+    });
 
   // Combine results for "All" tab
   const allResults: SearchResult[] = [
     ...finalProps.map((i) => ({ ...i, type: "property" as const })),
     ...finalCourses.map((i) => ({ ...i, type: "course" as const })),
     ...finalBlogs.map((i) => ({ ...i, type: "blog" as const })),
-    ...finalEvents.map((i) => ({ ...i, type: "events" as const })),
     ...finalNews.map((i) => ({ ...i, type: "news-and-updates" as const })),
     ...finalKeywords.map((i) => ({
       type: "queries" as const,
@@ -73,13 +64,11 @@ export default function Page() {
         ? finalCourses.map((i) => ({ ...i, type: "course" }))
         : activeTab === "blog"
           ? finalBlogs.map((i) => ({ ...i, type: "blog" }))
-          : activeTab === "events"
-            ? finalEvents.map((i) => ({ ...i, type: "events" }))
-            : activeTab === "news-and-updates"
-              ? finalNews.map((i) => ({ ...i, type: "news-and-updates" }))
-              : activeTab === "queries"
-                ? finalKeywords.map((i) => ({ keyword: i, type: "queries" }))
-                : allResults;
+          : activeTab === "news-and-updates"
+            ? finalNews.map((i) => ({ ...i, type: "news-and-updates" }))
+            : activeTab === "queries"
+              ? finalKeywords.map((i) => ({ keyword: i, type: "queries" }))
+              : allResults;
   // Pagination calculations
   const totalPages = Math.ceil(visibleResults.length / itemsPerPage);
 
@@ -130,12 +119,6 @@ export default function Page() {
               label: "Blogs",
               icon: BookOpenIcon,
               count: finalBlogs.length,
-            },
-            {
-              key: "events",
-              label: "Events",
-              icon: CalendarIcon,
-              count: finalEvents.length,
             },
             {
               key: "news-and-updates",

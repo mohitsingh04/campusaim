@@ -55,7 +55,9 @@ export default function PropertyCard({
 
         <div className="flex items-center gap-1 sm:self-end justify-end sm:justify-start">
           <LandmarkIcon className="w-3 h-3 sm:w-6 sm:h-6" />
-          <h3 className="text-xs sm:text-lg font-bold">{property?.category}</h3>
+          <h3 className="text-xs sm:text-lg font-bold">
+            {property?.academic_type}
+          </h3>
         </div>
       </div>
     </section>

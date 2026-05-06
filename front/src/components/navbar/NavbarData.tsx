@@ -1,155 +1,103 @@
 import { useCallback, useEffect, useState } from "react";
 import API from "@/context/API";
-import { CategoryProps, CourseProps, SeoProps } from "@/types/Types";
-import {
-  generateSlug,
-  getErrorResponse,
-  shuffleArray,
-} from "@/context/Callbacks";
-import { PropertyProps } from "@/types/PropertyTypes";
+import { CategoryProps, ExamProps, SeoProps } from "@/types/Types";
+import { getErrorResponse } from "@/context/Callbacks";
 
-interface UsePropertyMenuDataProps {
-  categories: CategoryProps[] | undefined;
-  academicType?: string;
-}
-
-export function useCoursesMenuData() {
-  const [courseMenuData, setCourseMenuData] = useState<any>(null);
-  const [courseLoading, setCoursesLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        setCoursesLoading(true);
-
-        const courseRes = await API.get("/course");
-        const courses: CourseProps[] = courseRes.data;
-
-        const seoRes = await API.get("/all/seo?type=course");
-        const seoList: SeoProps[] = seoRes.data;
-
-        const links = courses
-          .map((course) => {
-            const matchedSeo = seoList.find(
-              (seo) => seo.course_id === course._id,
-            );
-
-            if (!matchedSeo?.slug) return null;
-
-            return {
-              name: course.course_name,
-              href: `/course/${matchedSeo.slug}`,
-            };
-          })
-          .filter(Boolean)
-          .slice(0, 30);
-
-        const formattedMenu = {
-          "Popular Courses": {
-            main: {
-              title: "Popular Courses",
-              links,
-              viewAll: "/courses",
-            },
-          },
-        };
-
-        setCourseMenuData(formattedMenu);
-      } catch (err) {
-        getErrorResponse(err, true);
-      } finally {
-        setCoursesLoading(false);
-      }
-    };
-
-    fetchCourses();
-  }, []);
-
-  return { courseMenuData, courseLoading };
-}
-
-export function usePropertyMenuData({
+export function useCoursesMenuData({
   categories,
-  academicType,
-}: UsePropertyMenuDataProps) {
-  const [propertyMenuData, setPropertyMenuData] = useState<any>(null);
-  const [propertyLoading, setPropertyLoading] = useState(true);
+  enabled = false,
+}: {
+  categories: CategoryProps[] | undefined;
+  enabled?: boolean;
+}) {
+  const [courseMenuData, setCourseMenuData] = useState<any>(null);
+  const [courseLoading, setCourseLoading] = useState(false);
 
-  const getCategoryById = useCallback(
-    (_id: number | string) => {
-      if (!categories?.length) return null;
-      return categories.find((item) => item._id === _id)?.category_name || null;
+  const getCategoryName = useCallback(
+    (input: CategoryProps | string | undefined) => {
+      if (!input) return null;
+
+      if (typeof input === "object" && "category_name" in input) {
+        return input.category_name;
+      }
+
+      if (typeof input === "string" && categories) {
+        const found = categories.find((item) => item._id === input);
+        return found?.category_name || null;
+      }
+
+      return null;
     },
     [categories],
   );
 
   useEffect(() => {
-    if (!categories?.length) return;
+    if (!enabled || courseMenuData) return;
+
+    const fetchProperties = async () => {
+      try {
+        setCourseLoading(true);
+        const res = await API.get("/menu/courses");
+        const courses = res?.data;
+        setCourseMenuData(courses);
+      } catch (err) {
+        getErrorResponse(err, true);
+      } finally {
+        setCourseLoading(false);
+      }
+    };
+
+    fetchProperties();
+  }, [enabled, courseMenuData, getCategoryName]);
+
+  return { courseMenuData, courseLoading };
+}
+export function usePropertyMenuData({
+  categories,
+  enabled = false,
+}: {
+  categories: CategoryProps[] | undefined;
+  enabled?: boolean;
+}) {
+  const [propertyMenuData, setPropertyMenuData] = useState<any>(null);
+  const [propertyLoading, setPropertyLoading] = useState(false);
+
+  const getCategoryName = useCallback(
+    (input: CategoryProps | string | undefined) => {
+      if (!input) return null;
+
+      if (typeof input === "object" && "category_name" in input) {
+        return input.category_name;
+      }
+
+      if (typeof input === "string" && categories) {
+        const found = categories.find((item) => item._id === input);
+        return found?.category_name || null;
+      }
+
+      return null;
+    },
+    [categories],
+  );
+
+  useEffect(() => {
+    if (!enabled || propertyMenuData) return;
 
     const fetchProperties = async () => {
       try {
         setPropertyLoading(true);
-
-        const res = await API.get("/property");
-
-        const properties: PropertyProps[] = shuffleArray(res.data)
-          .filter((p: any) => {
-            if (!academicType) return true;
-
-            const academicCategory = getCategoryById(p?.academic_type);
-            if (!academicCategory) return false;
-
-            return generateSlug(academicCategory) === academicType;
-          })
-          .map((item: any) => {
-            const categoryName = getCategoryById(item?.academic_type);
-            const propertyTypeName = getCategoryById(item?.property_type);
-
-            if (!categoryName || !propertyTypeName) return null;
-
-            return {
-              ...item,
-              academic_type: categoryName,
-              property_type: propertyTypeName,
-            };
-          })
-          .filter(Boolean);
-
-        const menuData: Record<string, any> = {};
-
-        properties.forEach((p) => {
-          if (!menuData[p?.academic_type]) {
-            menuData[p?.academic_type] = {};
-          }
-
-          if (!menuData[p?.academic_type][p?.property_type]) {
-            menuData[p?.academic_type][p?.property_type] = {
-              title: p?.property_type,
-              links: [],
-              viewAll: `${p?.academic_type === "University" ? "universities" : `${generateSlug(p?.academic_type)}s`}?property_type=${generateSlug(p?.property_type)}`,
-            };
-          }
-
-          menuData[p?.academic_type][p?.property_type].links.push({
-            name: p?.property_name,
-            href: `/${generateSlug(p?.academic_type)}/${p?.property_slug}/overview`,
-          });
-
-          menuData[p?.academic_type][p?.property_type].links = menuData[
-            p?.academic_type
-          ][p?.property_type].links.slice(0, 10);
-        });
-
-        setPropertyMenuData(menuData);
-      } catch (error) {
-        getErrorResponse(error, true);
+        const res = await API.get("/menu/property");
+        const properties = res?.data;
+        setPropertyMenuData(properties);
+      } catch (err) {
+        getErrorResponse(err, true);
       } finally {
         setPropertyLoading(false);
       }
     };
 
     fetchProperties();
-  }, [categories, academicType, getCategoryById]);
+  }, [enabled, propertyMenuData, getCategoryName]);
 
   return { propertyMenuData, propertyLoading };
 }
@@ -163,13 +111,13 @@ export function useExamMenuData() {
       try {
         setExamLoading(true);
 
-        const courseRes = await API.get("/exam");
-        const courses: CourseProps[] = courseRes.data;
+        const examRes = await API.get("/exam");
+        const allExams: ExamProps[] = examRes.data;
 
         const seoRes = await API.get("/all/seo?type=exam");
         const seoList: SeoProps[] = seoRes.data;
 
-        const links = courses
+        const links = allExams
           .map((exam) => {
             const matchedSeo = seoList.find((seo) => seo.exam_id === exam._id);
 

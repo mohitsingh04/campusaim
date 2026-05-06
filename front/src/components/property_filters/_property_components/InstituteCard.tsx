@@ -55,7 +55,7 @@ const InstituteCard = ({
           >
             <Image
               src={imageSrc}
-              alt={institute.property_name || "Yoga Institute"}
+              alt={institute.property_name || "Institute"}
               fill
               className="object-cover transition-transform duration-500 group-hover:scale-105"
             />

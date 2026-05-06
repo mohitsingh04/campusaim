@@ -15,7 +15,7 @@ import { CategoryProps } from "@/types/Types";
 interface AssetsContextType {
   allCategories: CategoryProps[];
   isLoading: boolean;
-  getCategoryById: (id: string | number) => string | undefined;
+  getCategoryById: (id: string) => string | undefined;
   refetchCategories: () => void;
 }
 
@@ -40,7 +40,7 @@ export function AssetsProvider({ children }: { children: ReactNode }) {
   });
 
   const getCategoryById = useCallback(
-    (id: string | number) => {
+    (id: string) => {
       if (!id) return undefined;
       const cat = allCategories?.find(
         (item: CategoryProps) => String(item._id) === String(id),

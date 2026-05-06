@@ -1,136 +1,130 @@
-"use client";
-
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
-
+import React from "react";
 import BlogCard from "./_allblog_components/BlogCard";
 import Pagination from "../../../../../ui/pagination/Pagination";
-import { getErrorResponse } from "@/context/Callbacks";
 import API from "@/context/API";
-import { BlogCategoryProps, BlogsProps } from "@/types/BlogTypes";
-import BlogListSkeleton from "@/ui/loader/page/blog/BlogListSkeleton";
+import { BlogsProps } from "@/types/BlogTypes";
+import { Metadata } from "next";
 import { SearchIcon } from "lucide-react";
 
-const BlogPage: React.FC = () => {
-  const searchParams = useSearchParams();
+const blogsPerPage = 9;
+const BASE_URL =
+  process.env.NEXT_PUBLIC_BASE_URL ?? "https://campusaim.com";
 
-  const blogsPerPage = 9;
+const title = "Blog";
+const keywords = ["education blog", "career guidance blog", "campus aim blog"];
+const description =
+  "Explore education news, career guidance, admission updates, college insights & student tips on the Campusaim Blog for smarter career decisions.";
+const featuredImage = [
+  {
+    url: "/img/main-images/campusaim.png",
+    width: 1200,
+    height: 700,
+    alt: "Blog Featured",
+  },
+];
+export const metadata: Metadata = {
+  title: title,
+  description: description,
+  keywords: keywords,
+  alternates: {
+    canonical: "/blog",
+  },
+  openGraph: {
+    title: title,
+    description: description,
+    url: "/blog",
+    siteName: "Campusaim",
+    images: featuredImage,
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: title,
+    description: description,
+    images: featuredImage,
+  },
+};
 
-  const currentPage = useMemo(
-    () => Number(searchParams.get("page") || 1),
-    [searchParams],
-  );
-  const [blogs, setBlogs] = useState<BlogsProps[]>([]);
-  const [category, setCategory] = useState<BlogCategoryProps[]>([]);
-  const [loading, setLoading] = useState(true);
+async function getEnrichedBlogs() {
+  try {
+    const [allBlogRes, allBlogSeoRes] = await Promise.allSettled([
+      API.get(`/blog`, { headers: { origin: BASE_URL } }),
+      API.get("/all/seo?type=blog", { headers: { origin: BASE_URL } }),
+    ]);
 
-  const getCategory = useCallback(async () => {
-    try {
-      const response = await API.get(`/blog/category/all`);
-      setCategory(response.data);
-    } catch (error) {
-      getErrorResponse(error, true);
-    }
-  }, []);
+    if (
+      allBlogRes.status === "fulfilled" &&
+      allBlogSeoRes.status === "fulfilled"
+    ) {
+      const allBlogsData = allBlogRes.value.data || [];
+      const seoData = allBlogSeoRes.value.data || [];
 
-  useEffect(() => {
-    getCategory();
-  }, [getCategory]);
-
-  const getBlogs = useCallback(async () => {
-    if (!category.length) return;
-
-    setLoading(true);
-
-    try {
-      const [allBlogRes, allBlogSeoRes] = await Promise.allSettled([
-        API.get(`/blog`),
-        API.get("/all/seo?type=blog"),
-      ]);
-
-      if (
-        allBlogRes.status === "fulfilled" &&
-        allBlogSeoRes.status === "fulfilled"
-      ) {
-        const allBlogsData = allBlogRes?.value?.data || [];
-        const seoData = allBlogSeoRes.value.data || [];
-
-        const validBlogs = allBlogsData.filter(
+      return allBlogsData
+        .filter(
           (blog: BlogsProps) =>
             blog?.status === "Active" &&
             seoData.some((seo: any) => seo.blog_id === blog._id),
-        );
-
-        const enrichedBlogs = validBlogs.map((blog: BlogsProps) => {
-          const blogCategories = blog.category.map((catId) => {
-            const cat = category.find((c) => c._id === catId);
-            return cat?.blog_category || "Unknown Category";
-          });
-
+        )
+        .map((blog: BlogsProps) => {
           const seoMatch = seoData.find((seo: any) => seo.blog_id === blog._id);
-
           return {
             title: blog.title,
             blog: blog.blog,
-            category: blogCategories,
             createdAt: blog.createdAt,
             featured_image: blog?.featured_image,
             blog_slug: seoMatch.slug,
           };
         });
-
-        setBlogs(enrichedBlogs);
-      }
-    } catch (error) {
-      getErrorResponse(error, true);
-    } finally {
-      setLoading(false);
     }
-  }, [category]);
+    return [];
+  } catch (error) {
+    console.error("Error fetching blogs:", error);
+    return [];
+  }
+}
 
-  useEffect(() => {
-    getBlogs();
-  }, [getBlogs]);
+interface PageProps {
+  searchParams: Promise<{ page?: string }>;
+}
+
+const BlogPage = async ({ searchParams }: PageProps) => {
+  const resolvedParams = await searchParams;
+  const currentPage = Number(resolvedParams.page || 1);
+
+  const blogs = await getEnrichedBlogs();
 
   const totalPages = Math.ceil(blogs.length / blogsPerPage);
-
   const startIndex = (currentPage - 1) * blogsPerPage;
   const currentBlogs = blogs.slice(startIndex, startIndex + blogsPerPage);
 
-  if (loading) return <BlogListSkeleton />;
   return (
-    <div>
-      <div className="bg-(--secondary-bg) px-2 sm:px-8 py-6">
-        <div className="space-y-6">
-          {/* Blog Grid */}
+    <div className="bg-(--secondary-bg) px-2 sm:px-8 py-6">
+      <div className="space-y-6">
+        {currentBlogs.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {currentBlogs.map((blog, idx) => (
+            {currentBlogs.map((blog: BlogsProps, idx: number) => (
               <BlogCard blog={blog} key={idx} />
             ))}
           </div>
-
-          {/* Empty State */}
-          {blogs.length <= 0 && (
-            <div className="text-center py-16 bg-(--primary-bg) text-(--text-color) rounded-custom shadow-custom">
-              <div className="max-w-md mx-auto">
-                <div className="w-24 h-24 bg-(--main-subtle) text-(--main-emphasis) rounded-full flex items-center justify-center mx-auto mb-4">
-                  <SearchIcon className="h-12 w-12" />
-                </div>
-                <h3 className="heading text-(--text-color-emphasis) font-semibold">
-                  No blogs found
-                </h3>
-                <p className="mb-4">Try adjusting your search terms.</p>
+        ) : (
+          <div className="text-center py-16 bg-(--primary-bg) text-(--text-color) rounded-custom shadow-custom">
+            <div className="max-w-md mx-auto">
+              <div className="w-24 h-24 bg-(--main-subtle) text-(--main-emphasis) rounded-full flex items-center justify-center mx-auto mb-4">
+                <SearchIcon className="h-12 w-12" />
               </div>
+              <h3 className="heading text-(--text-color-emphasis) font-semibold">
+                No blogs found
+              </h3>
+              <p className="mb-4">Try adjusting your search terms.</p>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Pagination */}
-          {blogs.length > blogsPerPage && (
-            <div>
-              <Pagination totalPages={totalPages} />
-            </div>
-          )}
-        </div>
+        {blogs.length > blogsPerPage && (
+          <div>
+            <Pagination totalPages={totalPages} />
+          </div>
+        )}
       </div>
     </div>
   );

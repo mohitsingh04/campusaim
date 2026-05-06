@@ -1,259 +1,225 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import API from "@/context/API";
 import { PropertyLocationProps, PropertyProps } from "@/types/PropertyTypes";
-import {
-	CategoryProps,
-	CourseProps,
-	EventProps,
-	SeoProps,
-} from "@/types/Types";
+import { CourseProps, SeoProps } from "@/types/Types";
 import { BlogCategoryProps, BlogsProps, BlogTagProps } from "@/types/BlogTypes";
 import { NewsProps } from "@/types/NewsTypes";
-import {
-	getErrorResponse,
-	getFieldDataSimple,
-	isDateEnded,
-} from "@/context/Callbacks";
+import { getErrorResponse, getFieldDataSimple } from "@/context/Callbacks";
+import { useGetAssets } from "@/context/providers/AssetsProviders";
 
-export default function useSearchFetch() {
-	const [properties, setProperties] = useState<PropertyProps[]>([]);
-	const [courses, setCourses] = useState<CourseProps[]>([]);
-	const [blogs, setBlogs] = useState<BlogsProps[]>([]);
-	const [events, setEvents] = useState<EventProps[]>([]);
-	const [news, setNews] = useState<NewsProps[]>([]);
-	const [keywordsList, setKeywordList] = useState<string[]>([]);
+export default function useSearchFetch({
+  isFetch = true,
+}: {
+  isFetch?: boolean;
+}) {
+  const [properties, setProperties] = useState<PropertyProps[]>([]);
+  const [courses, setCourses] = useState<CourseProps[]>([]);
+  const [blogs, setBlogs] = useState<BlogsProps[]>([]);
+  const [news, setNews] = useState<NewsProps[]>([]);
+  const [keywordsList, setKeywordList] = useState<string[]>([]);
+  const { getCategoryById } = useGetAssets();
+  const [loading, setLoading] = useState(true);
+  const hasFetched = useRef(false);
 
-	const [loading, setLoading] = useState(true);
+  const fetchAll = useCallback(async () => {
+    setLoading(true);
 
-	const getCategoryName =
-		(categories: CategoryProps[]) => (id: string | number) => {
-			const found = categories.find(
-				(cat) =>
-					String(cat._id) === String(id) || String(cat.uniqueId) === String(id),
-			);
-			return found?.category_name || id;
-		};
+    try {
+      const [
+        propertyRes,
+        locationRes,
+        courseRes,
+        newsRes,
+        blogRes,
+        blogCatRes,
+        blogTagRes,
+        seoRes,
+      ] = await Promise.all([
+        API.get("/property"),
+        API.get("/locations"),
+        API.get("/course"),
+        API.get("/news-and-updates"),
+        API.get("/blog"),
+        API.get("/blog/category/all"),
+        API.get("/blog/tag/all"),
+        API.get("/all/seo"),
+      ]);
 
-	const fetchAll = useCallback(async () => {
-		setLoading(true);
+      const seoData: SeoProps[] = seoRes?.data || [];
 
-		try {
-			const [
-				propertyRes,
-				locationRes,
-				categoriesRes,
-				courseRes,
-				eventRes,
-				newsRes,
-				blogRes,
-				blogCatRes,
-				blogTagRes,
-				seoRes,
-			] = await Promise.all([
-				API.get("/property"),
-				API.get("/locations"),
-				API.get("/category"),
-				API.get("/course"),
-				API.get("/events"),
-				API.get("/news-and-updates"),
-				API.get("/blog"),
-				API.get("/blog/category/all"),
-				API.get("/blog/tag/all"),
-				API.get("/all/seo"),
-			]);
+      const processedNews = newsRes.data
+        ?.filter((ne: NewsProps) => ne.status === "Published")
+        .map((ne: NewsProps) => {
+          const news_slug = seoData.find((se) => se.news_id === ne._id)?.slug;
+          if (!news_slug) return null;
+          return { ...ne, news_slug };
+        })
+        .filter(Boolean) as NewsProps[];
 
-			const categoryData = categoriesRes?.data || [];
+      setNews(processedNews);
 
-			const seoData: SeoProps[] = seoRes?.data || [];
-			const findCategory = getCategoryName(categoryData);
+      const processedCourses = courseRes.data
+        ?.filter((course: CourseProps) => course.status === "Active")
+        .map((course: CourseProps) => {
+          const course_slug = seoData.find(
+            (se) => se.course_id === course._id,
+          )?.slug;
 
-			const processedEvents = eventRes.data
-				?.filter(
-					(ev: EventProps) =>
-						ev.status === "Active" &&
-						isDateEnded(ev?.schedule?.[ev?.schedule?.length - 1]?.date),
-				)
-				.map((ev: EventProps) => {
-					const event_slug = seoData.find((se) => se.event_id === ev._id)?.slug;
-					if (!event_slug) return null;
+          if (!course_slug) return null;
 
-					return {
-						...ev,
-						category: ev.category?.map((c) => findCategory(c)),
-						event_slug,
-					};
-				})
-				.filter(Boolean) as EventProps[];
+          return {
+            ...course,
+            course_type: getCategoryById(course.course_type),
+            program_type: getCategoryById(course.program_type),
+            degree_type: getCategoryById(course.degree_type),
+            course_slug,
+          };
+        })
+        .filter(Boolean) as CourseProps[];
 
-			setEvents(processedEvents);
+      setCourses(processedCourses);
 
-			const processedNews = newsRes.data
-				?.filter((ne: NewsProps) => ne.status === "Published")
-				.map((ne: NewsProps) => {
-					const news_slug = seoData.find((se) => se.news_id === ne._id)?.slug;
-					if (!news_slug) return null;
-					return { ...ne, news_slug };
-				})
-				.filter(Boolean) as NewsProps[];
+      const processedProperties = propertyRes.data
+        ?.filter((property: PropertyProps) => property.status === "Active")
+        .map((property: PropertyProps) => {
+          const location = locationRes.data.find(
+            (loc: PropertyLocationProps) => loc.property_id === property._id,
+          );
 
-			setNews(processedNews);
+          return {
+            ...property,
+            ...location,
+            academic_type: getCategoryById(property.academic_type),
+            property_type: getCategoryById(property.property_type),
+          };
+        }) as PropertyProps[];
 
-			const processedCourses = courseRes.data
-				?.filter((course: CourseProps) => course.status === "Active")
-				.map((course: CourseProps) => {
-					const course_slug = seoData.find(
-						(se) => se.course_id === course._id,
-					)?.slug;
+      setProperties(processedProperties);
 
-					if (!course_slug) return null;
+      const blogCategoryMap: Record<string | number, string> =
+        Object.fromEntries(
+          blogCatRes.data.map((c: BlogCategoryProps) => [
+            c._id,
+            c.blog_category,
+          ]),
+        );
 
-					return {
-						...course,
-						course_type: findCategory(course.course_type),
-						course_level: findCategory(course.course_level),
-						certification_type: findCategory(course.certification_type),
-						course_slug,
-					};
-				})
-				.filter(Boolean) as CourseProps[];
+      const blogTagMap: Record<string | number, string> = Object.fromEntries(
+        blogTagRes.data.map((t: BlogTagProps) => [t._id, t.blog_tag]),
+      );
 
-			setCourses(processedCourses);
+      const processedBlogs = blogRes.data
+        ?.filter((blog: BlogsProps) => blog.status === "Active")
+        .map((blog: BlogsProps) => {
+          const blog_slug = seoData.find((se) => se.blog_id === blog._id)?.slug;
+          if (!blog_slug) return null;
 
-			const processedProperties = propertyRes.data
-				?.filter((property: PropertyProps) => property.status === "Active")
-				.map((property: PropertyProps) => {
-					const location = locationRes.data.find(
-						(loc: PropertyLocationProps) => loc.property_id === property._id,
-					);
+          return {
+            ...blog,
+            category: blog.category?.map(
+              (id) => blogCategoryMap[typeof id === "string" ? id : ""] || id,
+            ),
+            tags: blog.tags?.map(
+              (id) => blogTagMap[typeof id === "string" ? id : ""] || id,
+            ),
+            blog_slug,
+          };
+        })
+        .filter(Boolean) as BlogsProps[];
 
-					return {
-						...property,
-						...location,
-						category: findCategory(property.category),
-						property_type: findCategory(property.property_type),
-					};
-				}) as PropertyProps[];
+      setBlogs(processedBlogs);
+    } catch (error) {
+      getErrorResponse(error, true);
+    } finally {
+      setLoading(false);
+    }
+  }, [getCategoryById]);
 
-			setProperties(processedProperties);
+  useEffect(() => {
+    if (isFetch && !hasFetched.current) {
+      fetchAll();
+      hasFetched.current = true;
+    }
+  }, [fetchAll, isFetch]);
 
-			const blogCategoryMap: Record<string | number, string> =
-				Object.fromEntries(
-					blogCatRes.data.map((c: BlogCategoryProps) => [
-						c._id,
-						c.blog_category,
-					]),
-				);
+  const getKeywordList = useCallback(async () => {
+    if (!properties || properties.length === 0) return;
 
-			const blogTagMap: Record<string | number, string> = Object.fromEntries(
-				blogTagRes.data.map((t: BlogTagProps) => [t._id, t.blog_tag]),
-			);
+    try {
+      const types = ["top", "best"];
+      const numbers = [3, 5, 10, 20, 50, 100];
 
-			const processedBlogs = blogRes.data
-				?.filter((blog: BlogsProps) => blog.status === "Active")
-				.map((blog: BlogsProps) => {
-					const blog_slug = seoData.find((se) => se.blog_id === blog._id)?.slug;
-					if (!blog_slug) return null;
+      const catList: string[] = await getFieldDataSimple(
+        properties,
+        "academic_type",
+      );
 
-					return {
-						...blog,
-						category: blog.category?.map((id) => blogCategoryMap[id] || id),
-						tags: blog.tags?.map((id) => blogTagMap[id] || id),
-						blog_slug,
-					};
-				})
-				.filter(Boolean) as BlogsProps[];
+      const baseKeywords: string[] = catList.flatMap((cat) =>
+        types.flatMap((type) => [
+          `${type} ${cat}`,
+          ...numbers.map((num) => `${type} ${num} ${cat}`),
+        ]),
+      );
 
-			setBlogs(processedBlogs);
-		} catch (error) {
-			getErrorResponse(error, true);
-		} finally {
-			setLoading(false);
-		}
-	}, []);
+      const locationKeywords: string[] = [];
 
-	useEffect(() => {
-		fetchAll();
-	}, [fetchAll]);
+      for (const cat of catList) {
+        const relatedProperties = properties.filter(
+          (property) => property?.academic_type === cat,
+        );
 
-	const getKeywordList = useCallback(async () => {
-		if (!properties || properties.length === 0) return;
+        if (relatedProperties.length === 0) continue;
 
-		try {
-			const types = ["top", "best"];
-			const numbers = [3, 5, 10, 20, 50, 100];
+        const cities = await getFieldDataSimple(
+          relatedProperties,
+          "property_city",
+        );
+        const states = await getFieldDataSimple(
+          relatedProperties,
+          "property_state",
+        );
+        const countries = await getFieldDataSimple(
+          relatedProperties,
+          "property_country",
+        );
 
-			const catList: string[] = await getFieldDataSimple(
-				properties,
-				"category",
-			);
+        const locations = [
+          ...(cities || []),
+          ...(states || []),
+          ...(countries || []),
+        ].filter(Boolean);
 
-			const baseKeywords: string[] = catList.flatMap((cat) =>
-				types.flatMap((type) => [
-					`${type} ${cat}`,
-					...numbers.map((num) => `${type} ${num} ${cat}`),
-				]),
-			);
+        for (const type of types) {
+          for (const location of locations) {
+            locationKeywords.push(`${type} ${cat} in ${location}`);
 
-			const locationKeywords: string[] = [];
+            for (const num of numbers) {
+              locationKeywords.push(`${type} ${num} ${cat} in ${location}`);
+            }
+          }
+        }
+      }
 
-			for (const cat of catList) {
-				const relatedProperties = properties.filter(
-					(property) => property?.category === cat,
-				);
+      const finalList = [...baseKeywords, ...locationKeywords];
 
-				if (relatedProperties.length === 0) continue;
+      setKeywordList(finalList);
+    } catch (error) {
+      getErrorResponse(error, true);
+    }
+  }, [properties]);
 
-				const cities = await getFieldDataSimple(
-					relatedProperties,
-					"property_city",
-				);
-				const states = await getFieldDataSimple(
-					relatedProperties,
-					"property_state",
-				);
-				const countries = await getFieldDataSimple(
-					relatedProperties,
-					"property_country",
-				);
+  useEffect(() => {
+    getKeywordList();
+  }, [getKeywordList]);
 
-				const locations = [
-					...(cities || []),
-					...(states || []),
-					...(countries || []),
-				].filter(Boolean);
-
-				for (const type of types) {
-					for (const location of locations) {
-						locationKeywords.push(`${type} ${cat} in ${location}`);
-
-						for (const num of numbers) {
-							locationKeywords.push(`${type} ${num} ${cat} in ${location}`);
-						}
-					}
-				}
-			}
-
-			const finalList = [...baseKeywords, ...locationKeywords];
-
-			setKeywordList(finalList);
-		} catch (error) {
-			getErrorResponse(error, true);
-		}
-	}, [properties]);
-
-	useEffect(() => {
-		getKeywordList();
-	}, [getKeywordList]);
-
-	return {
-		properties,
-		courses,
-		blogs,
-		events,
-		news,
-		keywordsList,
-		loading,
-	};
+  return {
+    properties,
+    courses,
+    blogs,
+    news,
+    keywordsList,
+    loading,
+  };
 }

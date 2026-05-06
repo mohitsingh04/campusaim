@@ -5,64 +5,35 @@ import InfoCard from "@/ui/cards/InfoCard";
 import { ReadMoreLess } from "@/ui/texts/ReadMoreLess";
 import { ButtonGroup } from "@/ui/buttons/ButtonGroup";
 import { useParams } from "next/navigation";
-import { CategoryProps, ExamProps } from "@/types/Types";
+import { ExamProps } from "@/types/Types";
 import { getErrorResponse } from "@/context/Callbacks";
 import API from "@/context/API";
 import Image from "next/image";
 import HeadingLine from "@/ui/headings/HeadingLine";
-import CourseEnquiryForm from "./_course_compoents/CourseEnquiryForm";
+import CourseEnquiryForm from "./_exams_compoents/CourseEnquiryForm";
 import InsitutesLoader from "@/ui/loader/page/institutes/Institutes";
-import { UserProps } from "@/types/UserTypes";
-import { getProfile } from "@/context/getAssets";
 import CourseDetailSkeleton from "@/ui/loader/page/courses/CourseDetailSkeleton";
 import { AwardIcon, BarChartIcon, ZapIcon } from "lucide-react";
+import FaqComponents from "@/ui/accordions/FaqComponents";
+import useGetAuthUser from "@/hooks/fetch-hooks/useGetAuthUser";
+import { useGetAssets } from "@/context/providers/AssetsProviders";
 
 const ExamDetails = () => {
   const { exam_slug } = useParams();
   const [mainCourse, setMainExams] = useState<ExamProps | null>(null);
   const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState<UserProps | null>(null);
-
-  const getProfileUser = useCallback(async () => {
-    try {
-      const data = await getProfile();
-      setProfile(data);
-    } catch (error) {
-      getErrorResponse(error);
-    }
-  }, []);
-
-  useEffect(() => {
-    getProfileUser();
-  }, [getProfileUser]);
+  const { authUser } = useGetAuthUser();
+  const { getCategoryById } = useGetAssets();
 
   const getCourses = useCallback(async () => {
     setLoading(true);
 
     try {
-      const results = await Promise.allSettled([
-        API.get(`/exam/seo/${exam_slug}`),
-        API.get(`/category`),
-      ]);
-
-      const [courseRes, categoryRes] = results;
-      if (courseRes.status !== "fulfilled") {
-        console.error("Failed to fetch course:", courseRes.reason);
-        return;
-      }
-
-      const course = courseRes.value.data;
-      const categoryData =
-        categoryRes.status === "fulfilled" ? categoryRes.value.data : [];
-
-      const categoryMap = new Map<string, string>();
-      categoryData.forEach((c: CategoryProps) =>
-        categoryMap.set(c._id, c.category_name),
-      );
-
+      const response = await API.get(`/exam/seo/${exam_slug}`);
+      const course = response.data;
       const populatedCourse: ExamProps = {
         ...course,
-        exam_mode: categoryMap.get(course.exam_mode) ?? course.exam_mode,
+        exam_mode: getCategoryById(course.exam_mode) ?? course.exam_mode,
       };
 
       setMainExams(populatedCourse);
@@ -71,7 +42,7 @@ const ExamDetails = () => {
     } finally {
       setLoading(false);
     }
-  }, [exam_slug]);
+  }, [exam_slug, getCategoryById]);
 
   useEffect(() => {
     getCourses();
@@ -137,13 +108,11 @@ const ExamDetails = () => {
           </div>
         </div>
 
-        {/* MAIN CONTENT — DESKTOP FIRST (order-2 on mobile) */}
         <div className="lg:col-span-2 space-y-6 order-2 lg:order-1">
           <h1 className="heading font-extrabold text-(--text-color-emphasis) mb-4 hidden md:block">
             {mainCourse?.exam_name}
           </h1>
 
-          {/* Course Information */}
           <div className="bg-(--primary-bg) p-5 rounded-custom shadow-custom">
             <HeadingLine title="Course Information" />
 
@@ -171,40 +140,18 @@ const ExamDetails = () => {
             </div>
           </div>
 
-          {/* Best For & Coure Eligibility */}
-          {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-(--primary-bg) p-5 rounded-custom shadow-custom">
-              <HeadingLine title="Coure Eligibility" />
-              <ul className="space-y-3">
-                {mainCourse?.course_eligibility.map((item: any, index: any) => (
-                  <ListItem key={index} text={item} type="include" />
-                ))}
-              </ul>
-            </div>
-
-            <div className="bg-(--primary-bg) p-5 rounded-custom shadow-custom">
-              <HeadingLine title="Best For" />
-              <ul className="space-y-3">
-                {mainCourse?.best_for.map((item, index) => (
-                  <ListItem key={index} text={item} type="include" />
-                ))}
-              </ul>
-            </div>
-          </div> */}
-
-          {/* Description */}
           <div className="bg-(--primary-bg) p-5 rounded-custom shadow-custom">
             <HeadingLine title="Overview" />
             <ReadMoreLess html={mainCourse?.description || ""} />
           </div>
-          <CourseEnquiryForm exam={mainCourse} profile={profile} />
+          {(mainCourse?.faqs?.length || 0) > 0 && (
+            <div className="bg-(--primary-bg) p-5 rounded-custom shadow-custom">
+              <HeadingLine title="Frequently Asked Questions" />
+              <FaqComponents faqs={mainCourse?.faqs || []} />
+            </div>
+          )}
+          <CourseEnquiryForm exam={mainCourse} profile={authUser} />
         </div>
-      </div>
-      <div className="">
-        {/* <PropertyFilters
-          allProperties={properties}
-          propertyLoading={propertyLoading}
-        /> */}
       </div>
     </div>
   );

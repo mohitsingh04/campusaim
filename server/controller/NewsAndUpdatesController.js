@@ -1,8 +1,4 @@
-import {
-  generateSlug,
-  generateUniqueId,
-  getUploadedFilePaths,
-} from "../utils/Callback.js";
+import { generateSlug, getUploadedFilePaths } from "../utils/Callback.js";
 import { downloadImageAndReplaceSrcNonProperty } from "../helper/folder-cleaners/EditorImagesController.js";
 import NewsAndUpdates from "../models/NewsAndUpdates.js";
 import RegularUser from "../profile-model/RegularUser.js";
@@ -12,29 +8,28 @@ import AllSeo from "../models/AllSeo.js";
 
 export const createNewsAndUpdates = async (req, res) => {
   try {
-    const { title, content } = req.body;
+    const { title, content, faqs } = req.body;
 
-    // Get user info from token
     const user = await getDataFromToken(req);
+    const mainFaqs = JSON.parse(faqs);
 
     const featuredImages = await getUploadedFilePaths(req, "featured_image");
-    const uniqueId = await generateUniqueId(NewsAndUpdates);
 
     let updatedContent = content;
     if (content) {
       updatedContent = await downloadImageAndReplaceSrcNonProperty(
         content,
-        "news-and-updates"
+        "news-and-updates",
       );
     }
 
     const news = await NewsAndUpdates({
-      uniqueId,
       title,
       content: updatedContent,
       author: user,
       featured_image: featuredImages,
       status: "Drafted",
+      faqs: mainFaqs,
     });
 
     const createdNews = await news.save();
@@ -57,20 +52,21 @@ export const createNewsAndUpdates = async (req, res) => {
 export const updateNewsAndUpdates = async (req, res) => {
   try {
     const { objectId } = req.params;
-    const { title, content, status } = req.body;
+    const { title, content, status, faqs } = req.body;
     const user = await getDataFromToken(req);
     const news = await NewsAndUpdates.findById(objectId);
     if (!news) {
       return res.status(404).json({ error: "News not found" });
     }
 
+    const mainFaqs = JSON.parse(faqs);
     const featuredImages = await getUploadedFilePaths(req, "featured_image");
 
     let updatedContent = content || news.content;
     if (content) {
       updatedContent = await downloadImageAndReplaceSrcNonProperty(
         content,
-        "news-and-updates"
+        "news-and-updates",
       );
     }
 
@@ -78,11 +74,11 @@ export const updateNewsAndUpdates = async (req, res) => {
       news.featured_image = featuredImages;
     }
 
-    // Update fields
     news.title = title || news.title;
     news.content = updatedContent;
     news.author = user;
     news.status = status;
+    news.faqs = mainFaqs?.length > 0 ? mainFaqs : news.faqs;
     if (status === "Published") {
       news.publish_date = Date.now();
     }

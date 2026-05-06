@@ -71,7 +71,7 @@ export default function AiCourseSuggestion({
             const cleanText = stripHtmlNoLimit(item?.description || "");
             // Ensure possibly dynamic fields are treated as strings for JSX rendering
             const courseType = item?.course_type as string | undefined;
-            const courseLevel = item?.course_level as string | undefined;
+            const programType = item?.program_type as string | undefined;
 
             return (
               <SwiperSlide key={idx}>
@@ -146,9 +146,9 @@ export default function AiCourseSuggestion({
                           {courseType}
                         </span>
                       )}
-                      {courseLevel && (
+                      {programType && (
                         <span className="px-2 py-1 rounded bg-(--secondary-bg)">
-                          {courseLevel}
+                          {programType}
                         </span>
                       )}
                     </div>

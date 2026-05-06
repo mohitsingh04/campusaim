@@ -23,6 +23,7 @@ const CourseSchema = new mongoose.Schema(
     },
     program_type: {
       type: mongoose.Schema.Types.ObjectId,
+      ref: "Category"
     },
     best_for: [{
       type: mongoose.Schema.Types.ObjectId,

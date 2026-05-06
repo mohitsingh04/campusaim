@@ -4,13 +4,12 @@ import "@/css/Blogs.css";
 import { Metadata } from "next";
 import LegalNotFound from "../_legalComponents/LegalNotFound";
 
-const BASE_URL =
-  process.env.NEXT_PUBLIC_BASE_URL ?? "https://www.campusaim.com";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
-const title = "Cookies";
-const keywords = ["Campusaim Cookies"];
+const title = "Cookies Policy";
+const keywords = ["cookies policy", "campusaim cookies"];
 const description =
-  "Campusaim uses cookies to enhance your experience, analyze site traffic, and improve performance. Learn how we use and manage cookies responsibly.";
+  "Learn how Campusaim uses cookies to improve website performance, analytics, user experience, and personalized browsing services online.";
 const canonical = "/cookies";
 const featuredImage = [
   {

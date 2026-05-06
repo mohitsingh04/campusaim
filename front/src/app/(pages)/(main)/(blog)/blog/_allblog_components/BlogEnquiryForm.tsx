@@ -41,7 +41,7 @@ const BlogEnquiryForm = ({ blog }: { blog: BlogsProps | null }) => {
       email: user?.email || "",
       mobile_no: user?.mobile_no || "",
       message: "",
-      blogId: blog?.uniqueId || "",
+      blogId: blog?._id || "",
     },
     enableReinitialize: true,
     validationSchema: blogEnquiryValidation,

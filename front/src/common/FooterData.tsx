@@ -44,10 +44,10 @@ export const CategoriesList = [
 ];
 
 export const QuickLinks = [
-  // { name: "Yoga Near Me", href: "/yoga-near-me", external: false },
+  // { name: "Near Me", href: "/near-me", external: false },
   { name: "About Us", href: "/about-us", external: false },
-  // { name: "News & Updates", href: "/news-and-updates", external: false },
-  // { name: "Blog", href: "/blog", external: false },
+  { name: "News & Updates", href: "/news-and-updates", external: false },
+  { name: "Blog", href: "/blog", external: false },
   { name: "Compare", href: "/compare/select", external: false },
   // { name: "Events", href: "/events", external: false },
   {
@@ -71,8 +71,8 @@ export const FEATURE_LINKS = [
   },
   { name: "Compare", href: "/compare/select", external: false },
   // {
-  //   name: "Yoga Near Me",
-  //   href: "/yoga-near-me",
+  //   name: "Near Me",
+  //   href: "/near-me",
   //   badge: "On Site",
   //   external: false,
   // },

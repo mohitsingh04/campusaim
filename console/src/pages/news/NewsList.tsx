@@ -218,7 +218,7 @@ export default function NewsList() {
         ]}
         extraButtons={[
           {
-            label: "Create Event",
+            label: "Add News",
             path: "/dashboard/news-and-updates/create",
             icon: Plus,
           },

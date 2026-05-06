@@ -1,10 +1,7 @@
 "use client";
-
-import { useState, MouseEvent, useEffect } from "react";
-
+import { useState, MouseEvent, useEffect, useMemo } from "react";
 import ThemeButton from "./ThemeButton";
 import YpLogo from "./YpLogo";
-
 import {
   useCoursesMenuData,
   useExamMenuData,
@@ -12,30 +9,23 @@ import {
 } from "./NavbarData";
 import Link from "next/link";
 import { getToken } from "@/context/getAssets";
+import SettingsOffcanvas from "../setting/SettingOffcanvas";
 import dynamic from "next/dynamic";
 import useGetAuthUser from "@/hooks/fetch-hooks/useGetAuthUser";
 import {
   NavbarMegaMenuGroup,
-  NavbarMenuItemProps,
   NavbarMobileDetailMenuState,
   NavbarMobileSubMenuState,
 } from "@/types/NavbarTypes";
+import ProfileButton from "./_navbar_components/ProfileButton";
 import {
   ChevronDownIcon,
-  ChevronRightIcon,
+  ChevronRight,
   MenuIcon,
   SearchIcon,
   XIcon,
 } from "lucide-react";
 import { useGetAssets } from "@/context/providers/AssetsProviders";
-import SettingsOffcanvas from "../setting/SettingOffcanvas";
-import ProfileButton from "./_navbar_components/ProfileButton";
-const NavbarLoader = dynamic(
-  () => import("@/ui/loader/component/NavbarLoader"),
-  {
-    ssr: false,
-  },
-);
 const SearchModal = dynamic(
   () => import("@/components/search_modal/SearchModal"),
   { ssr: false },
@@ -56,28 +46,39 @@ const MobileSubMenu = dynamic(
   () => import("./_navbar_components/MobileSubMenu"),
   { ssr: false },
 );
+const ASKURL = process.env.NEXT_PUBLIC_ASK_URL;
 
 export default function Navbar() {
+  const { allCategories } = useGetAssets();
   const [hoveredMenu, setHoveredMenu] = useState<string | null>(null);
   const [activeDesktopSubMenu, setActiveDesktopSubMenu] = useState<
     string | null
   >(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [mobileSubMenu, setMobileSubMenu] =
     useState<NavbarMobileSubMenuState | null>(null);
   const [mobileDetailMenu, setMobileDetailMenu] =
     useState<NavbarMobileDetailMenuState | null>(null);
-
   const [activeAccordion, setActiveAccordion] = useState<string | null>(null);
-  const { courseMenuData, courseLoading } = useCoursesMenuData();
+
+  const shouldFetchCourses = hoveredMenu === "Courses" || isMobileMenuOpen;
+  const shouldFetchProperties =
+    hoveredMenu === "Institutes" || isMobileMenuOpen;
+
   const { examLoading, examMenuData } = useExamMenuData();
-  const { allCategories } = useGetAssets();
-  const universityMenu = usePropertyMenuData({ categories: allCategories });
+  const { courseMenuData, courseLoading } = useCoursesMenuData({
+    enabled: shouldFetchCourses,
+    categories: allCategories,
+  });
+  const { propertyMenuData, propertyLoading } = usePropertyMenuData({
+    categories: allCategories,
+    enabled: shouldFetchProperties,
+  });
+
   const [token, setToken] = useState("");
-  const { authUser } = useGetAuthUser();
   const [settingOffcanvas, setSettingOffcanvas] = useState(false);
+  const { authUser } = useGetAuthUser();
 
   useEffect(() => {
     const checkToken = async () => {
@@ -87,47 +88,73 @@ export default function Navbar() {
     checkToken();
   }, []);
 
-  const menuItems: NavbarMenuItemProps[] = [
-    {
-      name: "Institutes",
-      href: "/institutes",
-      dropdownContent: universityMenu?.propertyMenuData,
-    },
-    {
-      name: "Courses",
-      href: "/courses",
-      dropdownContent: courseMenuData,
-    },
-    {
-      name: "Exams",
-      href: "/exams",
-      dropdownContent: examMenuData,
-    },
-    {
-      name: "Ask",
-      href: `${process.env.NEXT_PUBLIC_ASK_URL}`,
-      external: true,
-    },
-  ];
+  useEffect(() => {
+    if (
+      hoveredMenu === "Institutes" &&
+      propertyMenuData &&
+      !activeDesktopSubMenu
+    ) {
+      const firstKey = Object.keys(propertyMenuData)[0];
+      if (firstKey) setActiveDesktopSubMenu(firstKey);
+    }
+  }, [propertyMenuData, hoveredMenu, activeDesktopSubMenu]);
+  useEffect(() => {
+    if (hoveredMenu === "Courses" && courseMenuData && !activeDesktopSubMenu) {
+      const firstKey = Object.keys(courseMenuData)[0];
+      if (firstKey) setActiveDesktopSubMenu(firstKey);
+    }
+  }, [courseMenuData, hoveredMenu, activeDesktopSubMenu]);
+
+  const menuItems = useMemo(
+    () => [
+      {
+        name: "Institutes",
+        href: "/colleges",
+        dropdownContent: propertyMenuData,
+        isLoading: propertyLoading,
+        external: false,
+        panel: "double",
+      },
+      {
+        name: "Courses",
+        href: "/courses",
+        dropdownContent: courseMenuData,
+        isLoading: courseLoading,
+        external: false,
+        panel: "double",
+      },
+      {
+        name: "Exams",
+        href: "/exams",
+        dropdownContent: examMenuData,
+        isLoading: examLoading,
+        external: false,
+        panel: "single",
+      },
+      { name: "Ask", href: `${ASKURL}`, external: true, panel: "none" },
+    ],
+    [
+      propertyMenuData,
+      propertyLoading,
+      courseMenuData,
+      courseLoading,
+      examLoading,
+      examMenuData,
+    ],
+  );
 
   const handleCloseMobileMenu = () => {
     setIsMobileMenuOpen(false);
-    setTimeout(() => {
-      setMobileSubMenu(null);
-      setMobileDetailMenu(null);
-    }, 300);
+    setMobileSubMenu(null);
+    setMobileDetailMenu(null);
   };
 
   const toggleMobileMenu = () => {
-    if (isMobileMenuOpen) {
-      handleCloseMobileMenu();
-    } else {
-      setIsMobileMenuOpen(true);
-    }
+    setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  const handleSubMenuClick = (e: MouseEvent, item: NavbarMenuItemProps) => {
-    if (item.dropdownContent) {
+  const handleSubMenuClick = (e: MouseEvent, item: any) => {
+    if (item?.dropdownContent) {
       e.preventDefault();
       setMobileSubMenu({ title: item.name, data: item.dropdownContent });
     }
@@ -136,7 +163,7 @@ export default function Navbar() {
   const handleDetailMenuClick = (
     e: MouseEvent,
     subItemName: string,
-    subItemData: Record<string, unknown> | NavbarMegaMenuGroup,
+    subItemData: any,
   ) => {
     e.preventDefault();
     if (subItemData && Object.keys(subItemData).length > 0) {
@@ -148,20 +175,18 @@ export default function Navbar() {
     }
   };
 
-  const handleDesktopMouseEnter = (item: NavbarMenuItemProps) => {
-    if (!item.dropdownContent) return;
+  const handleDesktopMouseEnter = (item: any) => {
     setHoveredMenu(item.name);
-    const firstKey = Object.keys(item.dropdownContent)[0];
-    setActiveDesktopSubMenu(firstKey ?? null);
+    if (item.dropdownContent) {
+      const firstKey = Object.keys(item.dropdownContent)[0];
+      if (firstKey) setActiveDesktopSubMenu(firstKey);
+    }
   };
 
-  const handleDesktopMouseLeave = () => setHoveredMenu(null);
-
-  const isPropertyLoading = universityMenu.propertyLoading;
-
-  if (isPropertyLoading || courseLoading || examLoading) {
-    return <NavbarLoader />;
-  }
+  const handleDesktopMouseLeave = () => {
+    setHoveredMenu(null);
+    setActiveDesktopSubMenu(null);
+  };
 
   return (
     <>
@@ -200,37 +225,31 @@ export default function Navbar() {
                       target={item?.external ? "_blank" : "_self"}
                     >
                       {item.name}
-                      {(item.name === "Institutes" ||
-                        item.name === "Courses" ||
-                        item.name === "Exams") && (
+                      {item?.panel && (
                         <ChevronDownIcon className="ml-1 mt-1 h-4 w-4" />
                       )}
                     </Link>
 
-                    {hoveredMenu === item.name &&
-                      (item.name === "Institutes" ||
-                        item.name === "Courses" ||
-                        item.name === "Exams") && (
-                        <div className="absolute top-full left-0 right-0 bg-(--primary-bg) shadow-custom border-t border-(--border)">
-                          {(item.name === "Courses" ||
-                            item.name === "Exams") && (
-                            <SinglePanelDropdown
-                              handleDesktopMouseLeave={handleDesktopMouseLeave}
-                              dropdonwItem={item}
-                              isLoading={item.isLoading}
-                            />
-                          )}
-                          {item.name === "Institutes" && (
-                            <SubMenuPanelDropdown
-                              handleDesktopMouseLeave={handleDesktopMouseLeave}
-                              setActiveDesktopSubMenu={setActiveDesktopSubMenu}
-                              activeDesktopSubMenu={activeDesktopSubMenu}
-                              dropdownItem={item}
-                              isLoading={item.isLoading}
-                            />
-                          )}
-                        </div>
-                      )}
+                    {hoveredMenu === item.name && item?.dropdownContent && (
+                      <div className="absolute top-full left-0 right-0 bg-(--primary-bg) shadow-custom border-t border-(--border)">
+                        {item?.panel === "single" && (
+                          <SinglePanelDropdown
+                            handleDesktopMouseLeave={handleDesktopMouseLeave}
+                            dropdonwItem={item}
+                            isLoading={item.isLoading}
+                          />
+                        )}
+                        {item?.panel === "double" && (
+                          <SubMenuPanelDropdown
+                            handleDesktopMouseLeave={handleDesktopMouseLeave}
+                            setActiveDesktopSubMenu={setActiveDesktopSubMenu}
+                            activeDesktopSubMenu={activeDesktopSubMenu}
+                            dropdownItem={item}
+                            isLoading={item.isLoading}
+                          />
+                        )}
+                      </div>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -298,11 +317,9 @@ export default function Navbar() {
                           className="flex justify-between items-center p-4 transition-colors"
                         >
                           <span>{item.name}</span>
-                          {item.name === "Institutes" ||
-                            item.name === "Courses" ||
-                            (item.name === "Exams" && (
-                              <ChevronRightIcon className="w-5 h-5" />
-                            ))}
+                          {item?.dropdownContent && (
+                            <ChevronRight className="w-5 h-5" />
+                          )}
                         </Link>
                       </li>
                     ))}
@@ -317,9 +334,7 @@ export default function Navbar() {
               mobileSubMenu={mobileSubMenu}
               mobileDetailMenu={mobileDetailMenu}
               setMobileSubMenu={setMobileSubMenu}
-              isLoading={
-                universityMenu?.propertyLoading || courseLoading || examLoading
-              }
+              isLoading={propertyLoading || courseLoading}
             />
 
             <MobileSubMenuSecond

@@ -3,10 +3,6 @@ import { regularDatabase } from "../database/Databases.js";
 
 const blogSchema = mongoose.Schema(
   {
-    uniqueId: {
-      type: Number,
-      required: true,
-    },
     title: {
       type: String,
       required: true,
@@ -16,10 +12,12 @@ const blogSchema = mongoose.Schema(
       required: true,
     },
     category: {
-      type: [Number],
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "blog_category",
     },
     tags: {
-      type: [Number],
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "blog_tags",
     },
     status: {
       type: String,
@@ -29,10 +27,13 @@ const blogSchema = mongoose.Schema(
       type: Array,
     },
     author: {
-      type: Number,
+      type: mongoose.Schema.Types.ObjectId,
+    },
+    faqs: {
+      type: [{ question: { type: String }, answer: { type: String } }],
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const Blog = regularDatabase.model("blogs", blogSchema);

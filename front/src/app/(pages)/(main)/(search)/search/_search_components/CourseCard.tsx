@@ -30,7 +30,7 @@ export default function CourseCard({ course }: { course: CourseProps }) {
             <div className="flex items-center gap-2 text-xs sm:text-sm mt-1 flex-wrap">
               <TrendingUpIcon className="w-4 h-4" />
               <span className="truncate max-w-[200px] sm:max-w-none">
-                {course?.course_level}
+                {course?.program_type}
               </span>
             </div>
           </div>

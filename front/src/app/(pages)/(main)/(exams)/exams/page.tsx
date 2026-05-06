@@ -5,7 +5,7 @@ import FiltersContent from "./_exams_components/FiltersContent";
 import MobileFiltersCanvas from "./_exams_components/MobileFilters";
 import ResultsHeader from "./_exams_components/ResultsHeader";
 import { useSearchParams, useRouter } from "next/navigation";
-import { CategoryProps, ExamProps, SeoProps } from "@/types/Types";
+import { ExamProps, SeoProps } from "@/types/Types";
 import { createDynamicFilterOptions, filterdExams } from "./utils/filterUtils";
 import API from "@/context/API";
 import {
@@ -22,6 +22,7 @@ import Pagination from "@/ui/pagination/Pagination";
 import InsitutesLoader from "@/ui/loader/page/institutes/Institutes";
 import { GraduationCapIcon } from "lucide-react";
 import ExamCard from "./_exams_components/ExamCard";
+import { useGetAssets } from "@/context/providers/AssetsProviders";
 
 const ITEMS_PER_PAGE = 12;
 
@@ -34,9 +35,9 @@ export default function ExamsPage() {
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [allExams, setAllExams] = useState<ExamProps[]>([]);
-  const [category, setCategory] = useState<CategoryProps[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState("default");
+  const { getCategoryById } = useGetAssets();
 
   const initializeFiltersFromURL = useCallback((): ExamFilterProps => {
     const urlFilters: ExamFilterProps = { exam_mode: [] };
@@ -98,26 +99,6 @@ export default function ExamsPage() {
     setFilters(initializeFiltersFromURL());
   }, [searchParams, initializeFiltersFromURL]);
 
-  const getCategories = useCallback(async () => {
-    try {
-      const response = await API.get(`/category`);
-      setCategory(response.data);
-    } catch (error) {
-      getErrorResponse(error, true);
-    }
-  }, []);
-
-  useEffect(() => {
-    getCategories();
-  }, [getCategories]);
-
-  const getCategoryById = useCallback(
-    (id: string) => {
-      const cat = category?.find((item) => item._id === id);
-      return cat?.category_name;
-    },
-    [category],
-  );
   const getAllExamsDetails = useCallback(async () => {
     setLoading(true);
 

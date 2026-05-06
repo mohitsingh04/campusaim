@@ -27,7 +27,7 @@ const BlogCourse = () => {
 
         const mergedCourses = allCoursesData.map((course: CourseProps) => {
           const seoMatch = seoData.find(
-            (seo: any) => seo.course_id === course._id
+            (seo: any) => seo.course_id === course._id,
           );
 
           return {
@@ -48,21 +48,22 @@ const BlogCourse = () => {
     getCourse();
   }, [getCourse]);
 
+  if (courses?.length <= 0) return;
+
   return (
     <div className="space-y-4">
       <div className="bg-(--primary-bg) text-(--text-color) rounded-custom shadow-custom p-5">
         <HeadingLine title="Courses" />
 
         <div className="space-y-4">
-          {courses.map((courseItem) => {
+          {courses.map((courseItem, index) => {
             return (
               <Link
-                key={courseItem.uniqueId}
+                key={index}
                 href={`/course/${courseItem.course_slug}`}
                 className="flex space-x-3 group bg-(--secondary-bg) shadow-custom p-2 rounded-custom transition-colors items-center"
               >
-                {/* Image */}
-                <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 relative">
+                <div className="w-20 aspect-2/1 rounded-custom overflow-hidden shrink-0 relative">
                   <Image
                     src={
                       courseItem?.image?.[0]
@@ -76,14 +77,13 @@ const BlogCourse = () => {
                   />
                 </div>
 
-                {/* Content */}
                 <div className="flex-1 min-w-0">
                   <h4 className="paragraph font-medium text-(--text-color-emphasis) group-hover:text-(--main) truncate transition-colors">
                     {courseItem.course_name}
                   </h4>
 
-                  <p className="text-sm text-(--main) font-medium pt-1">
-                    {courseItem.duration || "Yoga Course"}
+                  <p className="text-sm text-gradient font-medium pt-1">
+                    {courseItem.duration || "Course Duartion"}
                   </p>
                 </div>
               </Link>

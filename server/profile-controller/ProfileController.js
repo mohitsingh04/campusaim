@@ -33,11 +33,11 @@ const ROLE_MAP = {
   "property manager": "admin",
 
   // ✅ future roles
-  "admin": "admin",
-  "partner": "partner",
-  "counselor": "counselor",
+  admin: "admin",
+  partner: "partner",
+  counselor: "counselor",
   "team leader": "teamleader",
-  "teamleader": "teamleader"
+  teamleader: "teamleader",
 };
 
 export const mapRoleForApp = (roleName) => {
@@ -50,10 +50,13 @@ export const mapRoleForApp = (roleName) => {
 
 export const profileRegister = async (req, res) => {
   try {
-    const niche = await Niche.findOne({name: "Education"}).select("_id name").lean();
+    const niche = await Niche.findOne({ name: "Education" })
+      .select("_id name")
+      .lean();
     const nicheId = niche?._id;
-    
-    let { username, name, email, mobile_no, password, confirm_password, role } = req.body;
+
+    let { username, name, email, mobile_no, password, confirm_password, role } =
+      req.body;
 
     if (
       !username ||
@@ -178,7 +181,7 @@ export const getProfileEmailVerification = async (req, res) => {
         $set: { verified: true },
         $unset: { verifyToken: "", verifyTokenExpiry: "" },
       },
-      { new: true }
+      { new: true },
     );
 
     if (!verifiedUser) {
@@ -277,7 +280,9 @@ export const profileLogin = async (req, res) => {
     }
 
     if (roleDoc?.role === "User") {
-      return res.status(403).json({ error: "Access denied. You are not allowed to login to LMS." });
+      return res
+        .status(403)
+        .json({ error: "Access denied. You are not allowed to login to LMS." });
     }
 
     user.lastLoginAt = new Date();
@@ -285,16 +290,16 @@ export const profileLogin = async (req, res) => {
 
     const accessToken = jwt.sign(
       { id: user._id, email: user.email },
-      process.env.JWT_SECRET_VALUE
+      process.env.JWT_SECRET_VALUE,
     );
 
     const isProd = process.env.NODE_ENV === "production";
 
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      secure: isProd,                 // ✅ only HTTPS in prod
-      sameSite: isProd ? "none" : "lax", // ✅ required for cross-subdomain
-      domain: isProd ? ".campusaim.com" : "localhost", // 🔥 key fix
+      secure: isProd,
+      domain: isProd ? ".campusaim.com" : "localhost", // ✅ must match
+      sameSite: isProd ? "none" : "lax",
       maxAge: 10 * 24 * 60 * 60 * 1000 * 365,
     });
     return res.status(200).json({ message: "Logged in successfully." });
@@ -313,11 +318,10 @@ export const profileDetails = async (req, res) => {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET_VALUE);
 
-    const userDoc = await RegularUser.findById(decoded.id)
-      .populate({
-        path: "role",
-        select: "role" // 🔥 IMPORTANT (your field name)
-      });
+    const userDoc = await RegularUser.findById(decoded.id).populate({
+      path: "role",
+      select: "role", // 🔥 IMPORTANT (your field name)
+    });
 
     if (!userDoc) {
       await removeToken(res);
@@ -461,7 +465,7 @@ export const profilePostResetToken = async (req, res) => {
         $set: { password: passwordHash },
         $unset: { resetToken: "", resetTokenExpiry: "" },
       },
-      { new: true }
+      { new: true },
     );
 
     if (!user) {
@@ -528,7 +532,7 @@ export const ProfileAccountDeletionOtp = async (req, res) => {
           deletionTokenExpiry: new Date(Date.now() + 3 * 60 * 1000),
         },
       },
-      { new: true }
+      { new: true },
     );
     if (!updateDeletion) {
       return res.status(404).json({ error: "User Not Found" });
@@ -569,7 +573,7 @@ export const DeleteAccountConfirm = async (req, res) => {
 
     const propertyFolder = path.join(
       __dirname,
-      `../../media/profile/${uniqueId}`
+      `../../media/profile/${uniqueId}`,
     );
 
     await ProfileBio.deleteMany({ userId: uniqueId });

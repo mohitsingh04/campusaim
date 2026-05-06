@@ -7,7 +7,6 @@ import { BlogsProps } from "@/types/BlogTypes";
 import API from "@/context/API";
 import { formatDate, getErrorResponse } from "@/context/Callbacks";
 import HeadingLine from "@/ui/headings/HeadingLine";
-import { CalendarIcon } from "lucide-react";
 
 const RelatedBlogs = ({ blog }: { blog?: BlogsProps | null }) => {
   const [blogs, setBlogs] = useState<BlogsProps[]>([]);
@@ -29,7 +28,6 @@ const RelatedBlogs = ({ blog }: { blog?: BlogsProps | null }) => {
       const allBlogs: BlogsProps[] = allBlogRes.value.data || [];
       const seoData: any[] = allBlogSeoRes.value.data || [];
 
-      // Valid = active + has SEO slug
       const validBlogs: BlogsProps[] = allBlogs
         .filter(
           (item: BlogsProps) =>
@@ -43,18 +41,23 @@ const RelatedBlogs = ({ blog }: { blog?: BlogsProps | null }) => {
 
       let otherBlogs = [...validBlogs];
 
-      // Remove current blog if available
-      if (blog?.uniqueId) {
-        otherBlogs = validBlogs.filter((b) => b.uniqueId !== blog.uniqueId);
+      if (blog?._id) {
+        otherBlogs = validBlogs.filter((b) => b._id !== blog._id);
       }
 
       let finalBlogs: BlogsProps[] = [];
 
-      // If blog exists → use related logic
       if (blog?.tags?.length) {
-        const relatedBlogs = otherBlogs.filter((item: BlogsProps) =>
-          item.tags?.some((tag: string) => blog.tags.includes(tag)),
-        );
+        const relatedBlogs = otherBlogs.filter((item: BlogsProps) => {
+          const currentBlogTagNames =
+            blog.tags?.map((t) => (typeof t === "object" ? t.blog_tag : t)) ||
+            [];
+
+          return item.tags?.some((tag) => {
+            const tagName = typeof tag === "object" ? tag?.blog_tag : tag;
+            return currentBlogTagNames.includes(tagName);
+          });
+        });
 
         const shuffledRelated = [...relatedBlogs].sort(
           () => Math.random() - 0.5,
@@ -65,8 +68,7 @@ const RelatedBlogs = ({ blog }: { blog?: BlogsProps | null }) => {
         } else {
           const remaining = 5 - shuffledRelated.length;
           const unrelated = otherBlogs.filter(
-            (item) =>
-              !shuffledRelated.some((rel) => rel.uniqueId === item.uniqueId),
+            (item) => !shuffledRelated.some((rel) => rel._id === item._id),
           );
 
           const shuffledUnrelated = unrelated.sort(() => Math.random() - 0.5);
@@ -77,7 +79,6 @@ const RelatedBlogs = ({ blog }: { blog?: BlogsProps | null }) => {
           ];
         }
       } else {
-        // No blog passed -> show 5 random blogs
         finalBlogs = otherBlogs.sort(() => Math.random() - 0.5).slice(0, 5);
       }
 
@@ -91,41 +92,41 @@ const RelatedBlogs = ({ blog }: { blog?: BlogsProps | null }) => {
     getBlogs();
   }, [getBlogs]);
 
+  if (blogs?.length <= 0) return;
+
   return (
-    <div className="space-y-4 sticky top-15">
+    <div className="space-y-4">
       <div className="bg-(--primary-bg) text-(--text-color) rounded-custom shadow-custom p-5">
         <HeadingLine title="Related Blogs" />
 
         <div className="space-y-4">
-          {blogs.map((b) => (
+          {blogs.map((b, index) => (
             <Link
-              key={b.uniqueId}
+              key={index}
               href={`/blog/${b.blog_slug}`}
               className="flex space-x-3 group bg-(--secondary-bg) shadow-custom p-2 rounded-custom transition-colors"
             >
-              <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 relative">
+              <div className="w-20 aspect-2/1 rounded-custom overflow-hidden shrink-0 relative">
                 <Image
                   src={
                     b?.featured_image?.[0]
                       ? `${process.env.NEXT_PUBLIC_MEDIA_URL}/blogs/${b.featured_image[0]}`
-                      : "/img/default-images/yp-blogs.webp"
+                      : "/img/default-images/campusaim-courses-featured.png"
                   }
                   alt={b.title}
+                  sizes="80px"
                   fill
-                  sizes="64px"
                   className="object-cover transform group-hover:scale-105 transition-transform duration-300"
                 />
               </div>
-
               <div className="flex-1 min-w-0">
                 <h4 className="paragraph font-medium text-(--text-color-emphasis) group-hover:text-(--main) truncate transition-colors">
                   {b.title}
                 </h4>
 
-                <div className="flex items-center space-x-1 pt-1">
-                  <CalendarIcon className="h-3 w-3 text-(--main)" />
-                  <span className="paragraph">{formatDate(b.createdAt)}</span>
-                </div>
+                <p className="text-sm text-gradient font-medium pt-1">
+                  {formatDate(b.createdAt)}
+                </p>
               </div>
             </Link>
           ))}
