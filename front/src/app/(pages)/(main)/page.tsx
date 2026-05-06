@@ -14,9 +14,9 @@ const PopularCourses = dynamic(
   () => import("./_home_component/FeaturedCourses"),
   { loading: () => <FeaturedCoursesSkeleton /> },
 );
-const BrowseByLocation = dynamic(
-  () => import("./_home_component/BrowseByLocation"),
-);
+// const BrowseByLocation = dynamic(
+//   () => import("./_home_component/BrowseByLocation"),
+// );
 const Testimonials = dynamic(() => import("./_home_component/Testimonials"));
 const FaqsSection = dynamic(() => import("./_home_component/FaqsSection"), {});
 
@@ -27,7 +27,7 @@ export default function Home() {
       <CategorySection />
       <PropertyCarousel />
       <PopularCourses />
-      <BrowseByLocation />
+      {/* <BrowseByLocation /> */}
       <Testimonials />
       <FaqsSection />
     </div>

@@ -91,6 +91,8 @@ export interface SeoProps {
   exam_id: string;
   news_id: string;
   slug: string;
+  primary_focus_keyword: { label: string; value: string }[];
+  meta_description: string;
 }
 
 export interface PriceProps {

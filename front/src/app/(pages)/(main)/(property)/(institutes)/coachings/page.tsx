@@ -42,7 +42,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function YogaInsitutesPage() {
+export default function CoachingPage() {
   return (
     <Suspense fallback={<InsitutesLoader />}>
       <InstitutesPage pageCat="coaching" />

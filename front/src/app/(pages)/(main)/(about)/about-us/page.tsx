@@ -8,7 +8,7 @@ const StatsSection = dynamic(() => import("./_about_components/StatsSection"));
 const MissionSection = dynamic(
   () => import("./_about_components/MissionSection"),
 );
-const YogaTimeline = dynamic(() => import("./_about_components/Story"));
+const Story = dynamic(() => import("./_about_components/Story"));
 const Testimonials = dynamic(
   () => import("../../_home_component/Testimonials"),
 );
@@ -91,7 +91,7 @@ const AboutUs = () => {
           <div className="relative min-h-70 aspect-2/1 w-full rounded-2xl overflow-hidden shadow-custom group">
             <Image
               src="/img/main-images/about-campusaim.png"
-              alt="About Yogprerna"
+              alt="About Campusaim"
               fill
               priority
               fetchPriority="high"
@@ -105,7 +105,7 @@ const AboutUs = () => {
       <VisionSection />
       <StatsSection />
       <MissionSection />
-      <YogaTimeline />
+      <Story />
       <Testimonials />
       <FaqsSection />
     </div>

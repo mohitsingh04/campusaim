@@ -6,7 +6,7 @@ export default function VisionSection() {
       <div className="absolute inset-0 z-0">
         <Image
           src="/img/main-images/ca-vision.png"
-          alt="YogPrerna Vision"
+          alt="Campusaim Vision"
           fill
           priority
           fetchPriority="high"

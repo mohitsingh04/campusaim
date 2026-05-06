@@ -298,6 +298,7 @@ export const profileLogin = async (req, res) => {
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
       secure: isProd,
+      domain: isProd ? ".campusaim.com" : "localhost", // ✅ must match
       sameSite: isProd ? "none" : "lax",
       maxAge: 10 * 24 * 60 * 60 * 1000 * 365,
     });

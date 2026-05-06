@@ -23,13 +23,16 @@ import { useGetAssets } from "@/context/providers/AssetsProviders";
 import { useQuery } from "@tanstack/react-query";
 
 const CourseCard = React.memo(({ course }: { course: CourseProps }) => {
+  const courseImage = course.image?.[0]
+    ? `${process.env.NEXT_PUBLIC_MEDIA_URL}/course/${course.image?.[0]}`
+    : "/img/default-images/campusaim-courses-featured.png";
   return (
     <div className="group bg-(--secondary-bg) text-(--text-color-emphasis) rounded-custom overflow-hidden shadow-custom transition-all duration-300 flex flex-col h-full transform-gpu">
       <div className="relative w-full overflow-hidden">
         <Link href={`/course/${course?.course_slug}`}>
           <div className="relative w-full aspect-2/1 bg-(--secondary-bg)">
             <Image
-              src={`${process.env.NEXT_PUBLIC_MEDIA_URL}/course/${course.image?.[0]}`}
+              src={courseImage}
               alt={course.course_name}
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
@@ -121,10 +124,10 @@ export default function PopularCourses() {
       <div className="flex flex-col md:flex-row justify-between sm:items-end items-start mb-8 gap-6">
         <div className="w-full md:w-2/3">
           <HeadingProps
-            tag="Next Level Yoga"
+            tag="Explore Career-Focused Programs"
             title="Featured "
             activetitle="Courses"
-            subtitle="Discover sought-after, accredited programs. Train, master, and certify your practice with us"
+            subtitle="Explore top courses for skills and career growth.s"
           />
         </div>
         <Link

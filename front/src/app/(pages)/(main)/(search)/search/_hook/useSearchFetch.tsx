@@ -118,8 +118,12 @@ export default function useSearchFetch({
 
           return {
             ...blog,
-            category: blog.category?.map((id) => blogCategoryMap[id] || id),
-            tags: blog.tags?.map((id) => blogTagMap[id] || id),
+            category: blog.category?.map(
+              (id) => blogCategoryMap[typeof id === "string" ? id : ""] || id,
+            ),
+            tags: blog.tags?.map(
+              (id) => blogTagMap[typeof id === "string" ? id : ""] || id,
+            ),
             blog_slug,
           };
         })

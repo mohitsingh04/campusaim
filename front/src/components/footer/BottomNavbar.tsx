@@ -68,7 +68,7 @@ export const BottomNavBar = ({ setIsSearchOpen }: { setIsSearchOpen: any }) => {
       <div className="grid grid-cols-5 h-full max-w-md mx-auto">
         <NavItem name="Home" icon={HomeIcon} href="/" />
 
-        <NavItem name="Institutes" icon={Building} href="/yoga-institutes" />
+        <NavItem name="Colleges" icon={Building} href="/colleges" />
 
         <div className="relative flex items-center justify-center h-full pointer-events-none">
           <button

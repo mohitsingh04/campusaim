@@ -92,7 +92,7 @@ export default function EmailAndMobileSection() {
       {/* <div className="col-span-1 md:col-span-2 bg-(--secondary-bg) flex items-center justify-between p-6 rounded-custom shadow-custom">
         <div className="flex flex-col">
           <h3 className="heading font-semibold">Follow Us</h3>
-          <p>@yogprerna</p>
+          <p>@Campusaim</p>
         </div>
         <SocialLinksComponent classNames="gap-2" size="w-10 h-10" />
       </div> */}

@@ -5,13 +5,12 @@ import "@/css/Blogs.css";
 import { Metadata } from "next";
 import LegalNotFound from "../_legalComponents/LegalNotFound";
 
-const BASE_URL =
-  process.env.NEXT_PUBLIC_BASE_URL ?? "https://www.campusaim.com";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
-const title = "Terms & Conditions";
-const keywords = ["Campusaim Terms & Conditions"];
+const title = "Terms and Conditions";
+const keywords = ["terms and conditions", "campusaim terms and conditions"];
 const description =
-  "Read Campusaim’s Terms and Conditions to understand our website usage, services, and user responsibilities clearly.";
+  "Read Campusaim terms and conditions regarding website usage, services, admissions guidance, user responsibilities, and platform policies.";
 const canonical = "/terms-and-conditions";
 const featuredImage = [
   {

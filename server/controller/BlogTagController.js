@@ -10,13 +10,7 @@ export const CreateTagController = async (req, res) => {
       return res.status(400).json({ error: "Tag already exists." });
     }
 
-    const lastDoc = await BlogTags.findOne().sort({ uniqueId: -1 });
-    const uniqueId = lastDoc ? lastDoc?.uniqueId + 1 : 1;
-
-    const newTag = new BlogTags({
-      uniqueId,
-      blog_tag,
-    });
+    const newTag = new BlogTags({ blog_tag });
 
     await newTag.save();
 

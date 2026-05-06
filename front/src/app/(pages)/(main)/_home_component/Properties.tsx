@@ -79,10 +79,10 @@ const PropertyCarousel = () => {
     <section className="bg-(--primary-bg) py-10 px-4 sm:px-8 text-(--text-color) overflow-hidden">
       <div className="mb-10">
         <HeadingProps
-          tag={`${firstList.length + randomList.length}+ Partnered for Excellence`}
-          title="Our "
+          tag={`Trusted Educational Network`}
+          title="Our Partner "
           activetitle="Institutes"
-          subtitle="We collaborate only with India's leading, certified yoga institutions."
+          subtitle="Partnering with trusted institutes for quality education and student success."
         />
       </div>
 

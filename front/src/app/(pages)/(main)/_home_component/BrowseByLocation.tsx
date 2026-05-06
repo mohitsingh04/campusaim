@@ -66,10 +66,10 @@ export default function BrowseByLocation() {
       <div className="relative z-10">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-6">
           <HeadingProps
-            tag="Find Your Yoga Destination"
+            tag="Explore Institutes Across India"
             title="Browse by "
             activetitle="Location"
-            subtitle="Discover high-quality studios and retreats in India's most inspiring locations."
+            subtitle="Find top institutes in your preferred city and state."
           />
 
           <div className="hidden sm:flex items-center">
@@ -108,7 +108,7 @@ export default function BrowseByLocation() {
             return (
               <SwiperSlide key={index}>
                 <Link
-                  href={`/institutes?state=${generateSlug(location.state)}&city=${generateSlug(location.city)}`}
+                  href={`/colleges?state=${generateSlug(location.state)}&city=${generateSlug(location.city)}`}
                 >
                   <div className="group relative rounded-custom overflow-hidden cursor-pointer">
                     <div className="relative aspect-3/4 sm:aspect-4/5 overflow-hidden">

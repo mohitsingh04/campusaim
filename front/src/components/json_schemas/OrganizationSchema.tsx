@@ -3,7 +3,7 @@
 import { socailLinks } from "@/common/SocailMedaiData";
 import Script from "next/script";
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://www.campusaim.com";
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 const email = process.env.NEXT_PUBLIC_YP_EMAIL;
 const phone = process.env.NEXT_PUBLIC_YP_PHONE;
 

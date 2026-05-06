@@ -4,16 +4,12 @@ import "@/css/Blogs.css";
 import { Metadata } from "next";
 import LegalNotFound from "../_legalComponents/LegalNotFound";
 
-const BASE_URL =
-  process.env.NEXT_PUBLIC_BASE_URL ?? "https://www.campusaim.com";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
-const title = "Commuinty Guidelines";
-const keywords = [
-  "Campusaim Community Guidelines",
-  "online community standards",
-];
+const title = "Community Guidelines";
+const keywords = ["community guidelines", "campusaim community rules"];
 const description =
-  "Read our Community Guidelines to ensure a safe, respectful, and positive environment. Learn the rules, user responsibilities, and content standards. Visit Us";
+  "Read Campusaim community guidelines to understand platform rules, user responsibilities, safety standards, and acceptable behavior policies.";
 const canonical = "/community-guidelines";
 const featuredImage = [
   {

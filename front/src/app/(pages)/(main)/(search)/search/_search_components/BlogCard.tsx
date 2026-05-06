@@ -24,7 +24,9 @@ export default function BlogCard({ blog }: { blog: BlogsProps }) {
             <div className="flex items-center gap-1 text-xs sm:text-sm mt-1 flex-wrap">
               <Grid3X3Icon className="w-4 h-4" />
               <span className="truncate max-w-[200px] sm:max-w-none">
-                {blog?.category?.[0]}
+                {typeof blog?.category?.[0] === "object"
+                  ? blog?.category?.[0]?.blog_category
+                  : blog?.category?.[0]}
               </span>
             </div>
           </div>

@@ -82,7 +82,7 @@ export default function BlogSeo() {
         }) || [],
       json_schema: blogSeo?.json_schema || "",
       meta_description: stripHtml(
-        blogSeo?.meta_description || blog?.blog
+        blogSeo?.meta_description || blog?.blog,
       ).slice(0, 160),
       type: blogSeo?.type || "blog",
     },
@@ -96,7 +96,7 @@ export default function BlogSeo() {
           slug: generateSlug(values?.slug),
           primary_focus_keyword:
             values?.primary_focus_keyword?.map(
-              (k: { value: string }) => k.value
+              (k: { value: string }) => k.value,
             ) || [],
         };
         const response = await API.post(`/all/seo`, payload);
@@ -211,7 +211,7 @@ export default function BlogSeo() {
               onBlur={(e) =>
                 formik.setFieldValue(
                   "meta_description",
-                  stripHtml(e.target.value).slice(0, 160)
+                  stripHtml(e.target.value).slice(0, 160),
                 )
               }
               rows={3}

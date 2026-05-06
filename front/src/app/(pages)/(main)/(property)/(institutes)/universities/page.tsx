@@ -46,7 +46,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function YogaInsitutesPage() {
+export default function UniversityPage() {
   return (
     <Suspense fallback={<InsitutesLoader />}>
       <InstitutesPage pageCat="university" />

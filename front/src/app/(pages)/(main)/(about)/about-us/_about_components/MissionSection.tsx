@@ -6,7 +6,7 @@ export default function MissionSection() {
       <div className="absolute inset-0 z-0">
         <Image
           src="/img/main-images/ca-mission.png"
-          alt="YogPrerna Mission"
+          alt="Campusaim Mission"
           fill
           priority
           fetchPriority="high"

@@ -56,7 +56,7 @@ export async function generateMetadata({
   const baseMetaDescription =
     stripHtml(seo?.meta_description || "", 160) ||
     stripHtml(property?.property_description, 160) ||
-    "Discover a peaceful yoga Studio with expert instructors, calming ambience, and classes for all levels.";
+    `Explore ${property?.property_name} ${location?.property_city} ${property_tab?.replaceAll("-", " ")} including courses, fees, admission & ranking. Top ranking ${category} with top placements & facilities.`;
 
   const description = `${property_tab_capitalize} ${baseMetaDescription}`
     .replace(/\s+/g, " ")

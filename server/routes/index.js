@@ -168,7 +168,6 @@ import {
   deleteBlog,
   getAllBlogs,
   getBlogById,
-  getBlogByUniqueId,
   getBlogWithSeoBySlug,
   UpdateBlog,
 } from "../controller/BlogsController.js";
@@ -625,7 +624,6 @@ router.get("/blog/seo/:slug", getBlogWithSeoBySlug);
 router.post("/blog", Authorize, blogUpload, processImage, CreateBlog);
 router.delete("/blog/:objectId", Authorize, deleteBlog);
 router.get("/blog/:objectId", getBlogById);
-router.get("/blog/id/:uniqueId", getBlogByUniqueId);
 router.patch(
   "/blog/:objectId",
   Authorize,

@@ -3,10 +3,6 @@ import { regularDatabase } from "../database/Databases.js";
 
 const categorySchema = mongoose.Schema(
   {
-    uniqueId: {
-      type: Number,
-      required: true,
-    },
     blog_category: {
       type: String,
       required: true,
@@ -20,7 +16,7 @@ const categorySchema = mongoose.Schema(
       default: "Pending",
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const BlogCategory = regularDatabase.model("blog_category", categorySchema);

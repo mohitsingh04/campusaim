@@ -41,7 +41,7 @@ const CourseCard = ({
             <Image
               src={imageSrc}
               fill
-              alt={course?.course_name || "Yoga course"}
+              alt={course?.course_name || "course featured image"}
               className="object-cover group-hover:scale-105 transition-transform duration-500"
             />
           </div>

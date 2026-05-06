@@ -26,7 +26,7 @@ export default function WhatsAppSection() {
 
         <div className="flex-1">
           <h2 className="text-(--white) font-bold text-xl leading-tight">
-            YogPrerna
+            Campusaim
           </h2>
           <p className="text-(--white)/80 text-sm">
             Typically replies within a day

@@ -4,13 +4,12 @@ import { Metadata } from "next";
 import { getErrorResponse } from "@/context/Callbacks";
 import LegalNotFound from "../_legalComponents/LegalNotFound";
 
-const BASE_URL =
-  process.env.NEXT_PUBLIC_BASE_URL ?? "https://www.campusaim.com";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 const title = "Cancellation Policy";
-const keywords = ["Campusaim Cancellation Policy"];
+const keywords = ["cancellation policy", "campusaim Cancellation Policy"];
 const description =
-  "Review Campusaim's Cancellation Policy for details on class, course, or event cancellations, refunds, and rescheduling.";
+  "View Campusaim cancellation and refund policy for admissions services, consultations, subscriptions, and other platform-related payments.";
 const canonical = "/cancellation-policy";
 const featuredImage = [
   {

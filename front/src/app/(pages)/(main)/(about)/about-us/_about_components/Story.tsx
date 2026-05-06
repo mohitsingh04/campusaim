@@ -56,7 +56,7 @@ const timelineData = [
   },
 ];
 
-export default function YogaTimeline() {
+export default function Story() {
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
