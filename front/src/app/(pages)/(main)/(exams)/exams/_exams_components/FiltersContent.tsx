@@ -67,6 +67,106 @@ const FiltersContent = ({
             />
           </FilterSection>
         )}
+        {dynamicFilterOptions.examType.length > 0 && (
+          <FilterSection
+            title="Exam Type"
+            isExpanded={expandedFilters.exam_type}
+            onToggle={() => onToggleFilter("exam_type")}
+          >
+            <CheckboxFilter
+              items={dynamicFilterOptions.examType}
+              filterType="exam_type"
+              selectedItems={filters.exam_type}
+              searchTerm={filterSearchTerms.exam_type}
+              onSearchChange={(value) =>
+                onFilterSearchChange("exam_type", value)
+              }
+              onFilterChange={
+                onCheckboxFilter as (filterType: string, value: string) => void
+              }
+            />
+          </FilterSection>
+        )}
+        {dynamicFilterOptions.examTag.length > 0 && (
+          <FilterSection
+            title="Exam Tags"
+            isExpanded={expandedFilters.exam_tag}
+            onToggle={() => onToggleFilter("exam_tag")}
+          >
+            <CheckboxFilter
+              items={dynamicFilterOptions.examTag}
+              filterType="exam_tag"
+              selectedItems={filters.exam_tag}
+              searchTerm={filterSearchTerms.exam_tag}
+              onSearchChange={(value) =>
+                onFilterSearchChange("exam_tag", value)
+              }
+              onFilterChange={
+                onCheckboxFilter as (filterType: string, value: string) => void
+              }
+            />
+          </FilterSection>
+        )}
+        {dynamicFilterOptions.upcomingExamMonths.length > 0 && (
+          <FilterSection
+            title="Upcoming Exam Months"
+            isExpanded={expandedFilters.upcoming_exam_month}
+            onToggle={() => onToggleFilter("upcoming_exam_month")}
+          >
+            <CheckboxFilter
+              items={dynamicFilterOptions.upcomingExamMonths}
+              filterType="upcoming_exam_month"
+              selectedItems={filters.upcoming_exam_month}
+              searchTerm={filterSearchTerms.upcoming_exam_month}
+              onSearchChange={(value) =>
+                onFilterSearchChange("upcoming_exam_month", value)
+              }
+              onFilterChange={
+                onCheckboxFilter as (filterType: string, value: string) => void
+              }
+            />
+          </FilterSection>
+        )}
+        {dynamicFilterOptions.resultMonths.length > 0 && (
+          <FilterSection
+            title="Exam Result Months"
+            isExpanded={expandedFilters.result_month}
+            onToggle={() => onToggleFilter("result_month")}
+          >
+            <CheckboxFilter
+              items={dynamicFilterOptions.resultMonths}
+              filterType="result_month"
+              selectedItems={filters.result_month}
+              searchTerm={filterSearchTerms.result_month}
+              onSearchChange={(value) =>
+                onFilterSearchChange("result_month", value)
+              }
+              onFilterChange={
+                onCheckboxFilter as (filterType: string, value: string) => void
+              }
+            />
+          </FilterSection>
+        )}
+        {dynamicFilterOptions.applicationMonth.length > 0 && (
+          <FilterSection
+            title="Exam Application Months"
+            isExpanded={expandedFilters.application_month}
+            onToggle={() => onToggleFilter("application_month")}
+          >
+            <CheckboxFilter
+              items={dynamicFilterOptions.applicationMonth}
+              filterType="application_month"
+              selectedItems={filters.application_month}
+              searchTerm={filterSearchTerms.application_month}
+              onSearchChange={(value) =>
+                onFilterSearchChange("application_month", value)
+              }
+              onFilterChange={
+                onCheckboxFilter as (filterType: string, value: string) => void
+              }
+            />
+          </FilterSection>
+        )}
       </div>
     </div>
   );

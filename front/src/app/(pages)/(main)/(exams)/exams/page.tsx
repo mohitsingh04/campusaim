@@ -16,6 +16,7 @@ import {
 import {
   generateSlug,
   getErrorResponse,
+  getMonthName,
   shuffleArray,
 } from "@/context/Callbacks";
 import Pagination from "@/ui/pagination/Pagination";
@@ -40,7 +41,14 @@ export default function ExamsPage() {
   const { getCategoryById } = useGetAssets();
 
   const initializeFiltersFromURL = useCallback((): ExamFilterProps => {
-    const urlFilters: ExamFilterProps = { exam_mode: [] };
+    const urlFilters: ExamFilterProps = {
+      exam_mode: [],
+      exam_type: [],
+      exam_tag: [],
+      upcoming_exam_month: [],
+      result_month: [],
+      application_month: [],
+    };
 
     Object.keys(urlFilters).forEach((key) => {
       const param = searchParams.get(key);
@@ -55,14 +63,28 @@ export default function ExamsPage() {
   }, [searchParams]);
 
   const [expandedFilters, setExpandedFilters] =
-    useState<ExpandedExamFiltersProps>({ exam_mode: true });
+    useState<ExpandedExamFiltersProps>({
+      exam_mode: true,
+      exam_type: true,
+      exam_tag: true,
+      upcoming_exam_month: true,
+      result_month: true,
+      application_month: true,
+    });
 
   const [filters, setFilters] = useState<ExamFilterProps>(
     initializeFiltersFromURL,
   );
 
   const [filterSearchTerms, setFilterSearchTerms] =
-    useState<FilterExamSearchTermsProps>({ exam_mode: "" });
+    useState<FilterExamSearchTermsProps>({
+      exam_mode: "",
+      exam_type: "",
+      exam_tag: "",
+      upcoming_exam_month: "",
+      result_month: "",
+      application_month: "",
+    });
 
   const updateURL = useCallback(
     (newFilters: ExamFilterProps, page: number = 1) => {
@@ -123,10 +145,14 @@ export default function ExamsPage() {
           return {
             ...exa,
             exam_mode: getCategoryById(exa?.exam_mode),
+            exam_type: getCategoryById(exa?.exam_type),
+            exam_tag: exa?.exam_tag?.map((tag) => getCategoryById(tag)),
             exam_slug: seoMatch ? seoMatch.slug : generateSlug(exa.exam_name),
+            upcoming_exam_month: getMonthName(exa?.upcoming_exam_date?.date),
+            result_month: getMonthName(exa?.result_date?.date),
+            application_month: getMonthName(exa?.application_form_date?.start),
           };
         });
-
         setAllExams(shuffleArray(mergedExams));
       }
     } catch (error) {
@@ -174,10 +200,24 @@ export default function ExamsPage() {
   );
 
   const clearFilters = () => {
-    const emptyFilters: ExamFilterProps = { exam_mode: [] };
+    const emptyFilters: ExamFilterProps = {
+      exam_mode: [],
+      exam_type: [],
+      exam_tag: [],
+      upcoming_exam_month: [],
+      result_month: [],
+      application_month: [],
+    };
 
     setFilters(emptyFilters);
-    setFilterSearchTerms({ exam_mode: "" });
+    setFilterSearchTerms({
+      exam_mode: "",
+      exam_type: "",
+      exam_tag: "",
+      upcoming_exam_month: "",
+      result_month: "",
+      application_month: "",
+    });
 
     setCurrentPage(1);
     updateURL(emptyFilters, 1);

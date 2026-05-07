@@ -25,7 +25,6 @@ import {
   SearchIcon,
   XIcon,
 } from "lucide-react";
-import { useGetAssets } from "@/context/providers/AssetsProviders";
 const SearchModal = dynamic(
   () => import("@/components/search_modal/SearchModal"),
   { ssr: false },
@@ -49,7 +48,6 @@ const MobileSubMenu = dynamic(
 const ASKURL = process.env.NEXT_PUBLIC_ASK_URL;
 
 export default function Navbar() {
-  const { allCategories } = useGetAssets();
   const [hoveredMenu, setHoveredMenu] = useState<string | null>(null);
   const [activeDesktopSubMenu, setActiveDesktopSubMenu] = useState<
     string | null
@@ -69,10 +67,8 @@ export default function Navbar() {
   const { examLoading, examMenuData } = useExamMenuData();
   const { courseMenuData, courseLoading } = useCoursesMenuData({
     enabled: shouldFetchCourses,
-    categories: allCategories,
   });
   const { propertyMenuData, propertyLoading } = usePropertyMenuData({
-    categories: allCategories,
     enabled: shouldFetchProperties,
   });
 

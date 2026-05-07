@@ -40,9 +40,11 @@ export interface ExamProps {
   _id: string;
   exam_name: string;
   exam_short_name: string;
-  upcoming_exam_date: string;
-  result_date: string;
-  application_form_date: string;
+  exam_type: string;
+  exam_tag: string[];
+  upcoming_exam_date: { date: string; is_tentative: boolean };
+  result_date: { date: string; is_tentative: boolean };
+  application_form_date: { start: string; end: string; is_tentative: boolean };
   youtube_link: string;
   exam_form_link: string;
   exam_mode: string;
@@ -52,6 +54,10 @@ export interface ExamProps {
   application_form_link: string;
   isDeleted: boolean;
   status: string;
+  upcoming_exam_month: string;
+  result_month: string;
+  application_month: string;
+  answer_sheet: string;
   faqs: FAQProps[];
 }
 

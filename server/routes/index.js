@@ -324,7 +324,10 @@ router.get("/course/seo/:slug", getCourseWithSeoBySlug);
 router.get("/menu/courses", getCourseMenuData);
 
 // ?Exam Route
-const examUpload = examUploadMulter.fields([{ name: "image", maxCount: 1 }]);
+const examUpload = examUploadMulter.fields([
+  { name: "image", maxCount: 1 ,prefix:"img"},
+  { name: "answer_sheet", maxCount: 1,prefix:"pdf" },
+]);
 router.get("/exam", getExam);
 router.post("/exam", Authorize, examUpload, processImage, addExam);
 router.patch(

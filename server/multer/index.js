@@ -13,16 +13,23 @@ const ensureDir = (dir) => {
 };
 
 // Multer diskStorage factory with auto folder creation
-const createStorage = (destination, prefix = "img") =>
+const createStorage = (destination) =>
   multer.diskStorage({
     destination: (req, file, cb) => {
       ensureDir(destination);
       cb(null, destination);
     },
     filename: (req, file, cb) => {
+      const mime = file?.mimetype?.split("/");
+      const mimeStart = mime?.[0];
+      let mimeprefix = mime?.[1];
+
+      if (mimeStart === "image") {
+        mimeprefix = "img";
+      }
       const parsed = path.parse(file.originalname);
       const sluggedName = generateSlug(parsed.name);
-      cb(null, `${prefix}-${Date.now()}-${sluggedName}${parsed.ext}`);
+      cb(null, `${mimeprefix}-${Date.now()}-${sluggedName}${parsed.ext}`);
     },
   });
 
@@ -91,33 +98,59 @@ export const SupportFilesUploadMulter = multer({
 // Image compression middleware preserving original + creating compressed
 export const processImage = async (req, res, next) => {
   const files = req.files;
+
   if (!files) return next();
 
   try {
     for (const field in files) {
       for (const file of files[field]) {
-        const inputPath = file.path;
-        const destinationFolder = path.dirname(inputPath);
+        try {
+          const inputPath = file.path;
+          const destinationFolder = path.dirname(inputPath);
 
-        // Parse the filename cleanly to avoid "--" issues
-        const parsed = path.parse(file.filename);
-        const sluggedName = generateSlug(parsed.name);
-        const outputFilename = `${sluggedName}-compressed.webp`;
-        const outputPath = path.join(destinationFolder, outputFilename);
+          const parsed = path.parse(file.filename);
+          const sluggedName = generateSlug(parsed.name);
 
-        // Compress to webp while preserving the original
-        await sharp(inputPath).webp({ quality: 40 }).toFile(outputPath);
+          const outputFilename = `${sluggedName}-compressed.webp`;
+          const outputPath = path.join(destinationFolder, outputFilename);
 
-        // Attach metadata to the file object for controller usage
-        file.originalFilename = file.filename;
-        file.originalPath = inputPath;
-        file.webpFilename = outputFilename;
-        file.webpPath = outputPath;
+          const metadata = await sharp(inputPath).metadata();
+
+          if (!metadata || !metadata.format) {
+            console.log(`Skipped unsupported file: ${file.filename}`);
+            continue;
+          }
+
+          await sharp(inputPath).webp({ quality: 40 }).toFile(outputPath);
+
+          file.originalFilename = file.filename;
+          file.originalPath = inputPath;
+
+          file.webpFilename = outputFilename;
+          file.webpPath = outputPath;
+
+          file.isProcessed = true;
+        } catch (fileError) {
+          console.log(
+            `Skipping file due to processing error: ${file.filename}`,
+          );
+
+          console.log(fileError.message);
+
+          file.isProcessed = false;
+          file.processingError = fileError.message;
+
+          continue;
+        }
       }
     }
+
     next();
   } catch (error) {
     console.error("Image processing error:", error);
-    return res.status(500).json({ error: "Image processing failed" });
+
+    return res.status(500).json({
+      error: "Image processing failed",
+    });
   }
 };

@@ -1,160 +1,123 @@
-"use client";
-
-import { useCallback, useEffect, useState } from "react";
-import InfoCard from "@/ui/cards/InfoCard";
-import { ReadMoreLess } from "@/ui/texts/ReadMoreLess";
-import { ButtonGroup } from "@/ui/buttons/ButtonGroup";
-import { useParams } from "next/navigation";
-import { ExamProps } from "@/types/Types";
-import { getErrorResponse } from "@/context/Callbacks";
+import FaqJsonSchema from "@/components/json_schemas/FaqJsonSchema";
+import ExamDetails from "./ExamPage";
 import API from "@/context/API";
-import Image from "next/image";
-import HeadingLine from "@/ui/headings/HeadingLine";
-import CourseEnquiryForm from "./_exams_compoents/CourseEnquiryForm";
-import InsitutesLoader from "@/ui/loader/page/institutes/Institutes";
+import {
+  extractKeywords,
+  generateSlug,
+  getErrorResponse,
+  stripHtml,
+} from "@/context/Callbacks";
 import CourseDetailSkeleton from "@/ui/loader/page/courses/CourseDetailSkeleton";
-import { AwardIcon, BarChartIcon, ZapIcon } from "lucide-react";
-import FaqComponents from "@/ui/accordions/FaqComponents";
-import useGetAuthUser from "@/hooks/fetch-hooks/useGetAuthUser";
-import { useGetAssets } from "@/context/providers/AssetsProviders";
+import { Metadata } from "next";
+import React from "react";
 
-const ExamDetails = () => {
-  const { exam_slug } = useParams();
-  const [mainCourse, setMainExams] = useState<ExamProps | null>(null);
-  const [loading, setLoading] = useState(true);
-  const { authUser } = useGetAuthUser();
-  const { getCategoryById } = useGetAssets();
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+const MEDIA_URL = process.env.NEXT_PUBLIC_MEDIA_URL;
+const DEFAULT_IMAGE = `${BASE_URL}/img/main-images/campusaim.png`;
 
-  const getCourses = useCallback(async () => {
-    setLoading(true);
+async function getExamData(slug: string) {
+  try {
+    const res = await API.get(`/exam/seo/${slug}`, {
+      headers: { origin: BASE_URL },
+    });
+    return res.data;
+  } catch (error) {
+    getErrorResponse(error, true);
+    return null;
+  }
+}
 
-    try {
-      const response = await API.get(`/exam/seo/${exam_slug}`);
-      const course = response.data;
-      const populatedCourse: ExamProps = {
-        ...course,
-        exam_mode: getCategoryById(course.exam_mode) ?? course.exam_mode,
-      };
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{
+    exam_slug: string;
+  }>;
+}): Promise<Metadata> {
+  const { exam_slug } = await params;
+  let property = null;
 
-      setMainExams(populatedCourse);
-    } catch (error) {
-      getErrorResponse(error, true);
-    } finally {
-      setLoading(false);
-    }
-  }, [exam_slug, getCategoryById]);
+  try {
+    const res = await API.get(`/exam/seo/${exam_slug}`, {
+      headers: { origin: BASE_URL },
+    });
+    property = res.data;
+  } catch (error) {
+    getErrorResponse(error, true);
+  }
 
-  useEffect(() => {
-    getCourses();
-  }, [getCourses]);
+  if (!property) {
+    return { title: "Entrance Exam Information" };
+  }
 
-  const imageSrc = mainCourse?.image?.[0]
-    ? `${process.env.NEXT_PUBLIC_MEDIA_URL}/exam/${mainCourse.image[0]}`
-    : "/img/default-images/campusaim-courses-featured.png";
+  const title = property.exam_name;
+  const description =
+    stripHtml(property?.seo?.meta_description, 160) ||
+    stripHtml(property?.description, 160) ||
+    "Get complete entrance exam information, including eligibility, syllabus, exam pattern, application process, important dates, admit card, results, and counselling updates.";
+  const keywords =
+    property?.seo?.primary_focus_keyword?.length > 0
+      ? extractKeywords(property?.seo?.primary_focus_keyword)
+      : [title, "entrance exam details", "admission course details"];
+  const canonical = `${BASE_URL}/exam/${
+    property?.seo?.slug
+      ? property?.seo?.slug
+      : generateSlug(property?.course_name)
+  }`;
 
-  if (loading)
-    return (
-      <>
-        <CourseDetailSkeleton />
-        <InsitutesLoader />
-      </>
-    );
+  const ogImage = property?.image?.[0]
+    ? `${MEDIA_URL}/exam/${property?.image?.[0]}`
+    : DEFAULT_IMAGE;
+
+  const featuredImage = [
+    {
+      url: ogImage,
+      width: 1200,
+      height: 700,
+      alt: title || "Exam Featured Image",
+    },
+  ];
+  return {
+    title: title,
+    description: description,
+    keywords: keywords,
+    alternates: {
+      canonical: canonical,
+    },
+    openGraph: {
+      title: title,
+      description: description,
+      url: canonical,
+      siteName: "Campusaim",
+      images: featuredImage,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: title,
+      description: description,
+      images: featuredImage,
+    },
+  };
+}
+
+export default async function ExamLayout({
+  params,
+}: {
+  params: Promise<{
+    exam_slug: string;
+  }>;
+}) {
+  let loading = true;
+  const { exam_slug } = await params;
+  const exam = await getExamData(exam_slug);
+  loading = false;
+  if (loading) return <CourseDetailSkeleton />;
 
   return (
     <div className="bg-(--secondary-bg) text-(--text-color) py-6 px-2 sm:px-8">
-      <div className="mb-10 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="order-1 lg:order-2">
-          <div className=" bg-(--primary-bg) rounded-custom overflow-hidden shadow-custom sticky top-28">
-            <div className="relative w-full aspect-2/1">
-              <Image
-                src={imageSrc}
-                alt={mainCourse?.exam_name || "Exam Image"}
-                fill
-                className="w-full object-cover aspect-16/10"
-              />
-              <span className="absolute bottom-4 left-4 px-3 py-1 bg-(--main-subtle) text-(--main-emphasis) text-sm font-medium rounded-custom shadow-custom">
-                {mainCourse?.exam_mode}
-              </span>
-            </div>
-
-            <div className="p-5">
-              <div className="flex items-center mb-2">
-                <div className="ml-3">
-                  <h1 className="heading font-semibold text-(--text-color-emphasis)">
-                    {mainCourse?.exam_name}
-                  </h1>
-                </div>
-              </div>
-
-              <div className="md:col-span-2 mt-4 gap-y-4">
-                <ButtonGroup
-                  label="Send Enquiry"
-                  type="submit"
-                  className="w-full"
-                  disable={false}
-                  href="#enquiry"
-                />
-                {mainCourse?.application_form_link && (
-                  <ButtonGroup
-                    label="Application Form"
-                    type="submit"
-                    className="w-full"
-                    disable={false}
-                    href={mainCourse?.application_form_link || ""}
-                  />
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="lg:col-span-2 space-y-6 order-2 lg:order-1">
-          <h1 className="heading font-extrabold text-(--text-color-emphasis) mb-4 hidden md:block">
-            {mainCourse?.exam_name}
-          </h1>
-
-          <div className="bg-(--primary-bg) p-5 rounded-custom shadow-custom">
-            <HeadingLine title="Course Information" />
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <InfoCard
-                Icon={BarChartIcon}
-                title="Exam Mode"
-                value={mainCourse?.exam_mode || ""}
-              />
-              <InfoCard
-                Icon={AwardIcon}
-                title="Upcoming Exam Date"
-                value={mainCourse?.upcoming_exam_date || ""}
-              />
-              <InfoCard
-                Icon={AwardIcon}
-                title="Result Date"
-                value={mainCourse?.result_date || ""}
-              />
-              <InfoCard
-                Icon={ZapIcon}
-                title="Application Form Date"
-                value={mainCourse?.application_form_date || ""}
-              />
-            </div>
-          </div>
-
-          <div className="bg-(--primary-bg) p-5 rounded-custom shadow-custom">
-            <HeadingLine title="Overview" />
-            <ReadMoreLess html={mainCourse?.description || ""} />
-          </div>
-          {(mainCourse?.faqs?.length || 0) > 0 && (
-            <div className="bg-(--primary-bg) p-5 rounded-custom shadow-custom">
-              <HeadingLine title="Frequently Asked Questions" />
-              <FaqComponents faqs={mainCourse?.faqs || []} />
-            </div>
-          )}
-          <CourseEnquiryForm exam={mainCourse} profile={authUser} />
-        </div>
-      </div>
+      <FaqJsonSchema faqs={exam?.faqs || []} slug={`${exam_slug}`} />
+      <ExamDetails exam={exam} />
     </div>
   );
-};
-
-export default ExamDetails;
+}

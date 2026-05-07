@@ -1,7 +1,7 @@
 import { ButtonGroup } from "@/ui/buttons/ButtonGroup";
 import Link from "next/link";
 import Image from "next/image";
-import { Calendar, GlobeOff } from "lucide-react";
+import { BookCheckIcon, GlobeIcon } from "lucide-react";
 import { ExamProps } from "@/types/Types";
 
 const ExamCard = ({
@@ -54,17 +54,19 @@ const ExamCard = ({
           <div className="flex-1 min-w-0 space-y-2">
             <Link href={slug}>
               <h2 className="sub-heading font-semibold hover:text-(--main) line-clamp-2 mb-2">
-                {exam?.exam_name || "Unnamed Exam"}
+                {exam?.exam_name || "Unnamed Exam"}{" "}
+                {exam?.exam_short_name && `(${exam?.exam_short_name})`}
               </h2>
             </Link>
+
             <div className="grid grid-cols-2 gap-4">
               <div className="flex items-center gap-2 text-sm">
-                <Calendar className="text-(--main) w-4 h-4" />
-                <p>{exam?.application_form_date}</p>
+                <BookCheckIcon className="text-(--main) w-4 h-4" />
+                <p>{exam?.exam_type}</p>
               </div>
 
               <div className="flex items-center gap-2 text-sm">
-                <GlobeOff className="text-(--main) w-4 h-4" />
+                <GlobeIcon className="text-(--main) w-4 h-4" />
                 <p>{exam?.exam_mode}</p>
               </div>
             </div>

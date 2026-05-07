@@ -24,12 +24,10 @@ import HeadingLine from "@/ui/headings/HeadingLine";
 import EnquirySubmitted from "@/ui/submits/EnquirySubmitted";
 import EnquiryFormSkeleton from "@/ui/loader/ui/EnquiryFormSkeleton";
 import useGetAuthUser from "@/hooks/fetch-hooks/useGetAuthUser";
-import LoginRequiredModal from "@/components/modals/LoginRequired";
 
 const EnquiryForm = ({ property }: { property: PropertyProps }) => {
   const [submitted, setSubmitted] = useState(false);
   const { authUser, authLoading } = useGetAuthUser();
-  const [notloginModal, setNotLoginModal] = useState(false);
   const [courseList, setCourseList] = useState<{ course_name: string }[]>([]);
 
   const getCourseList = useCallback(async () => {
@@ -177,30 +175,16 @@ const EnquiryForm = ({ property }: { property: PropertyProps }) => {
 
           {/* Submit */}
           <div className="md:col-span-2 w-full">
-            {authUser?._id ? (
-              <ButtonGroupSend
-                label="Send Enquiry"
-                type="submit"
-                className="w-full"
-                disable={formik.isSubmitting}
-                isSubmitting={formik.isSubmitting}
-              />
-            ) : (
-              <ButtonGroupSend
-                label="Send Enquiry"
-                type="button"
-                className="w-full"
-                onClick={() => setNotLoginModal(true)}
-                disable={false}
-              />
-            )}
+            <ButtonGroupSend
+              label="Send Enquiry"
+              type="submit"
+              className="w-full"
+              disable={formik.isSubmitting}
+              isSubmitting={formik.isSubmitting}
+            />
           </div>
         </div>
       </form>
-      <LoginRequiredModal
-        isOpen={notloginModal}
-        onClose={() => setNotLoginModal(false)}
-      />
     </div>
   );
 };

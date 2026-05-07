@@ -70,7 +70,7 @@ export const enquiryStatus = async (req, res) => {
     const updatedEnquiry = await Enquiry.findByIdAndUpdate(
       objectId,
       { $set: { status } },
-      { new: true }
+      { new: true },
     );
 
     if (!updatedEnquiry) {
@@ -119,29 +119,30 @@ export const addEnquiry = async (req, res) => {
       contact,
       city,
       message,
-      preferred_course
+      preferred_course,
     } = req.body;
-
-    if (!userId) {
-      return res.status(400).json({ error: "Please Login" })
-    }
 
     if (!property_id) {
       return res.status(400).json({ error: "Required field is Missing" });
     }
 
     const property = await Property.findOne({ _id: property_id });
-    // Create a new Enquiry instance
-    const newEnquiry = new Enquiry({
-      userId,
+    const payload = {
       property_id: property?._id,
       property_name,
       name,
       email,
       contact,
       city,
-      message, preferred_course
-    });
+      message,
+      preferred_course,
+    };
+
+    if (userId) {
+      payload.userId = userId;
+    }
+
+    const newEnquiry = new Enquiry(payload);
 
     const savedEnquiry = await newEnquiry.save();
 
@@ -225,7 +226,7 @@ export const archiveStatus = async (req, res) => {
     const updatedEnquiry = await ArchiveEnquiry.findByIdAndUpdate(
       objectId,
       { $set: { status } },
-      { new: true }
+      { new: true },
     );
 
     if (!updatedEnquiry) {

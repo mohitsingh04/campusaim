@@ -180,7 +180,7 @@ export const isDateEnded = (endDate: string | Date): boolean => {
 };
 
 export const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString("en-US", {
+  return new Date(dateString).toLocaleDateString("en-IN", {
     year: "numeric",
     month: "long",
     day: "numeric",
@@ -340,3 +340,27 @@ export const handleCopy = (text: string, type: string) => {
   navigator.clipboard.writeText(text);
   toast.success(`${type} copied!`);
 };
+
+export const getMonthName = (dateString?: string) => {
+  if (!dateString) return "";
+
+  const date = new Date(dateString);
+
+  if (isNaN(date.getTime())) return "";
+
+  return date.toLocaleString("default", {
+    month: "long",
+  });
+};
+
+export const isDateExpired = (date?: string) => {
+    if (!date) return false;
+
+    const currentDate = new Date();
+    const targetDate = new Date(date);
+
+    currentDate.setHours(0, 0, 0, 0);
+    targetDate.setHours(0, 0, 0, 0);
+
+    return targetDate < currentDate;
+  };
