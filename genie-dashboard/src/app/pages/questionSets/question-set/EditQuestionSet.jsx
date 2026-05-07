@@ -60,8 +60,8 @@ const validationSchema = Yup.object({
    API FUNCTIONS
 ========================= */
 
-const fetchQuestionSet = async (slug) => {
-  const { data } = await API.get(`/question-set/${slug}`);
+const fetchQuestionSet = async (id) => {
+  const { data } = await API.get(`/question-set/${id}`);
   return data;
 };
 
@@ -70,13 +70,13 @@ const fetchNiche = async () => {
   return data.data;
 };
 
-const updateQuestionSet = async ({ slug, payload }) => {
-  return API.put(`/question-set/${slug}`, payload);
+const updateQuestionSet = async ({ id, payload }) => {
+  return API.put(`/question-set/${id}`, payload);
 };
 
 export default function EditQuestionSet() {
   const navigate = useNavigate();
-  const { slug } = useParams();
+  const { id } = useParams();
   const queryClient = useQueryClient();
 
   /* =========================
@@ -84,9 +84,9 @@ export default function EditQuestionSet() {
   ========================== */
 
   const { data: questionSet, isLoading: questionLoading } = useQuery({
-    queryKey: ["question-set", slug],
-    queryFn: () => fetchQuestionSet(slug),
-    enabled: !!slug,
+    queryKey: ["question-set", id],
+    queryFn: () => fetchQuestionSet(id),
+    enabled: !!id,
   });
 
   /* =========================
@@ -111,7 +111,7 @@ export default function EditQuestionSet() {
       toast.success(res?.data?.message || "Question updated successfully");
 
       queryClient.invalidateQueries(["question-set"]);
-      queryClient.invalidateQueries(["question-set", slug]);
+      queryClient.invalidateQueries(["question-set", id]);
 
       navigate("/dashboard/question-set/all");
     },
@@ -164,7 +164,7 @@ export default function EditQuestionSet() {
         })),
       };
 
-      updateMutation.mutate({ slug, payload });
+      updateMutation.mutate({ id, payload });
     },
   });
 

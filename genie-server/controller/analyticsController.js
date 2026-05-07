@@ -295,6 +295,12 @@ export const getAdminDashboard = async (req, res) => {
             return res.status(403).json({ message: "Access denied" });
         }
 
+        if (!admin.organizationId) {
+            return res.status(400).json({ message: "Organization not found" });
+        }
+
+        const orgId = new mongoose.Types.ObjectId(admin.organizationId);
+
         const roleName = admin.role?.role;
         const appRole = mapRoleForApp(roleName);
 
@@ -334,13 +340,14 @@ export const getAdminDashboard = async (req, res) => {
         ] = await Promise.all([
 
             /* TEAM */
-            RegularUser.countDocuments({ role: partnerRoleId }),
-            RegularUser.countDocuments({ role: teamLeaderRoleId }),
-            RegularUser.countDocuments({ role: counselorRoleId }),
+            RegularUser.countDocuments({ role: partnerRoleId, organizationId: orgId }),
+            RegularUser.countDocuments({ role: teamLeaderRoleId, organizationId: orgId }),
+            RegularUser.countDocuments({ role: counselorRoleId, organizationId: orgId }),
 
             /* ACTIVE */
             RegularUser.countDocuments({
                 role: partnerRoleId,
+                organizationId: orgId,
                 $or: [
                     { lastLoginAt: { $gte: activeSince } },
                     { updatedAt: { $gte: activeSince } }
@@ -348,6 +355,7 @@ export const getAdminDashboard = async (req, res) => {
             }),
             RegularUser.countDocuments({
                 role: teamLeaderRoleId,
+                organizationId: orgId,
                 $or: [
                     { lastLoginAt: { $gte: activeSince } },
                     { updatedAt: { $gte: activeSince } }
@@ -355,6 +363,7 @@ export const getAdminDashboard = async (req, res) => {
             }),
             RegularUser.countDocuments({
                 role: counselorRoleId,
+                organizationId: orgId,
                 $or: [
                     { lastLoginAt: { $gte: activeSince } },
                     { updatedAt: { $gte: activeSince } }
@@ -362,22 +371,24 @@ export const getAdminDashboard = async (req, res) => {
             }),
 
             /* LEADS */
-            Lead.countDocuments({ createdAt: { $gte: start, $lte: end } }),
-            Lead.countDocuments({ status: "new", createdAt: { $gte: start, $lte: end } }),
-            Lead.countDocuments({ status: "converted", createdAt: { $gte: start, $lte: end } }),
-            Lead.countDocuments({ status: "contacted", createdAt: { $gte: start, $lte: end } }),
-            Lead.countDocuments({ status: "lost", createdAt: { $gte: start, $lte: end } }),
+            Lead.countDocuments({ createdAt: { $gte: start, $lte: end }, organizationId: orgId }),
+            Lead.countDocuments({ status: "new", createdAt: { $gte: start, $lte: end }, organizationId: orgId }),
+            Lead.countDocuments({ status: "converted", createdAt: { $gte: start, $lte: end }, organizationId: orgId }),
+            Lead.countDocuments({ status: "contacted", createdAt: { $gte: start, $lte: end }, organizationId: orgId }),
+            Lead.countDocuments({ status: "lost", createdAt: { $gte: start, $lte: end }, organizationId: orgId }),
 
             /* TODAY */
-            Lead.countDocuments({ createdAt: { $gte: todayStart, $lte: todayEnd } }),
+            Lead.countDocuments({ createdAt: { $gte: todayStart, $lte: todayEnd }, organizationId: orgId }),
 
             /* ALERTS */
             Lead.countDocuments({
                 $or: [{ assignedTo: null }, { assignedTo: { $exists: false } }],
-                status: { $nin: ["converted", "contacted", "lost"] }
+                status: { $nin: ["converted", "contacted", "lost"] },
+                organizationId: orgId
             }),
 
             Lead.countDocuments({
+                organizationId: orgId,
                 status: { $nin: ["converted", "lost"] },
                 $or: [
                     { lastActivity: { $lt: staleThreshold } },
@@ -387,10 +398,12 @@ export const getAdminDashboard = async (req, res) => {
 
             /* PIPELINE */
             Lead.countDocuments({
+                organizationId: orgId,
                 status: { $nin: ["converted", "lost"] }
             }),
 
             Lead.countDocuments({
+                organizationId: orgId,
                 assignedTo: { $ne: null },
                 createdAt: { $gte: start, $lte: end }
             }),
@@ -400,6 +413,7 @@ export const getAdminDashboard = async (req, res) => {
                 { $unwind: "$sessions" },
                 {
                     $match: {
+                        organizationId: orgId, // 🔥 REQUIRED
                         "sessions.next_follow_up_date": {
                             $gte: todayStart,
                             $lte: todayEnd,
@@ -410,8 +424,19 @@ export const getAdminDashboard = async (req, res) => {
                 {
                     $lookup: {
                         from: "leads",
-                        localField: "lead_id",
-                        foreignField: "_id",
+                        let: { leadId: "$lead_id" },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            { $eq: ["$_id", "$$leadId"] },
+                                            { $eq: ["$organizationId", orgId] } // 🔥 enforce org boundary
+                                        ]
+                                    }
+                                }
+                            }
+                        ],
                         as: "lead",
                     },
                 },
@@ -439,7 +464,7 @@ export const getAdminDashboard = async (req, res) => {
 
         /* TREND */
         const trendRaw = await Lead.aggregate([
-            { $match: { createdAt: { $gte: start, $lte: end } } },
+            { $match: { createdAt: { $gte: start, $lte: end }, organizationId: orgId } },
             {
                 $group: {
                     _id: {
@@ -524,7 +549,7 @@ export const getCounselorDashboard = async (req, res) => {
         /* ---------------- AUTH USER ---------------- */
         const counselor = await RegularUser.findById(counselorId)
             .populate("role", "role") // ✅ IMPORTANT
-            .select("_id role")
+            .select("_id role organizationId")
             .lean();
 
         if (!counselor) {
@@ -537,6 +562,11 @@ export const getCounselorDashboard = async (req, res) => {
             return res.status(403).json({ message: "Access denied" });
         }
 
+        if (!counselor.organizationId) {
+            return res.status(400).json({ message: "Organization context missing" });
+        }
+
+        const orgId = new mongoose.Types.ObjectId(counselor.organizationId);
         const userId = new mongoose.Types.ObjectId(counselor._id);
 
         /* ---------------- DATE RANGE ---------------- */
@@ -557,6 +587,7 @@ export const getCounselorDashboard = async (req, res) => {
         };
 
         const baseFilter = {
+            organizationId: orgId,
             ...ownershipMatch
         };
 
@@ -805,7 +836,7 @@ export const getPartnerDashboard = async (req, res) => {
 
         const partner = await RegularUser.findById(partnerId)
             .populate("role", "role") // ✅ IMPORTANT
-            .select("_id role")
+            .select("_id role organizationId")
             .lean();
 
         if (!partner) {
@@ -815,17 +846,21 @@ export const getPartnerDashboard = async (req, res) => {
         const appRole = mapRoleForApp(partner.role?.role); // ✅ FIX
 
         if (appRole !== "partner") {
-            return res.status(403).json({
-                message: "Access denied"
-            });
+            return res.status(403).json({ message: "Access denied" });
         }
 
+        if (!partner.organizationId) {
+            return res.status(400).json({ message: "Organization context missing" });
+        }
+
+        const orgId = new mongoose.Types.ObjectId(partner.organizationId);
         const userId = new mongoose.Types.ObjectId(partner._id);
 
         const { start, end } = getDateRange(req.query);
 
         /* ---------------- BASE FILTER ---------------- */
         const baseFilter = {
+            organizationId: orgId,
             leadType: "partner",
             createdBy: userId // ✅ ownership only
         };
@@ -952,7 +987,7 @@ export const getTeamLeaderDashboard = async (req, res) => {
 
         const teamleader = await RegularUser.findById(teamLeaderId)
             .populate("role", "role")
-            .select("_id role")
+            .select("_id role organizationId")
             .lean();
 
         if (!teamleader) {
@@ -965,6 +1000,11 @@ export const getTeamLeaderDashboard = async (req, res) => {
             return res.status(403).json({ message: "Access denied" });
         }
 
+        if (!teamleader.organizationId) {
+            return res.status(400).json({ message: "Organization missing" });
+        }
+
+        const orgId = new mongoose.Types.ObjectId(teamleader.organizationId);
         const tlId = new mongoose.Types.ObjectId(teamleader._id);
 
         const { start, end, groupBy = "month" } = {
@@ -980,6 +1020,7 @@ export const getTeamLeaderDashboard = async (req, res) => {
         const counselorRoleId = await getRoleId("counselor");
 
         const counselors = await RegularUser.find({
+            organizationId: orgId,
             role: counselorRoleId,
             teamLeader: tlId,
         })
@@ -991,10 +1032,12 @@ export const getTeamLeaderDashboard = async (req, res) => {
 
         /* ---------------- Base Filter ---------------- */
         const baseFilter = {
+            organizationId: orgId,
             $or: [
                 { assignedTo: tlId },
                 { createdBy: tlId },
-                { assignedTo: { $in: counselorIds } }
+                { assignedTo: { $in: counselorIds } },
+                { createdBy: { $in: counselorIds } }
             ]
         };
 
@@ -1203,12 +1246,14 @@ export const getAdminAnalytics = async (req, res) => {
 
         const admin = await RegularUser.findById(id)
             .populate("role", "role")
-            .select("_id role")
+            .select("_id role organizationId")
             .lean();
 
         if (!admin || mapRoleForApp(admin.role?.role) !== "admin") {
             return res.status(404).json({ error: "Admin not found" });
         }
+
+        const orgId = admin.organizationId;
 
         /* ---------------- ROLE IDS (HIGH PERFORMANCE) ---------------- */
         const [partnerRoleId, counselorRoleId] = await Promise.all([
@@ -1219,7 +1264,7 @@ export const getAdminAnalytics = async (req, res) => {
         /* ---------------- PEOPLE METRICS ---------------- */
         const [partnerStats, counselorStats] = await Promise.all([
             RegularUser.aggregate([
-                { $match: { role: partnerRoleId } },
+                { $match: { role: partnerRoleId, organizationId: orgId } },
                 {
                     $group: {
                         _id: null,
@@ -1233,7 +1278,7 @@ export const getAdminAnalytics = async (req, res) => {
                 }
             ]),
             RegularUser.aggregate([
-                { $match: { role: counselorRoleId } },
+                { $match: { role: counselorRoleId, organizationId: orgId } },
                 {
                     $group: {
                         _id: null,
@@ -1254,6 +1299,7 @@ export const getAdminAnalytics = async (req, res) => {
         last7Days.setDate(now.getDate() - 7);
 
         const leadStats = await Lead.aggregate([
+            { $match: { organizationId: orgId } },
             {
                 $group: {
                     _id: null,
@@ -1278,6 +1324,7 @@ export const getAdminAnalytics = async (req, res) => {
         ]);
 
         const newLeadsLast7Days = await Lead.countDocuments({
+            organizationId: orgId,
             createdAt: { $gte: last7Days }
         });
 
@@ -1285,6 +1332,7 @@ export const getAdminAnalytics = async (req, res) => {
         const dailyLeads = await Lead.aggregate([
             {
                 $match: {
+                    organizationId: orgId,
                     createdAt: { $gte: last7Days }
                 }
             },

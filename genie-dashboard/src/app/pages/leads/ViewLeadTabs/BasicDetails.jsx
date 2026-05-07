@@ -1,8 +1,10 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import HoverCard from "../../../components/ui/Hover/HoverCard";
 import { maskEmail } from "../../../utils/maskEmail";
 import { maskPhone } from "../../../utils/maskPhone";
 import LeadStatusBadge from "../../../components/ui/Badge/LeadStatusBadge";
+import toast from "react-hot-toast";
+import { CampusaimAPI } from "../../../services/API";
 
 /* -------------------------------------------------- */
 /* Utils                                              */
@@ -21,7 +23,7 @@ const formatTimeAgo = (date) => {
 };
 
 const safeJoinAddress = (lead) =>
-    [lead?.address, lead?.city, lead?.state, lead?.pincode]
+    [lead?.address, lead?.city, lead?.state, lead?.pincode, lead?.country]
         .filter(Boolean)
         .join(", ") || "N/A";
 
@@ -29,32 +31,89 @@ const safeJoinAddress = (lead) =>
 /* Component                                          */
 /* -------------------------------------------------- */
 
-export default function BasicDetails({ leadData, role }) {
+export default function BasicDetails({ leadData, role, categoryId }) {
     const lead = leadData || {};
     const [showRaw, setShowRaw] = useState(false);
+    const [category, setCategory] = useState([]);
+    const [course, setCourse] = useState(null);
+    const [property, setProperty] = useState(null);
 
     const rawEntries = useMemo(() => {
         if (!lead?.rawImport) return [];
         return Object.entries(lead.rawImport);
     }, [lead?.rawImport]);
 
-    /* ---------------- BASIC INFO ---------------- */
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const res = await CampusaimAPI.get("/category");
+                const filteredCat = res.data.filter((a) => a.parent_category === "Academic Type");
+                setCategory(filteredCat);
+            } catch (error) {
+                toast.error("Internal server error.");
+                console.error(error)
+            }
+        };
+        fetchCategories();
+    }, []);
 
+    useEffect(() => {
+        if (!lead?.course_id) return;
+
+        const fetchCourses = async () => {
+            try {
+                const res = await CampusaimAPI.get(`/course/${lead?.course_id}`);
+                setCourse(res?.data);
+            } catch (error) {
+                toast.error("Internal server error.");
+                console.error(error)
+            }
+        };
+        fetchCourses();
+    }, []);
+
+    useEffect(() => {
+        if (!lead?.property_id) return;
+
+        const fetchProperty = async () => {
+            try {
+                const res = await CampusaimAPI.get(`/property/${lead.property_id}`);
+                setProperty(res?.data);
+            } catch (error) {
+                toast.error("Internal server error.");
+                console.error(error)
+            }
+        };
+        fetchProperty();
+    }, []);
+
+    const myCategory = category.filter((a) => a?._id === categoryId);
+
+    const categoryName = useMemo(() => {
+        return category.filter((a) => a?._id === categoryId)[0]?.category_name || "N/A";
+    }, [category, lead?.category]);
+
+    const getCourseName = () => {
+        if (lead?.course_id) return lead?.preferences?.preferredCourse;
+        if (lead?.custom_course_name) return lead.custom_course_name;
+        return null;
+    };
+
+    const getPropertyName = () => {
+        if (lead?.property_id) return lead?.preferences?.preferredProperty;
+        if (lead?.custom_property_name) return lead.custom_property_name;
+        return null;
+    };
+
+    /* ---------------- BASIC INFO ---------------- */
     const basicInfo = [
         { label: "Name", value: lead?.name },
         { label: "Email", value: maskEmail(lead?.email) },
         { label: "Contact", value: maskPhone(lead?.contact) },
-        { label: "Source", value: lead?.marketing?.source || "N/A" },
-        { label: "Last Activity", value: formatTimeAgo(lead?.lastActivity) },
+        { label: "Alt Contact", value: lead?.alternateContact ? maskPhone(lead.alternateContact) : "N/A" },
+        { label: "Gender", value: lead?.gender },          // ✅ ADD
+        { label: "Date of Birth", value: lead?.dob ? new Date(lead.dob).toLocaleDateString("en-GB") : "N/A" },
         { label: "Address", value: safeJoinAddress(lead) },
-        {
-            label: "Created At",
-            value: lead?.createdAt ? new Date(lead.createdAt).toLocaleString() : null,
-        },
-        {
-            label: "Updated At",
-            value: lead?.updatedAt ? new Date(lead.updatedAt).toLocaleString() : null,
-        },
     ];
 
     const academicInfo = [
@@ -70,13 +129,25 @@ export default function BasicDetails({ leadData, role }) {
         { label: "Stream", value: lead?.academics?.stream },
     ];
 
-    const courseInfo = [
-        { label: "Course Name", value: lead?.preferences?.courseName },
-        { label: "Course Type", value: lead?.preferences?.courseType },
-        { label: "Specialization", value: lead?.preferences?.specialization },
+    const collegeUniversityPrefrences = [
+        {
+            label: "Interested Course",
+            value:
+                course?.course_name ||                 // ✅ fetched from API
+                lead?.custom_course_name ||     // ✅ "Other"
+                "N/A"
+        },
+        {
+            label: "Interested College/University",
+            value:
+                property?.property_name ||               // ✅ fetched
+                lead?.custom_property_name ||   // ✅ "Other"
+                "N/A"
+        },
+        { label: "College Type", value: lead?.preferences?.collegeType },
+        { label: "Preferred Country", value: lead?.preferences?.preferredCountry },
         { label: "Preferred State", value: lead?.preferences?.preferredState },
         { label: "Preferred City", value: lead?.preferences?.preferredCity },
-        { label: "College Type", value: lead?.preferences?.collegeType },
     ];
 
     // Role helpers
@@ -85,116 +156,184 @@ export default function BasicDetails({ leadData, role }) {
     const isCounselor = role === "counselor";
     const isPartner = role === "partner";
 
+    const CATEGORY_SECTIONS = {
+        university: ["basic", "academics", "collegeUniversityPrefrences"],
+        college: ["basic", "academics", "collegeUniversityPrefrences"],
+        coaching: ["basic", "schoolInfo", "exam"],
+        school: ["basic", "schoolInfo", "schoolPref"],
+    };
+
+    const activeSections = CATEGORY_SECTIONS[categoryName?.toLowerCase()] || ["basic"];
+
     return (
         <div className="space-y-6">
+
             {/* ================= DETAILS ================= */}
+            {activeSections.includes("basic") && (
+                <Section title="Details">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-            <Section title="Details">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Lead Owner → Admin + TeamLeader only */}
+                        {(isAdmin || isTeamLeader) && (
+                            <HoverCard
+                                label="Lead Owner"
+                                name={lead?.createdBy?.name}
+                                email={lead?.createdBy?.email}
+                                role={lead?.createdBy?.role?.role}
+                            />
+                        )}
 
-                    {/* Lead Owner → Admin + TeamLeader only */}
-                    {(isAdmin || isTeamLeader) && (
-                        <HoverCard
-                            label="Lead Owner"
-                            name={lead?.createdBy?.name}
-                            email={lead?.createdBy?.email}
-                            role={lead?.createdBy?.role}
-                        />
-                    )}
+                        {/* Assigned To → Admin + TeamLeader */}
+                        {(isAdmin || isTeamLeader) && (
+                            <HoverCard
+                                label="Assigned To"
+                                name={lead?.assignedTo?.name}
+                                email={lead?.assignedTo?.email}
+                                role={lead?.assignedTo?.role?.role}
+                            />
+                        )}
 
-                    {/* Assigned To → Admin + TeamLeader */}
-                    {(isAdmin || isTeamLeader) && (
-                        <HoverCard
-                            label="Assigned To"
-                            name={lead?.assignedTo?.name}
-                            email={lead?.assignedTo?.email}
-                            role={lead?.assignedTo?.role}
-                        />
-                    )}
+                        {/* Teamleader → Admin + TeamLeader + Counselor */}
+                        {/* {(isAdmin || isTeamLeader || isCounselor) && (
+                            <HoverCard
+                                label="Team Leader"
+                                name={lead?.teamleader?.name}
+                                role="teamleader"
+                            />
+                        )} */}
 
-                    {/* Teamleader → Admin + TeamLeader + Counselor */}
-                    {(isAdmin || isTeamLeader || isCounselor) && (
-                        <HoverCard
-                            label="Team Leader"
-                            name={lead?.teamleader?.name}
-                            role="teamleader"
-                        />
-                    )}
+                        {/* Basic Info with role filtering */}
+                        {basicInfo
+                            .filter((item) => {
 
-                    {/* Basic Info with role filtering */}
-                    {basicInfo
-                        .filter((item) => {
+                                // Source visible only to admin + teamleader
+                                if (item.label === "Source" && !(isAdmin || isTeamLeader)) return false;
 
-                            // Source visible only to admin + teamleader
-                            if (item.label === "Source" && !(isAdmin || isTeamLeader)) return false;
+                                // Created/Updated visible only to admin
+                                if (
+                                    (item.label === "Created At" || item.label === "Updated At") &&
+                                    !isAdmin
+                                )
+                                    return false;
 
-                            // Created/Updated visible only to admin
-                            if (
-                                (item.label === "Created At" || item.label === "Updated At") &&
-                                !isAdmin
-                            )
-                                return false;
+                                // Last activity hidden from partner
+                                if (item.label === "Last Activity" && isPartner) return false;
 
-                            // Last activity hidden from partner
-                            if (item.label === "Last Activity" && isPartner) return false;
+                                return true;
+                            })
+                            .map((item) => (
+                                <Info key={item.label} label={item.label} value={item.value} />
+                            ))}
 
-                            return true;
-                        })
-                        .map((item) => (
-                            <Info key={item.label} label={item.label} value={item.value} />
-                        ))}
+                        {/* STATUS + CONVERSION */}
+                        <div className="col-span-1 md:col-span-2 bg-slate-50 border rounded-lg p-4">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
 
-                    {/* STATUS + CONVERSION */}
-                    <div className="col-span-1 md:col-span-2 bg-slate-50 border rounded-lg p-4">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+                                {/* Lead Status */}
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm font-medium text-gray-700">Status:</span>
+                                    <LeadStatusBadge status={lead?.status} />
+                                </div>
 
-                            {/* Lead Status */}
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm font-medium text-gray-700">Status:</span>
-                                <LeadStatusBadge status={lead?.status} />
+                                {/* Converted By → Admin + TeamLeader */}
+                                {(lead?.status === "converted" && (isAdmin || isTeamLeader)) && (
+                                    <HoverCard
+                                        label="Converted By"
+                                        name={lead?.convertedBy?.name}
+                                        email={lead?.convertedBy?.email}
+                                        role={lead?.convertedBy?.role?.role}
+                                    />
+                                )}
+
+                                {/* Converted At → Admin only */}
+                                {(lead?.status === "converted" && isAdmin) && (
+                                    <Info
+                                        label="Converted At"
+                                        value={
+                                            lead?.convertedAt
+                                                ? new Date(lead.convertedAt).toLocaleString()
+                                                : null
+                                        }
+                                    />
+                                )}
+
                             </div>
-
-                            {/* Converted By → Admin + TeamLeader */}
-                            {(lead?.status === "converted" && (isAdmin || isTeamLeader)) && (
-                                <HoverCard
-                                    label="Converted By"
-                                    name={lead?.convertedBy?.name}
-                                    email={lead?.convertedBy?.email}
-                                    role={lead?.convertedBy?.role}
-                                />
-                            )}
-
-                            {/* Converted At → Admin only */}
-                            {(lead?.status === "converted" && isAdmin) && (
-                                <Info
-                                    label="Converted At"
-                                    value={
-                                        lead?.convertedAt
-                                            ? new Date(lead.convertedAt).toLocaleString()
-                                            : null
-                                    }
-                                />
-                            )}
-
                         </div>
                     </div>
-                </div>
-            </Section>
+                </Section>
+            )}
 
-            {/* ================= ACADEMICS ================= */}
+            {/* ================= Academic Details ================= */}
+            {activeSections.includes("academics") && (
+                <Section title="Academic Details">
+                    <GridInfo items={academicInfo} />
+                </Section>
+            )}
 
-            <Section title="Academic Details">
-                <GridInfo items={academicInfo} />
-            </Section>
+            {/* ================= Course Preferences ================= */}
+            {activeSections.includes("collegeUniversityPrefrences") && (
+                <Section title="Preferences">
+                    <GridInfo items={collegeUniversityPrefrences} />
+                </Section>
+            )}
 
-            {/* ================= COURSE ================= */}
+            {/* ================= School Information ================= */}
+            {activeSections.includes("schoolInfo") && (
+                <Section title="School Information">
+                    <GridInfo
+                        items={[
+                            { label: "Current Class", value: lead?.school?.currentClass },
+                            { label: "Current School", value: lead?.school?.currentName },
+                            { label: "Board", value: lead?.school?.board },
+                            { label: "Session", value: lead?.school?.session },
+                            { label: "School Location", value: lead?.school?.currentLocation },
+                            {
+                                label: "Percentage",
+                                value: lead?.school?.percentage
+                                    ? `${lead.school.percentage}%`
+                                    : null
+                            }
+                        ]}
+                    />
+                </Section>
+            )}
 
-            <Section title="Course Preferences">
-                <GridInfo items={courseInfo} />
-            </Section>
+            {/* ================= School Pref ================= */}
+            {activeSections.includes("schoolPref") && (
+                <Section title="School Preferences">
+                    <GridInfo
+                        items={[
+                            { label: "Preferred School", value: lead?.preferences?.preferredSchool },
+                            { label: "Preferred Location", value: lead?.preferences?.location },
+                            { label: "Admission Class", value: lead?.preferences?.admissionClass },
+                            { label: "Session", value: lead?.preferences?.session },
+                            { label: "School Type", value: lead?.preferences?.schoolType },
+                            { label: "Hostel", value: lead?.preferences?.hostel },
+                        ]}
+                    />
+                </Section>
+            )}
+
+            {/* ================= Exam Details ================= */}
+            {activeSections.includes("exam") && (
+                <Section title="Exam Details">
+                    <GridInfo
+                        items={[
+                            {
+                                label: "Exam Type",
+                                value: Array.isArray(lead?.exam?.examType)
+                                    ? lead.exam.examType.join(", ")
+                                    : null
+                            },
+                            { label: "Location", value: lead?.exam?.location },
+                            { label: "Mode", value: lead?.exam?.mode },
+                            { label: "Batch", value: lead?.exam?.batch },
+                        ]}
+                    />
+                </Section>
+            )}
 
             {/* ================= RAW IMPORT ================= */}
-
             {/* Raw data only visible to admin */}
             {(isAdmin && rawEntries.length > 0) && (
                 <Section title="Raw Import Data">

@@ -49,8 +49,8 @@ export const superadminRoutes = [
     /* ===== QUESTIONS SETS ===== */
     { path: "question-set/all", element: <AllQuestionSet /> },
     { path: "question-set/add", element: <AddQuestionSet /> },
-    { path: "question-set/edit/:slug", element: <EditQuestionSet /> },
-    { path: "question-set/view/:slug", element: <ViewQuestionSet /> },
+    { path: "question-set/edit/:id", element: <EditQuestionSet /> },
+    { path: "question-set/view/:id", element: <ViewQuestionSet /> },
 
     /* ===== SUPPORT ===== */
     { path: "support", element: <AllSupport /> },

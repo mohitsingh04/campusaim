@@ -11,9 +11,9 @@ function StatsCards({
     isLoading = false,
     skeletonCount = 4,
 }) {
-    if (items.length === 0) {
-        return null;
-    }
+    // if (items.length === 0) {
+    //     return null;
+    // }
 
     if (isLoading) {
         return <StatsCardSkeleton count={skeletonCount} />;

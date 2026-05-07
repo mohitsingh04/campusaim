@@ -62,8 +62,7 @@ const validationSchema = Yup.object({
 const fetchAdmin = async (id) => {
     if (!id) throw new Error("Admin ID required");
     const { data } = await CampusaimAPI.get(`/fetch-admins/${id}`);
-    console.log(data)
-    return data?.data;
+    return data?.data?.admin;
 };
 
 // ========================= COMPONENT =========================

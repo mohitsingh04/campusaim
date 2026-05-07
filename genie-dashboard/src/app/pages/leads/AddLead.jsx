@@ -8,6 +8,8 @@ import { API, CampusaimAPI } from "../../services/API";
 import Breadcrumbs from "../../components/ui/BreadCrumb/Breadcrumbs";
 import PhoneInput from "../../components/formInputs/PhoneInput";
 import { useAuth } from "../../context/AuthContext";
+import { FORM_SCHEMA } from "./AccordionData/form.schema";
+import SectionRenderer from "./AccordionData/SectionRenderer";
 
 /* ============================
    Validation & Initial Values
@@ -15,25 +17,121 @@ import { useAuth } from "../../context/AuthContext";
 const currentYear = new Date().getFullYear();
 
 const validationSchema = Yup.object({
-    name: Yup.string().required("Name is required.").min(2, "Min 2 characters"),
-    email: Yup.string().required("Email is required.").email("Invalid email address"),
+    name: Yup.string().trim().required("Name is required"),
+
     contact: Yup.string()
-        .required("Contact number is required.")
-        .transform((v) => (v ? v.replace(/\s/g, "") : ""))
-        .matches(/^(\+91|0)?[6-9][0-9]{9}$/, "Invalid Indian contact"),
-    city: Yup.string().max(80).nullable(),
-    state: Yup.string().max(80).nullable(),
-    pincode: Yup.string().matches(/^\d{6}$/, "Invalid pincode").nullable(),
+        .required("Contact is required")
+        .matches(/^(\+91)?[6-9]\d{9}$/, "Invalid Indian contact number"),
+
+    // ✅ 1. DOB (NO FUTURE DATE)
+    dob: Yup.date()
+        .nullable()
+        .max(new Date(), "DOB cannot be in the future")
+        .typeError("Invalid date"),
+
+    // ✅ 2. PINCODE (6 DIGIT INDIA)
+    pincode: Yup.string()
+        .nullable()
+        .matches(/^\d{6}$/, "Pincode must be 6 digits")
+        .when("country", {
+            is: (val) => val === "India",
+            then: (schema) => schema.required("Pincode is required"),
+            otherwise: (schema) => schema.notRequired()
+        }),
+
+    // ✅ 3. ACADEMICS
     academics: Yup.object({
-        passingYear: Yup.number().nullable().min(1980).max(currentYear),
-        percentage: Yup.number().nullable().min(0).max(100),
+        passingYear: Yup.number()
+            .nullable()
+            .typeError("Passing year must be a number")
+            .min(1950, "Invalid year")
+            .max(currentYear, "Passing year cannot be in future"),
+
+        percentage: Yup.number()
+            .nullable()
+            .typeError("Percentage must be a number")
+            .min(0, "Minimum is 0%")
+            .max(100, "Maximum is 100%"),
+
+        qualification: Yup.string().nullable(),
+        boardOrUniversity: Yup.string().nullable(),
+        stream: Yup.string().nullable()
     }),
+
+    // ✅ 4. SCHOOL (OPTIONAL % VALIDATION)
+    school: Yup.object({
+        currentName: Yup.string().nullable(),
+
+        percentage: Yup.number()
+            .nullable()
+            .typeError("Percentage must be a number")
+            .min(0, "Minimum is 0%")
+            .max(100, "Maximum is 100%")
+    }),
+
+    // ✅ OPTIONAL: EMAIL HARDENING
+    email: Yup.string()
+        .nullable()
+        .email("Invalid email format"),
 });
 
 const initialValues = {
-    name: "", contact: "", countryCode: "+91", email: "", address: "", city: "", state: "", pincode: "",
-    academics: { qualification: "", boardOrUniversity: "", passingYear: "", percentage: "", stream: "" },
-    preferences: { preferredProperty: "", preferredCourse: "", preferredState: "", preferredCity: "", collegeType: "Any" },
+    name: "",
+    contact: "",
+    countryCode: "+91",
+    email: "",
+    alternateContact: "",
+    gender: "",
+    dob: "",
+
+    address: "",
+    pincode: "",
+    country: "",
+    state: "",
+    city: "",
+
+    school: {
+        currentName: "",
+        currentLocation: "",
+        board: "",
+        currentClass: "",
+        session: "",
+        percentage: ""
+    },
+
+    academics: {
+        qualification: "",
+        boardOrUniversity: "",
+        passingYear: "",
+        percentage: "",
+        stream: "",
+        currentClass: "",
+        board: ""
+    },
+
+    exam: {
+        examType: [],
+        location: "",
+        mode: "",
+        batch: "",
+        hostel: "",
+        transport: ""
+    },
+
+    preferences: {
+        preferredProperty: "",
+        preferredCourse: "",
+        preferredCountry: "",
+        preferredState: "",
+        preferredCity: "",
+        collegeType: "Any",
+        preferredSchool: "",
+        schoolType: "",
+        location: "",
+        admissionClass: "",
+        session: "",
+        hostel: ""
+    }
 };
 
 /* ============================
@@ -59,6 +157,16 @@ const AddLead = () => {
 
     const categoryId = authUser?.nicheId;
     const myCategory = category.filter((a) => a?._id === categoryId);
+
+    const categoryKeyMap = {
+        School: "school",
+        College: "college_university",
+        University: "college_university",
+        Coaching: "coaching"
+    };
+
+    const categoryName = myCategory?.[0]?.category_name;
+    const categoryKey = categoryKeyMap[categoryName] || "college_university";
 
     const fetchProperties = async () => {
         try {
@@ -118,11 +226,14 @@ const AddLead = () => {
     }, []);
 
     useEffect(() => {
-        fetchProperties();
-        fetchCourses();
-        fetchPropertyCourses();
+        if (categoryKey === "college_university") {
+            fetchProperties();
+            fetchCourses();
+            fetchPropertyCourses();
+        }
+
         fetchCountries();
-    }, []);
+    }, [categoryKey]);
 
     // ================= FORMik FIRST =================
     const formik = useFormik({
@@ -133,13 +244,32 @@ const AddLead = () => {
                 const payload = {
                     ...values,
                     category: categoryId,
+
+                    property_id: values.preferences?.preferredProperty || "",
+                    course_id: values.preferences?.preferredCourse || "",
+
+                    // ✅ ADD THESE
+                    custom_property_name:
+                        values.preferences?.preferredProperty === "__other__"
+                            ? values.preferences?.preferredProperty_other || ""
+                            : "",
+
+                    custom_course_name:
+                        values.preferences?.preferredCourse === "__other__"
+                            ? values.preferences?.preferredCourse_other || ""
+                            : "",
+
                     contact: `${values.countryCode || "+91"}${values.contact}`,
+                    alternateContact: values.alternateContact
+                        ? `${values.countryCode || "+91"}${values.alternateContact}`
+                        : "",
                 };
 
                 await API.post("/leads", payload);
                 toast.success("Lead added successfully");
                 navigate("/dashboard/leads/all");
             } catch (error) {
+                console.log(error);
                 toast.error(error?.response?.data?.error || "Something went wrong!");
             } finally {
                 setSubmitting(false);
@@ -271,7 +401,18 @@ const AddLead = () => {
         formik.setFieldValue("preferences.preferredCourse", "");
     }, [selectedProperty]);
 
-    console.log(myCategory[0])
+    useEffect(() => {
+        if (formik.values.exam.mode === "Online") {
+            formik.setFieldValue("exam.hostel", "");
+            formik.setFieldValue("exam.transport", "");
+        }
+    }, [formik.values.exam.mode]);
+
+    const schema = FORM_SCHEMA[categoryKey] || {
+        basic: [],
+        academics: [],
+        preferences: []
+    };
 
     return (
         <div className="space-y-6 max-w-5xl mx-auto pb-10">
@@ -294,16 +435,11 @@ const AddLead = () => {
                     toggle={() => setOpenSection(openSection === "basic" ? "" : "basic")}
                     hasError={hasSectionError(['name', 'email', 'contact'])}
                 >
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-5">
-                        <Input label="Name*" name="name" placeholder="Enter full name" formik={formik} />
-                        <Input label="Email*" name="email" type="email" placeholder="Enter email address" formik={formik} />
-                        <PhoneInput
-                            label="Contact Number*"
-                            name="contact"
-                            codeName="countryCode"
-                            formik={formik}
-                        />
-                    </div>
+                    <SectionRenderer
+                        fields={schema.basic}
+                        formik={formik}
+                        dynamicData={{}}
+                    />
                 </Accordion>
 
                 {/* Address & Location */}
@@ -400,144 +536,80 @@ const AddLead = () => {
                 </Accordion>
 
                 {/* Academic Details */}
-                <Accordion
-                    id="academics"
-                    title="Academic Details"
-                    icon={<GraduationCap size={18} />}
-                    isOpen={openSection === "academics"}
-                    toggle={() => {
-                        setOpenSection(openSection === "academics" ? "" : "academics");
-                    }}
-                    hasError={hasSectionError(['academics.passingYear', 'academics.percentage'])}
-                >
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-5">
-                        <Input label="Qualification" name="academics.qualification" placeholder="10th, 12th" formik={formik} />
-                        {myCategory[0]?.category_name === "School"
-                            ? <Input label="Board" name="academics.boardOrUniversity" placeholder="CBSE, ICSE" formik={formik} />
-                            : null
-                        }
-                        {myCategory[0]?.category_name === "University" || myCategory[0]?.category_name === "College"
-                            ? <Input label="University" name="academics.boardOrUniversity" formik={formik} />
-                            : null
-                        }
-                        <Input label="Passing Year" name="academics.passingYear" type="number" formik={formik} />
-                        <Input label="Percentage" name="academics.percentage" type="number" formik={formik} />
-                        <Input label="Stream" name="academics.stream" placeholder="Arts, Commerce, Science" formik={formik} />
-                    </div>
-                </Accordion>
+                {schema.sections?.schoolInfo && (
+                    <Accordion
+                        id="schoolInfo"
+                        title={schema.sections.schoolInfo.title}
+                        icon={<GraduationCap size={18} />}
+                        isOpen={openSection === "schoolInfo"}
+                        toggle={() => setOpenSection(openSection === "schoolInfo" ? "" : "schoolInfo")}
+                    >
+                        <SectionRenderer
+                            fields={schema.schoolInfo}
+                            formik={formik}
+                            dynamicData={{}}
+                        />
+                    </Accordion>
+                )}
+
+                {schema.sections?.academics && (
+                    <Accordion
+                        id="academics"
+                        title={schema.sections.academics.title}
+                        icon={<GraduationCap size={18} />}
+                        isOpen={openSection === "academics"}
+                        toggle={() => setOpenSection(openSection === "academics" ? "" : "academics")}
+                    >
+                        <SectionRenderer
+                            fields={schema.academics}
+                            formik={formik}
+                            dynamicData={{}}
+                        />
+                    </Accordion>
+                )}
 
                 {/* Course & Institution Preferences */}
-                <Accordion
-                    id="preferences"
-                    title="Course & Institution Preferences"
-                    icon={<Settings size={18} />}
-                    isOpen={openSection === "preferences"}
-                    toggle={() => {
-                        setOpenSection(openSection === "preferences" ? "" : "preferences");
-                    }}
-                >
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-5">
-                        {/* Country */}
-                        <div>
-                            <label className="block text-sm font-medium mb-1.5 text-gray-700">
-                                Country
-                            </label>
-                            <select
-                                name="preferences.preferredCountry"
-                                value={formik.values.preferences.preferredCountry || ""}
-                                onChange={(e) => {
-                                    const value = e.target.value;
-
-                                    formik.setFieldValue("preferences.preferredCountry", value);
-                                    formik.setFieldValue("preferences.preferredState", "");
-                                    formik.setFieldValue("preferences.preferredCity", "");
-                                }}
-                                onBlur={formik.handleBlur}
-                                className="w-full border rounded-lg px-3 py-2"
-                            >
-                                <option value="">Select Country</option>
-                                {countries.map((c) => (
-                                    <option key={c.id} value={c.country_name}>
-                                        {c.country_name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
-                        {/* Preferred State */}
-                        <div>
-                            <label className="block text-sm font-medium mb-1.5 text-gray-700">
-                                State
-                            </label>
-                            <select
-                                name="preferences.preferredState"
-                                value={formik.values.preferences.preferredState || ""}
-                                onChange={(e) => {
-                                    const value = e.target.value;
-                                    formik.setFieldValue("preferences.preferredState", value);
-                                    formik.setFieldValue("preferences.preferredCity", "");
-                                    setPrefCities([]);
-                                }}
-                                onBlur={formik.handleBlur}
-                                disabled={!formik.values.preferences.preferredCountry}
-                                className="w-full border rounded-lg px-3 py-2"
-                            >
-                                <option value="">Select State</option>
-                                {prefStates.map((s) => (
-                                    <option key={s.id} value={s.name}>
-                                        {s.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
-                        {/* Preferred City */}
-                        <div>
-                            <label className="block text-sm font-medium mb-1.5 text-gray-700">
-                                City
-                            </label>
-                            <select
-                                name="preferences.preferredCity"
-                                value={formik.values.preferences.preferredCity || ""}
-                                onChange={formik.handleChange}
-                                onBlur={formik.handleBlur}
-                                disabled={!formik.values.preferences.preferredState}
-                                className="w-full border rounded-lg px-3 py-2"
-                            >
-                                <option value="">Select City</option>
-                                {prefCities.map((c) => (
-                                    <option key={c.id} value={c.name}>
-                                        {c.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <FormSelect
-                            label="Property"
-                            name="preferences.preferredProperty"
+                {Array.isArray(schema.preferences) && schema.preferences.length > 0 && (
+                    <Accordion
+                        id="preferences"
+                        title={schema.sections?.preferences?.title || "Preferences"}
+                        icon={<Settings size={18} />}
+                        isOpen={openSection === "preferences"}
+                        toggle={() => {
+                            setOpenSection(openSection === "preferences" ? "" : "preferences");
+                        }}
+                    >
+                        <SectionRenderer
+                            fields={schema.preferences}
                             formik={formik}
-                            options={filteredProperty}
-                            labelKey="property_name"
-                            valueKey="_id"
+                            dynamicData={{
+                                countries,
+                                states: prefStates,
+                                cities: prefCities,
+                                properties: filteredProperty,
+                                courses: filteredCourse
+                            }}
                         />
-                        <FormSelect
-                            label="Course"
-                            name="preferences.preferredCourse"
-                            formik={formik}
-                            options={filteredCourse}
-                            labelKey="course_name"
-                            valueKey="_id"
-                        />
+                    </Accordion>
+                )}
 
-                        <FormSelect
-                            label="College Type"
-                            name="preferences.collegeType"
+                {Array.isArray(schema.exam) && schema.exam.length > 0 && (
+                    <Accordion
+                        id="exam"
+                        title="Exam Details"
+                        icon={<Settings size={18} />}
+                        isOpen={openSection === "exam"}
+                        toggle={() => {
+                            setOpenSection(openSection === "exam" ? "" : "exam");
+                        }}
+                    >
+                        <SectionRenderer
+                            fields={schema.exam}
                             formik={formik}
-                            options={['Government', 'Semi-Government', 'Private', 'Deemed', 'Autonomous', 'Any']}
+                            dynamicData={{}}
                         />
-                    </div>
-                </Accordion>
+                    </Accordion>
+                )}
 
                 <div className="flex justify-end pt-4">
                     <button

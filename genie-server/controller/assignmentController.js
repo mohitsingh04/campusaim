@@ -107,6 +107,7 @@ export const assignLeads = async (req, res) => {
 
             /* -------- SEND NOTIFICATION -------- */
             await notifyLeadAssignment({
+                organizationId: assignToUser.organizationId || null,
                 assignToUser,
                 authUser,
                 leadIds: validLeadIds
@@ -168,6 +169,7 @@ export const assignLeads = async (req, res) => {
             /* -------- SEND NOTIFICATION -------- */
 
             await notifyLeadAssignment({
+                organizationId: assignToUser.organizationId || null,
                 assignToUser,
                 authUser,
                 leadIds: validLeadIds
@@ -370,6 +372,7 @@ export const assignCounselorToTeamLeader = async (req, res) => {
         /* ---------------- NOTIFICATION ---------------- */
         try {
             await notifyCounselorAssignment({
+                organizationId: authUser.organizationId,
                 counselor,
                 teamLeader,
                 authUser,

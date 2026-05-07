@@ -271,13 +271,13 @@ export default function AllQuestionSet() {
                         label="View"
                         Icon={Eye}
                         variant="neutral"
-                        onClick={() => navigate(`/dashboard/question-set/view/${row.slug}`)}
+                        onClick={() => navigate(`/dashboard/question-set/view/${row._id}`)}
                     />
                     <ActionIconButton
                         label="Edit"
                         Icon={SquarePen}
                         variant="primary"
-                        onClick={() => navigate(`/dashboard/question-set/edit/${row.slug}`)}
+                        onClick={() => navigate(`/dashboard/question-set/edit/${row._id}`)}
                     />
                     <ActionIconButton
                         label="Delete"

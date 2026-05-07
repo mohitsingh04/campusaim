@@ -43,6 +43,8 @@ function ViewLead() {
     const [hasConversation, setHasConversation] = useState(false);
     const [isOwner, setIsOwner] = useState(false);
     const role = authUser?.appRole;
+    const organizationId = authUser?.organizationId;
+    const categoryId = authUser?.nicheId;
 
     const [leadData, setLeadData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -56,7 +58,7 @@ function ViewLead() {
             const { data } = await CampusaimAPI.get("/course");
             setCourses(data);
         } catch (error) {
-            console.log(error)
+            console.error(error)
         }
     }
 
@@ -374,7 +376,7 @@ function ViewLead() {
                 )}
 
                 {allowedTabs.includes("details") && activeTab === "details" && (
-                    <BasicDetails leadData={leadData} role={role} />
+                    <BasicDetails categoryId={categoryId} leadData={leadData} role={role} />
                 )}
 
                 {allowedTabs.includes("assignmentHistory") && activeTab === "assignmentHistory" && (
