@@ -127,7 +127,9 @@ export const PropertyRankingValidation = Yup.object().shape({
 
 export const ExamValidation = Yup.object().shape({
 	exam_name: getValidString("Exam name"),
-	exam_mode: Yup.string().required("Exam mode is required."),
+	exam_short_name: getValidString("Exam name"),
+	exam_mode: Yup.string().required("Exam short mode is required."),
+	exam_type: Yup.string().required("Exam Type is required."),
 });
 
 export const ScholarshipValidation = Yup.object().shape({

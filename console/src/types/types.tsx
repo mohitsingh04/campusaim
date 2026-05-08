@@ -201,6 +201,7 @@ export interface ExamProps extends Record<string, unknown> {
   exam_name: string;
   exam_short_name: string;
   exam_type: string;
+  exam_sub_type: string;
   exam_tag: string[];
   upcoming_exam_date: { date: string; is_tentative: boolean };
   result_date: { date: string; is_tentative: boolean };

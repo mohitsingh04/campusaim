@@ -16,22 +16,17 @@ import { blogEnquiryValidation } from "@/context/ValidationSchema";
 import API from "@/context/API";
 import EnquirySubmitted from "@/ui/submits/EnquirySubmitted";
 import { CourseProps } from "@/types/Types";
-import { UserProps } from "@/types/UserTypes";
+import useGetAuthUser from "@/hooks/fetch-hooks/useGetAuthUser";
 
-const CourseEnquiryForm = ({
-  course,
-  profile,
-}: {
-  course: CourseProps | null;
-  profile: UserProps | null;
-}) => {
+const CourseEnquiryForm = ({ course }: { course: CourseProps | null }) => {
+  const { authUser } = useGetAuthUser();
   const [submitted, setSubmitted] = React.useState(false);
 
   const formik = useFormik({
     initialValues: {
-      name: profile?.name || "",
-      email: profile?.email || "",
-      mobile_no: profile?.mobile_no || "",
+      name: authUser?.name || "",
+      email: authUser?.email || "",
+      mobile_no: authUser?.mobile_no || "",
       message: "",
       courseId: course?._id || "",
     },

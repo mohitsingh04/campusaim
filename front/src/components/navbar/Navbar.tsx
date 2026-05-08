@@ -221,7 +221,7 @@ export default function Navbar() {
                       target={item?.external ? "_blank" : "_self"}
                     >
                       {item.name}
-                      {item?.panel && (
+                      {item?.panel !== "none" && (
                         <ChevronDownIcon className="ml-1 mt-1 h-4 w-4" />
                       )}
                     </Link>

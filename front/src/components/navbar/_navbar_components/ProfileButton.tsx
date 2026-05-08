@@ -1,6 +1,7 @@
 import { getUserAvatar } from "@/context/Callbacks";
 import { handleLogout } from "@/context/getAssets";
 import { UserProps } from "@/types/UserTypes";
+import { ButtonGroup } from "@/ui/buttons/ButtonGroup";
 import { LogOutIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -21,19 +22,9 @@ export default function ProfileButton({
   isMobile,
   handleCloseMobileMenu,
 }: ProfileButtonProps) {
-  const LoginButton = () => (
-    <Link
-      href="/auth/login"
-      title="Login"
-      onClick={handleCloseMobileMenu}
-      className="flex items-center justify-center px-5 py-2.5 rounded-custom bg-(--main) text-white font-semibold text-sm hover:opacity-90 transition-all shadow-sm"
-    >
-      Login
-    </Link>
-  );
-
   if (isMobile) {
-    if (!token) return <LoginButton />;
+    if (!token)
+      return <ButtonGroup href="/auth/login" disable={false} label="Login" />;
 
     return (
       <div className="flex items-center p-3">
@@ -76,7 +67,7 @@ export default function ProfileButton({
   return (
     <div className="relative">
       {!token ? (
-        <LoginButton />
+        <ButtonGroup href="/auth/login" disable={false} label="Login" />
       ) : (
         <button
           onClick={() => setSettingOffcanvas(true)}

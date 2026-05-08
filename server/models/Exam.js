@@ -13,10 +13,14 @@ const ExamSchema = new mongoose.Schema(
     },
     exam_short_name: {
       type: String,
+      required: true,
     },
     exam_type: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
+    },
+    exam_sub_type: {
+      type: mongoose.Schema.Types.ObjectId,
     },
     exam_tag: {
       type: [mongoose.Schema.Types.ObjectId],

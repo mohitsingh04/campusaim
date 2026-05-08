@@ -39,6 +39,7 @@ export const addExam = async (req, res) => {
       exam_name,
       exam_short_name,
       exam_type,
+      exam_sub_type,
       exam_tag,
       upcoming_exam_date,
       result_date,
@@ -50,6 +51,10 @@ export const addExam = async (req, res) => {
       description,
       faqs,
     } = req.body;
+
+    if (!userId || !exam_name || !exam_type || !exam_short_name) {
+      return res.status(400).json({ error: "Required Field Missing" });
+    }
 
     const images = await getUploadedFilePaths(req, "image");
     const answer_sheet = req.files?.["answer_sheet"]?.[0]?.filename;
@@ -85,6 +90,7 @@ export const addExam = async (req, res) => {
       exam_short_name,
       image: images,
       exam_type,
+      exam_sub_type,
       exam_tag: examTags,
       description: updatedDescription,
       slug: examSlug,
@@ -127,6 +133,7 @@ export const updateExam = async (req, res) => {
       exam_name,
       exam_short_name,
       exam_type,
+      exam_sub_type,
       exam_tag,
       upcoming_exam_date,
       result_date,
@@ -175,6 +182,7 @@ export const updateExam = async (req, res) => {
           exam_name,
           exam_short_name,
           exam_type,
+          exam_sub_type,
           exam_tag: examTags,
           upcoming_exam_date: upcomingExamDate,
           result_date: resultDate,

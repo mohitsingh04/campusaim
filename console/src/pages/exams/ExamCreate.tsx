@@ -21,7 +21,7 @@ import toast from "react-hot-toast";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import { Breadcrumbs } from "../../ui/breadcrumbs/Breadcrumbs";
 import { ExamValidation } from "../../contexts/ValidationsSchemas";
-import Select, { MultiValue, SingleValue } from "react-select";
+import Select, { MultiValue } from "react-select";
 import { reactSelectDesignClass } from "../../common/ExtraData";
 
 interface FAQProps {
@@ -42,24 +42,6 @@ export function ExamCreate() {
   const [openAccordion, setOpenAccordion] = useState<number | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
-  const ExamModeOptions = useMemo(
-    () =>
-      getCategoryAccodingToField(categories, "Exam Mode").map((opt: any) => ({
-        value: opt._id,
-        label: opt.category_name || opt.name,
-      })),
-    [categories],
-  );
-
-  const ExamTypeOptions = useMemo(
-    () =>
-      getCategoryAccodingToField(categories, "Exam Type").map((opt: any) => ({
-        value: opt._id,
-        label: opt.category_name || opt.name,
-      })),
-    [categories],
-  );
-
   const ExamTagOptions = useMemo(
     () =>
       getCategoryAccodingToField(categories, "Exam Tag").map((opt: any) => ({
@@ -74,6 +56,7 @@ export function ExamCreate() {
       exam_name: "",
       exam_short_name: "",
       exam_type: "",
+      exam_sub_type: "",
       exam_tag: [] as string[],
       upcoming_exam_date: { date: "", is_tentative: false },
       result_date: { date: "", is_tentative: false },
@@ -95,6 +78,7 @@ export function ExamCreate() {
         fd.append("exam_name", values.exam_name);
         fd.append("exam_short_name", values.exam_short_name);
         fd.append("exam_type", values.exam_type);
+        fd.append("exam_sub_type", values.exam_sub_type);
         fd.append("exam_tag", JSON.stringify(values.exam_tag));
         fd.append(
           "upcoming_exam_date",
@@ -155,6 +139,11 @@ export function ExamCreate() {
     if (openAccordion === index) setOpenAccordion(null);
   };
 
+  const getCategoryById = (id: string) => {
+    const found = categories?.find((item) => item?._id === id);
+    return found?.category_name || "";
+  };
+
   return (
     <div className="space-y-6">
       <Breadcrumbs
@@ -168,7 +157,7 @@ export function ExamCreate() {
 
       <div className="bg-[var(--yp-primary)] rounded-xl shadow-sm border border-[var(--yp-border-primary)]">
         <form onSubmit={formik.handleSubmit} className="p-6 space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
                 Exam Full Name
@@ -199,22 +188,40 @@ export function ExamCreate() {
               <label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
                 Exam Type
               </label>
-              <Select
-                options={ExamTypeOptions}
-                value={ExamTypeOptions.find(
-                  (opt) => opt.value === formik.values.exam_type,
+              <select
+                className="w-full px-3 py-2 border border-[var(--yp-border-primary)] rounded-lg bg-[var(--yp-input-primary)] text-[var(--yp-text-primary)]"
+                {...formik.getFieldProps("exam_type")}
+                onChange={(e) => {
+                  formik?.handleChange(e);
+                  formik.setFieldValue("exam_sub_type", "");
+                }}
+              >
+                <option value="">-- select Exam Type --</option>
+                {getCategoryAccodingToField(categories, "Exam Type")?.map(
+                  (it) => (
+                    <option value={it?._id}>{it?.category_name}</option>
+                  ),
                 )}
-                onChange={(selected: SingleValue<any>) =>
-                  formik.setFieldValue(
-                    "exam_type",
-                    selected ? selected.value : "",
-                  )
-                }
-                placeholder="Select Type..."
-                classNamePrefix="react-select"
-                classNames={reactSelectDesignClass}
-              />
+              </select>
               {getFormikError(formik, "exam_type")}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
+                Exam Sub Type
+              </label>
+              <select
+                className="w-full px-3 py-2 border border-[var(--yp-border-primary)] rounded-lg bg-[var(--yp-input-primary)] text-[var(--yp-text-primary)]"
+                {...formik.getFieldProps("exam_sub_type")}
+              >
+                <option value="">-- select Exam Sub Type --</option>
+                {getCategoryAccodingToField(
+                  categories,
+                  getCategoryById(formik?.values?.exam_type) || "",
+                )?.map((it) => (
+                  <option value={it?._id}>{it?.category_name}</option>
+                ))}
+              </select>
+              {getFormikError(formik, "exam_sub_type")}
             </div>
           </div>
 
@@ -245,20 +252,17 @@ export function ExamCreate() {
               <label className="block text-sm font-medium text-[var(--yp-text-secondary)] mb-2">
                 Exam Mode
               </label>
-              <Select
-                options={ExamModeOptions}
-                value={ExamModeOptions.find(
-                  (opt: any) => opt.value === formik.values.exam_mode,
+              <select
+                className="w-full px-3 py-2 border border-[var(--yp-border-primary)] rounded-lg bg-[var(--yp-input-primary)] text-[var(--yp-text-primary)]"
+                {...formik.getFieldProps("exam_mode")}
+              >
+                <option value="">-- select Exam Mode --</option>
+                {getCategoryAccodingToField(categories, "Exam Mode")?.map(
+                  (it) => (
+                    <option value={it?._id}>{it?.category_name}</option>
+                  ),
                 )}
-                onChange={(selected: SingleValue<any>) =>
-                  formik.setFieldValue(
-                    "exam_mode",
-                    selected ? selected.value : "",
-                  )
-                }
-                classNamePrefix="react-select"
-                classNames={reactSelectDesignClass}
-              />
+              </select>
               {getFormikError(formik, "exam_mode")}
             </div>
           </div>

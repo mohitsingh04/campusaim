@@ -469,6 +469,11 @@ export default function ExamView() {
                   title="Exam Type"
                   value={getCategoryById(exam?.exam_type || "")}
                 />
+                <DetailCard
+                  icon={Layers3}
+                  title="Exam Sub Type"
+                  value={getCategoryById(exam?.exam_sub_type || "")}
+                />
 
                 <DetailCard
                   icon={GraduationCap}
