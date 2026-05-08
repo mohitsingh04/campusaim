@@ -22,7 +22,7 @@ const InfoCard = ({
   note?: string;
 }) => (
   <div
-    className={`flex items-center gap-2 p-4 bg-(--secondary-bg) rounded-custom  shadow-custom ${className} ${isDanger ? "ring-2! ring-(--danger)/20!" : ""}`}
+    className={`flex items-center gap-2 p-4 bg-(--secondary-bg) rounded-custom  shadow-custom ${className} ${isDanger ? "ring-2! ring-(--danger)/20!" : "ring-2! ring-(--border)/20!"}`}
   >
     <div
       className={`${isDanger ? "bg-(--danger-subtle) text-(--danger-emphasis)" : "bg-(--main-subtle) text-(--main-emphasis)"} p-2  rounded-full`}

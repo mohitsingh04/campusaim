@@ -25,6 +25,7 @@ export const createDynamicFilterOptions = (
   currentFilters: ExamFilterProps = {
     exam_mode: [],
     exam_type: [],
+    exam_sub_type: [],
     exam_tag: [],
     upcoming_exam_month: [],
     result_month: [],
@@ -61,6 +62,15 @@ export const createDynamicFilterOptions = (
                 filterValues.some(
                   (cat) =>
                     generateSlug(exam.exam_type || "") === generateSlug(cat),
+                )
+              );
+            case "exam_sub_type":
+              return (
+                exam.exam_sub_type &&
+                filterValues.some(
+                  (cat) =>
+                    generateSlug(exam.exam_sub_type || "") ===
+                    generateSlug(cat),
                 )
               );
             case "exam_tag":
@@ -127,6 +137,16 @@ export const createDynamicFilterOptions = (
         ),
     ),
   ];
+  const filteredForExamSubTypes = getFilteredExamForCount("exam_sub_type");
+  const allSubTypes = [
+    ...new Set(
+      filteredForExamSubTypes
+        .map((exa) => exa.exam_sub_type)
+        .filter((exam_sub_type): exam_sub_type is string =>
+          Boolean(exam_sub_type && exam_sub_type.trim()),
+        ),
+    ),
+  ];
   const filteredForUpcomingMonth = getFilteredExamForCount(
     "upcoming_exam_month",
   );
@@ -184,6 +204,14 @@ export const createDynamicFilterOptions = (
       value: exam_type,
       count: filteredForModes.filter(
         (exa) => generateSlug(exa.exam_type || "") === generateSlug(exam_type),
+      ).length,
+    })),
+    examSubType: allSubTypes.map((exam_sub_type) => ({
+      name: exam_sub_type,
+      value: exam_sub_type,
+      count: filteredForModes.filter(
+        (exa) =>
+          generateSlug(exa.exam_sub_type || "") === generateSlug(exam_sub_type),
       ).length,
     })),
     examTag: allExamTags.map((exam_tag) => ({
@@ -246,6 +274,12 @@ export const filterdExams = (
         filters.exam_type.some(
           (cat) => generateSlug(exam.exam_type || "") === generateSlug(cat),
         ));
+    const matchesSubTypes =
+      filters.exam_sub_type.length === 0 ||
+      (exam.exam_sub_type &&
+        filters.exam_sub_type.some(
+          (cat) => generateSlug(exam.exam_sub_type || "") === generateSlug(cat),
+        ));
     const matchesUpcomingMonth =
       filters.upcoming_exam_month.length === 0 ||
       (exam.upcoming_exam_month &&
@@ -277,6 +311,7 @@ export const filterdExams = (
       matchesSearch &&
       matchesLevels &&
       matchesTypes &&
+      matchesSubTypes &&
       matchesTags &&
       matchesUpcomingMonth &&
       matchesResultMonth &&

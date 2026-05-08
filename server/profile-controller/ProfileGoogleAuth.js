@@ -3,7 +3,6 @@ import jwt from "jsonwebtoken";
 import RegularUser from "../profile-model/RegularUser.js";
 import axios from "axios";
 import { generateUniqueId } from "../utils/Callback.js";
-import { addProfileScore } from "./ProfileScoreController.js";
 import { ProfileRoles } from "../profile-model/ProfileRoles.js";
 import { ProfilePermissions } from "../profile-model/ProfilePermissions.js";
 
@@ -52,7 +51,7 @@ export const ProfileGoogleLoginAuth = async (req, res) => {
     } else {
       const { data } = await axios.get(
         `https://www.googleapis.com/oauth2/v3/userinfo`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
       payload = data;
     }
@@ -77,7 +76,7 @@ export const ProfileGoogleLoginAuth = async (req, res) => {
 
         const accessToken = jwt.sign(
           { id: existingUser._id, email: existingUser.email },
-          process.env.JWT_SECRET_VALUE
+          process.env.JWT_SECRET_VALUE,
         );
 
         res.cookie("accessToken", accessToken, {
@@ -130,17 +129,9 @@ export const ProfileGoogleLoginAuth = async (req, res) => {
 
     const savedUser = await newUser.save();
 
-    let score = 0;
-    if (username) score += 2;
-    if (name) score += 2;
-    if (email) score += 2;
-    if (savedUser.mobile_no) score += 2;
-
-    await addProfileScore({ userId: newUniqueId, score });
-
     const accessToken = jwt.sign(
       { id: savedUser._id, email: savedUser.email },
-      process.env.JWT_SECRET_VALUE
+      process.env.JWT_SECRET_VALUE,
     );
 
     res.cookie("accessToken", accessToken, {

@@ -87,6 +87,26 @@ const FiltersContent = ({
             />
           </FilterSection>
         )}
+        {dynamicFilterOptions.examSubType.length > 0 && (
+          <FilterSection
+            title="Exam Sub Type"
+            isExpanded={expandedFilters.exam_sub_type}
+            onToggle={() => onToggleFilter("exam_sub_type")}
+          >
+            <CheckboxFilter
+              items={dynamicFilterOptions.examSubType}
+              filterType="exam_sub_type"
+              selectedItems={filters.exam_sub_type}
+              searchTerm={filterSearchTerms.exam_sub_type}
+              onSearchChange={(value) =>
+                onFilterSearchChange("exam_sub_type", value)
+              }
+              onFilterChange={
+                onCheckboxFilter as (filterType: string, value: string) => void
+              }
+            />
+          </FilterSection>
+        )}
         {dynamicFilterOptions.examTag.length > 0 && (
           <FilterSection
             title="Exam Tags"

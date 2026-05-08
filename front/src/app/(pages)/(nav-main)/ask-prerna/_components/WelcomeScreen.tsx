@@ -36,7 +36,7 @@ export function WelcomeScreen({
         <p className="text-base text-(--text-color) max-w-2xl leading-relaxed">
           I am <span className="font-semibold text-(--main)">Prerna</span>, your
           AI partner for yoga and wellness. I&apos;m here to help you compare
-          studios, find courses, discover retreats, and answer any related
+          studios, find courses, discover  and answer any related
           question.
         </p>
 

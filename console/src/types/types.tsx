@@ -15,15 +15,6 @@ export interface UserProps extends Record<string, unknown> {
   country: string;
   avatar: string[];
   uniqueId: number;
-  about: string;
-  heading: string;
-  score: number;
-  resume: string;
-  languages: string[];
-  skills: string[];
-  experiences: ExperienceProps[];
-  education: EducationProps[];
-  isProfessional: boolean;
 }
 
 export interface ReqKoItem {
@@ -31,17 +22,6 @@ export interface ReqKoItem {
   best_for?: string;
   course_eligibility?: string;
   uniqueId?: string; // 👈 make optional
-}
-
-export interface SkillProps extends Record<string, unknown> {
-  _id: string;
-  skill: string;
-  createdAt: string;
-}
-export interface LanguageProps extends Record<string, unknown> {
-  _id: string;
-  language: string;
-  createdAt: string;
 }
 export interface ReviewProps {
   uniqueId?: number;
@@ -69,27 +49,6 @@ export interface ReqKoItem {
   requirment?: string;
   key_outcome?: string;
   uniqueId?: string; // 👈 make optional
-}
-
-export interface EducationProps {
-  uniqueId?: number;
-  institute: number | null;
-  degree: number | null;
-  start_date: string;
-  end_date: string;
-  currentlyStuding: boolean;
-}
-
-export interface ExperienceProps {
-  uniqueId?: number;
-  position: string;
-  property_name_id?: number;
-  location: string;
-  start_date: string;
-  end_date: string;
-  property_id?: number | null;
-  property_name?: string;
-  currentlyWorking: boolean;
 }
 
 export interface Column<T> {
@@ -255,42 +214,6 @@ export interface ScholarshipProps extends Record<string, unknown> {
   seo_score: number;
 }
 
-export interface RetreatProps extends Record<string, unknown> {
-  _id: string;
-  retreat_name: string;
-  uniqueId: number;
-  seo_score: number;
-  retreat_short_name: string;
-  description: string;
-  createdAt: string;
-  retreat_id?: string | number;
-  status: string;
-  isDeleted: boolean;
-  retreat_type: string;
-  retreat_format: string;
-  retreat_difficulty_level: string;
-  booking_deadline: string;
-  start_date: string;
-  end_date: string;
-  accommodation: string[];
-  retreat_certification_type: string;
-  cancellation_policy: string;
-  capacity: number;
-  certification_available: boolean;
-  duration: string;
-  best_for: string[];
-  key_outcomes: string[];
-  requirements: string[];
-  languages: string[];
-  image: string[];
-  featured_image: string[];
-  gallery: string[];
-  price: { [currency: string]: number };
-  discount_price: number;
-  exclusions: string;
-  inclusions: string;
-  routine: { start_time: string; end_time: string; task: string }[];
-}
 export interface PropertyProps extends Record<string, unknown> {
   _id: string;
   uniqueId: number;
@@ -321,43 +244,7 @@ export interface FeedbackProps extends Record<string, unknown> {
   status: string;
   createdAt: string;
 }
-export interface EventsProps extends Record<string, unknown> {
-  _id: string;
-  title: string;
-  event_host_url: string;
-  isonline: boolean;
-  event_website: string;
-  featured_image: string[];
-  schedule: { date: string; start_time: string; end_time: string }[];
-  status: string;
-  price: { [currency: string]: number };
-  createdAt: string;
-  categoryId: [string];
-  event_address: string;
-  event_pincode: string;
-  event_country: string;
-  event_state: string;
-  event_city: string;
-  ticket_booking: {
-    start: string;
-    end: string;
-  };
-  seo_score: number;
-  event_partners: {
-    name: string;
-    logo: string[];
-  }[];
-  description: string;
-  entrance_type: string;
-  host: { name: string; image: string };
-  host_name?: string;
-  language: string[];
-  category: string[];
-  age_limit: {
-    min: string;
-    max: string;
-  };
-}
+
 export interface NewsProps extends Record<string, unknown> {
   _id: string;
   title: string;
@@ -368,25 +255,6 @@ export interface NewsProps extends Record<string, unknown> {
   content: string;
   publish_date: string;
   seo_score: number;
-}
-export interface AllLanaguagesProps {
-  uniqueId: number;
-  language: string;
-}
-export interface AllSkillsProps {
-  uniqueId: number;
-  skill: string;
-}
-
-export interface AllDegreeAndInstituteProps {
-  degree: {
-    uniqueId: number;
-    degree_name: string;
-  }[];
-  institute: {
-    uniqueId: number;
-    institute_name: string;
-  }[];
 }
 
 export interface FAQProps {

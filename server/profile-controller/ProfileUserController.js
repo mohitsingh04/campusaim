@@ -3,7 +3,6 @@ import RegularUser from "../profile-model/RegularUser.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { sendSwitchingEmail } from "../email/profileEmail.js";
-import { addProfileScore } from "./ProfileScoreController.js";
 import { normalizePhone } from "../utils/Callback.js";
 import { ProfilePermissions } from "../profile-model/ProfilePermissions.js";
 
@@ -159,8 +158,6 @@ export const UpdateProfileUser = async (req, res) => {
       }
     }
 
-    const isNewAltMobile = !user.alt_mobile_no && normalizedAltMobile;
-
     const updatedFields = {
       username: username || user.username,
       name: name || user.name,
@@ -170,10 +167,6 @@ export const UpdateProfileUser = async (req, res) => {
     };
 
     await RegularUser.findByIdAndUpdate(objectId, { $set: updatedFields });
-
-    if (isNewAltMobile) {
-      await addProfileScore({ userId: user?.uniqueId, score: 2 });
-    }
 
     return res.status(200).json({ message: "User updated successfully" });
   } catch (error) {
@@ -256,8 +249,6 @@ export const UpdateUserDetails = async (req, res) => {
       }
     }
 
-    const isNewAltMobile = !user.alt_mobile_no && normalizedAltMobile;
-
     // === Prepare updated fields ===
     const updatedFields = {
       username: username || user.username,
@@ -276,12 +267,12 @@ export const UpdateUserDetails = async (req, res) => {
       // find all permissions that include this role
       const allPermissions = await ProfilePermissions.find();
       const matchedPermissions = allPermissions.filter((perm) =>
-        perm.roles.some((r) => r.equals(role))
+        perm.roles.some((r) => r.equals(role)),
       );
 
       // collect all nested permission IDs
       const permissionIds = matchedPermissions.flatMap((p) =>
-        p.permissions.map((perm) => perm._id)
+        p.permissions.map((perm) => perm._id),
       );
 
       updatedFields.permissions = permissionIds;
@@ -289,10 +280,6 @@ export const UpdateUserDetails = async (req, res) => {
 
     // === Update user once ===
     await RegularUser.findByIdAndUpdate(objectId, { $set: updatedFields });
-
-    if (isNewAltMobile) {
-      await addProfileScore({ userId: user?.uniqueId, score: 2 });
-    }
 
     return res.status(200).json({ message: "User updated successfully" });
   } catch (error) {
@@ -316,12 +303,10 @@ export const ProfileAvatarChange = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    const hadAvatarBefore = user.avatar && user.avatar.length > 0;
-
     const updatedUser = await RegularUser.findOneAndUpdate(
       { uniqueId: userId },
       { avatar: [profileImage.webpFilename, profileImage.originalFilename] },
-      { new: true }
+      { new: true },
     );
 
     if (!updatedUser) {
@@ -330,10 +315,6 @@ export const ProfileAvatarChange = async (req, res) => {
 
     if (profileImage) {
       await ProfileMainImageMover(req, res, updatedUser.uniqueId, "avatar");
-    }
-
-    if (!hadAvatarBefore) {
-      await addProfileScore({ userId: updatedUser.uniqueId, score: 2 });
     }
 
     return res
@@ -360,12 +341,10 @@ export const ProfileBannerChange = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    const hadBannerBefore = user.banner && user.banner.length > 0;
-
     const updatedUser = await RegularUser.findOneAndUpdate(
       { uniqueId: userId },
       { banner: [bannerImage.webpFilename, bannerImage.originalFilename] },
-      { new: true }
+      { new: true },
     );
 
     if (!updatedUser) {
@@ -374,11 +353,6 @@ export const ProfileBannerChange = async (req, res) => {
 
     if (bannerImage) {
       await ProfileMainImageMover(req, res, updatedUser?.uniqueId, "banner");
-    }
-
-    // Award 2 points only if banner didn't exist before
-    if (!hadBannerBefore) {
-      await addProfileScore({ userId: updatedUser?.uniqueId, score: 2 });
     }
 
     return res
@@ -404,21 +378,14 @@ export const DeleteProfileAvatar = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    const hadAvatarBefore = user.avatar && user.avatar.length > 0;
-
     const updatedUser = await RegularUser.findOneAndUpdate(
       { uniqueId: userId },
       { $unset: { avatar: "" } },
-      { new: true }
+      { new: true },
     );
 
     if (!updatedUser) {
       return res.status(404).json({ error: "User not found" });
-    }
-
-    // Remove 2 points only if avatar existed before
-    if (hadAvatarBefore) {
-      await addProfileScore({ userId: updatedUser.uniqueId, score: -2 });
     }
 
     return res
@@ -438,26 +405,19 @@ export const DeleteProfileBanner = async (req, res) => {
       return res.status(400).json({ error: "UserId is required" });
     }
 
-    // Find user to check if banner exists before deletion
     const user = await RegularUser.findOne({ uniqueId: userId });
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
 
-    const hadBannerBefore = user.banner && user.banner.length > 0;
-
     const updatedUser = await RegularUser.findOneAndUpdate(
       { uniqueId: userId },
       { $unset: { banner: "" } },
-      { new: true }
+      { new: true },
     );
 
     if (!updatedUser) {
       return res.status(404).json({ error: "User not found" });
-    }
-
-    if (hadBannerBefore) {
-      await addProfileScore({ userId: updatedUser.uniqueId, score: -2 });
     }
 
     return res
@@ -492,7 +452,7 @@ export const SwitchProfessionalMail = async (req, res) => {
 
     const professionalToken = await jwt.sign(
       { id: objectId },
-      process.env.JWT_SECRET_VALUE
+      process.env.JWT_SECRET_VALUE,
     );
 
     const TokenSet = await RegularUser.findOneAndUpdate(
@@ -503,7 +463,7 @@ export const SwitchProfessionalMail = async (req, res) => {
           professionalTokenExpiry: new Date(Date.now() + 24 * 60 * 60 * 1000),
         },
       },
-      { new: true }
+      { new: true },
     );
 
     if (TokenSet) {
@@ -541,7 +501,7 @@ export const confirmSwitchProfessional = async (req, res) => {
         $set: { isProfessional: true },
         $unset: { professionalToken: "", professionalTokenExpiry: "" },
       },
-      { new: true }
+      { new: true },
     );
 
     if (!switchedUser) {

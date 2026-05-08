@@ -133,12 +133,19 @@ const ExamDetails = ({ exam }: { exam: ExamProps }) => {
               <InfoCard
                 Icon={BarChartIcon}
                 title="Exam Mode"
-                value={getCategoryById(exam?.exam_mode || "")||"N/A"}
+                value={getCategoryById(exam?.exam_mode || "") || "N/A"}
               />
               <InfoCard
                 Icon={BarChartIcon}
                 title="Exam Type"
-                value={getCategoryById(exam?.exam_type || "") || "N/A"}
+                value={[
+                  getCategoryById(exam?.exam_type || ""),
+                  exam?.exam_sub_type
+                    ? getCategoryById(exam?.exam_sub_type)
+                    : "",
+                ]
+                  .filter(Boolean)
+                  .join(" - ")}
               />
 
               <InfoCard
@@ -151,7 +158,7 @@ const ExamDetails = ({ exam }: { exam: ExamProps }) => {
                     color: "yellow",
                   },
                   {
-                    name: "Expired",
+                    name: "Exam concluded",
                     value: isDateExpired(exam?.upcoming_exam_date?.date),
                     color: "red",
                   },
@@ -171,7 +178,7 @@ const ExamDetails = ({ exam }: { exam: ExamProps }) => {
                     color: "yellow",
                   },
                   {
-                    name: "Expired",
+                    name: "Exam concluded",
                     value: isDateExpired(exam?.result_date?.date),
                     color: "red",
                   },
@@ -191,7 +198,7 @@ const ExamDetails = ({ exam }: { exam: ExamProps }) => {
                     color: "yellow",
                   },
                   {
-                    name: "Expired",
+                    name: "Exam concluded",
                     value: isDateExpired(exam?.application_form_date?.start),
                     color: "red",
                   },
@@ -211,7 +218,7 @@ const ExamDetails = ({ exam }: { exam: ExamProps }) => {
                     color: "yellow",
                   },
                   {
-                    name: "Expired",
+                    name: "Exam concluded",
                     value: isDateExpired(exam?.application_form_date?.end),
                     color: "red",
                   },

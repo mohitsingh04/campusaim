@@ -15,13 +15,7 @@ const SeoSchema = new mongoose.Schema(
     scholarship_id: {
       type: mongoose.Schema.Types.ObjectId,
     },
-    event_id: {
-      type: mongoose.Schema.Types.ObjectId,
-    },
     news_id: {
-      type: mongoose.Schema.Types.ObjectId,
-    },
-    retreat_id: {
       type: mongoose.Schema.Types.ObjectId,
     },
     title: String,

@@ -44,6 +44,7 @@ export default function ExamsPage() {
     const urlFilters: ExamFilterProps = {
       exam_mode: [],
       exam_type: [],
+      exam_sub_type: [],
       exam_tag: [],
       upcoming_exam_month: [],
       result_month: [],
@@ -67,6 +68,7 @@ export default function ExamsPage() {
       exam_mode: true,
       exam_type: true,
       exam_tag: true,
+      exam_sub_type: true,
       upcoming_exam_month: true,
       result_month: true,
       application_month: true,
@@ -80,6 +82,7 @@ export default function ExamsPage() {
     useState<FilterExamSearchTermsProps>({
       exam_mode: "",
       exam_type: "",
+      exam_sub_type: "",
       exam_tag: "",
       upcoming_exam_month: "",
       result_month: "",
@@ -146,6 +149,7 @@ export default function ExamsPage() {
             ...exa,
             exam_mode: getCategoryById(exa?.exam_mode),
             exam_type: getCategoryById(exa?.exam_type),
+            exam_sub_type: getCategoryById(exa?.exam_sub_type),
             exam_tag: exa?.exam_tag?.map((tag) => getCategoryById(tag)),
             exam_slug: seoMatch ? seoMatch.slug : generateSlug(exa.exam_name),
             upcoming_exam_month: getMonthName(exa?.upcoming_exam_date?.date),
@@ -203,6 +207,7 @@ export default function ExamsPage() {
     const emptyFilters: ExamFilterProps = {
       exam_mode: [],
       exam_type: [],
+      exam_sub_type: [],
       exam_tag: [],
       upcoming_exam_month: [],
       result_month: [],
@@ -213,6 +218,7 @@ export default function ExamsPage() {
     setFilterSearchTerms({
       exam_mode: "",
       exam_type: "",
+      exam_sub_type: "",
       exam_tag: "",
       upcoming_exam_month: "",
       result_month: "",

@@ -73,20 +73,8 @@ export const blogUploadMulter = multer({
   limits: { fileSize: 100 * 1024 * 1024, fieldSize: 100 * 1024 * 1024 },
 });
 
-// 6. Resume images
-export const ResuemUploadMulter = multer({
-  storage: createStorage("../media/resume", "resume"),
-  limits: { fileSize: 100 * 1024 * 1024, fieldSize: 100 * 1024 * 1024 },
-});
-
 export const newsUploadMulter = multer({
   storage: createStorage("../media/news-and-updates"),
-  limits: { fileSize: 100 * 1024 * 1024, fieldSize: 100 * 1024 * 1024 },
-});
-
-// 8. Profile resume uploads
-export const ProfileResuemUploadMulter = multer({
-  storage: createStorage("./images", "resume"),
   limits: { fileSize: 100 * 1024 * 1024, fieldSize: 100 * 1024 * 1024 },
 });
 

@@ -44,12 +44,12 @@ export default function NewsList() {
           const seoData = seoResult.value.data;
 
           // Merge seo_score into blogs
-          news = news.map((event: any) => {
+          news = news.map((news_item: any) => {
             const seoMatch = seoData.find(
-              (seo: any) => seo.news_id === event._id
+              (seo: any) => seo.news_id === news_item._id,
             );
             return {
-              ...event,
+              ...news_item,
               seo_score: seoMatch ? seoMatch.seo_score : 0,
               news_trend: getScoreStatus(seoMatch ? seoMatch.seo_score : 0),
             };
@@ -92,7 +92,7 @@ export default function NewsList() {
         getErrorResponse(error);
       }
     },
-    [getNews]
+    [getNews],
   );
 
   const columns = useMemo<Column<NewsProps>[]>(
@@ -105,7 +105,7 @@ export default function NewsList() {
               <>
                 {matchPermissions(
                   authUser?.permissions,
-                  "Read News & Updates Seo"
+                  "Read News & Updates Seo",
                 ) ? (
                   <Link to={`/dashboard/news-and-update/${row?._id}/seo`}>
                     <CircularProgress value={row?.seo_score || 0} />
@@ -137,7 +137,7 @@ export default function NewsList() {
               <>
                 {matchPermissions(
                   authUser?.permissions,
-                  "Read News & Updates"
+                  "Read News & Updates",
                 ) && (
                   <TableButton
                     Icon={Eye}
@@ -150,7 +150,7 @@ export default function NewsList() {
 
                 {matchPermissions(
                   authUser?.permissions,
-                  "Update News & Updates"
+                  "Update News & Updates",
                 ) && (
                   <TableButton
                     Icon={Edit2}
@@ -163,7 +163,7 @@ export default function NewsList() {
 
                 {matchPermissions(
                   authUser?.permissions,
-                  "Delete News & Updates"
+                  "Delete News & Updates",
                 ) && (
                   <TableButton
                     Icon={Trash2}
@@ -180,7 +180,7 @@ export default function NewsList() {
         key: "actions",
       },
     ],
-    [authLoading, authUser?.permissions, handleDelete]
+    [authLoading, authUser?.permissions, handleDelete],
   );
 
   const tabFilters = useMemo(() => {
@@ -190,8 +190,8 @@ export default function NewsList() {
           allNews
             .map((u) => u[field])
             .filter(Boolean)
-            .map((v) => String(v))
-        )
+            .map((v) => String(v)),
+        ),
       );
 
     return [
