@@ -41,8 +41,6 @@ export default function AllLead() {
     const role = authUser?.appRole;
     const organizationId = authUser?.organizationId;
 
-    const hasFetched = useRef(false);
-
     // Stores the complete unpaginated dataset from the backend
     const [allLeads, setAllLeads] = useState([]);
 
@@ -103,11 +101,10 @@ export default function AllLead() {
     }, [debouncedSearch, statusFilter, assignedFilter, todayFilter, followupFilter]);
 
     useEffect(() => {
-        if (!authUser?._id || hasFetched.current) return;
+        if (!authUser?._id) return;
 
-        hasFetched.current = true;
         fetchData();
-    }, [authUser?._id]);
+    }, [authUser?._id, fetchData]);
 
     useEffect(() => {
         setSearchParams((prev) => {

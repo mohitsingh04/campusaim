@@ -10,6 +10,7 @@ import PhoneInput from "../../components/formInputs/PhoneInput";
 import { useAuth } from "../../context/AuthContext";
 import { FORM_SCHEMA } from "./AccordionData/form.schema";
 import SectionRenderer from "./AccordionData/SectionRenderer";
+import EditLeadSkeleton from './Skeleton/EditLeadSkeleton';
 
 /* ============================
    Validation & Initial Values
@@ -155,6 +156,12 @@ const AddLead = () => {
     const [prefStates, setPrefStates] = useState([]);
     const [prefCities, setPrefCities] = useState([]);
 
+    // Loading States
+    const [isPropertyLoading, setIsPropertyLoading] = useState(true);
+    const [isPropertyCourseLoading, setIsPropertyCourseLoading] = useState(true);
+    const [isCourseLoading, setIsCourseLoading] = useState(true);
+    const [isCategoryLoading, setIsCategoryLoading] = useState(true);
+
     const categoryId = authUser?.nicheId;
     const myCategory = category.filter((a) => a?._id === categoryId);
 
@@ -170,36 +177,62 @@ const AddLead = () => {
 
     const fetchProperties = async () => {
         try {
+            setIsPropertyLoading(true);
             const res = await CampusaimAPI.get("/property");
             const property = res?.data;
             setProperty(property);
         } catch (error) {
             toast.error("Internal server error.");
             console.error(error)
+        } finally {
+            setIsPropertyLoading(false);
         }
     };
 
     const fetchCourses = async () => {
         try {
+            setIsCourseLoading(true);
             const res = await CampusaimAPI.get("/course");
             const course = res?.data;
             setCourse(course);
         } catch (error) {
             toast.error("Internal server error.");
             console.error(error)
+        } finally {
+            setIsCourseLoading(false);
         }
     };
 
     const fetchPropertyCourses = async () => {
         try {
+            setIsPropertyCourseLoading(true);
             const res = await CampusaimAPI.get("/property-course");
             const course = res?.data;
             setPropertyCourse(course);
         } catch (error) {
             toast.error("Internal server error.");
             console.error(error)
+        } finally {
+            setIsPropertyCourseLoading(false);
         }
     };
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                setIsCategoryLoading(true);
+                const res = await CampusaimAPI.get("/category");
+                const filteredCat = res.data.filter((a) => a.parent_category === "Academic Type");
+                setCategory(filteredCat);
+            } catch (error) {
+                toast.error("Internal server error.");
+                console.error(error)
+            } finally {
+                setIsCategoryLoading(false);
+            }
+        };
+        fetchCategories();
+    }, []);
 
     const fetchCountries = async () => {
         try {
@@ -210,20 +243,6 @@ const AddLead = () => {
             toast.error("Failed to load countries");
         }
     };
-
-    useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                const res = await CampusaimAPI.get("/category");
-                const filteredCat = res.data.filter((a) => a.parent_category === "Academic Type");
-                setCategory(filteredCat);
-            } catch (error) {
-                toast.error("Internal server error.");
-                console.error(error)
-            }
-        };
-        fetchCategories();
-    }, []);
 
     useEffect(() => {
         if (categoryKey === "college_university") {
@@ -269,7 +288,7 @@ const AddLead = () => {
                 toast.success("Lead added successfully");
                 navigate("/dashboard/leads/all");
             } catch (error) {
-                console.log(error);
+                console.error(error);
                 toast.error(error?.response?.data?.error || "Something went wrong!");
             } finally {
                 setSubmitting(false);
@@ -413,6 +432,10 @@ const AddLead = () => {
         academics: [],
         preferences: []
     };
+
+    if (isPropertyLoading || isPropertyCourseLoading || isCourseLoading || isCategoryLoading) {
+        return <EditLeadSkeleton />;
+    }
 
     return (
         <div className="space-y-6 max-w-5xl mx-auto pb-10">

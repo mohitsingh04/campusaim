@@ -198,13 +198,14 @@ export const FORM_SCHEMA = {
                 name: "school.currentClass",
                 label: "Current Class",
                 type: FIELD_TYPES.SELECT,
-                options: ["6th", "9th", "10th", "11th", "12th"]
+                options: ["6th", "7th", "8th", "9th", "10th", "11th", "12th"]
             },
             {
                 name: "school.board",
                 label: "Board",
                 type: FIELD_TYPES.SELECT,
-                options: ["CBSE", "ICSE", "State Board"]
+                options: ["CBSE", "ICSE", "State Board"],
+                allowOther: true
             },
             {
                 name: "school.percentage",

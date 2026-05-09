@@ -6,20 +6,23 @@ import LeadStatusBadge from "../../../components/ui/Badge/LeadStatusBadge";
 import toast from "react-hot-toast";
 import { CampusaimAPI } from "../../../services/API";
 
-/* -------------------------------------------------- */
-/* Utils                                              */
-/* -------------------------------------------------- */
+const formatDateTime = (date) => {
+    if (!date) return "-";
 
-const formatTimeAgo = (date) => {
-    if (!date) return "No activity";
+    const parsedDate = new Date(date);
 
-    const diff = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
+    if (Number.isNaN(parsedDate.getTime())) {
+        return "-";
+    }
 
-    if (diff < 60) return `${diff}s ago`;
-    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-
-    return `${Math.floor(diff / 86400)}d ago`;
+    return parsedDate.toLocaleString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+    });
 };
 
 const safeJoinAddress = (lead) =>
@@ -30,18 +33,12 @@ const safeJoinAddress = (lead) =>
 /* -------------------------------------------------- */
 /* Component                                          */
 /* -------------------------------------------------- */
-
 export default function BasicDetails({ leadData, role, categoryId }) {
     const lead = leadData || {};
     const [showRaw, setShowRaw] = useState(false);
     const [category, setCategory] = useState([]);
     const [course, setCourse] = useState(null);
     const [property, setProperty] = useState(null);
-
-    const rawEntries = useMemo(() => {
-        if (!lead?.rawImport) return [];
-        return Object.entries(lead.rawImport);
-    }, [lead?.rawImport]);
 
     useEffect(() => {
         const fetchCategories = async () => {
@@ -86,6 +83,19 @@ export default function BasicDetails({ leadData, role, categoryId }) {
         };
         fetchProperty();
     }, []);
+
+    const rawEntries = useMemo(() => {
+        if (!lead?.rawImport) return [];
+        return Object.entries(lead.rawImport);
+    }, [lead?.rawImport]);
+
+    const hasRawImportData = useMemo(() => {
+        return (
+            lead?.rawImport &&
+            typeof lead.rawImport === "object" &&
+            Object.keys(lead.rawImport).length > 0
+        );
+    }, [lead?.rawImport]);
 
     const myCategory = category.filter((a) => a?._id === categoryId);
 
@@ -151,7 +161,7 @@ export default function BasicDetails({ leadData, role, categoryId }) {
     ];
 
     // Role helpers
-    const isAdmin = role === "admin" || role === "superadmin";
+    const isAdmin = role === "admin";
     const isTeamLeader = role === "teamleader";
     const isCounselor = role === "counselor";
     const isPartner = role === "partner";
@@ -165,6 +175,16 @@ export default function BasicDetails({ leadData, role, categoryId }) {
 
     const activeSections = CATEGORY_SECTIONS[categoryName?.toLowerCase()] || ["basic"];
 
+    const canViewManagement = isAdmin || isTeamLeader;
+
+    const showApplication = lead?.status === "applications_done";
+
+    const showAdmission = lead?.status === "converted";
+
+    const applicationUser = lead?.application?.applicationBy;
+
+    const admissionUser = lead?.admission?.admissionBy;
+
     return (
         <div className="space-y-6">
 
@@ -173,90 +193,97 @@ export default function BasicDetails({ leadData, role, categoryId }) {
                 <Section title="Details">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-                        {/* Lead Owner → Admin + TeamLeader only */}
-                        {(isAdmin || isTeamLeader) && (
-                            <HoverCard
-                                label="Lead Owner"
-                                name={lead?.createdBy?.name}
-                                email={lead?.createdBy?.email}
-                                role={lead?.createdBy?.role?.role}
-                            />
+                        {/* Lead Owner & Assigned To */}
+                        {canViewManagement && (
+                            <>
+                                <HoverCard
+                                    label="Lead Owner"
+                                    name={lead?.createdBy?.name}
+                                    email={lead?.createdBy?.email}
+                                    role={lead?.createdBy?.role?.role}
+                                />
+                                <HoverCard
+                                    label="Assigned To"
+                                    name={lead?.assignedTo?.name}
+                                    email={lead?.assignedTo?.email}
+                                    role={lead?.assignedTo?.role?.role}
+                                />
+                            </>
                         )}
 
-                        {/* Assigned To → Admin + TeamLeader */}
-                        {(isAdmin || isTeamLeader) && (
-                            <HoverCard
-                                label="Assigned To"
-                                name={lead?.assignedTo?.name}
-                                email={lead?.assignedTo?.email}
-                                role={lead?.assignedTo?.role?.role}
+                        {/* Basic Info */}
+                        {basicInfo.filter((item) => {
+                            if (item.label === "Source" && !canViewManagement) {
+                                return false;
+                            }
+
+                            if (["Created At", "Updated At"].includes(item.label) && !isAdmin) {
+                                return false;
+                            }
+
+                            if (item.label === "Last Activity" && isPartner) {
+                                return false;
+                            }
+                            return true;
+                        }).map((item) => (
+                            <Info
+                                key={item.label}
+                                label={item.label}
+                                value={item.value}
                             />
-                        )}
+                        ))}
 
-                        {/* Teamleader → Admin + TeamLeader + Counselor */}
-                        {/* {(isAdmin || isTeamLeader || isCounselor) && (
-                            <HoverCard
-                                label="Team Leader"
-                                name={lead?.teamleader?.name}
-                                role="teamleader"
-                            />
-                        )} */}
-
-                        {/* Basic Info with role filtering */}
-                        {basicInfo
-                            .filter((item) => {
-
-                                // Source visible only to admin + teamleader
-                                if (item.label === "Source" && !(isAdmin || isTeamLeader)) return false;
-
-                                // Created/Updated visible only to admin
-                                if (
-                                    (item.label === "Created At" || item.label === "Updated At") &&
-                                    !isAdmin
-                                )
-                                    return false;
-
-                                // Last activity hidden from partner
-                                if (item.label === "Last Activity" && isPartner) return false;
-
-                                return true;
-                            })
-                            .map((item) => (
-                                <Info key={item.label} label={item.label} value={item.value} />
-                            ))}
-
-                        {/* STATUS + CONVERSION */}
+                        {/* STATUS SECTION */}
                         <div className="col-span-1 md:col-span-2 bg-slate-50 border rounded-lg p-4">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
 
-                                {/* Lead Status */}
+                                {/* Status */}
                                 <div className="flex items-center gap-2">
                                     <span className="text-sm font-medium text-gray-700">Status:</span>
                                     <LeadStatusBadge status={lead?.status} />
                                 </div>
 
-                                {/* Converted By → Admin + TeamLeader */}
-                                {(lead?.status === "converted" && (isAdmin || isTeamLeader)) && (
-                                    <HoverCard
-                                        label="Converted By"
-                                        name={lead?.convertedBy?.name}
-                                        email={lead?.convertedBy?.email}
-                                        role={lead?.convertedBy?.role?.role}
-                                    />
+                                {/* APPLICATION */}
+                                {showApplication && (
+                                    <>
+                                        {canViewManagement && (
+                                            <HoverCard
+                                                label="Application Done"
+                                                name={applicationUser?.name}
+                                                email={applicationUser?.email}
+                                                role={applicationUser?.role?.role}
+                                            />
+                                        )}
+
+                                        {isAdmin && (
+                                            <Info
+                                                label="Application Done At"
+                                                value={formatDateTime(lead?.application?.confirmedAt)}
+                                            />
+                                        )}
+                                    </>
                                 )}
 
-                                {/* Converted At → Admin only */}
-                                {(lead?.status === "converted" && isAdmin) && (
-                                    <Info
-                                        label="Converted At"
-                                        value={
-                                            lead?.convertedAt
-                                                ? new Date(lead.convertedAt).toLocaleString()
-                                                : null
-                                        }
-                                    />
-                                )}
+                                {/* ADMISSION */}
+                                {showAdmission && (
+                                    <>
+                                        {canViewManagement && (
+                                            <HoverCard
+                                                label="Admission Done"
+                                                name={admissionUser?.name}
+                                                email={admissionUser?.email}
+                                                role={admissionUser?.role?.role}
+                                            />
+                                        )}
 
+                                        {isAdmin && (
+                                            <Info
+                                                label="Admission Done At"
+                                                value={formatDateTime(lead?.admission?.confirmedAt)}
+                                            />
+                                        )}
+                                    </>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -334,10 +361,9 @@ export default function BasicDetails({ leadData, role, categoryId }) {
             )}
 
             {/* ================= RAW IMPORT ================= */}
-            {/* Raw data only visible to admin */}
-            {(isAdmin && rawEntries.length > 0) && (
+            {/* Raw data */}
+            {hasRawImportData && (
                 <Section title="Raw Import Data">
-
                     <div className="flex justify-end mb-4">
                         <button
                             onClick={() => setShowRaw((s) => !s)}
@@ -348,7 +374,6 @@ export default function BasicDetails({ leadData, role, categoryId }) {
                     </div>
 
                     {showRaw && <RawTable entries={rawEntries} />}
-
                 </Section>
             )}
         </div>

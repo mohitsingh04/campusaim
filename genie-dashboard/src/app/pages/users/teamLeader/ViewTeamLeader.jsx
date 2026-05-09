@@ -70,16 +70,16 @@ export default function ViewTeamLeader() {
     const handleToggle = async () => {
         if (!teamLeaderData?._id) return;
 
-        const nextStatus = status === "active" ? "suspended" : "active";
+        const nextStatus = status === "Active" ? "Suspended" : "Active";
 
         const result = await Swal.fire({
-            title: `${nextStatus === "active" ? "Activate" : "Suspend"} User?`,
-            text: `Are you sure you want to ${nextStatus === "active" ? "activate" : "suspend"} this team leader?`,
+            title: `${nextStatus === "Active" ? "Activate" : "Suspend"} Team Leader?`,
+            text: `Are you sure you want to ${nextStatus === "Active" ? "activate" : "suspend"} this team leader?`,
             icon: "warning",
             showCancelButton: true,
-            confirmButtonColor: nextStatus === "active" ? "#16a34a" : "#dc2626",
+            confirmButtonColor: nextStatus === "Active" ? "#16a34a" : "#dc2626",
             cancelButtonColor: "#6b7280",
-            confirmButtonText: `Yes, ${nextStatus === "active" ? "Activate" : "Suspend"}`,
+            confirmButtonText: `Yes, ${nextStatus === "Active" ? "Activate" : "Suspend"}`,
             cancelButtonText: "Cancel",
             reverseButtons: true,
             focusCancel: true,
@@ -95,7 +95,7 @@ export default function ViewTeamLeader() {
             if (res.data?.status) {
                 setStatus(res.data.status);
                 toast.success(
-                    `User is now ${res.data.status === "Active" ? "Active" : "Suspended"}`
+                    `Team Leader is now ${res.data.status === "Active" ? "Active" : "Suspended"}`
                 );
             } else {
                 throw new Error("Invalid response");

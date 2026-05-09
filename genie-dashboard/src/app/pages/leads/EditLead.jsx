@@ -26,7 +26,6 @@ const EditLead = () => {
     const [course, setCourse] = useState([]);
     const [propertyCourse, setPropertyCourse] = useState([]);
     const [countries, setCountries] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
     const [lead, setLead] = useState(null);
     const [isInitialLoad, setIsInitialLoad] = useState(true);
     const [prevProperty, setPrevProperty] = useState(null);
@@ -39,6 +38,13 @@ const EditLead = () => {
     // Preferences location
     const [prefStates, setPrefStates] = useState([]);
     const [prefCities, setPrefCities] = useState([]);
+
+    // Loading States
+    const [isLoading, setIsLoading] = useState(true);
+    const [isPropertyLoading, setIsPropertyLoading] = useState(true);
+    const [isPropertyCourseLoading, setIsPropertyCourseLoading] = useState(true);
+    const [isCourseLoading, setIsCourseLoading] = useState(true);
+    const [isCategoryLoading, setIsCategoryLoading] = useState(true);
 
     const categoryId = authUser?.nicheId;
     const myCategory = category.filter((a) => a?._id === categoryId);
@@ -69,36 +75,62 @@ const EditLead = () => {
 
     const fetchProperties = async () => {
         try {
+            setIsPropertyLoading(true);
             const res = await CampusaimAPI.get("/property");
             const property = res?.data;
             setProperty(property);
         } catch (error) {
             toast.error("Internal server error.");
             console.error(error)
+        } finally {
+            setIsPropertyLoading(false);
         }
     };
 
     const fetchCourses = async () => {
         try {
+            setIsCourseLoading(true);
             const res = await CampusaimAPI.get("/course");
             const course = res?.data;
             setCourse(course);
         } catch (error) {
             toast.error("Internal server error.");
             console.error(error)
+        } finally {
+            setIsCourseLoading(false);
         }
     };
 
     const fetchPropertyCourses = async () => {
         try {
+            setIsPropertyCourseLoading(true);
             const res = await CampusaimAPI.get("/property-course");
             const course = res?.data;
             setPropertyCourse(course);
         } catch (error) {
             toast.error("Internal server error.");
             console.error(error)
+        } finally {
+            setIsPropertyCourseLoading(false);
         }
     };
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                setIsCategoryLoading(true);
+                const res = await CampusaimAPI.get("/category");
+                const filteredCat = res.data.filter((a) => a.parent_category === "Academic Type");
+                setCategory(filteredCat);
+            } catch (error) {
+                toast.error("Internal server error.");
+                console.error(error)
+            } finally {
+                setIsCategoryLoading(false);
+            }
+        };
+        fetchCategories();
+    }, []);
 
     const fetchCountries = async () => {
         try {
@@ -109,20 +141,6 @@ const EditLead = () => {
             toast.error("Failed to load countries");
         }
     };
-
-    useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                const res = await CampusaimAPI.get("/category");
-                const filteredCat = res.data.filter((a) => a.parent_category === "Academic Type");
-                setCategory(filteredCat);
-            } catch (error) {
-                toast.error("Internal server error.");
-                console.error(error)
-            }
-        };
-        fetchCategories();
-    }, []);
 
     useEffect(() => {
         if (categoryKey === "college_university") {
@@ -211,7 +229,17 @@ const EditLead = () => {
         school: {
             currentName: lead?.school?.currentName || "",
             currentLocation: lead?.school?.currentLocation || "",
-            board: lead?.school?.board || "",
+            board:
+                ["CBSE", "ICSE", "State Board"].includes(lead?.school?.board)
+                    ? lead?.school?.board
+                    : lead?.school?.board
+                        ? "__other__"
+                        : "",
+
+            board_other:
+                ["CBSE", "ICSE", "State Board"].includes(lead?.school?.board)
+                    ? ""
+                    : lead?.school?.board || "",
             currentClass: lead?.school?.currentClass || "",
             session: lead?.school?.session || "",
             percentage: lead?.school?.percentage || "",
@@ -441,7 +469,9 @@ const EditLead = () => {
         preferences: []
     };
 
-    if (isLoading) return <EditLeadSkeleton />;
+    if (isLoading || isPropertyLoading || isPropertyCourseLoading || isCourseLoading || isCategoryLoading) {
+        return <EditLeadSkeleton />;
+    }
 
     return (
         <div className="space-y-6 max-w-5xl mx-auto pb-10">

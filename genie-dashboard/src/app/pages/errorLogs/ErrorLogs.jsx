@@ -37,6 +37,7 @@ const fetchErrorLogs = async ({ page, search }) => {
                 search
             }
         });
+        console.log(data)
         return data;
     } catch (error) {
         throw new Error(

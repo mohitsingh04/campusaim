@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useEffect, useState } from "react";
 import { useParams, Link, useSearchParams } from "react-router-dom";
 import Breadcrumbs from "../../components/ui/BreadCrumb/Breadcrumbs";
-import { API } from "../../services/API";
+import { API, CampusaimAPI } from "../../services/API";
 import { useAuth } from "../../context/AuthContext";
 
 import ConversationSidebar from "./LeadConversation/ConversationSidebar";
@@ -41,6 +41,11 @@ export default function LeadConversation() {
     const [collegesSuggested, setCollegesSuggested] = useState([]);
     const [studentObjections, setStudentObjections] = useState([]);
     const [nextAction, setNextAction] = useState("call_again");
+
+    const [property, setProperty] = useState([]);
+    const [course, setCourse] = useState([]);
+    const [propertyCourse, setPropertyCourse] = useState([]);
+    const [category, setCategory] = useState([]);
 
     const [isConversationStopped, setIsConversationStopped] = useState(false);
 
@@ -94,6 +99,57 @@ export default function LeadConversation() {
     useEffect(() => {
         fetchQuestions();
     }, [fetchQuestions]);
+
+    const fetchProperties = async () => {
+        try {
+            const res = await CampusaimAPI.get("/property");
+            const property = res?.data;
+            setProperty(property);
+        } catch (error) {
+            toast.error("Internal server error.");
+            console.error(error)
+        }
+    };
+
+    const fetchCourses = async () => {
+        try {
+            const res = await CampusaimAPI.get("/course");
+            const course = res?.data;
+            setCourse(course);
+        } catch (error) {
+            toast.error("Internal server error.");
+            console.error(error)
+        }
+    };
+
+    const fetchPropertyCourses = async () => {
+        try {
+            const res = await CampusaimAPI.get("/property-course");
+            const course = res?.data;
+            setPropertyCourse(course);
+        } catch (error) {
+            toast.error("Internal server error.");
+            console.error(error)
+        }
+    };
+
+    const fetchCategories = async () => {
+        try {
+            const res = await CampusaimAPI.get("/category");
+            const filteredCat = res.data.filter((a) => a.parent_category === "Academic Type");
+            setCategory(filteredCat);
+        } catch (error) {
+            toast.error("Internal server error.");
+            console.error(error)
+        }
+    };
+
+    useEffect(() => {
+        fetchProperties();
+        fetchCourses();
+        fetchPropertyCourses();
+        fetchCategories();
+    }, []);
 
     /* -------------------------------------------------- */
     /* Step Indices                                        */
@@ -443,6 +499,8 @@ export default function LeadConversation() {
                                 isSaving={isSaving}
                                 setIsSaving={setIsSaving}
                                 lead={lead}
+
+                                allCourses={course}
                             />
                         ) : isNoteStep ? (
                             <NoteStep
@@ -470,6 +528,12 @@ export default function LeadConversation() {
                                 isConversationStopped={isConversationStopped}
                                 handleNext={handleNext}
                                 handlePrevious={handlePrevious}
+
+                                lead={lead}
+                                property={property}
+                                course={course}
+                                propertyCourse={propertyCourse}
+                                category={category}
                             />
                         ) : (
                             <QuestionSteps

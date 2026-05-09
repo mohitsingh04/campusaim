@@ -32,7 +32,7 @@ export default function ReferralLinkCard() {
     const qrRef = useRef(null);
     const referralCode = authUser?.ref_code || "";
 
-    const fallbackWebsite = import.meta.env.VITE_REFERRAL_URL || window.location.origin;
+    const fallbackWebsite = import.meta.env.VITE_REFERRAL_URL;
     const defaultWebsite = fallbackWebsite;
 
     const [customWebsites, setCustomWebsites] = useState([]);

@@ -79,6 +79,25 @@ const deleteFile = (filePath) => {
     }
 };
 
+/* ------------------ Normalize "Other" ------------------ */
+const normalizeOther = (obj = {}) => {
+    const newObj = { ...obj };
+
+    Object.keys(newObj).forEach((key) => {
+        if (newObj[key] === "__other__") {
+            const otherKey = `${key}_other`;
+
+            if (newObj[otherKey]) {
+                newObj[key] = newObj[otherKey];
+            }
+
+            delete newObj[otherKey];
+        }
+    });
+
+    return newObj;
+};
+
 /* ---------------- NEW CONTROLLERS ---------------- */
 export const getLeads = async (req, res) => {
     try {
@@ -361,24 +380,55 @@ export const getLeadById = async (req, res) => {
         /* ---------------- FETCH LEAD ---------------- */
 
         const lead = await Lead.findById(id)
+            // CREATED BY
             .populate({
                 path: "createdBy",
                 model: RegularUser,
                 select: "name email role",
                 populate: {
                     path: "role",
-                    select: "role" // 👈 this is the actual role name
+                    select: "role"
+                }
+            })
+            // APPLICATION
+            .populate({
+                path: "application.applicationBy",
+                model: RegularUser,
+                select: "name email role",
+                populate: {
+                    path: "role",
+                    select: "role"
                 }
             })
             .populate({
-                path: "convertedBy",
+                path: "application.updatedBy",
                 model: RegularUser,
-                select: "name role",
+                select: "name email role",
                 populate: {
                     path: "role",
-                    select: "role" // 👈 this is the actual role name
+                    select: "role"
                 }
             })
+            // ADMISSION
+            .populate({
+                path: "admission.admissionBy",
+                model: RegularUser,
+                select: "name email role",
+                populate: {
+                    path: "role",
+                    select: "role"
+                }
+            })
+            .populate({
+                path: "admission.updatedBy",
+                model: RegularUser,
+                select: "name email role",
+                populate: {
+                    path: "role",
+                    select: "role"
+                }
+            })
+            // ASSIGNED TO
             .populate({
                 path: "assignedTo",
                 model: RegularUser,
@@ -399,8 +449,17 @@ export const getLeadById = async (req, res) => {
                     }
                 ]
             })
-            .populate({ path: "assignmentHistory.assignedTo", model: RegularUser, select: "name role" })
-            .populate({ path: "assignmentHistory.assignedBy", model: RegularUser, select: "name role" })
+            // ASSIGNMENT HISTORY
+            .populate({
+                path: "assignmentHistory.assignedTo",
+                model: RegularUser,
+                select: "name role"
+            })
+            .populate({
+                path: "assignmentHistory.assignedBy",
+                model: RegularUser,
+                select: "name role"
+            })
             .populate("rawImport")
             .lean();
 
@@ -442,10 +501,20 @@ export const getLeadById = async (req, res) => {
                sessions.createdAt 
                sessions.next_follow_up_date 
                sessions.next_follow_up_time`)
+            .populate({
+                path: "sessions.createdBy",
+                model: RegularUser,
+                select: "name email role",
+                populate: {
+                    path: "role",
+                    select: "role"
+                }
+            })
             .lean();
 
         let hasConversation = false;
         let lastConversationBy = null;
+        let lastConversationUser = null;
         let lastConversationAt = null;
         let nextFollowUp = null;
 
@@ -458,6 +527,8 @@ export const getLeadById = async (req, res) => {
                 typeof lastSession?.createdBy === "object"
                     ? lastSession.createdBy?._id
                     : lastSession?.createdBy;
+
+            lastConversationUser = lastSession?.createdBy || null;
 
             lastConversationAt = lastSession?.createdAt || null;
 
@@ -476,6 +547,7 @@ export const getLeadById = async (req, res) => {
             teamleader,
             hasConversation,
             lastConversationBy,
+            lastConversationUser,
             lastConversationAt,
             nextFollowUp
         });
@@ -571,26 +643,8 @@ export const addLead = async (req, res) => {
             return res.status(400).json({ error: "Invalid email format" });
         }
 
-        /* ------------------ Normalize "Other" ------------------ */
-        const normalizeOther = (obj = {}) => {
-            const newObj = { ...obj };
-
-            Object.keys(newObj).forEach((key) => {
-                if (newObj[key] === "__other__") {
-                    const otherKey = `${key}_other`;
-
-                    if (newObj[otherKey]) {
-                        newObj[key] = newObj[otherKey];
-                    }
-
-                    delete newObj[otherKey];
-                }
-            });
-
-            return newObj;
-        };
-
         const cleanPreferences = normalizeOther(preferences);
+        const cleanSchool = normalizeOther(school);
 
         const leadData = {};
 
@@ -679,12 +733,12 @@ export const addLead = async (req, res) => {
 
             /* ---------- School ---------- */
             school: {
-                currentName: school?.currentName || "",
-                currentLocation: school?.currentLocation || "",
-                board: school?.board || "",
-                currentClass: school?.currentClass || "",
-                session: school?.session || "",
-                percentage: school?.percentage || "",
+                currentName: cleanSchool?.currentName || "",
+                currentLocation: cleanSchool?.currentLocation || "",
+                board: cleanSchool?.board || "",
+                currentClass: cleanSchool?.currentClass || "",
+                session: cleanSchool?.session || "",
+                percentage: cleanSchool?.percentage || "",
             },
 
             /* ---------- Coaching ---------- */
@@ -818,6 +872,9 @@ export const updateLead = async (req, res) => {
             school = {},
             exam = {},
         } = sanitizedBody;
+
+        const cleanPreferences = normalizeOther(preferences);
+        const cleanSchool = normalizeOther(school);
 
         // ---------- CORE ----------
         if (name !== undefined) {
@@ -979,7 +1036,7 @@ export const updateLead = async (req, res) => {
 
         // ---------- SCHOOL ----------
         if (req.body.school && typeof req.body.school === "object") {
-            const school = req.body.school;
+            const school = cleanSchool;
 
             lead.school = {
                 ...lead.school, // ✅ keep existing data
@@ -1056,8 +1113,8 @@ export const updateLead = async (req, res) => {
             lead.preferences = {
                 ...lead.preferences,
 
-                preferredProperty: preferences.preferredProperty ?? lead.preferences?.preferredProperty,
-                preferredCourse: preferences.preferredCourse ?? lead.preferences?.preferredCourse,
+                preferredProperty: cleanPreferences.preferredProperty ?? lead.preferences?.preferredProperty,
+                preferredCourse: cleanPreferences.preferredCourse ?? lead.preferences?.preferredCourse,
 
                 preferredCountry: preferences.preferredCountry ?? lead.preferences?.preferredCountry,
                 preferredState: preferences.preferredState ?? lead.preferences?.preferredState,
@@ -1145,58 +1202,89 @@ export const updateLeadStatus = async (req, res) => {
         }
 
         const lead = await Lead.findById(id);
+
         if (!lead) {
             return res.status(404).json({ error: "Lead not found" });
         }
 
-        const { status, applicationDoneBy, courseId, admission } = req.body;
+        const { status, application, admission } = req.body;
+
         const oldStatus = lead.status;
 
-        const ALLOWED = ["new", "contacted", "applications_done", "converted", "lost"];
+        const ALLOWED = [
+            "new",
+            "contacted",
+            "applications_done",
+            "converted",
+            "lost",
+        ];
 
         if (!ALLOWED.includes(status)) {
             return res.status(400).json({ error: "Invalid status" });
         }
 
-        // ---------------- APPLICATION ----------------
+        // APPLICATION
         if (status === "applications_done") {
-            if (!applicationDoneBy || !mongoose.Types.ObjectId.isValid(applicationDoneBy)) {
-                return res.status(400).json({ error: "Application Done By required" });
+
+            if (!application) {
+                return res.status(400).json({ error: "Application data required" });
             }
 
-            if (!courseId || !mongoose.Types.ObjectId.isValid(courseId)) {
-                return res.status(400).json({ error: "Valid courseId required" });
+            // applicationBy
+            if (!application.applicationBy || !mongoose.Types.ObjectId.isValid(application.applicationBy)) {
+                return res.status(400).json({ error: "Valid applicationBy required" });
             }
 
-            lead.applicationDoneBy = applicationDoneBy;
-            lead.courseId = courseId;
-            lead.applicationFilledAt = new Date();
+            // propertyId
+            if (application.propertyId && !mongoose.Types.ObjectId.isValid(application.propertyId)) {
+                return res.status(400).json({ error: "Invalid propertyId" });
+            }
+
+            // courseId
+            if (application.courseId && !mongoose.Types.ObjectId.isValid(application.courseId)) {
+                return res.status(400).json({ error: "Invalid courseId" });
+            }
+
+            lead.application = {
+                propertyId: application.propertyId || null,
+                courseId: application.courseId || null,
+                coaching: application.coaching || null,
+                school: application.school || null,
+                applicationBy: application.applicationBy,
+                updatedBy: senderId,
+                confirmedAt: new Date(),
+            };
         }
 
-        lead.status = status;
-
-        // ---------------- ADMISSION ----------------
+        // ADMISSION
         if (status === "converted") {
-            if (!admission?.userId || !admission?.courseId || !admission?.collegeId) {
-                return res.status(400).json({ error: "Complete admission data required" });
+
+            if (!admission) {
+                return res.status(400).json({ error: "Admission data required" });
             }
 
-            if (
-                !mongoose.Types.ObjectId.isValid(admission.userId) ||
-                !mongoose.Types.ObjectId.isValid(admission.courseId)
-            ) {
-                return res.status(400).json({ error: "Invalid admission IDs" });
+            // admissionBy
+            if (!admission.admissionBy || !mongoose.Types.ObjectId.isValid(admission.admissionBy)) {
+                return res.status(400).json({ error: "Valid admissionBy required" });
             }
 
-            const collegeId = mongoose.Types.ObjectId.isValid(admission.collegeId)
-                ? admission.collegeId
-                : null;
+            // propertyId
+            if (admission.propertyId && !mongoose.Types.ObjectId.isValid(admission.propertyId)) {
+                return res.status(400).json({ error: "Invalid propertyId" });
+            }
+
+            // courseId
+            if (admission.courseId && !mongoose.Types.ObjectId.isValid(admission.courseId)) {
+                return res.status(400).json({ error: "Invalid courseId" });
+            }
 
             lead.admission = {
-                userId: admission.userId,
-                courseId: admission.courseId,
-                collegeId,
-                confirmedBy: senderId,
+                propertyId: admission.propertyId || null,
+                courseId: admission.courseId || null,
+                coaching: admission.coaching || null,
+                school: admission.school || null,
+                admissionBy: admission.admissionBy,
+                updatedBy: senderId,
                 confirmedAt: new Date(),
             };
 
@@ -1209,20 +1297,19 @@ export const updateLeadStatus = async (req, res) => {
             await handleCommission(lead);
         }
 
-        // ---------------- RESET ----------------
-        if (oldStatus === "applications_done" && status !== "applications_done") {
-            lead.applicationDoneBy = null;
-            lead.applicationFilledAt = null;
-            lead.courseId = null;
+        // STATUS UPDATE
+        lead.status = status;
+
+        if (oldStatus === "applications_done" && !["applications_done", "converted"].includes(status)) {
+            lead.application = {};
         }
 
-        if (oldStatus === "converted" && status !== "converted") {
-            lead.admission = {};
-        }
+        // RESET ADMISSION
+        if (oldStatus === "converted" && status !== "converted") { lead.admission = {}; }
 
         await lead.save();
 
-        // ================= GOAL PROGRESS =================
+        // GOAL PROGRESS
         const goalOwner = await getGoalOwner(lead);
 
         if (goalOwner && status !== oldStatus) {
@@ -1239,12 +1326,11 @@ export const updateLeadStatus = async (req, res) => {
         return res.status(200).json({
             success: true,
             message: "Status updated successfully",
-            lead
+            lead,
         });
-
     } catch (err) {
         console.error("updateLeadStatus error:", err);
-        return res.status(500).json({ error: "Internal Server Error" });
+        return res.status(500).json({ error: "Internal Server Error", });
     }
 };
 
@@ -1335,7 +1421,7 @@ export const addbulkLeads = async (req, res) => {
 
         const user = await RegularUser.findById(userId)
             .populate("role", "role")
-            .select("_id role name organizationId")
+            .select("_id role name nicheId organizationId")
             .lean();
 
         if (!user) {
@@ -1344,6 +1430,7 @@ export const addbulkLeads = async (req, res) => {
 
         const appRole = mapRoleForApp(user.role?.role); // ✅ FIX
         const userOrgId = user?.organizationId;
+        const userNicheOrCatId = user?.nicheId;
 
         // 🔐 Only allowed roles
         if (!["admin", "teamleader", "partner"].includes(appRole)) {
@@ -1398,6 +1485,7 @@ export const addbulkLeads = async (req, res) => {
             validLeads.push({
                 ...lead,
                 organizationId: userOrgId,
+                category: userNicheOrCatId,
                 leadType: "import",
 
                 marketing: {
@@ -1465,7 +1553,7 @@ export const addbulkLeads = async (req, res) => {
 
 export const createPublicLead = async (req, res) => {
     try {
-        const { name, email, contact, course, ref_code } = req.body || {};
+        const { name, email, contact, city, message, course, preferred_course, property_id, property_name, userId, ref_code } = req.body || {};
 
         /* ---------------- VALIDATION ---------------- */
 

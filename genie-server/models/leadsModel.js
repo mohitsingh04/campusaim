@@ -5,10 +5,23 @@ const { Schema } = mongoose;
 
 // Admission Sub-Schema
 const AdmissionSchema = new Schema({
-    userId: { type: Schema.Types.ObjectId, ref: "user", default: null },
-    courseId: { type: Schema.Types.ObjectId, ref: "Course", default: null },
-    collegeId: { type: Schema.Types.ObjectId, ref: "College", default: null },
-    confirmedBy: { type: Schema.Types.ObjectId, ref: "user", default: null },
+    propertyId: { type: Schema.Types.ObjectId, ref: "college", default: null },
+    courseId: { type: Schema.Types.ObjectId, ref: "course", default: null },
+    coaching: { type: String, default: null },
+    school: { type: String, default: null },
+    updatedBy: { type: Schema.Types.ObjectId, ref: "user", default: null },
+    admissionBy: { type: Schema.Types.ObjectId, ref: "user", default: null },
+    confirmedAt: { type: Date, default: null },
+}, { _id: false });
+
+// Application Sub-Schema
+const ApplicationSchema = new Schema({
+    propertyId: { type: Schema.Types.ObjectId, ref: "college", default: null },
+    courseId: { type: Schema.Types.ObjectId, ref: "course", default: null },
+    coaching: { type: String, default: null },
+    school: { type: String, default: null },
+    updatedBy: { type: Schema.Types.ObjectId, ref: "user", default: null },
+    applicationBy: { type: Schema.Types.ObjectId, ref: "user", default: null },
     confirmedAt: { type: Date, default: null },
 }, { _id: false });
 
@@ -192,7 +205,7 @@ const LeadSchema = new Schema({
         ref: "user",
         default: null,
     },
-    
+
     property_id: { type: Schema.Types.ObjectId, default: null },
     custom_property_name: { type: String, trim: true },
 
@@ -293,6 +306,11 @@ const LeadSchema = new Schema({
         default: "new",
     },
 
+    application: {
+        type: ApplicationSchema,
+        default: () => ({}),
+    },
+
     admission: {
         type: AdmissionSchema,
         default: () => ({}),
@@ -311,30 +329,6 @@ const LeadSchema = new Schema({
     exam: {
         type: ExamSchema,
         default: () => ({})
-    },
-
-    /* 🏁 Application Tracking */
-    applicationDoneBy: {
-        type: Schema.Types.ObjectId,
-        ref: "user",
-        default: null,
-    },
-
-    applicationFilledAt: {
-        type: Date,
-        default: null,
-    },
-
-    /* 🏁 Conversion Tracking */
-    convertedBy: {
-        type: Schema.Types.ObjectId,
-        ref: "user",
-        default: null,
-    },
-
-    convertedAt: {
-        type: Date,
-        default: null,
     },
 }, { timestamps: true });
 

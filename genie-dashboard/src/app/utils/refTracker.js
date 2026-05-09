@@ -1,6 +1,5 @@
 const REF_KEY = "ref_data";
 const REF_EXPIRY = 30 * 60 * 1000; // 30 minutes
-// const REF_EXPIRY = 1 * 60 * 1000; // 30 minute for testing
 
 // ✅ Capture ref from URL → store in sessionStorage
 export const captureRefFromURL = () => {

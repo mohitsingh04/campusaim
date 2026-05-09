@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { FeedbackData } from "../../../common/FeedbackData/FeedbackData";
-import { CollegeList } from "../../../common/CollegeList/CollegeList";
 import Select from "react-select";
+import { CampusaimAPI } from "../../../services/API";
+import toast from "react-hot-toast";
 
 const TIME_SLOTS = [
   "08:00-09:00",
@@ -22,6 +23,41 @@ export const NEXT_ACTIONS = [
   { label: "Send WhatsApp", value: "send_whatsapp" },
   { label: "Schedule Visit", value: "schedule_visit" },
   { label: "Closed", value: "closed" },
+];
+
+const classesOptions = [
+  { label: "Play Group", value: "Play Group" },
+  { label: "Nursery", value: "Nursery" },
+  { label: "KG", value: "KG" },
+  { label: "LKG", value: "LKG" },
+  { label: "UKG", value: "UKG" },
+  { label: "1st", value: "1st" },
+  { label: "2nd", value: "2nd" },
+  { label: "3rd", value: "3rd" },
+  { label: "4th", value: "4th" },
+  { label: "5th", value: "5th" },
+  { label: "6th", value: "6th" },
+  { label: "7th", value: "7th" },
+  { label: "8th", value: "8th" },
+  { label: "9th", value: "9th" },
+  { label: "10th", value: "10th" },
+  { label: "11th", value: "11th" },
+  { label: "12th", value: "12th" },
+];
+
+export const examsOptions = [
+  // Defence
+  { label: "NDA", value: "NDA" },
+  { label: "CDS", value: "CDS" },
+  { label: "AFCAT", value: "AFCAT" },
+  { label: "INET", value: "INET" },
+  { label: "CAPF", value: "CAPF" },
+  { label: "Territorial Army", value: "Territorial Army" },
+  { label: "SSB Interview", value: "SSB Interview" },
+  { label: "Military School", value: "Military School" },
+  { label: "Sainik School", value: "Sainik School" },
+  { label: "RMS", value: "RMS" },
+  { label: "RIMC", value: "RIMC" },
 ];
 
 export default function NoteStep({
@@ -48,83 +84,110 @@ export default function NoteStep({
   isConversationStopped,
   handlePrevious,
   handleNext,
+
+  lead,
+  property,
+  course,
+  propertyCourse,
+  category,
 }) {
+  const leadCategory = lead?.category;
 
-  const [selectedColleges, setSelectedColleges] = useState(
-    (collegesSuggested || []).map(name => ({
-      label: name,
-      value: name
-    }))
-  );
+  const categoryId = leadCategory;
+  const myCategory = category.filter((a) => a?._id === categoryId);
 
-  const [courseOptions, setCourseOptions] = useState(
-    Array.isArray(courseSuggested)
-      ? courseSuggested.map(c => ({ label: c, value: c }))
-      : []
-  );
+  const categoryKeyMap = {
+    School: "school",
+    College: "college_university",
+    University: "college_university",
+    Coaching: "coaching"
+  };
+
+  const categoryName = myCategory?.[0]?.category_name;
+  const categoryKey = categoryKeyMap[categoryName];
+
+
+
+  const [selectedColleges, setSelectedColleges] = useState([]);
 
   const [objectionsInput, setObjectionsInput] = useState(() =>
     studentObjections.join(", ")
   );
 
-  useEffect(() => {
-
-    if (!collegesSuggested?.length) return;
-
-    const matchedColleges = CollegeList.filter(college =>
-      collegesSuggested.includes(college.name)
-    );
-
-    const courses = matchedColleges.flatMap(college => {
-      const { UG = [], PG = [], Diploma = [] } = college.courses || {};
-      return [...UG, ...PG, ...Diploma];
-    });
-
-    const uniqueCourses = [...new Set(courses)];
-
-    setCourseOptions(uniqueCourses.map(c => ({
-      label: c,
-      value: c
-    })));
-
-  }, [collegesSuggested]);
-
-  /* ---------------- College Select Options ---------------- */
-
-  const collegeOptions = CollegeList.map((college) => ({
-    label: college.name,
-    value: college._id,
-  }));
-
   /* ---------------- Handle College Change ---------------- */
-
   const handleCollegeChange = (selected) => {
     const safeSelected = selected || [];
 
     setSelectedColleges(safeSelected);
-    setCourseSuggested([]); // reset courses
 
-    const courses = safeSelected.flatMap((col) => {
-      const college = CollegeList.find((c) => c._id === col.value);
+    // Reset selected courses
+    setCourseSuggested([]);
 
-      if (!college) return [];
-
-      const { UG = [], PG = [], Diploma = [] } = college.courses || {};
-
-      return [...UG, ...PG, ...Diploma];
-    });
-
-    const uniqueCourses = [...new Set(courses)];
-
-    const formattedCourses = uniqueCourses.map((course) => ({
-      label: course,
-      value: course,
-    }));
-
-    setCourseOptions(formattedCourses);
-
-    setCollegesSuggested(safeSelected.map((c) => c.label));
+    // Save selected property names
+    setCollegesSuggested(
+      safeSelected.map((item) => item.label)
+    );
   };
+
+  const isCollegeUniversity = categoryKey === "college_university";
+  const isCoaching = categoryKey === "coaching";
+  const isSchool = categoryKey === "school";
+
+  const propertyOptions = useMemo(() => {
+    return property
+      .filter(
+        (item) =>
+          String(item?.academic_type) === String(leadCategory)
+      )
+      .map((item) => ({
+        label: item.property_name,
+        value: item._id,
+      }));
+  }, [property, leadCategory]);
+
+  useEffect(() => {
+    if (!propertyOptions?.length) return;
+
+    const selected = propertyOptions.filter((item) =>
+      (collegesSuggested || []).includes(item.label)
+    );
+
+    setSelectedColleges((prev) => {
+      const prevString = JSON.stringify(prev);
+      const nextString = JSON.stringify(selected);
+
+      return prevString === nextString ? prev : selected;
+    });
+  }, [propertyOptions, collegesSuggested]);
+
+  const courseOptions = useMemo(() => {
+    if (!selectedColleges?.length) return [];
+
+    // Selected property IDs
+    const selectedPropertyIds = selectedColleges.map(
+      (item) => String(item.value)
+    );
+
+    // Matched mappings
+    const matchedPropertyCourses = propertyCourse.filter((pc) =>
+      selectedPropertyIds.includes(String(pc.property_id))
+    );
+
+    // Extract course IDs
+    const courseIds = matchedPropertyCourses.map((pc) =>
+      String(pc.course_id)
+    );
+
+    // Actual courses
+    const filteredCourses = course.filter((item) =>
+      courseIds.includes(String(item._id))
+    );
+
+    return filteredCourses.map((item) => ({
+      label: item.course_name,
+      value: item._id,
+    }));
+  }, [selectedColleges, propertyCourse, course]);
 
   return (
     <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -138,7 +201,6 @@ export default function NoteStep({
       </h1>
 
       {/* Rating */}
-
       <div className="mb-8">
         <label className="block text-sm font-medium mb-4">
           How would you rate the lead potential?
@@ -172,7 +234,6 @@ export default function NoteStep({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
 
         {/* Follow-up Date */}
-
         <div>
           <label className="block text-sm font-medium mb-2">
             Next Follow-up Date
@@ -187,7 +248,6 @@ export default function NoteStep({
         </div>
 
         {/* Follow-up Time */}
-
         <div>
           <label className="block text-sm font-medium mb-2">
             Next Follow-up Time
@@ -210,7 +270,6 @@ export default function NoteStep({
         </div>
 
         {/* Note */}
-
         <div className="md:col-span-2">
           <label className="block text-sm font-medium mb-2">
             Add a note
@@ -224,7 +283,6 @@ export default function NoteStep({
         </div>
 
         {/* Pitch Summary */}
-
         <div className="md:col-span-2">
           <label className="block text-sm font-medium mb-2">
             What did you pitch?
@@ -234,40 +292,6 @@ export default function NoteStep({
             className="w-full p-4 rounded-xl border h-28"
             value={pitchSummary}
             onChange={(e) => setPitchSummary(e.target.value)}
-          />
-        </div>
-
-        {/* Colleges Suggested */}
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Colleges Suggested
-          </label>
-
-          <Select
-            options={collegeOptions}
-            isMulti
-            placeholder="Select colleges..."
-            value={selectedColleges}
-            onChange={handleCollegeChange}
-          />
-        </div>
-
-        {/* Courses Suggested */}
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Courses Suggested
-          </label>
-
-          <Select
-            options={courseOptions}
-            isMulti
-            value={(courseSuggested || [])
-              .flatMap(c => c.split(","))
-              .map(c => ({ label: c.trim(), value: c.trim() }))}
-            placeholder="Select courses..."
-            onChange={(selected) => {
-              setCourseSuggested((selected || []).map(c => c.value))
-            }}
           />
         </div>
 
@@ -292,8 +316,122 @@ export default function NoteStep({
           />
         </div>
 
+        {isCollegeUniversity ? (
+          <>
+            {/* Colleges & Universities Suggested */}
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Colleges & Universities Suggested
+              </label>
+
+              <Select
+                options={propertyOptions}
+                isMulti
+                placeholder="Select colleges & universities..."
+                value={selectedColleges}
+                onChange={handleCollegeChange}
+              />
+            </div>
+
+            {/* Courses Suggested */}
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Courses Suggested
+              </label>
+
+              <Select
+                options={courseOptions}
+                isMulti
+                value={courseOptions.filter((option) =>
+                  courseSuggested.some((id) => String(id) === String(option.value))
+                )}
+                placeholder="Select courses..."
+                onChange={(selected) => {
+                  setCourseSuggested((selected || []).map(c => c.value))
+                }}
+              />
+            </div>
+          </>
+        ) : null}
+
+        {isCoaching ? (
+          <>
+            {/* Coachings Suggested */}
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Coachings Suggested
+              </label>
+
+              <Select
+                options={propertyOptions}
+                isMulti
+                placeholder="Select coachings..."
+                value={selectedColleges}
+                onChange={handleCollegeChange}
+              />
+            </div>
+
+            {/* Coaching Suggested */}
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Coaching Suggested
+              </label>
+
+              <Select
+                options={examsOptions}
+                isMulti
+                value={examsOptions.filter((option) =>
+                  courseSuggested.some((id) => String(id) === String(option.value))
+                )}
+                placeholder="Select coaching..."
+                onChange={(selected) => {
+                  setCourseSuggested((selected || []).map(c => c.value))
+                }}
+              />
+            </div>
+          </>
+        ) : null}
+
+        {isSchool ? (
+          <>
+            {/* Schools Suggested */}
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Schools Suggested
+              </label>
+
+              <Select
+                options={propertyOptions}
+                isMulti
+                placeholder="Select schools..."
+                value={selectedColleges}
+                onChange={handleCollegeChange}
+              />
+            </div>
+
+            {/* Classes Suggested */}
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Classes Suggested
+              </label>
+
+              <Select
+                options={classesOptions}
+                isMulti
+                value={classesOptions.filter((option) =>
+                  courseSuggested.some((id) => String(id) === String(option.value))
+                )}
+                placeholder="Select classes..."
+                onChange={(selected) => {
+                  setCourseSuggested((selected || []).map(c => c.value))
+                }}
+              />
+            </div>
+          </>
+        ) : null}
+
         {/* Next Action */}
-        <div>
+        {/* <div>
           <label className="block text-sm font-medium mb-2">
             Next Action
           </label>
@@ -310,7 +448,7 @@ export default function NoteStep({
               </option>
             ))}
           </select>
-        </div>
+        </div> */}
       </div>
 
       {/* Navigation */}

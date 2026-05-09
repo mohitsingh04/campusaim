@@ -33,6 +33,21 @@ const normalizeMobile = (input = "") => {
     return `+91${number}`;
 };
 
+export const fetchOrgUsers = async (req, res) => {
+    try {
+        const adminId = await getDataFromToken(req);
+        const admin = await RegularUser.findById(adminId).select("_id name email nicheId organizationId").lean();
+        const orgId = admin?.organizationId;
+
+        const orgUsers = await RegularUser.find({ organizationId: orgId }).lean();
+
+        return res.status(200).json(orgUsers);
+    } catch (error) {
+        console.log("Error on Fetch Org Users: ", error);
+        return res.status(404).json({ error: "Something went wrong." });
+    }
+};
+
 // Add a USER
 export const addUser = async (req, res) => {
     try {

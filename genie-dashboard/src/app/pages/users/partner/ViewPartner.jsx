@@ -66,18 +66,18 @@ export default function ViewPartner() {
     }, [id]);
 
     const handleToggle = async () => {
-        if (!partnerData?._id) return;
+        if (!partnerData?._id || loading) return; // guard: prevent double click
 
-        const nextStatus = status === "active" ? "suspended" : "active";
+        const nextStatus = status === "Active" ? "Suspended" : "Active";
 
         const result = await Swal.fire({
-            title: `${nextStatus === "active" ? "Activate" : "Suspend"} User?`,
-            text: `Are you sure you want to ${nextStatus === "active" ? "activate" : "suspend"} this partner?`,
+            title: `${nextStatus === "Active" ? "Activate" : "Suspend"} Partner?`,
+            text: `Are you sure you want to ${nextStatus === "Active" ? "activate" : "suspend"} this Partner?`,
             icon: "warning",
             showCancelButton: true,
-            confirmButtonColor: nextStatus === "active" ? "#16a34a" : "#dc2626",
+            confirmButtonColor: nextStatus === "Active" ? "#16a34a" : "#dc2626",
             cancelButtonColor: "#6b7280",
-            confirmButtonText: `Yes, ${nextStatus === "active" ? "Activate" : "Suspend"}`,
+            confirmButtonText: `Yes, ${nextStatus === "Active" ? "Activate" : "Suspend"}`,
             cancelButtonText: "Cancel",
             reverseButtons: true,
             focusCancel: true,
@@ -86,13 +86,15 @@ export default function ViewPartner() {
         if (!result.isConfirmed) return; // user cancelled
 
         setLoading(true);
+
         try {
-            const res = await API.post(`/toggle-status/${partnerData._id}`);
+            const res = await CampusaimAPI.post(`/toggle-status/${partnerData._id}`);
 
             if (res.data?.status) {
                 setStatus(res.data.status);
+
                 toast.success(
-                    `User is now ${res.data.status === "active" ? "Active" : "Suspended"}`
+                    `Partner is now ${res.data.status === "Active" ? "Active" : "Suspended"}`
                 );
             } else {
                 throw new Error("Invalid response");
