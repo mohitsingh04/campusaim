@@ -49,7 +49,6 @@ export const QuickLinks = [
   { name: "News & Updates", href: "/news-and-updates", external: false },
   { name: "Blog", href: "/blog", external: false },
   { name: "Compare", href: "/compare/select", external: false },
-  // { name: "Events", href: "/events", external: false },
   {
     name: "Add Your Institute",
     href: `${process.env.NEXT_PUBLIC_DASHBOARD_URL}`,

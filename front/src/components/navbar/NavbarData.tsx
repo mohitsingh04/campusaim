@@ -1,35 +1,11 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import API from "@/context/API";
-import { CategoryProps, ExamProps, SeoProps } from "@/types/Types";
+import { ExamProps, SeoProps } from "@/types/Types";
 import { getErrorResponse } from "@/context/Callbacks";
 
-export function useCoursesMenuData({
-  categories,
-  enabled = false,
-}: {
-  categories: CategoryProps[] | undefined;
-  enabled?: boolean;
-}) {
+export function useCoursesMenuData({ enabled = false }: { enabled?: boolean }) {
   const [courseMenuData, setCourseMenuData] = useState<any>(null);
   const [courseLoading, setCourseLoading] = useState(false);
-
-  const getCategoryName = useCallback(
-    (input: CategoryProps | string | undefined) => {
-      if (!input) return null;
-
-      if (typeof input === "object" && "category_name" in input) {
-        return input.category_name;
-      }
-
-      if (typeof input === "string" && categories) {
-        const found = categories.find((item) => item._id === input);
-        return found?.category_name || null;
-      }
-
-      return null;
-    },
-    [categories],
-  );
 
   useEffect(() => {
     if (!enabled || courseMenuData) return;
@@ -48,37 +24,17 @@ export function useCoursesMenuData({
     };
 
     fetchProperties();
-  }, [enabled, courseMenuData, getCategoryName]);
+  }, [enabled, courseMenuData]);
 
   return { courseMenuData, courseLoading };
 }
 export function usePropertyMenuData({
-  categories,
   enabled = false,
 }: {
-  categories: CategoryProps[] | undefined;
   enabled?: boolean;
 }) {
   const [propertyMenuData, setPropertyMenuData] = useState<any>(null);
   const [propertyLoading, setPropertyLoading] = useState(false);
-
-  const getCategoryName = useCallback(
-    (input: CategoryProps | string | undefined) => {
-      if (!input) return null;
-
-      if (typeof input === "object" && "category_name" in input) {
-        return input.category_name;
-      }
-
-      if (typeof input === "string" && categories) {
-        const found = categories.find((item) => item._id === input);
-        return found?.category_name || null;
-      }
-
-      return null;
-    },
-    [categories],
-  );
 
   useEffect(() => {
     if (!enabled || propertyMenuData) return;
@@ -97,7 +53,7 @@ export function usePropertyMenuData({
     };
 
     fetchProperties();
-  }, [enabled, propertyMenuData, getCategoryName]);
+  }, [enabled, propertyMenuData]);
 
   return { propertyMenuData, propertyLoading };
 }
@@ -124,7 +80,7 @@ export function useExamMenuData() {
             if (!matchedSeo?.slug) return null;
 
             return {
-              name: exam.exam_name,
+              name: exam.exam_short_name,
               href: `/exam/${matchedSeo.slug}`,
             };
           })

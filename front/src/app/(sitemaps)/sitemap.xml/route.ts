@@ -15,7 +15,6 @@ export async function GET() {
     "sitemap-exams.xml",
     "sitemap-queries.xml",
     // "sitemap-blog.xml",
-    // "sitemap-events.xml",
     // "sitemap-news-and-updates.xml",
   ];
 

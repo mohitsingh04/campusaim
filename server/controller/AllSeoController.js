@@ -45,7 +45,7 @@ export const getAllSeo = async (req, res) => {
           await record.save();
         }
         return record;
-      })
+      }),
     );
 
     return res.status(200).json(updatedRecords);
@@ -78,14 +78,8 @@ export const getSeoByTypeId = async (req, res) => {
       case "scholarship":
         query.scholarship_id = type_id;
         break;
-      case "event":
-        query.event_id = type_id;
-        break;
       case "news":
         query.news_id = type_id;
-        break;
-      case "retreat":
-        query.retreat_id = type_id;
         break;
       default:
         return res.status(400).json({ error: "Invalid type provided!" });
@@ -130,8 +124,6 @@ export const autoAddAllSeo = async ({
     course: "course_id",
     exam: "exam_id",
     scholarship: "scholarship_id",
-    retreat: "retreat_id",
-    event: "event_id",
     news: "news_id",
   };
 
@@ -207,16 +199,14 @@ export const CreateAllSeo = async (req, res) => {
       course_id,
       exam_id,
       scholarship_id,
-      event_id,
       news_id,
-      retreat_id,
       type,
     } = req.body;
 
-    if (!blog_id && !course_id && !exam_id && !scholarship_id && !event_id && !news_id && !retreat_id) {
+    if (!blog_id && !course_id && !exam_id && !scholarship_id && !news_id) {
       return res.status(400).json({
         error:
-          "At least one reference ID (blog_id, course_id, exam_id, scholarship_id, event_id,retreat_id, or news_id) must be provided.",
+          "At least one reference ID (blog_id, course_id, exam_id, scholarship_id,  or news_id) must be provided.",
       });
     }
 
@@ -238,9 +228,7 @@ export const CreateAllSeo = async (req, res) => {
     if (course_id) filter.course_id = course_id;
     if (exam_id) filter.exam_id = exam_id;
     if (scholarship_id) filter.scholarship_id = scholarship_id;
-    if (event_id) filter.event_id = event_id;
     if (news_id) filter.news_id = news_id;
-    if (retreat_id) filter.retreat_id = retreat_id;
 
     // ✅ Upsert SEO document
     const seo = await AllSeo.findOneAndUpdate(
@@ -256,14 +244,12 @@ export const CreateAllSeo = async (req, res) => {
           course_id,
           exam_id,
           scholarship_id,
-          event_id,
           news_id,
-          retreat_id,
           seo_score,
           type: type || "general",
         },
       },
-      { upsert: true, new: true }
+      { upsert: true, new: true },
     );
 
     return res.status(201).json({

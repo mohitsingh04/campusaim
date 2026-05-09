@@ -9,6 +9,7 @@ lerna-debug.log*
 
 node_modules
 property
+exam
 dist
 dist-ssr
 *.local

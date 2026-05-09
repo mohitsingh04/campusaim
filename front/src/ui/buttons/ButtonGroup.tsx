@@ -9,6 +9,7 @@ interface ButtonGroupProps {
   href?: string;
   onClick?: any;
   disable: boolean;
+  target?: string;
 }
 
 export const ButtonGroup = ({
@@ -17,12 +18,18 @@ export const ButtonGroup = ({
   onClick,
   className = "",
   href,
+  target = "_self",
   disable,
 }: ButtonGroupProps) => {
   const baseClasses = `mt-1 btn-shine px-4 py-2 rounded-custom ${className} `;
   if (href && href.trim() !== "") {
     return (
-      <Link href={href} className={`${baseClasses} block text-center`}>
+      <Link
+        href={href}
+        title={label}
+        className={`${baseClasses} block text-center`}
+        target={target}
+      >
         {label}
       </Link>
     );

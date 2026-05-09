@@ -8,13 +8,13 @@ import {
 } from "@/context/Callbacks";
 import { useGetAssets } from "@/context/providers/AssetsProviders";
 import { PropertyProps } from "@/types/PropertyTypes";
-import { CourseProps, EventProps } from "@/types/Types";
+import { CourseProps, ExamProps } from "@/types/Types";
 import React, { useCallback, useEffect, useState } from "react";
 
 const StatsSection = () => {
   const [property, setProperty] = useState<PropertyProps[]>([]);
   const [course, setCourse] = useState<CourseProps[]>([]);
-  const [events, setEvents] = useState<EventProps[]>([]);
+  const [exams, setExams] = useState<ExamProps[]>([]);
   const [loading, setLoading] = useState(true);
   const { getCategoryById } = useGetAssets();
 
@@ -26,7 +26,7 @@ const StatsSection = () => {
         API.get("/exam"),
       ]);
 
-      const [propertyRes, courseRes, eventRes] = results;
+      const [propertyRes, courseRes, examsRes] = results;
 
       if (propertyRes.status === "fulfilled") {
         const propertyData = propertyRes.value?.data || [];
@@ -49,9 +49,9 @@ const StatsSection = () => {
         );
       }
 
-      if (eventRes.status === "fulfilled") {
-        const eventData = eventRes.value?.data || [];
-        setEvents(eventData);
+      if (examsRes.status === "fulfilled") {
+        const examData = examsRes.value?.data || [];
+        setExams(examData);
       }
     } catch (error) {
       getErrorResponse(error);
@@ -99,7 +99,7 @@ const StatsSection = () => {
         "Browse undergraduate, postgraduate, diploma, and certification courses.",
     },
     {
-      number: events.length,
+      number: exams.length,
       title: "Entrance Exams",
       description:
         "Stay updated with major entrance exams for colleges and professional courses.",

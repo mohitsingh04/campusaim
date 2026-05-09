@@ -9,17 +9,9 @@ import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import ProfileLocation from "../profile-model/ProfileLocation.js";
-import ProfileBio from "../profile-model/ProfileBio.js";
-import ProfileDoc from "../profile-model/ProfileDoc.js";
-import ProfileEducation from "../profile-model/ProfileEducation.js";
-import ProfileExperience from "../profile-model/ProfileExperience.js";
-import ProfileLanguage from "../profile-model/ProfileLanguage.js";
-import ProfileSkills from "../profile-model/ProfileSkills.js";
-import { addProfileScore } from "./ProfileScoreController.js";
 import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
-import ProfileScore from "../profile-model/ProfileScore.js";
 import { removeToken } from "../utils/getDataFromToken.js";
 import { ProfilePermissions } from "../profile-model/ProfilePermissions.js";
 import { generateUniqueId } from "../utils/Callback.js";
@@ -70,12 +62,6 @@ export const profileRegister = async (req, res) => {
     }
 
     username = username.toLowerCase().trim();
-
-    let score = 0;
-    if (username) score += 2;
-    if (name) score += 2;
-    if (email) score += 2;
-    if (mobile_no) score += 2;
 
     if (password !== confirm_password) {
       return res.status(400).json({ error: "Passwords do not match." });
@@ -151,7 +137,6 @@ export const profileRegister = async (req, res) => {
 
     await newUser.save();
 
-    await addProfileScore({ userId: uniqueId, score });
     await sendProfileEmailVerification({ uniqueId, email, req });
 
     return res.status(201).json({ message: "User Registered Successfully" });
@@ -575,14 +560,6 @@ export const DeleteAccountConfirm = async (req, res) => {
       __dirname,
       `../../media/profile/${uniqueId}`,
     );
-
-    await ProfileBio.deleteMany({ userId: uniqueId });
-    await ProfileDoc.deleteMany({ userId: uniqueId });
-    await ProfileEducation.deleteMany({ userId: uniqueId });
-    await ProfileExperience.deleteMany({ userId: uniqueId });
-    await ProfileLanguage.deleteMany({ userId: uniqueId });
-    await ProfileSkills.deleteMany({ userId: uniqueId });
-    await ProfileScore.deleteMany({ userId: uniqueId });
 
     const folderExists = await fs
       .stat(propertyFolder)

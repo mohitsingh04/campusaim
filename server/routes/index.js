@@ -8,7 +8,6 @@ import {
   filesUpload,
   newsUploadMulter,
   processImage,
-  ResuemUploadMulter,
   upload,
 } from "../multer/index.js";
 import {
@@ -185,12 +184,6 @@ import {
   getBlogTagById,
 } from "../controller/BlogTagController.js";
 import {
-  CreateRequirmentController,
-  updateRequirment,
-  getAllRequirments,
-  getRequirmentById,
-} from "../controller/RequirmentsController.js";
-import {
   CreateAllSeo,
   getAllSeo,
   getSeoByTypeId,
@@ -324,7 +317,10 @@ router.get("/course/seo/:slug", getCourseWithSeoBySlug);
 router.get("/menu/courses", getCourseMenuData);
 
 // ?Exam Route
-const examUpload = examUploadMulter.fields([{ name: "image", maxCount: 1 }]);
+const examUpload = examUploadMulter.fields([
+  { name: "image", maxCount: 1, prefix: "img" },
+  { name: "answer_sheet", maxCount: 1, prefix: "pdf" },
+]);
 router.get("/exam", getExam);
 router.post("/exam", Authorize, examUpload, processImage, addExam);
 router.patch(
@@ -652,12 +648,7 @@ router.get("/blog/tag/id/:objectId", getBlogTagById);
 router.post("/blog/tag", Authorize, CreateTagController);
 router.patch("/blog/tag/:objectId", Authorize, updateBlogTag);
 
-router.post(`/requirment`, Authorize, CreateRequirmentController);
-router.get(`/requirment/all`, getAllRequirments);
-router.get(`/requirment/id/:objectId`, getRequirmentById);
-router.patch(`/requirment/:objectId`, Authorize, updateRequirment);
-
-// Best For Routes
+//? Best For Routes
 router.post(`/best-for`, Authorize, CreateBestFor);
 router.get(`/best-for/all`, getAllBestFor);
 router.get(`/best-for/id/:objectId`, getBestForById);

@@ -1,5 +1,4 @@
 import ProfileLocation from "../profile-model/ProfileLocation.js";
-import { addProfileScore } from "./ProfileScoreController.js";
 
 export const addProfileLocation = async (req, res) => {
   try {
@@ -8,16 +7,6 @@ export const addProfileLocation = async (req, res) => {
     if (!userId) {
       return res.status(400).json({ error: "userId is required." });
     }
-
-    const existingLocation = await ProfileLocation.findOne({ userId });
-
-    let score = 0;
-
-    if (!existingLocation?.address && address) score += 2;
-    if (!existingLocation?.pincode && pincode) score += 2;
-    if (!existingLocation?.city && city) score += 2;
-    if (!existingLocation?.state && state) score += 2;
-    if (!existingLocation?.country && country) score += 2;
 
     const updatedLocation = await ProfileLocation.findOneAndUpdate(
       { userId },
@@ -33,12 +22,8 @@ export const addProfileLocation = async (req, res) => {
       {
         new: true,
         upsert: true,
-      }
+      },
     );
-
-    if (score > 0) {
-      await addProfileScore({ userId, score });
-    }
 
     return res.status(200).json({
       message: "Profile location saved successfully.",

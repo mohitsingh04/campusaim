@@ -33,7 +33,7 @@ const featuredImage = [
     alt: "Campusaim",
   },
 ];
-const ICON = [{ url: "/img/logo/favicon.ico", type: "image/png" }];
+
 export const metadata: Metadata = {
   title: {
     default: title,
@@ -42,7 +42,11 @@ export const metadata: Metadata = {
   description: desc,
   metadataBase: new URL(baseUrl),
   alternates: { canonical: "/" },
-  icons: { icon: ICON, shortcut: ICON, apple: ICON },
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/favicon.ico",
+  },
   openGraph: {
     title: title,
     description: desc,
@@ -66,9 +70,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head></head>
       <body className={`${montserrat.variable} ${poppins.variable}`}>
-        <noscript></noscript>
         <ToastContainer />
         <Providers>{children}</Providers>
         <OrganizationSchema />

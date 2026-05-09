@@ -76,7 +76,7 @@ const ResultsHeader = ({
                 onClick={() => setOpenMenu((prev) => !prev)}
                 className="px-4 py-1 border border-(--border) text-(--text-color-emphasis) rounded-full text-sm flex items-center"
               >
-                <SortAscIcon /> sort
+                <SortAscIcon className="w-4 h-4" /> sort
               </button>
 
               {/* Dropdown Menu */}

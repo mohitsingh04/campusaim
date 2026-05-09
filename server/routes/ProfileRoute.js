@@ -34,48 +34,7 @@ import {
   addProfileLocation,
   getLocationByUserId,
 } from "../profile-controller/ProfileLocationController.js";
-import {
-  processImage,
-  ProfileResuemUploadMulter,
-  upload,
-} from "../multer/index.js";
-import {
-  addProfileBio,
-  getProfileBioByUserId,
-} from "../profile-controller/ProfileBioController.js";
-import {
-  GetProfileResumeByUserId,
-  GetProfilesResumeAll,
-  SaveProfileResume,
-} from "../profile-controller/ProfileDocController.js";
-import {
-  AddProfileSkill,
-  GetSkillList,
-  GetSkillsByUserId,
-  RemoveProfileSkill,
-  updateSkill,
-} from "../profile-controller/ProfileSkillController.js";
-import {
-  AddProfileLanguage,
-  GetLanguageByUserId,
-  GetLanguagesList,
-  RemoveProfileLanguage,
-  updateLanguage,
-} from "../profile-controller/ProfileLanguagesController.js";
-import {
-  AddAndUpdateProfileExperience,
-  DeleteExperienceById,
-  GetExperienceByUserId,
-} from "../profile-controller/ProfileExperienceController.js";
-import { GetProfileProperties } from "../profile-controller/ProfilePropertiesController.js";
-import {
-  AddAndUpdateProfileEducation,
-  DeleteEducationById,
-  GetAllProfieDegree,
-  GetAllProfieInstitute,
-  GetEducationByUserId,
-} from "../profile-controller/ProfileEducationController.js";
-import { getProfileScoreById } from "../profile-controller/ProfileScoreController.js";
+import { processImage, upload } from "../multer/index.js";
 import { rateLimit } from "express-rate-limit";
 import { ProfileGoogleLoginAuth } from "../profile-controller/ProfileGoogleAuth.js";
 import Authorize from "../utils/Authorization.js";
@@ -113,12 +72,12 @@ profileRoutes.post("/profile/change-password", changeProfilePassword);
 profileRoutes.post(
   "/profile/delete/account/:uniqueId",
   Authorize,
-  ProfileAccountDeletionOtp
+  ProfileAccountDeletionOtp,
 );
 profileRoutes.get(
   `/profile/delete/account/:uniqueId/:token`,
   Authorize,
-  DeleteAccountConfirm
+  DeleteAccountConfirm,
 );
 profileRoutes.post("/profile/google/login", ProfileGoogleLoginAuth);
 
@@ -131,29 +90,29 @@ profileRoutes.patch(`/profile/user/:objectId`, Authorize, UpdateProfileUser);
 profileRoutes.patch(
   `/profile/user/:objectId/update`,
   Authorize,
-  UpdateUserDetails
+  UpdateUserDetails,
 );
 profileRoutes.patch(
   `/profile/user/avatar/:userId`,
   Authorize,
   avatarUpload,
   processImage,
-  ProfileAvatarChange
+  ProfileAvatarChange,
 );
 profileRoutes.delete(
   `/profile/user/avatar/:userId`,
   Authorize,
-  DeleteProfileAvatar
+  DeleteProfileAvatar,
 );
 profileRoutes.post(
   `/profile/user/switch/:objectId`,
   Authorize,
-  SwitchProfessionalMail
+  SwitchProfessionalMail,
 );
 profileRoutes.get(
   `/profile/user/switch/professional/:token`,
   Authorize,
-  confirmSwitchProfessional
+  confirmSwitchProfessional,
 );
 
 profileRoutes.get(`/profile/username/:username`, GetAllProfileByUsername);
@@ -167,85 +126,19 @@ profileRoutes.patch(
   Authorize,
   bannerUpload,
   processImage,
-  ProfileBannerChange
+  ProfileBannerChange,
 );
 profileRoutes.delete(
   `/profile/professional/banner/:userId`,
   Authorize,
-  DeleteProfileBanner
+  DeleteProfileBanner,
 );
-
-profileRoutes.patch(`/profile/bio`, Authorize, addProfileBio);
-profileRoutes.get(`/profile/bio/:userId`, getProfileBioByUserId);
-
-const resumeUpload = ProfileResuemUploadMulter.fields([
-  { name: "resume", maxCount: 1 },
-]);
-profileRoutes.post(
-  "/profile/doc/resume",
-  Authorize,
-  resumeUpload,
-  SaveProfileResume
-);
-profileRoutes.get("/profile/doc/resume/:userId", GetProfileResumeByUserId);
-profileRoutes.get("/profile/doc/resume", GetProfilesResumeAll);
-
-profileRoutes.patch(`/profile/skill`, Authorize, AddProfileSkill);
-profileRoutes.patch(
-  `/profile/skill/remove/:uniqueId`,
-  Authorize,
-  RemoveProfileSkill
-);
-profileRoutes.get(`/profile/skill/:userId`, GetSkillsByUserId);
-profileRoutes.get(`/profile/skill/all/list`, GetSkillList);
-profileRoutes.patch(`/profile/skill/:objectId`, updateSkill);
-
-profileRoutes.patch(`/profile/language`, Authorize, AddProfileLanguage);
-profileRoutes.patch(
-  `/profile/language/remove/:uniqueId`,
-  Authorize,
-  RemoveProfileLanguage
-);
-profileRoutes.get(`/profile/language/:userId`, GetLanguageByUserId);
-profileRoutes.get(`/profile/language/all/list`, GetLanguagesList);
-profileRoutes.patch(`/profile/language/:objectId`, updateLanguage);
-
-profileRoutes.post(
-  `/profile/experience`,
-  Authorize,
-  AddAndUpdateProfileExperience
-);
-profileRoutes.get(`/profile/experience/:userId`, GetExperienceByUserId);
-profileRoutes.delete(
-  `/profile/experience/:uniqueId`,
-  Authorize,
-  DeleteExperienceById
-);
-
-profileRoutes.get(`/profile/properties`, GetProfileProperties);
-
-profileRoutes.post(
-  `/profile/education`,
-  Authorize,
-  AddAndUpdateProfileEducation
-);
-profileRoutes.get(`/profile/education/:userId`, GetEducationByUserId);
-profileRoutes.delete(
-  `/profile/education/:uniqueId`,
-  Authorize,
-  DeleteEducationById
-);
-
-profileRoutes.get(`/profile/degree`, GetAllProfieDegree);
-profileRoutes.get(`/profile/institute`, GetAllProfieInstitute);
-
-profileRoutes.get(`/profile/score/:userId`, getProfileScoreById);
 
 profileRoutes.post(`/profile/permission`, createPermissions);
 profileRoutes.get(`/profile/permission`, getAllPermissions);
 profileRoutes.patch(
   `/profile/user/:objectId/permissions`,
-  updateUserPermissions
+  updateUserPermissions,
 );
 
 profileRoutes.get(`/profile/role`, getAllRoles);

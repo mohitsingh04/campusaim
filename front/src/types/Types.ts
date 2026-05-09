@@ -40,9 +40,12 @@ export interface ExamProps {
   _id: string;
   exam_name: string;
   exam_short_name: string;
-  upcoming_exam_date: string;
-  result_date: string;
-  application_form_date: string;
+  exam_type: string;
+  exam_sub_type: string;
+  exam_tag: string[];
+  upcoming_exam_date: { date: string; is_tentative: boolean };
+  result_date: { date: string; is_tentative: boolean };
+  application_form_date: { start: string; end: string; is_tentative: boolean };
   youtube_link: string;
   exam_form_link: string;
   exam_mode: string;
@@ -52,40 +55,14 @@ export interface ExamProps {
   application_form_link: string;
   isDeleted: boolean;
   status: string;
+  upcoming_exam_month: string;
+  result_month: string;
+  application_month: string;
+  answer_sheet: string;
   faqs: FAQProps[];
 }
 
-export interface EventProps {
-  _id: string;
-  title: string;
-  category: string[];
-  event_city: string;
-  event_state: string;
-  event_country: string;
-  status: string;
-  event_slug: string;
-  featured_image: string[];
-  entrance_type: string;
-  calendar_group: string;
-  schedule: { date: string; start_time: string; end_time: string }[];
-  event_description: string;
-  description: string;
-  language: string[];
-  ticket_booking: { start: string; end: string };
-  age_limit: { min: number; max: number };
-  event_partners: {
-    name: string;
-    logo: string[];
-  }[];
-  host: {
-    name: string;
-    image: string[];
-  };
-  event_host_url: string;
-}
-
 export interface SeoProps {
-  event_id: string;
   course_id: string;
   blog_id: string;
   exam_id: string;
@@ -150,7 +127,6 @@ export type SearchResult =
   | (CourseProps & { type: "course" })
   | (BlogsProps & { type: "blog" })
   | (NewsProps & { type: "news-and-updates" })
-  | (EventProps & { type: "events" })
   | { type: "queries"; keyword: string };
 
 export interface SimpleLocationProps {
@@ -158,10 +134,6 @@ export interface SimpleLocationProps {
   city?: string;
   state?: string;
   country?: string;
-}
-
-export interface RetreatProps {
-  retreat_name: string;
 }
 
 export interface FieldDataSimple {

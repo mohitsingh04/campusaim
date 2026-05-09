@@ -146,17 +146,17 @@ export function Hero() {
 
           <div className="relative">
             <Image
-              src="/img/testimonials/student-test.webp"
+              src="/img/main-images/hero.png"
               alt="Hero student"
-              width={600}
+              width={800}
               height={600}
               priority
               fetchPriority="high"
               loading="eager"
               decoding="sync"
-              quality={80}
-              sizes="(max-width: 768px) 1px, (max-width: 1200px) 40vw, 480px"
               className="relative z-10 object-cover"
+              sizes="(max-width: 768px) 1px, (max-width: 1200px) 80vw, 900px"
+              quality={80}
             />
 
             <div className="absolute top-10 left-0 z-0  w-full h-full pointer-events-none">
@@ -214,9 +214,9 @@ export function Hero() {
             </div>
 
             {/* FLOATING CIRCLES */}
-            <div className="absolute top-6 right-10 w-16 h-16 rounded-full overflow-hidden shadow-lg">
+            <div className="absolute top-6 right-40 md:right-80 w-16 h-16 md:w-25 md:h-25">
               <Image
-                src="/img/testimonials/user-1.webp"
+                src="/img/main-images/books.png"
                 alt="student 1"
                 width={50}
                 height={50}
@@ -230,9 +230,9 @@ export function Hero() {
               />
             </div>
 
-            <div className="absolute top-24 left-4 w-12 h-12 rounded-full overflow-hidden shadow-lg">
+            <div className="absolute top-24 left-4 w-16 h-16 md:w-25 md:h-25">
               <Image
-                src="/img/testimonials/user-2.webp"
+                src="/img/main-images/rocket.png"
                 alt="student 2"
                 width={50}
                 height={50}
@@ -246,9 +246,9 @@ export function Hero() {
               />
             </div>
 
-            <div className="absolute top-32 right-0 w-14 h-14 rounded-full overflow-hidden shadow-lg">
+            <div className="absolute top-32 right-0 w-16 h-16 md:w-25 md:h-25">
               <Image
-                src="/img/testimonials/user-3.webp"
+                src="/img/main-images/college.png"
                 alt="student 3"
                 width={50}
                 height={50}

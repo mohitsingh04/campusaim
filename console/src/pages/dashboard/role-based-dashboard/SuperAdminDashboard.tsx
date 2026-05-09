@@ -39,14 +39,12 @@ const roleEndpoints: Record<string, string[]> = {
     "/course",
     "/property",
     "/blog",
-    "/events",
-    "/retreat",
     "/enquiry",
     "/enquiry/archive/all",
     "/support",
   ],
-  Editor: ["/course", "/property", "/blog", "/events", "/retreat", "/enquiry"],
-  "Seo Manager": ["/course", "/property", "/blog", "/events", "/retreat"],
+  Editor: ["/course", "/property", "/blog", "/enquiry"],
+  "Seo Manager": ["/course", "/property", "/blog"],
   "Property Manager": ["/property"],
   User: [],
   Support: ["/support"],
@@ -72,7 +70,7 @@ export default function SuperAdminDashboard() {
 
       const endpoints = roleEndpoints[authUser.role] || [];
       const results = await Promise.allSettled(
-        endpoints.map((url) => API.get(url))
+        endpoints.map((url) => API.get(url)),
       );
 
       results.forEach((res, idx) => {
@@ -251,7 +249,7 @@ export default function SuperAdminDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
         {cardData
           .filter(
-            (card) => !card.role || card.role.includes(authUser?.role || "")
+            (card) => !card.role || card.role.includes(authUser?.role || ""),
           )
           .map((card, index) => (
             <DashboardCard
