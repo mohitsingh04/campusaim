@@ -15,6 +15,7 @@ import {
     generatePartnerInvite,
     registerPartnerViaInvite,
     fetchCounselorsAndTeamleaders,
+    fetchOrgUsers,
 } from "../app_controller/UserController.js";
 
 const appRouter = express.Router();
@@ -30,6 +31,7 @@ appRouter.get("/fetch-teamleader", fetchTeamLeader);
 appRouter.get("/fetch-teamleader/:id", fetchTeamLeaderById);
 appRouter.get("/fetch-partner", fetchPartner);
 appRouter.get("/fetch-partner/:id", fetchPartnerById);
+appRouter.get("/fetch-org-users", fetchOrgUsers);
 
 appRouter.get("/fetch-counselor-teamleader", fetchCounselorsAndTeamleaders);
 

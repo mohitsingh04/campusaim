@@ -31,13 +31,23 @@ export default function FinalSummaryStep({
   collegesSuggested,
   studentObjections,
   nextAction,
+
+  allCourses = [],
 }) {
   const navigate = useNavigate();
   const { authUser } = useAuth();
 
-  const normalizedCourses = Array.isArray(courseSuggested)
-    ? courseSuggested.flatMap(c => String(c).split(",").map(v => v.trim()))
-    : [];
+  const normalizedCourses = useMemo(() => {
+    if (!Array.isArray(courseSuggested)) return [];
+
+    return courseSuggested.map((id) => {
+      const matchedCourse = allCourses.find(
+        (course) => String(course?._id) === String(id)
+      );
+
+      return matchedCourse?.course_name || id;
+    });
+  }, [courseSuggested, allCourses]);
 
   const totalQuestions = questions.length;
   const submittedCount = Object.keys(answers).length;
@@ -297,55 +307,101 @@ export default function FinalSummaryStep({
           </div>
         </div>
 
-        <div className="p-2">
-          {pitchSummary && (
-            <div className="flex items-start gap-2 pt-2 border-t">
-              <span className="text-xs font-semibold uppercase w-24 mt-1">
-                Pitch:
-              </span>
-              <p className="text-sm">{pitchSummary}</p>
-            </div>
-          )}
+        <div className="border-t border-[var(--yp-border-primary)] bg-[var(--yp-primary)] p-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-          {Array.isArray(collegesSuggested) && collegesSuggested.length > 0 && (
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold uppercase w-24">
-                Colleges Suggested:
-              </span>
-              <p className="font-medium">{collegesSuggested.join(", ")}</p>
-            </div>
-          )}
+            {/* Pitch Summary */}
+            {pitchSummary && (
+              <div className="bg-[var(--yp-tertiary)]/40 rounded-xl p-4 border border-[var(--yp-border-primary)]">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--yp-muted)] mb-2">
+                  Pitch Summary
+                </p>
 
-          {normalizedCourses.length > 0 && (
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold uppercase w-24">
-                Courses Suggested:
-              </span>
-              <p className="font-medium">{normalizedCourses.join(", ")}</p>
-            </div>
-          )}
+                <p className="text-sm leading-6 text-[var(--yp-text-secondary)]">
+                  {pitchSummary}
+                </p>
+              </div>
+            )}
 
-          {Array.isArray(studentObjections) && studentObjections.length > 0 && (
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold uppercase w-24">
-                Objections:
-              </span>
-              <p className="font-medium text-[var(--yp-warning)]">
-                {studentObjections.join(", ")}
-              </p>
-            </div>
-          )}
+            {/* Next Action */}
+            {/* {nextAction && (
+              <div className="bg-[var(--yp-tertiary)]/40 rounded-xl p-4 border border-[var(--yp-border-primary)]">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--yp-muted)] mb-2">
+                  Next Action
+                </p>
+
+                <div className="inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold bg-[var(--yp-main)]/10 text-[var(--yp-main)]">
+                  {nextAction === "call_again" && "Call Again"}
+                  {nextAction === "send_whatsapp" && "Send WhatsApp"}
+                  {nextAction === "schedule_visit" && "Schedule Visit"}
+                  {nextAction === "closed" && "Closed"}
+                </div>
+              </div>
+            )} */}
+
+            {/* Colleges */}
+            {Array.isArray(collegesSuggested) &&
+              collegesSuggested.length > 0 && (
+                <div className="md:col-span-2 bg-[var(--yp-tertiary)]/40 rounded-xl p-4 border border-[var(--yp-border-primary)]">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--yp-muted)] mb-3">
+                    Colleges & Universities Suggested
+                  </p>
+
+                  <div className="flex flex-wrap gap-2">
+                    {collegesSuggested.map((college, index) => (
+                      <span
+                        key={`${college}-${index}`}
+                        className="px-3 py-1.5 rounded-full text-sm font-medium bg-blue-50 text-blue-700 border border-blue-100"
+                      >
+                        {college}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+            {/* Courses */}
+            {normalizedCourses.length > 0 && (
+              <div className="md:col-span-2 bg-[var(--yp-tertiary)]/40 rounded-xl p-4 border border-[var(--yp-border-primary)]">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--yp-muted)] mb-3">
+                  Courses Suggested
+                </p>
+
+                <div className="flex flex-wrap gap-2">
+                  {normalizedCourses.map((course, index) => (
+                    <span
+                      key={`${course}-${index}`}
+                      className="px-3 py-1.5 rounded-full text-sm font-medium bg-green-50 text-green-700 border border-green-100"
+                    >
+                      {course}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Objections */}
+            {Array.isArray(studentObjections) &&
+              studentObjections.length > 0 && (
+                <div className="md:col-span-2 bg-orange-50/60 rounded-xl p-4 border border-orange-200">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-orange-600 mb-3">
+                    Student Objections
+                  </p>
+
+                  <div className="flex flex-wrap gap-2">
+                    {studentObjections.map((item, index) => (
+                      <span
+                        key={`${item}-${index}`}
+                        className="px-3 py-1.5 rounded-full text-sm font-medium bg-orange-100 text-orange-700 border border-orange-200"
+                      >
+                        {item}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+          </div>
         </div>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <span className="text-xs font-semibold uppercase w-24">
-          Next Action:
-        </span>
-        <p className="font-medium">{nextAction === "call_again" ? "Call Again" : null}</p>
-        <p className="font-medium">{nextAction === "send_whatsapp" ? "Send Whatsapp" : null}</p>
-        <p className="font-medium">{nextAction === "schedule_visit" ? "Schedule Visit" : null}</p>
-        <p className="font-medium">{nextAction === "closed" ? "Closed" : null}</p>
       </div>
 
       {/* Actions */}

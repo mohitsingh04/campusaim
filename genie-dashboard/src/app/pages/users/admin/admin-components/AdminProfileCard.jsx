@@ -1,7 +1,7 @@
 import { Mail, Phone, MapPin } from "lucide-react";
 import Avatar from "../../../../components/common/Avatar/Avatar";
 
-export default function AdminProfileCard({ adminData, fullAddress, toggleMutation }) {
+export default function AdminProfileCard({ adminData, fullAddress, toggleMutation, onToggleStatus }) {
     const isActive = adminData?.status === "Active";
 
     return (
@@ -27,17 +27,17 @@ export default function AdminProfileCard({ adminData, fullAddress, toggleMutatio
                         </h2>
 
                         <button
-                            onClick={() => adminData?._id && toggleMutation.mutate()}
+                            onClick={onToggleStatus}
                             disabled={toggleMutation.isPending}
                             className={`inline-flex items-center justify-center px-4 py-1.5 text-xs font-semibold rounded-full text-white transition-all duration-200
-              ${isActive ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"}
-              ${toggleMutation.isPending ? "opacity-50 cursor-not-allowed" : ""}`}
+    ${isActive ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"}
+    ${toggleMutation.isPending ? "opacity-50 cursor-not-allowed" : ""}`}
                         >
                             {toggleMutation.isPending
                                 ? "Processing..."
                                 : isActive
                                     ? "Active"
-                                    : "Inactive"}
+                                    : "Suspended"}
                         </button>
                     </div>
 

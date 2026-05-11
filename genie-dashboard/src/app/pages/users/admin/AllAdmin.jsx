@@ -113,6 +113,29 @@ export default function AllAdmin() {
         }
     }, [debouncedSearch, handlePageChange]);
 
+    const filteredAdmins = useMemo(() => {
+        if (!debouncedSearch.trim()) return adminData.admins;
+
+        const search = debouncedSearch.toLowerCase().trim();
+
+        return adminData.admins.filter((admin) => {
+            return [
+                admin?.name,
+                admin?.email,
+                admin?.mobile,
+                admin?.contact,
+                admin?.city,
+                admin?.role,
+                admin?.status,
+                admin?.provider,
+            ]
+                .filter(Boolean)
+                .some((field) =>
+                    field.toString().toLowerCase().includes(search)
+                );
+        });
+    }, [adminData.admins, debouncedSearch]);
+
     const toggleSelect = useCallback((id) => {
         setSelectedAdmins((prev) => {
             const next = new Set(prev);
@@ -123,7 +146,7 @@ export default function AllAdmin() {
 
     const handleSelectAll = useCallback(() => {
         if (!adminData.admins.length) return;
-        const pageIds = adminData.admins.map((row) => row._id);
+        const pageIds = filteredAdmins.map((row) => row._id);
         const allOnPageSelected = pageIds.every((id) => selectedAdmins.has(id));
 
         setSelectedAdmins((prev) => {
@@ -131,7 +154,7 @@ export default function AllAdmin() {
             allOnPageSelected ? pageIds.forEach(id => next.delete(id)) : pageIds.forEach(id => next.add(id));
             return next;
         });
-    }, [adminData.admins, selectedAdmins]);
+    }, [filteredAdmins, selectedAdmins]);
 
     const confirmDelete = async (ids) => {
         const result = await Swal.fire({
@@ -201,7 +224,7 @@ export default function AllAdmin() {
 
             <DataTable
                 columns={columns}
-                data={adminData.admins}
+                data={filteredAdmins}
                 isLoading={isLoading}
                 selectable
                 rowKey={(a) => a._id}

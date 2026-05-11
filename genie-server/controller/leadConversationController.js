@@ -314,6 +314,7 @@ export const addOrUpdateLeadConversation = async (req, res) => {
         if (recipientIds.length) {
             const payloads = recipientIds.map(uid =>
                 createNotification({
+                    organizationId: lead.organizationId,
                     receiverId: uid,
                     senderId: userId,
                     type: "lead_activity",

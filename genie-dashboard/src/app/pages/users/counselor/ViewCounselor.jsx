@@ -80,7 +80,7 @@ export default function ViewCounselor() {
         const nextStatus = status === "Active" ? "Suspended" : "Active";
 
         const result = await Swal.fire({
-            title: `${nextStatus === "Active" ? "Activate" : "Suspend"} User?`,
+            title: `${nextStatus === "Active" ? "Activate" : "Suspend"} Counselor?`,
             text: `Are you sure you want to ${nextStatus === "Active" ? "activate" : "suspend"} this counselor?`,
             icon: "warning",
             showCancelButton: true,
@@ -103,7 +103,7 @@ export default function ViewCounselor() {
                 setStatus(res.data.status);
 
                 toast.success(
-                    `User is now ${res.data.status === "Active" ? "Active" : "Suspended"}`
+                    `Counselor is now ${res.data.status === "Active" ? "Active" : "Suspended"}`
                 );
             } else {
                 throw new Error("Invalid response");

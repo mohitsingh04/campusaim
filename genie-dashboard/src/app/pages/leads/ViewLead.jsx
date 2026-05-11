@@ -50,7 +50,7 @@ function ViewLead() {
     const [isLoading, setIsLoading] = useState(true);
     const [followUp, setFollowUp] = useState(null);
     const [showStatusModal, setShowStatusModal] = useState(false);
-    const [options, setOptions] = useState([]);
+    const [users, setUsers] = useState([]);
     const [courses, setCourses] = useState([]);
 
     const fetchCourse = async () => {
@@ -70,20 +70,16 @@ function ViewLead() {
         role?.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase());
 
     useEffect(() => {
-        if (!["admin", "teamleader"].includes(role)) return;
-
-        const fetchUsers = async () => {
+        const fetchOrgUsers = async () => {
             try {
-                const { data } = await API.get(`/fetch/users`);
-
-                setOptions(
-                    (data?.data || []).map((u) => ({
+                const { data } = await CampusaimAPI.get(`/fetch-org-users`);
+                setUsers(
+                    (data || []).map((u) => ({
                         value: u._id,
-                        label: `${u.name} • ${capitalizeRole(u.role)} • ${u.email}`,
+                        label: `${u.name} • ${u.email}`,
                         role: u.role
                     }))
                 );
-
             } catch (error) {
                 if (error?.response?.status !== 403) {
                     toast.error(error.response?.data?.error || "Failed to load users");
@@ -91,7 +87,7 @@ function ViewLead() {
             }
         };
 
-        fetchUsers();
+        fetchOrgUsers();
     }, []);
 
     const fetchLead = async () => {
@@ -400,10 +396,11 @@ function ViewLead() {
                 isOpen={showStatusModal}
                 onClose={() => setShowStatusModal(false)}
                 lead={leadData}
-                users={options}       // already formatted
+                users={users}       // already formatted
                 courses={courseOptions}
                 onSuccess={fetchLead}
                 hasConversation={hasConversation}
+                authUser={authUser}
             />
         </>
     );
