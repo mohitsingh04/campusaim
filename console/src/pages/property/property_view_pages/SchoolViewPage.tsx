@@ -4,7 +4,6 @@ import {
   Users,
   BookOpen,
   Bed,
-  ListChecks,
   Image,
   HelpCircle,
   Eye,
@@ -18,6 +17,7 @@ import {
   GraduationCap,
   BadgeDollarSign,
   MessageCircle,
+  Medal,
 } from "lucide-react";
 import { BiSolidCheckShield, BiSolidShieldX } from "react-icons/bi";
 import {
@@ -27,39 +27,44 @@ import {
   useParams,
 } from "react-router-dom";
 
-import { PropertyTabs } from "../../ui/tabs/PropertyTabs";
-import { Breadcrumbs } from "../../ui/breadcrumbs/Breadcrumbs";
-import ViewSkeleton from "../../ui/skeleton/ViewSkeleton";
+import { PropertyTabs } from "../../../ui/tabs/PropertyTabs";
+import { Breadcrumbs } from "../../../ui/breadcrumbs/Breadcrumbs";
+import ViewSkeleton from "../../../ui/skeleton/ViewSkeleton";
 
-import { API } from "../../contexts/API";
+import { API } from "../../../contexts/API";
 import {
   generateSlug,
   getErrorResponse,
   matchPermissions,
-} from "../../contexts/Callbacks";
+} from "../../../contexts/Callbacks";
 
-import { DashboardOutletContextProps, PropertyProps } from "../../types/types";
+import {
+  DashboardOutletContextProps,
+  PropertyProps,
+} from "../../../types/types";
 
 // Components
-import FAQs from "./property_component/faqs/Faqs";
-import Gallery from "./property_component/gallery/Gallery";
-import Location from "./property_component/location/Location";
-import Teachers from "./property_component/teacher/Teacher";
-import SEODetails from "./property_component/seo/Seo";
-import Amenities from "./property_component/amenities/Amenities";
-import Accomodation from "./property_component/accomodation/Accomodation";
-import Review from "./property_component/review/Review";
-import BasicDetails from "./property_component/basic-details/BasicDetails";
-import { Enquiry } from "./property_component/enquiry/Enquiry";
-import CourseList from "./property_component/course/CourseList";
-import Scholarship from "./property_component/scholarship/Scholarship";
-import AdmissionProcess from "./property_component/admission_process/AdmissionProcess";
-import LoanProcess from "./property_component/loan_process/LoanProcess";
-import Announcement from "./property_component/announcement/Announcement";
-import QnA from "./property_component/qna/QnA";
-// import Ranking from "./property_component/ranking/Ranking";
+import FAQs from "../property_component/faqs/Faqs";
+import Gallery from "../property_component/gallery/Gallery";
+import Location from "../property_component/location/Location";
+import Teachers from "../property_component/teacher/Teacher";
+import SEODetails from "../property_component/seo/Seo";
+import Amenities from "../property_component/amenities/Amenities";
+import Accomodation from "../property_component/accomodation/Accomodation";
+import Review from "../property_component/review/Review";
+import { Enquiry } from "../property_component/enquiry/Enquiry";
+import Scholarship from "../property_component/scholarship/Scholarship";
+import AdmissionProcess from "../property_component/admission_process/AdmissionProcess";
+import LoanProcess from "../property_component/loan_process/LoanProcess";
+import Announcement from "../property_component/announcement/Announcement";
+import QnA from "../property_component/qna/QnA";
+// import Ranking from "../property_component/ranking/Ranking";
+import BasicDetails from "./school_components/basic-details/BasicDetails";
+import GoogleMaps from "../property_component/google-maps/GoogleMaps";
+import SchoolClassess from "./school_components/classess/SchoolClassess";
+import PropertyRanks from "../property_component/ranks/PropertyRanks";
 
-export function PropertyView() {
+export function SchoolView() {
   const navigate = useNavigate();
   const { objectId } = useParams();
 
@@ -67,16 +72,12 @@ export function PropertyView() {
     useOutletContext<DashboardOutletContextProps>();
 
   const [property, setProperty] = useState<PropertyProps | null>(null);
-  const [allProperty, setAllProperty] = useState<PropertyProps[]>([]);
   const [location, setLocation] = useState<any>(null);
 
   const [propertyLoading, setPropertyLoading] = useState(true);
-  const [allPropertyLoading, setAllPropertyLoading] = useState(true);
 
-  // 🔑 Single source of truth
-  const loading = authLoading || propertyLoading || allPropertyLoading;
+  const loading = authLoading || propertyLoading;
 
-  // ---------- AUTH GUARD ----------
   useEffect(() => {
     if (authLoading || !property) return;
 
@@ -87,19 +88,6 @@ export function PropertyView() {
       navigate("/dashboard");
     }
   }, [authLoading, authUser, property, navigate]);
-
-  // ---------- API CALLS ----------
-  const getAllProperty = useCallback(async () => {
-    setAllPropertyLoading(true);
-    try {
-      const res = await API.get("/property");
-      setAllProperty(res.data);
-    } catch (err) {
-      getErrorResponse(err, true);
-    } finally {
-      setAllPropertyLoading(false);
-    }
-  }, []);
 
   const getProperty = useCallback(async () => {
     setPropertyLoading(true);
@@ -125,10 +113,8 @@ export function PropertyView() {
 
   useEffect(() => {
     getProperty();
-    getAllProperty();
-  }, [getProperty, getAllProperty]);
+  }, [getProperty]);
 
-  // ---------- HELPERS ----------
   const getCategoryById = useCallback(
     (id: any) => categories.find((c) => c._id === id)?.category_name,
     [categories],
@@ -141,7 +127,6 @@ export function PropertyView() {
     );
   }, [property, getCategoryById]);
 
-  // ---------- LOADING ----------
   if (loading) {
     return <ViewSkeleton />;
   }
@@ -170,7 +155,6 @@ export function PropertyView() {
       component: (
         <BasicDetails
           property={property}
-          allProperty={allProperty}
           categories={categories}
           getCategoryById={getCategoryById}
           getPropertyBasicDetails={getProperty}
@@ -192,23 +176,24 @@ export function PropertyView() {
       online: isOnline,
     },
     {
+      id: "maps",
+      label: "Maps",
+      icon: MapPin,
+      component: <GoogleMaps property={property} location={location} />,
+      online: isOnline,
+    },
+    {
+      id: "classess",
+      label: "Classes",
+      icon: MapPin,
+      component: <SchoolClassess property={property} />,
+      online: isOnline,
+    },
+    {
       id: "gallery",
       label: "Gallery",
       icon: Image,
       component: <Gallery property={property} />,
-      online: false,
-    },
-    {
-      id: "course",
-      label: "Course",
-      icon: ListChecks,
-      component: (
-        <CourseList
-          property={property}
-          allProperty={allProperty}
-          getCategoryById={getCategoryById}
-        />
-      ),
       online: false,
     },
     {
@@ -288,12 +273,19 @@ export function PropertyView() {
       component: <QnA property={property} />,
       online: false,
     },
+    {
+      id: "ranking",
+      label: "Ranking",
+      icon: Medal,
+      component: <PropertyRanks property={property} />,
+      online: false,
+    },
     // {
-    // 	id: "ranking",
-    // 	label: "Ranking",
-    // 	icon: Medal,
-    // 	component: <Ranking property={property} />,
-    // 	online: false,
+    //   id: "ranking",
+    //   label: "Ranking",
+    //   icon: Medal,
+    //   component: <Ranking property={property} />,
+    //   online: false,
     // },
   ];
 

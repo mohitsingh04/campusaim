@@ -116,6 +116,7 @@ import {
   getPropertyCourseNameListByPropertyId,
 } from "../controller/PropertyCourseController.js";
 import {
+    getAllRankList,
   getCity,
   getCountry,
   getState,
@@ -249,11 +250,10 @@ import {
   updateQnA,
 } from "../controller/QnaController.js";
 import {
-  addRanking,
-  deleteRanking,
-  editRanking,
-  getAllRanking,
-  getRankingByPropertyId,
+    createOrUpdatePropertyRanking,
+  getOrCreateRankingId,
+  getPropertyRankAll,
+  getRankByPropertyId,
 } from "../controller/RankingController.js";
 import {
   addScholarship,
@@ -277,6 +277,15 @@ import {
   getCourseEligibilityById,
   updateCourseEligibility,
 } from "../controller/CourseEligibilityController.js";
+import {
+  getAllPropertyMaps,
+  getPropertyMapByPropertyId,
+  upsertPropertyMap,
+} from "../controller/PropertyMaps.js";
+import {
+  createOrUpdatePropertyClassess,
+  getPropertyClassess,
+} from "../controller/PropertyClassessController.js";
 
 const router = express.Router();
 router.use(bodyParser.json());
@@ -486,11 +495,10 @@ router.delete(
 );
 
 //? Ranking Route
-router.get("/ranking", getAllRanking);
-router.get("/ranking/:property_id", getRankingByPropertyId);
-router.post("/ranking", Authorize, addRanking);
-router.patch("/ranking/:objectId", Authorize, editRanking);
-router.delete("/delete-rank/:objectId", Authorize, deleteRanking);
+router.get("/rank-list", getAllRankList);
+router.get("/ranking", getPropertyRankAll);
+router.get("/property/ranking/:property_id", getRankByPropertyId);
+router.post("/ranking", Authorize, createOrUpdatePropertyRanking);
 
 //? Announcement Route
 router.get("/announcement", getAllAnnouncement);
@@ -720,5 +728,12 @@ router.get(
   `/related/property/course/:property_course_id`,
   getPropertyRelatedToPropertyCourse,
 );
+
+router.post(`/property/maps/create`, upsertPropertyMap);
+router.get(`/property/maps/:property_id`, getPropertyMapByPropertyId);
+router.get(`/property/maps/all`, getAllPropertyMaps);
+
+router.post(`/property/school/classess/add`, createOrUpdatePropertyClassess);
+router.get(`/property/school/classess/:property_id`, getPropertyClassess);
 
 export default router;

@@ -28,9 +28,8 @@ import { StatusEdit } from "../pages/status/StatusEdit";
 import { UserList } from "../pages/users/UsersList";
 import { CategoryList } from "../pages/category/CategoryList";
 import { BlogList } from "../pages/blog/BlogList";
-import { SearchList } from "../pages/search/SearchList";
+// import { SearchList } from "../pages/search/SearchList";
 import { CourseList } from "../pages/course/CourseList";
-import { PropertyList } from "../pages/property/PropertyList";
 import StatusView from "../pages/status/StatusView";
 import { CategroyCreate } from "../pages/category/CategroyCreate";
 import { CategoryEdit } from "../pages/category/CategoryEdit";
@@ -43,8 +42,6 @@ import { BlogCategoryList } from "../pages/blog/category/BlogCategoryList";
 import BlogCategoryEdit from "../pages/blog/category/BlogCategoryEdit";
 import BlogCategoryCreate from "../pages/blog/category/BlogCategoryCreate";
 import BlogTags from "../pages/blog/tag/BlogTags";
-import KeyOutComes from "../pages/key_outcomes/KeyOutComeslist";
-import Requirements from "../pages/Requirements/Requirements";
 import LegalPage from "../pages/legals/Legals";
 import { CourseCreate } from "../pages/course/CourseCreate";
 import { CourseEdit } from "../pages/course/CourseEdit";
@@ -75,7 +72,7 @@ import DeleteAccountSwal from "../pages/auth/AccountDeleteResend";
 import DeleteAccountConfrim from "../pages/auth/DeleteAccountConfimr";
 import NewSupportQuery from "../pages/support/NewSupportQuery";
 import SupportChat from "../pages/support/SupportChat";
-import { SupportList } from "../pages/support/SupportList";
+// import { SupportList } from "../pages/support/SupportList";
 import NewsList from "../pages/news/NewsList";
 import { MdNewspaper } from "react-icons/md";
 import { NewsCreate } from "../pages/news/NewsCreate";
@@ -85,7 +82,7 @@ import CourseSeo from "../pages/course/CourseSeo";
 import NewsSeo from "../pages/news/NewsSeo";
 import ProfessionalAssets from "../pages/professional-assets/ProfessionalAssets";
 import PropertyVerification from "../pages/property/PropertyVerification";
-import PropertyCompares from "../pages/property-compares/PropertyCompares";
+// import PropertyCompares from "../pages/property-compares/PropertyCompares";
 import ExamList from "../pages/exams/ExamList";
 import { ExamCreate } from "../pages/exams/ExamCreate";
 import ExamDeleted from "../pages/exams/ExamDeleted";
@@ -97,9 +94,13 @@ import ViewScholarship from "../pages/scholarship/ViewScholarship";
 import EditScholarship from "../pages/scholarship/EditScholarship";
 import ScholarshipSeo from "../pages/scholarship/ScholarshipSeo";
 import AllScholarship from "../pages/scholarship/AllScholarship";
-import AssesmentTest from "../pages/assesment/AssesmentTest";
+// import AssesmentTest from "../pages/assesment/AssesmentTest";
 import BestFor from "../pages/best_for/BestFor";
 import CourseEligibility from "../pages/course_eligibility/CourseEligibility";
+import { UniversitiesList } from "../pages/property/property_list_pages/Universities";
+import { SchoolList } from "../pages/property/property_list_pages/Schools";
+import { CoachingList } from "../pages/property/property_list_pages/Coaching";
+import { SchoolView } from "../pages/property/property_view_pages/SchoolViewPage";
 
 export const SidbarNavigations = [
   {
@@ -176,9 +177,22 @@ export const SidbarNavigations = [
     id: "property",
     icon: Building,
     href: "/dashboard/property",
-    component: PropertyList,
     roles: ["Seo Manager", "Editor", "Super Admin"],
     Permission: "Read Property",
+    submenu: [
+      {
+        name: "Universities",
+        href: "/dashboard/universities",
+      },
+      {
+        name: "Schools",
+        href: "/dashboard/schools",
+      },
+      {
+        name: "Coachings",
+        href: "/dashboard/coachings",
+      },
+    ],
   },
   {
     name: "Scholarship",
@@ -453,6 +467,30 @@ export const NonSidebarNavigations = [
     Permission: "Read Course Seo",
   },
   {
+    name: "University List",
+    id: "university",
+    href: "/dashboard/universities",
+    component: UniversitiesList,
+    roles: ["User", "Property Manager", "Seo Manager", "Editor", "Super Admin"],
+    Permission: "Read Property",
+  },
+  {
+    name: "School List",
+    id: "school",
+    href: "/dashboard/schools",
+    component: SchoolList,
+    roles: ["User", "Property Manager", "Seo Manager", "Editor", "Super Admin"],
+    Permission: "Read Property",
+  },
+  {
+    name: "Coaching List",
+    id: "coaching",
+    href: "/dashboard/coachings",
+    component: CoachingList,
+    roles: ["User", "Property Manager", "Seo Manager", "Editor", "Super Admin"],
+    Permission: "Read Property",
+  },
+  {
     name: "Property Create",
     id: "property-create",
     href: "/dashboard/property/create",
@@ -465,6 +503,14 @@ export const NonSidebarNavigations = [
     id: "property-view",
     href: "/dashboard/property/:objectId",
     component: PropertyView,
+    roles: ["Property Manager", "Seo Manager", "Editor", "Super Admin"],
+    Permission: "Read Property",
+  },
+  {
+    name: "School View",
+    id: "school-view",
+    href: "/dashboard/school/:objectId",
+    component: SchoolView,
     roles: ["Property Manager", "Seo Manager", "Editor", "Super Admin"],
     Permission: "Read Property",
   },

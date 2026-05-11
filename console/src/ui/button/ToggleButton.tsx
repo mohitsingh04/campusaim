@@ -2,21 +2,17 @@ import { useState } from "react";
 
 interface ToggleButtonProps {
   label?: string;
-  enabled?: boolean; // controlled state
-  onToggle?: (newState: boolean) => void; // callback for toggle
-  activeColor?: string;
-  inactiveColor?: string;
-  knobColor?: string;
+  enabled?: boolean;
+  onToggle?: (newState: boolean) => void;
   className?: string;
+  disabled?: boolean;
 }
 
 export default function ToggleButton({
   label = "",
   enabled: externalEnabled,
   onToggle,
-  activeColor = "bg-green-500",
-  inactiveColor = "bg-[var(--yp-muted)]",
-  knobColor = "bg-[var(--yp-primary)]",
+  disabled,
   className = "",
 }: ToggleButtonProps) {
   const [internalEnabled, setInternalEnabled] = useState(false);
@@ -38,14 +34,19 @@ export default function ToggleButton({
       <button
         type="button"
         onClick={handleToggle}
-        className={`relative inline-flex items-center h-6 w-12 rounded-full transition-colors duration-300 focus:outline-none ${
-          enabled ? activeColor : inactiveColor
-        }`}
+        className={`
+        relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent 
+        transition-colors duration-200 ease-in-out outline-none ring-2  ring-offset-2
+        ${enabled ? "bg-green-500 ring-green-500" : "bg-red-500 ring-red-500"}
+        ${disabled ? "opacity-50 cursor-not-allowed" : ""}
+      `}
       >
         <span
-          className={`inline-block w-5 h-5 transform ${knobColor} rounded-full shadow-md transition-transform duration-300 ${
-            enabled ? "translate-x-6" : "translate-x-1"
-          }`}
+          className={`
+          pointer-events-none inline-block h-5 w-5 transform rounded-full bg-[var(--yp-primary)] shadow ring-0 
+          transition duration-200 ease-in-out
+          ${enabled ? "translate-x-5" : "translate-x-0"}
+        `}
         />
       </button>
       {label && <span className="text-[var(--yp-text-primary)]">{label}</span>}

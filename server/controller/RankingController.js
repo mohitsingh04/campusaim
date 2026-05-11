@@ -1,208 +1,172 @@
 import mongoose from "mongoose";
-import { addPropertyScore } from "../analytic-controller/PropertyScoreController.js";
-import Ranking from "../models/Ranking.js";
+import RankingList from "../models/RankingList.js";
+import PropertyRanking from "../models/PropertyRanking.js";
 
-export const getAllRanking = async (req, res) => {
-    try {
-        const ranking = await Ranking.find();
-        if (!ranking) {
-            return res.status(404).json({ error: "Ranking Not Found" });
-        }
-
-        return res.status(200).json(ranking);
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({ error: "Internal Server Error" });
+export const getOrCreateRankingId = async (rank_name, value_name) => {
+  try {
+    if (!rank_name) {
+      throw new Error("rank_name is required");
     }
+
+    if (!value_name) {
+      throw new Error("value_name is required");
+    }
+
+    const normalizedName = rank_name.trim().toLowerCase();
+    const normalizedValue = value_name.trim().toLowerCase();
+
+    let rank = await RankingList.findOne({ rank_name: normalizedName });
+
+    if (rank) {
+      const alreadyExists = rank.rank_value.some(
+        (item) => item.value_name === normalizedValue,
+      );
+
+      if (!alreadyExists) {
+        rank.rank_value.push({ value_name: normalizedValue });
+
+        await rank.save();
+      }
+
+      return rank._id;
+    }
+
+    // CREATE NEW RANK
+    const newRank = await RankingList.create({
+      rank_name: normalizedName,
+      rank_value: [
+        {
+          value_name: normalizedValue,
+        },
+      ],
+    });
+
+    return newRank._id;
+  } catch (error) {
+    console.error("Ranking creation error:", error.message);
+    throw error;
+  }
 };
 
-export const getRankingByPropertyId = async (req, res) => {
-    try {
-        const { property_id } = req.params;
-        const ranking = await Ranking.find({ property_id: property_id });
-        if (!ranking) {
-            return res.status(404).json({ error: "Ranking Not Found" });
-        }
+export const createOrUpdatePropertyRanking = async (req, res) => {
+  try {
+    const { ranks, property_id } = req.body;
 
-        return res.status(200).json(ranking);
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({ error: "Internal Server Error" });
+    if (!property_id) {
+      return res.status(400).json({
+        message: "property_id is required",
+      });
     }
+    if (!ranks || !Array.isArray(ranks) || ranks.length === 0) {
+      return res.status(400).json({
+        message: "Ranks array is required",
+      });
+    }
+
+    const processedRanks = [];
+
+    for (const item of ranks) {
+      const { rank_name, value_name } = item;
+
+      if (!rank_name || value_name === undefined) {
+        return res.status(400).json({
+          message: "rank_name and value are required",
+        });
+      }
+
+      const rankId = await getOrCreateRankingId(rank_name, value_name);
+
+      processedRanks.push({
+        rank_name: rankId,
+        value_name: value_name,
+      });
+    }
+
+    const ranking = await PropertyRanking.findOneAndUpdate(
+      { property_id: property_id },
+      { $set: { ranks: processedRanks } },
+      { new: true, upsert: true },
+    );
+
+    return res.status(200).json({
+      message: "Property ranking saved successfully",
+      data: ranking,
+    });
+  } catch (error) {
+    console.error("Create/Update Property Ranking Error:", error);
+
+    return res.status(500).json({
+      message: "Server error",
+    });
+  }
 };
 
-export const addRanking = async (req, res) => {
-    try {
-        const { userId, property_id, naac_rank, nirf_rank, nba_rank, qs_rank, times_higher_education_rank } = req.body;
+export const getPropertyRankAll = async (req, res) => {
+  try {
+    const rankings = await PropertyRanking.find()
+      .populate("ranks.rank_name", "rank_name")
+      .lean();
 
-        if (!userId || !property_id) {
-            return res.status(400).json({ error: "userId and property_id are required." });
-        }
-
-        if (!mongoose.isValidObjectId(userId) || !mongoose.isValidObjectId(property_id)) {
-            return res.status(400).json({ error: "Invalid userId or property_id." });
-        }
-
-        const existing = await Ranking.findOne({ userId, property_id }).lean();
-        if (existing) {
-            return res.status(409).json({ error: "Ranking already exists for this user & property. Use update endpoint instead." });
-        }
-
-        const newRanking = new Ranking({
-            userId,
-            property_id,
-            naac_rank,
-            nirf_rank,
-            nba_rank,
-            qs_rank,
-            times_higher_education_rank,
-        });
-
-        const saved = await newRanking.save();
-
-        const rankCount = await Ranking.countDocuments({ property_id });
-
-        if (rankCount === 1) {
-            try {
-                await addPropertyScore({
-                    property_id,
-                    property_score: 10,
-                });
-            } catch (scoreErr) {
-                console.error("addPropertyScore failed:", scoreErr);
-            }
-        }
-
-        return res.status(201).json({ message: "Ranking created successfully.", ranking: saved });
-    } catch (error) {
-        console.error("Add Ranking Error:", error);
-        return res.status(500).json({ error: "Internal Server Error" });
+    if (!rankings || rankings.length === 0) {
+      return res.status(404).json({
+        message: "No rankings found",
+      });
     }
+
+    const formattedData = rankings.map((ranking) => {
+      return {
+        property_id: ranking.property_id,
+        ranks: ranking.ranks.map((item) => ({
+          rank_name: item?.rank_name?.rank_name || null,
+          value_name: item.value_name,
+        })),
+      };
+    });
+
+    return res.status(200).json(formattedData);
+  } catch (error) {
+    console.error("Get Property Ranking Error:", error);
+    return res.status(500).json({ error: "Server error" });
+  }
 };
 
-export const editRanking = async (req, res) => {
-    try {
-        const { objectId } = req.params;
-        const allowedFields = [
-            "naac_rank",
-            "nirf_rank",
-            "nba_rank",
-            "qs_rank",
-            "times_higher_education_rank",
-        ];
+export const getRankByPropertyId = async (req, res) => {
+  try {
+    const { property_id } = req.params;
 
-        if (!mongoose.isValidObjectId(objectId)) {
-            return res.status(400).json({ error: "Invalid objectId." });
-        }
-
-        const existingRanking = await Ranking.findById(objectId).lean();
-        if (!existingRanking) {
-            return res.status(404).json({ error: "Ranking not found." });
-        }
-
-        const update = {};
-        // fields that must be numeric
-        const numericFields = [
-            "nirf_rank",
-            "nba_rank",
-            "qs_rank",
-            "times_higher_education_rank",
-        ];
-
-        for (const field of allowedFields) {
-            if (!Object.prototype.hasOwnProperty.call(req.body, field)) continue;
-
-            const raw = req.body[field];
-
-            // clear field with empty string
-            if (raw === "") {
-                update[field] = null;
-                continue;
-            }
-
-            // skip null/undefined (no change)
-            if (raw === null || raw === undefined) {
-                continue;
-            }
-
-            if (field === "naac_rank") {
-                // naac_rank is an ObjectId in your schema
-                if (!mongoose.isValidObjectId(String(raw))) {
-                    return res
-                        .status(400)
-                        .json({ error: "naac_rank must be a valid ObjectId or empty string to clear." });
-                }
-                update[field] = String(raw);
-                continue;
-            }
-
-            // numeric fields validation
-            if (numericFields.includes(field)) {
-                // allow numeric strings as well as numbers
-                const num = Number(raw);
-                if (Number.isNaN(num)) {
-                    return res
-                        .status(400)
-                        .json({ error: `${field} must be a valid number or empty string to clear.` });
-                }
-                update[field] = num;
-                continue;
-            }
-        }
-
-        if (Object.keys(update).length === 0) {
-            return res.status(400).json({ error: "No valid fields provided to update." });
-        }
-
-        const updatedDoc = await Ranking.findByIdAndUpdate(
-            objectId,
-            { $set: update },
-            { new: true, runValidators: true }
-        ).lean();
-
-        if (!updatedDoc) {
-            return res.status(404).json({ error: "Ranking not found after update." });
-        }
-
-        return res.status(200).json({
-            message: "Ranking updated successfully",
-            data: updatedDoc,
-        });
-    } catch (error) {
-        console.error("Edit Ranking Error:", error);
-        return res.status(500).json({ error: "Internal Server Error" });
+    if (!property_id) {
+      return res.status(400).json({
+        message: "property_id is required",
+      });
     }
-};
 
-export const deleteRanking = async (req, res) => {
-    try {
-        const { objectId } = req.params;
-
-        if (!mongoose.isValidObjectId(objectId)) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid ranking ID",
-            });
-        }
-
-        const deletedRanking = await Ranking.findByIdAndDelete(objectId);
-
-        if (!deletedRanking) {
-            return res.status(404).json({
-                success: false,
-                message: "Ranking not found",
-            });
-        }
-
-        return res.status(200).json({
-            success: true,
-            message: "Ranking deleted successfully",
-        });
-    } catch (error) {
-        console.error("Delete Ranking Error:", error);
-        return res.status(500).json({
-            success: false,
-            message: "Internal server error",
-        });
+    if (!mongoose.Types.ObjectId.isValid(property_id)) {
+      return res.status(400).json({
+        message: "Invalid property_id",
+      });
     }
+
+    const ranking = await PropertyRanking.findOne({
+      property_id: property_id,
+    }).populate("ranks.rank_name", "rank_name");
+
+    if (!ranking) {
+      return res
+        .status(404)
+        .json({ message: "Ranking not found for this property" });
+    }
+
+    const formattedRanks = ranking.ranks.map((item) => ({
+      rank_name: item?.rank_name?.rank_name,
+      value_name: item.value_name,
+    }));
+
+    return res.status(200).json({
+      property_id: ranking.property_id,
+      ranks: formattedRanks,
+    });
+  } catch (error) {
+    console.error("Get Property Ranking Error:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
 };

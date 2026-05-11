@@ -1,6 +1,7 @@
 import City from "../models/City.js";
 import State from "../models/States.js";
 import Country from "../models/Country.js";
+import RankingList from "../models/RankingList.js";
 
 export const getCountry = async (req, res) => {
   try {
@@ -43,6 +44,19 @@ export const getCity = async (req, res) => {
     return res.status(200).json(cities);
   } catch (error) {
     console.error("Error fetching cities:", error);
+    return res.status(500).json({ error: "Internal Server Error." });
+  }
+};
+export const getAllRankList = async (req, res) => {
+  try {
+    const rankList = await RankingList.find().sort({ rank_name: 1 });
+    if (!rankList || rankList.length <= 0) {
+      return res.status(404).json({ message: "No rank list found." });
+    }
+
+    return res.status(200).json(rankList);
+  } catch (error) {
+    console.error("Error fetching rank list", error);
     return res.status(500).json({ error: "Internal Server Error." });
   }
 };

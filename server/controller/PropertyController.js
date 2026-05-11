@@ -32,7 +32,7 @@ import Accomodation from "../models/Accomodation.js";
 import Scholarship from "../models/PropertyScholarship.js";
 import LoanProcess from "../models/LoanProcess.js";
 import AdmissionProcess from "../models/AdmissionProcess.js";
-import Ranking from "../models/Ranking.js";
+import PropertyRanking from "../models/PropertyRanking.js";
 import Announcement from "../models/Announcement.js";
 import QnA from "../models/Qna.js";
 
@@ -594,7 +594,7 @@ export const deleteProperty = async (req, res) => {
       Scholarship.deleteMany({ property_id: uniqueId }),
       LoanProcess.deleteMany({ property_id: uniqueId }),
       AdmissionProcess.deleteMany({ property_id: uniqueId }),
-      Ranking.deleteMany({ property_id: uniqueId }),
+      PropertyRanking.deleteMany({ property_id: uniqueId }),
       QnA.deleteMany({ property_id: uniqueId }),
       Announcement.deleteMany({ property_id: uniqueId }),
     ]);
@@ -1183,7 +1183,7 @@ export const getPropertyTabExistence = async (req, res) => {
       LoanProcess.exists({ property_id }),
       Announcement.exists({ property_id }),
       QnA.exists({ property_id }),
-      Ranking.exists({ property_id }),
+      PropertyRanking.exists({ property_id }),
     ]);
 
     const amenitiesTab =

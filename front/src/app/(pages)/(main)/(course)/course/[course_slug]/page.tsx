@@ -124,7 +124,7 @@ export default async function CourseDetailPage({
         slug={course?.course_slug || ""}
       />
       <div className="mb-10 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="order-1 lg:order-2">
+        <div className="order-1 lg:order-2 stick top-12">
           <CourseCard course={course} />
         </div>
         <div className="lg:col-span-2 space-y-6 order-2 lg:order-1">

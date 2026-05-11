@@ -12,7 +12,7 @@ export const colorsData = ["blue", "green", "red", "yellow", "gray"];
 
 export const currencyOptions = ["INR", "USD", "EUR"];
 
-export const reactSelectDesignClass: ClassNamesConfig<any, true> = {
+export const reactSelectDesignClass: ClassNamesConfig<any, boolean> = {
   control: (state) =>
     `!rounded-md border ${
       state.isFocused
