@@ -70,6 +70,7 @@ export default function BasicDetailsFields({
       property_website: property?.property_website || "",
       academic_type: property?.academic_type || "",
       property_type: property?.property_type || "",
+      school_type: property?.school_type || "",
       est_year: property?.est_year || "",
       status: property?.status || "",
       affiliated_by: property?.affiliated_by || [],
@@ -106,7 +107,11 @@ export default function BasicDetailsFields({
   ) => {
     let displayValue: any = formik.values[field];
 
-    if (field === "academic_type" || field === "property_type") {
+    if (
+      field === "academic_type" ||
+      field === "property_type" ||
+      field === "school_type"
+    ) {
       displayValue =
         getCategoryById(String(formik.values[field])) || `No ${label}`;
     }
@@ -267,6 +272,12 @@ export default function BasicDetailsFields({
           "property_type",
           "select",
           getCategoryAccodingToField(categories, "property type"),
+        )}
+        {renderField(
+          "School Type",
+          "school_type",
+          "select",
+          getCategoryAccodingToField(categories, "School type"),
         )}
         {renderField(
           "Established Year",

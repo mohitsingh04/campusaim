@@ -411,6 +411,7 @@ export const updateProperty = async (req, res) => {
       property_description,
       est_year,
       academic_type,
+      school_type,
       status,
       property_type,
       property_website,
@@ -492,12 +493,14 @@ export const updateProperty = async (req, res) => {
 
     if (!existProperty?.est_year && est_year) score += 1;
     if (!existProperty?.property_type && property_type) score += 1;
+    if (!existProperty?.school_type && school_type) score += 1;
 
     const updatedFields = {
       property_description: updatedDescription,
       est_year,
       academic_type,
       status,
+      school_type,
       property_type,
       property_website,
     };

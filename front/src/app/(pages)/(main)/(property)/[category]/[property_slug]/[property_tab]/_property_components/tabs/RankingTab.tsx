@@ -2,42 +2,32 @@
 
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import {
-  Trophy,
-  Award,
-  Globe,
-  BarChart3,
-  Medal,
-  CheckCircle2,
-} from "lucide-react";
+import { Trophy, Info } from "lucide-react";
+
 import API from "@/context/API";
 import { getErrorResponse } from "@/context/Callbacks";
 import { PropertyProps } from "@/types/PropertyTypes";
+
 import HeadingLine from "@/ui/headings/HeadingLine";
 import TabLoading from "@/ui/loader/component/TabLoading";
 
-interface RankingData {
-  naac_rank?: string | number;
-  nirf_rank?: string | number;
-  nba_rank?: string | number;
-  qs_rank?: string | number;
-  times_higher_education_rank?: string | number;
+interface RankingItem {
+  rank_name: string;
+  value_name: string;
 }
 
 export default function RankingTab({
-  getCategoryById,
   property,
 }: {
-  getCategoryById: (id: any) => string | undefined;
   property: PropertyProps | null;
 }) {
-  const { data: ranking, isLoading } = useQuery<RankingData[]>({
+  const { data: ranking = [], isLoading } = useQuery<RankingItem[]>({
     queryKey: ["property-ranking", property?._id],
     queryFn: async () => {
       if (!property?._id) return [];
       try {
-        const response = await API.get(`/ranking/${property._id}`);
-        return response.data || [];
+        const response = await API.get(`/property/ranking/${property._id}`);
+        return Array.isArray(response.data?.ranks) ? response.data.ranks : [];
       } catch (error) {
         getErrorResponse(error, true);
         throw error;
@@ -47,110 +37,67 @@ export default function RankingTab({
     staleTime: 1000 * 60 * 5,
   });
 
-  if (isLoading) return <TabLoading />;
+  if (isLoading) {
+    return <TabLoading />;
+  }
 
-  if (!ranking || ranking.length === 0) {
+  if (!ranking.length) {
     return (
-      <div className="p-10 text-center text-(--text-color-light) bg-(--secondary-bg) rounded-custom border border-dashed border-(--border)">
-        <Trophy className="w-12 h-12 mx-auto mb-3 opacity-20" />
-        <p>Official ranking data is not yet available for this institute.</p>
+      <div className="flex flex-col items-center justify-center bg-(--secondary-bg) py-16 px-6 text-center">
+        <div className="mb-4 rounded-full bg-(--primary-bg) p-4">
+          <Info className="w-8 h-8 text-(--text-color)!" />
+        </div>
+        <h2 className="text-xl font-bold text-(--text-emphasis)">
+          No Rankings Found
+        </h2>
+        <p className="mt-2 max-w-xs text-sm text-(--text-color)!">
+          We couldn&apos;t find any official ranking data for this property at
+          the moment.
+        </p>
       </div>
     );
   }
 
-  const data = ranking[0];
-
-  // Logic: Pass the Icon Component itself, not <Icon />
-  const rankingCards = [
-    {
-      label: "NAAC Accreditation",
-      value: getCategoryById(data?.naac_rank),
-      Icon: CheckCircle2,
-      iconColor: "text-emerald-500",
-      desc: "National Assessment and Accreditation Council",
-      show: !!data?.naac_rank,
-    },
-    {
-      label: "NIRF Ranking",
-      value: data?.nirf_rank,
-      Icon: BarChart3,
-      iconColor: "text-(--blue)",
-      desc: "National Institutional Ranking Framework",
-      show: !!data?.nirf_rank,
-    },
-    {
-      label: "NBA Accreditation",
-      value: data?.nba_rank,
-      Icon: Award,
-      iconColor: "text-(--warning)",
-      desc: "National Board of Accreditation",
-      show: !!data?.nba_rank,
-    },
-    {
-      label: "QS World Rank",
-      value: data?.qs_rank,
-      Icon: Globe,
-      iconColor: "text-(--purple)",
-      desc: "Quacquarelli Symonds World University Rankings",
-      show: !!data?.qs_rank,
-    },
-    {
-      label: "THE Ranking",
-      value: data?.times_higher_education_rank,
-      Icon: Medal,
-      iconColor: "text-(--danger)",
-      desc: "Times Higher Education World University Rankings",
-      show: !!data?.times_higher_education_rank,
-    },
-  ];
-
   return (
-    <div className="space-y-8 p-1 sm:p-5">
-      <div className="flex flex-col gap-2">
-        <HeadingLine title="Official Rankings & Accreditations" />
-        <p className="text-sm text-(--text-color-light) max-w-2xl">
-          Recognitions and rankings achieved by{" "}
-          <span className="font-semibold">{property?.property_name}</span> from
-          leading national and international bodies.
+    <div className="space-y-10 p-2 sm:p-6">
+      <div className="relative">
+        <HeadingLine title="Recognition & Rankings" />
+        <p className="mt-3 max-w-2xl text-base leading-relaxed text-(--text-color)">
+          Verified rankings and official accreditations for{" "}
+          <span className="font-bold text-(--primary-color) decoration-2 underline-offset-4">
+            {property?.property_name}
+          </span>
+          .
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {rankingCards
-          .filter((card) => card.show)
-          .map((card, idx) => {
-            const { Icon } = card;
-            return (
-              <div
-                key={idx}
-                className="group bg-(--secondary-bg) p-6 rounded-custom shadow-custom transition-all duration-300 flex flex-col justify-between"
-              >
-                <div className="flex justify-between items-start mb-4">
-                  <div className="p-2.5 bg-(--primary-bg) rounded-lg group-hover:scale-110 transition-transform">
-                    <Icon size={24} className={card.iconColor} />
-                  </div>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-(--main) opacity-60">
-                    Official
-                  </span>
-                </div>
-
-                <div>
-                  <h3 className="text-sm font-medium text-(--text-color-light) mb-1">
-                    {card.label}
-                  </h3>
-                  <p className="text-2xl font-bold text-(--text-emphasis)">
-                    {card.value || "N/A"}
-                  </p>
-                </div>
-
-                <div className="mt-4 pt-4 border-t border-(--border) border-dashed">
-                  <p className="text-[11px] leading-tight text-(--text-color-light) opacity-80">
-                    {card.desc}
-                  </p>
-                </div>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {ranking.map((item, index) => (
+          <div
+            key={index}
+            className="group relative flex flex-col justify-between overflow-hidden rounded-custom shadow-custom bg-(--secondary-bg) p-6 transition-all duration-300 hover:-translate-y-1"
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-custom bg-(--main-emphasis) transition-colors">
+                <Trophy className="w-5 text-(--main-subtle) h-5" />
               </div>
-            );
-          })}
+              <p className="text-xs font-bold uppercase tracking-wider text-(--text-color)!">
+                {item?.rank_name}
+              </p>
+            </div>
+
+            <div className="mt-6 flex items-baseline gap-2">
+              <h2 className="text-3xl font-black tracking-tight text-(--text-emphasis)">
+                {item?.value_name}
+              </h2>
+              {!isNaN(Number(item.value_name)) && (
+                <span className="text-sm font-medium text-(--text-color)">
+                  Position
+                </span>
+              )}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
