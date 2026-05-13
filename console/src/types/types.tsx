@@ -24,7 +24,6 @@ export interface ReqKoItem {
   uniqueId?: string; // 👈 make optional
 }
 export interface ReviewProps {
-  uniqueId?: number;
   property_id?: string | number;
   name?: string;
   rating?: number;
@@ -43,12 +42,6 @@ export interface SupportProps extends Record<string, unknown> {
 export interface EnquiryProps extends Record<string, unknown> {
   status: string;
   _id: string;
-}
-export interface ReqKoItem {
-  _id: string;
-  requirment?: string;
-  key_outcome?: string;
-  uniqueId?: string; // 👈 make optional
 }
 
 export interface Column<T> {
@@ -100,7 +93,6 @@ export interface TeacherProps {
 
 export interface CategoryProps extends Record<string, unknown> {
   _id: string;
-  uniqueId: number;
   category_name: string;
   parent_category: string;
   createdAt: string;
@@ -112,7 +104,6 @@ export interface CategoryProps extends Record<string, unknown> {
 
 export interface BlogProps extends Record<string, unknown> {
   _id: string;
-  uniqueId: number;
   title: string;
   createdAt: string;
   status: string;
@@ -135,7 +126,6 @@ export interface SearchProps extends Record<string, unknown> {
 
 export interface CourseProps extends Record<string, unknown> {
   _id: string;
-  uniqueId: string;
   course_name: string;
   course_short_name: string;
   specialization: string;

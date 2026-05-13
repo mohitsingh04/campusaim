@@ -213,7 +213,7 @@ export function CoachingList() {
                     color="blue"
                     size="sm"
                     buttontype="link"
-                    href={`/dashboard/property/${row._id}`}
+                    href={`/dashboard/coaching/${row._id}`}
                   />
                 )}
                 {matchPermissions(authUser?.permissions, "Delete Property") && (

@@ -456,8 +456,8 @@ export default function ProfilePage() {
         enqReviewRes,
       ] = await Promise.allSettled([
         API.get(`/follow/${profile?._id}/followers`),
-        API.get(`/follow/${profile?._id}//following`),
-        API.get(`/review/user/${profile?.uniqueId}`),
+        API.get(`/follow/${profile?._id}/following`),
+        API.get(`/review/user/${profile?._id}`),
         API.get(`/enquiry/user/${profile?._id}`),
         API.get(`/questions/user/${profile?._id}`),
         API.get(`/answers/user/${profile?._id}`),

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Pencil } from "lucide-react";
 import { useFormik } from "formik";
 import PhoneInput from "react-phone-input-2";
@@ -17,7 +17,6 @@ import {
 import { propertyBasicDetailsValidationSchema } from "../../../../../contexts/ValidationsSchemas";
 import { phoneInputClass } from "../../../../../common/ExtraData";
 import { useOutletContext } from "react-router-dom";
-import Select from "react-select";
 
 interface EditBasicDetailsFormProps {
   property: PropertyProps | null;
@@ -34,32 +33,6 @@ export default function BasicDetailsFields({
 }: EditBasicDetailsFormProps) {
   const { authUser } = useOutletContext<DashboardOutletContextProps>();
   const [editableField, setEditableField] = useState<string | null>(null);
-  const [affiliatedOptions, setAffilationOption] = useState<
-    { label: string; value: string }[]
-  >([]);
-
-  useEffect(() => {
-    const getAffilationOption = () => {
-      const data = categories
-        ?.filter((item) => item?.parent_category === "Affiliated By")
-        ?.map((cat) => {
-          return {
-            label: cat?.category_name,
-            value: cat?._id,
-          };
-        });
-      setAffilationOption(data);
-    };
-    getAffilationOption();
-  }, [categories]);
-
-  const approvedOptions = getCategoryAccodingToField(
-    categories,
-    "Approved By",
-  ).map((opt: any) => ({
-    value: opt._id,
-    label: opt.category_name || opt.name,
-  }));
 
   const formik = useFormik({
     initialValues: {
@@ -70,11 +43,9 @@ export default function BasicDetailsFields({
       property_website: property?.property_website || "",
       academic_type: property?.academic_type || "",
       property_type: property?.property_type || "",
-      school_type: property?.school_type || "",
+      coaching_type: property?.coaching_type || "",
       est_year: property?.est_year || "",
       status: property?.status || "",
-      affiliated_by: property?.affiliated_by || [],
-      approved_by: property?.approved_by || [],
     },
     validationSchema: propertyBasicDetailsValidationSchema,
     onSubmit: async () => {},
@@ -110,7 +81,7 @@ export default function BasicDetailsFields({
     if (
       field === "academic_type" ||
       field === "property_type" ||
-      field === "school_type"
+      field === "coaching_type"
     ) {
       displayValue =
         getCategoryById(String(formik.values[field])) || `No ${label}`;
@@ -121,14 +92,9 @@ export default function BasicDetailsFields({
         ? formik.values[field]
         : [];
 
-      const names =
-        field === "affiliated_by"
-          ? values
-              .map((id: string) => getCategoryById(id) || id)
-              .filter(Boolean)
-          : values
-              .map((id: string) => getCategoryById(id) || id)
-              .filter(Boolean);
+      const names = values
+        .map((id: string) => getCategoryById(id) || id)
+        .filter(Boolean);
 
       displayValue = names.length ? names.join(", ") : "No " + label;
     }
@@ -182,7 +148,7 @@ export default function BasicDetailsFields({
               />
             )}
 
-            {type === "multiselect" && (
+            {/* {type === "multiselect" && (
               <Select
                 isMulti
                 name={String(field)}
@@ -211,7 +177,7 @@ export default function BasicDetailsFields({
                 onBlur={() => formik.setFieldTouched(field, true)}
                 classNamePrefix="react-select"
               />
-            )}
+            )} */}
 
             <div className="flex gap-2">
               <button
@@ -268,10 +234,10 @@ export default function BasicDetailsFields({
         {renderField("Property Type", "property_type", "input")}
         {renderField("Website", "property_website", "input")}
         {renderField(
-          "School Type",
-          "school_type",
+          "Coaching Type",
+          "coaching_type",
           "select",
-          getCategoryAccodingToField(categories, "School type"),
+          getCategoryAccodingToField(categories, "Coaching type"),
         )}
         {renderField(
           "Established Year",
@@ -281,20 +247,6 @@ export default function BasicDetailsFields({
             id: new Date().getFullYear() - i,
             type_name: (new Date().getFullYear() - i).toString(),
           })),
-        )}
-
-        {renderField(
-          "Affiliated By / Board",
-          "affiliated_by",
-          "multiselect",
-          affiliatedOptions,
-        )}
-
-        {renderField(
-          "Approved By",
-          "approved_by",
-          "multiselect",
-          approvedOptions,
         )}
 
         {authUser?.role !== "Property Manager" &&

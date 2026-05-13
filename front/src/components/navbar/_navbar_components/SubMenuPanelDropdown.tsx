@@ -1,3 +1,4 @@
+import { generateSlug } from "@/context/Callbacks";
 import HeadingLine from "@/ui/headings/HeadingLine";
 import Link from "next/link";
 import React from "react";
@@ -73,19 +74,41 @@ export default function SubMenuPanelDropdown({
     <div className="flex">
       <div className="w-1/4 bg-(--main-emphasis) text-(--text-color-emphasis)">
         <ul className="py-4">
-          {Object.keys(content).map((subMenuName) => (
-            <li
-              key={subMenuName}
-              onMouseEnter={() => setActiveDesktopSubMenu(subMenuName)}
-              className={`px-5 py-3 text-(--white) cursor-pointer text-sm ${
-                activeDesktopSubMenu === subMenuName
-                  ? "relative font-semibold after:border-l-(--main-emphasis) after:content-[''] after:block after:absolute after:top-1/2 after:-translate-y-1/2 after:left-full after:border-y-8 after:border-l-8 after:border-y-transparent"
-                  : "font-medium"
-              }`}
-            >
-              {subMenuName}
-            </li>
-          ))}
+          {dropdownItem?.name === "Institutes"
+            ? Object.keys(content).map((subMenuName) => (
+                <li
+                  key={subMenuName}
+                  onMouseEnter={() => setActiveDesktopSubMenu(subMenuName)}
+                  className={`px-5 py-3 text-(--white) cursor-pointer text-sm ${
+                    activeDesktopSubMenu === subMenuName
+                      ? "relative font-semibold after:border-l-(--main-emphasis) after:content-[''] after:block after:absolute after:top-1/2 after:-translate-y-1/2 after:left-full after:border-y-8 after:border-l-8 after:border-y-transparent"
+                      : "font-medium"
+                  }`}
+                >
+                  <Link
+                    href={
+                      subMenuName === "University"
+                        ? `/universities`
+                        : `/${generateSlug(subMenuName)}s`
+                    }
+                  >
+                    {subMenuName}
+                  </Link>
+                </li>
+              ))
+            : Object.keys(content).map((subMenuName) => (
+                <li
+                  key={subMenuName}
+                  onMouseEnter={() => setActiveDesktopSubMenu(subMenuName)}
+                  className={`px-5 py-3 text-(--white) cursor-pointer text-sm ${
+                    activeDesktopSubMenu === subMenuName
+                      ? "relative font-semibold after:border-l-(--main-emphasis) after:content-[''] after:block after:absolute after:top-1/2 after:-translate-y-1/2 after:left-full after:border-y-8 after:border-l-8 after:border-y-transparent"
+                      : "font-medium"
+                  }`}
+                >
+                  {subMenuName}
+                </li>
+              ))}
         </ul>
       </div>
 

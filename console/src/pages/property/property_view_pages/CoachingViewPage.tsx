@@ -58,13 +58,12 @@ import AdmissionProcess from "../property_component/admission_process/AdmissionP
 import LoanProcess from "../property_component/loan_process/LoanProcess";
 import Announcement from "../property_component/announcement/Announcement";
 import QnA from "../property_component/qna/QnA";
-// import Ranking from "../property_component/ranking/Ranking";
-import BasicDetails from "./school_components/basic-details/BasicDetails";
 import GoogleMaps from "../property_component/google-maps/GoogleMaps";
-import SchoolClassess from "./school_components/classess/SchoolClassess";
 import PropertyRanks from "../property_component/ranks/PropertyRanks";
+import BasicDetails from "./coaching_component/basic-details/BasicDetails";
+import Batch from "./coaching_component/batch/Batch";
 
-export function SchoolView() {
+export function CoachingView() {
   const navigate = useNavigate();
   const { objectId } = useParams();
 
@@ -183,10 +182,10 @@ export function SchoolView() {
       online: isOnline,
     },
     {
-      id: "classess",
-      label: "Classes",
+      id: "Batches",
+      label: "batches",
       icon: MapPin,
-      component: <SchoolClassess property={property} />,
+      component: <Batch property={property} />,
       online: isOnline,
     },
     {
@@ -280,6 +279,13 @@ export function SchoolView() {
       component: <PropertyRanks property={property} />,
       online: false,
     },
+    // {
+    //   id: "ranking",
+    //   label: "Ranking",
+    //   icon: Medal,
+    //   component: <Ranking property={property} />,
+    //   online: false,
+    // },
   ];
 
   return (

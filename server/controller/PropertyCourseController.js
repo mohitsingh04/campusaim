@@ -2,84 +2,37 @@ import mongoose from "mongoose";
 import { addPropertyScore } from "../analytic-controller/PropertyScoreController.js";
 import Course from "../models/Courses.js";
 import PropertyCourse from "../models/PropertyCourse.js";
-import { generateSlug, generateUniqueId } from "../utils/Callback.js";
+import { generateSlug } from "../utils/Callback.js";
 import Category from "../models/Category.js";
 import BestFor from "../models/BestFor.js";
 import CourseEligibility from "../models/CourseEligibility.js";
 
-// function normalizeObjectIdArray(input) {
-//   let arr = [];
-
-//   if (!input) return arr;
-
-//   if (Array.isArray(input)) {
-//     arr = input;
-//   } else if (typeof input === "string") {
-//     try {
-//       const parsed = JSON.parse(input);
-//       if (Array.isArray(parsed)) arr = parsed;
-//       else if (parsed) arr = [parsed];
-//     } catch {
-//       arr = input.includes(",")
-//         ? input.split(",").map(s => s.trim())
-//         : [input.trim()];
-//     }
-//   } else {
-//     arr = [String(input)];
-//   }
-
-//   return arr
-//     .map(id => String(id).trim())
-//     .filter(id => mongoose.Types.ObjectId.isValid(id));
-// }
-
-
-// function normalizeToStringArray(value) {
-//   let arr = [];
-
-//   if (value) {
-//     if (Array.isArray(value)) {
-//       arr = value;
-//     } else if (typeof value === "string") {
-//       try {
-//         const parsed = JSON.parse(value);
-//         if (Array.isArray(parsed)) arr = parsed.map((v) => String(v));
-//         else if (typeof parsed === "string" && parsed.trim())
-//           arr = [parsed];
-//       } catch (err) {
-//         if (value.includes(",")) {
-//           arr = value
-//             .split(",")
-//             .map((s) => s.trim())
-//             .filter(Boolean);
-//         } else if (value.trim()) {
-//           arr = [value.trim()];
-//         }
-//       }
-//     } else {
-//       arr = [String(value)];
-//     }
-//   }
-
-//   return arr.map((v) => String(v).trim()).filter(Boolean);
-// }
-
 const tryParseJSON = (v) => {
   if (typeof v !== "string") return v;
-  try { return JSON.parse(v); } catch { return v; }
+  try {
+    return JSON.parse(v);
+  } catch {
+    return v;
+  }
 };
 
 const isEmptyValue = (v) => {
   if (v === undefined || v === null) return true;
   if (typeof v === "string" && v.trim() === "") return true;
   if (Array.isArray(v) && v.length === 0) return true;
-  if (typeof v === "object" && !Array.isArray(v) && Object.keys(v).length === 0) return true;
+  if (typeof v === "object" && !Array.isArray(v) && Object.keys(v).length === 0)
+    return true;
   return false;
 };
 
 const toObjectIdIfValid = (val) => {
   if (val instanceof mongoose.Types.ObjectId) return val;
-  if (typeof val === "object" && val !== null && val._id && mongoose.Types.ObjectId.isValid(String(val._id))) {
+  if (
+    typeof val === "object" &&
+    val !== null &&
+    val._id &&
+    mongoose.Types.ObjectId.isValid(String(val._id))
+  ) {
     return new mongoose.Types.ObjectId(String(val._id));
   }
   if (typeof val === "string" && mongoose.Types.ObjectId.isValid(val)) {
@@ -102,17 +55,6 @@ export const getPropertyCourseById = async (req, res) => {
   try {
     const objectId = req.params.objectId;
     const propertyCourse = await PropertyCourse.findOne({ _id: objectId });
-    return res.status(200).json(propertyCourse);
-  } catch (error) {
-    console.error(error);
-    return res.send({ error: "Internal Server Error" });
-  }
-};
-
-export const getPropertyCourseByUniqueId = async (req, res) => {
-  try {
-    const uniqueId = req.params.uniqueId;
-    const propertyCourse = await PropertyCourse.findOne({ uniqueId: uniqueId });
     return res.status(200).json(propertyCourse);
   } catch (error) {
     console.error(error);
@@ -235,15 +177,11 @@ export const addPropertyCourse = async (req, res) => {
       }
     }
 
-    const uniqueId = await generateUniqueId(PropertyCourse);
-
     const propertyCourse = new PropertyCourse({
       userId,
-      uniqueId,
       course_id,
       property_id,
-      course_short_name:
-        course_short_name || masterCourse.course_short_name,
+      course_short_name: course_short_name || masterCourse.course_short_name,
       course_type,
       degree_type,
       program_type,
@@ -365,18 +303,14 @@ export const updatePropertyCourse = async (req, res) => {
               ),
               fees: {
                 tuition_fee: Number(s?.fees?.tuition_fee || 0),
-                registration_fee: Number(
-                  s?.fees?.registration_fee || 0,
-                ),
+                registration_fee: Number(s?.fees?.registration_fee || 0),
                 exam_fee: Number(s?.fees?.exam_fee || 0),
                 currency: String(s?.fees?.currency || "INR").toUpperCase(),
               },
             };
           });
 
-        const ids = sanitized.map((s) =>
-          String(s.specialization_id),
-        );
+        const ids = sanitized.map((s) => String(s.specialization_id));
 
         if (new Set(ids).size !== ids.length) {
           return res.status(400).json({
@@ -457,7 +391,7 @@ export const getPropertyCourseBySlug = async (req, res) => {
     const allCourses = await Course.find({});
 
     const course = allCourses.find(
-      (c) => generateSlug(c.course_name) === generateSlug(slug)
+      (c) => generateSlug(c.course_name) === generateSlug(slug),
     );
 
     if (!course) {
@@ -471,38 +405,44 @@ export const getPropertyCourseBySlug = async (req, res) => {
     const merged =
       propertyCourse != null
         ? {
-          ...course.toObject(),
-          ...propertyCourse.toObject(),
-          course_id: course._id, // keep original
-        }
+            ...course.toObject(),
+            ...propertyCourse.toObject(),
+            course_id: course._id, // keep original
+          }
         : course.toObject();
 
     const findingCatgories = [
       merged?.course_type,
       merged?.degree_type,
       merged?.program_type,
-      ...merged.specialization
+      ...merged.specialization,
     ];
 
     const categories = await Category.find({ _id: findingCatgories });
-    const bestFor = await BestFor.find({ _id: { $in: merged.best_for } })
-    const courseEligibility = await CourseEligibility.find({ _id: { $in: merged.course_eligibility } })
+    const bestFor = await BestFor.find({ _id: { $in: merged.best_for } });
+    const courseEligibility = await CourseEligibility.find({
+      _id: { $in: merged.course_eligibility },
+    });
 
     const finalData = {
       ...merged,
       best_for: bestFor?.map((item) => item?.best_for),
-      course_eligibility: courseEligibility?.map((item) => item?.course_eligibility),
-      course_type: categories.find((item) => item?._id?.toString() === merged.course_type?.toString())
-        ?.category_name,
-      degree_type: categories.find(
-        (item) => item?._id?.toString() === merged.degree_type?.toString()
+      course_eligibility: courseEligibility?.map(
+        (item) => item?.course_eligibility,
+      ),
+      course_type: categories.find(
+        (item) => item?._id?.toString() === merged.course_type?.toString(),
       )?.category_name,
-      program_type: categories.find((item) => item?._id?.toString() === merged.program_type?.toString())
-        ?.category_name,
+      degree_type: categories.find(
+        (item) => item?._id?.toString() === merged.degree_type?.toString(),
+      )?.category_name,
+      program_type: categories.find(
+        (item) => item?._id?.toString() === merged.program_type?.toString(),
+      )?.category_name,
       specialization: categories.filter((cat) =>
         merged.specialization?.some(
-          (item) => item?.toString() === cat?._id?.toString()
-        )
+          (item) => item?.toString() === cat?._id?.toString(),
+        ),
       ),
     };
 
@@ -522,7 +462,6 @@ export const getPropertyCourseCountByPropertyId = async (req, res) => {
     return res.send({ error: "Internal Server Error" });
   }
 };
-
 
 export const getPropertyCourseNameListByPropertyId = async (req, res) => {
   try {

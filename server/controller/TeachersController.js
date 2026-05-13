@@ -17,6 +17,7 @@ export const getTeacher = async (req, res) => {
     const allTeachers = await Teachers.find();
     return res.status(200).json(allTeachers);
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
@@ -56,7 +57,8 @@ export const getTeacherByPropertyId = async (req, res) => {
 
 export const addTeacher = async (req, res) => {
   try {
-    const { teacher_name, designation, experience, property_id, department } = req.body;
+    const { teacher_name, designation, experience, property_id, department } =
+      req.body;
     const userId = await getDataFromToken(req);
 
     const propIdObj = toObjectId(property_id);
@@ -77,7 +79,9 @@ export const addTeacher = async (req, res) => {
       return res.status(400).send({ error: "Missing required fields." });
     }
 
-    const teacherCount = await Teachers.countDocuments({ property_id: propIdObj });
+    const teacherCount = await Teachers.countDocuments({
+      property_id: propIdObj,
+    });
 
     const newTeacher = new Teachers({
       userId,
@@ -101,7 +105,8 @@ export const addTeacher = async (req, res) => {
     }
 
     return res.status(201).send({ message: "Teacher added." });
-  } catch (err) {
+  } catch (error) {
+    console.log(error);
     return res.status(500).send({ error: "Internal server error!" });
   }
 };
@@ -125,7 +130,8 @@ export const updateTeacher = async (req, res) => {
 
     const propertyUniqueId = property.uniqueId;
 
-    const { teacher_name, designation, experience, status, department } = req.body;
+    const { teacher_name, designation, experience, status, department } =
+      req.body;
 
     const profile =
       req?.files?.["profile"]?.[0]?.webpFilename ||
@@ -149,12 +155,19 @@ export const updateTeacher = async (req, res) => {
     const updated = await Teachers.findByIdAndUpdate(
       objectId,
       { $set: updateData },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     );
 
-    await TeacherImageMover(req, res, teacher.property_id.toString(), propertyUniqueId);
+    await TeacherImageMover(
+      req,
+      res,
+      teacher.property_id.toString(),
+      propertyUniqueId,
+    );
 
-    return res.status(200).send({ message: "Teacher updated successfully.", data: updated });
+    return res
+      .status(200)
+      .send({ message: "Teacher updated successfully.", data: updated });
   } catch (err) {
     return res.status(500).send({ error: "Internal server error!" });
   }

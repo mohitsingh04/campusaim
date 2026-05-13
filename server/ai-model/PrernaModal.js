@@ -31,7 +31,7 @@ const pairedMessageSchema = new mongoose.Schema(
       },
     },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const prernaSchema = new mongoose.Schema(
@@ -40,12 +40,6 @@ const prernaSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
-    },
-    uniqueId: {
-      type: Number,
-      required: true,
-      unique: true,
-      index: true,
     },
     title: {
       type: String,
@@ -57,7 +51,7 @@ const prernaSchema = new mongoose.Schema(
       default: [],
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const PrernaAiModal = profileDatabase.model("prerna-ai", prernaSchema);

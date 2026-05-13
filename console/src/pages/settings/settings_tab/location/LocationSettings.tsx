@@ -44,7 +44,7 @@ export default function LocationSettings() {
 
   const formik = useFormik({
     initialValues: {
-      userId: authUser?.uniqueId,
+      userId: authUser?._id,
       address: authUser?.address || "",
       pincode: authUser?.pincode || "",
       country: authUser?.country || "",
@@ -66,7 +66,7 @@ export default function LocationSettings() {
   useEffect(() => {
     if (formik.values.country) {
       const statesFiltered = states.filter(
-        (s) => s.country_name === formik.values.country
+        (s) => s.country_name === formik.values.country,
       );
       setFilteredStates(statesFiltered);
       setFilteredCities([]);
@@ -76,7 +76,7 @@ export default function LocationSettings() {
   useEffect(() => {
     if (formik.values.state) {
       const citiesFiltered = cities.filter(
-        (c) => c.state_name === formik.values.state
+        (c) => c.state_name === formik.values.state,
       );
       setFilteredCities(citiesFiltered);
     }

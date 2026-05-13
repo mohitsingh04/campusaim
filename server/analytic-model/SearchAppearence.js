@@ -2,12 +2,8 @@ import mongoose from "mongoose";
 import { analyticDatabase } from "../database/Databases.js";
 
 const SearchAppearanceSchema = new mongoose.Schema({
-  uniqueId: {
-    type: Number,
-    required: true,
-  },
   searchId: {
-    type: Number,
+    type: mongoose.Schema.Types.ObjectId,
     required: true,
   },
   searched: [
@@ -26,7 +22,7 @@ const SearchAppearanceSchema = new mongoose.Schema({
 
 const SearchAppearance = analyticDatabase.model(
   "SearchAppearance",
-  SearchAppearanceSchema
+  SearchAppearanceSchema,
 );
 
 export default SearchAppearance;

@@ -14,9 +14,6 @@ export const AddCompare = async (req, res) => {
         .json({ error: "Properties array must contain more than 1 item." });
     }
 
-    const lastDoc = await Compare.findOne().sort({ uniqueId: -1 }).lean();
-    const nextUniqueId = lastDoc ? lastDoc.uniqueId + 1 : 1;
-
     const filter = {
       properties: { $size: properties.length, $all: properties },
     };
@@ -38,7 +35,6 @@ export const AddCompare = async (req, res) => {
         .json({ message: "Compare document updated with incremented count." });
     } else {
       const newCompare = new Compare({
-        uniqueId: nextUniqueId,
         userId: userId || undefined,
         properties,
         count: 1,
@@ -76,7 +72,7 @@ export const getCompareAnalytics = async (req, res) => {
     }
 
     const allRelated = compareDocs.flatMap((doc) =>
-      doc.properties.filter((p) => p !== Number(property_id))
+      doc.properties.filter((p) => p !== Number(property_id)),
     );
 
     const propertyFrequency = allRelated.reduce((acc, id) => {

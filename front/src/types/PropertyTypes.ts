@@ -3,7 +3,6 @@ import { PriceProps } from "./Types";
 export interface PropertyProps {
   objectId: string;
   _id: string;
-  uniqueId: number;
   verified: boolean;
   property_score: number;
   rank: number;
@@ -76,7 +75,6 @@ export interface PropertyCourseProps {
 }
 
 export interface PropertyReviewProps {
-  uniqueId?: number;
   _id: string;
   property_id?: string | number;
   name?: string;

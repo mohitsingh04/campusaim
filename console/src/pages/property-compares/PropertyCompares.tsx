@@ -19,15 +19,18 @@ export default function PropertyCompares() {
         API.get("/locations"),
       ]);
 
-      if (propertyRes.status !== "fulfilled") throw propertyRes.reason;
+      if (propertyRes.status !== "fulfilled") {
+        throw propertyRes.reason;
+      }
 
       const properties = propertyRes.value.data || [];
+
       const locations =
-        locationRes.status === "fulfilled" ? locationRes.value.data : [];
+        locationRes.status === "fulfilled" ? locationRes.value.data || [] : [];
 
       const finalData = properties.map((item: PropertyProps) => {
         const matchedLocation = locations.find(
-          (loc: any) => Number(loc?.property_id) === Number(item?.uniqueId)
+          (loc: any) => String(loc?.property_id) === String(item?._id),
         );
 
         return {
@@ -56,50 +59,56 @@ export default function PropertyCompares() {
   useEffect(() => {
     (async () => {
       setLoading(true);
+
       await Promise.all([getAllProperties(), getCompares()]);
+
       setLoading(false);
     })();
   }, [getAllProperties, getCompares]);
 
   const getProperty = useCallback(
-    (uniqueId: number) =>
-      allProperties.find((p) => Number(p.uniqueId) === Number(uniqueId)),
-    [allProperties]
+    (id: string) => {
+      return allProperties.find(
+        (property) => String(property?._id) === String(id),
+      );
+    },
+    [allProperties],
   );
 
   const mergedCompares = useMemo(() => {
-    const map = new Map<string, { properties: number[]; count: number }>();
+    const map = new Map<
+      string,
+      {
+        properties: string[];
+        count: number;
+      }
+    >();
 
     for (const compare of compares) {
-      const rawProps = Array.isArray(compare.properties)
+      const rawProps = Array.isArray(compare?.properties)
         ? compare.properties
         : [];
 
-      const normalized: number[] = Array.from(
-        new Set(
-          rawProps
-            .map((id: any) => {
-              const n = Number(id);
-              return Number.isFinite(n) ? n : null;
-            })
-            .filter((v: number | null): v is number => v !== null)
-        )
+      const normalized: string[] = Array.from(
+        new Set(rawProps.map((id: any) => String(id)).filter(Boolean)),
       );
 
       if (!normalized.length) continue;
 
-      normalized.sort((a, b) => a - b);
+      normalized.sort();
+
       const key = normalized.join(",");
 
       const incomingCount =
-        Number(compare.count) && Number(compare.count) > 0
-          ? Number(compare.count)
-          : 1;
+        Number(compare?.count) > 0 ? Number(compare.count) : 1;
 
       if (map.has(key)) {
         map.get(key)!.count += incomingCount;
       } else {
-        map.set(key, { properties: normalized, count: incomingCount });
+        map.set(key, {
+          properties: normalized,
+          count: incomingCount,
+        });
       }
     }
 
@@ -109,7 +118,7 @@ export default function PropertyCompares() {
   const compareRows = useMemo(() => {
     return mergedCompares.map((item, index) => {
       const mappedProps = (item.properties || [])
-        .map((uid: number) => getProperty(uid))
+        .map((id: string) => getProperty(id))
         .filter(Boolean);
 
       return {
@@ -123,9 +132,9 @@ export default function PropertyCompares() {
   const maxColumns = useMemo(() => {
     return Math.max(
       0,
-      ...mergedCompares.map((c) =>
-        Array.isArray(c.properties) ? c.properties.length : 0
-      )
+      ...mergedCompares.map((compare) =>
+        Array.isArray(compare?.properties) ? compare.properties.length : 0,
+      ),
     );
   }, [mergedCompares]);
 
@@ -137,8 +146,11 @@ export default function PropertyCompares() {
         key: `property_${i + 1}`,
         label: `Property ${i + 1}`,
         value: (row: any) => {
-          const property = row.propertyList?.[i];
-          if (!property) return <span className="text-gray-400">—</span>;
+          const property = row?.propertyList?.[i];
+
+          if (!property) {
+            return <span className="text-gray-400">—</span>;
+          }
 
           return (
             <div className="flex items-center gap-3">
@@ -147,7 +159,7 @@ export default function PropertyCompares() {
                   src={
                     property?.property_logo?.[0]
                       ? `${import.meta.env.VITE_MEDIA_URL}/${
-                          property?.property_logo[0]
+                          property.property_logo[0]
                         }`
                       : "/img/default-images/ca-property-default.png"
                   }
@@ -155,15 +167,19 @@ export default function PropertyCompares() {
                   className="w-10 h-10 rounded-full border border-[var(--yp-border-primary)] object-cover"
                 />
               </div>
-              <div className="flex flex-col gap-0.5">
+
+              <div className="flex flex-col gap-0.5 min-w-0">
                 <Link
                   to={`/dashboard/property/${property?._id}`}
-                  className="font-semibold text-[var(--yp-text-primary)] hover:text-[var(--yp-primary)]"
+                  className="font-semibold text-[var(--yp-text-primary)] hover:text-[var(--yp-primary)] transition-colors"
                 >
                   {property?.property_name}
                 </Link>
+
                 <p className="text-xs text-[var(--yp-text-secondary)] truncate">
-                  {property?.city} {property?.state} {property?.country}
+                  {[property?.city, property?.state, property?.country]
+                    .filter(Boolean)
+                    .join(", ")}
                 </p>
               </div>
             </div>
@@ -171,21 +187,26 @@ export default function PropertyCompares() {
         },
       });
     }
+
     cols.push({
       key: "count",
       label: "Count",
-      value: (row: any) => (
-        <span className="font-semibold text-[var(--yp-text-primary)]">
-          {row.count ?? 0}
-        </span>
-      ),
       sortingKey: "count",
+      value: (row: any) => {
+        return (
+          <span className="font-semibold text-[var(--yp-text-primary)]">
+            {row?.count ?? 0}
+          </span>
+        );
+      },
     });
 
     return cols;
   }, [maxColumns]);
 
-  if (loading) return <TableSkeletonWithCards />;
+  if (loading) {
+    return <TableSkeletonWithCards />;
+  }
 
   if (!compareRows.length) {
     return (
@@ -200,8 +221,13 @@ export default function PropertyCompares() {
       <Breadcrumbs
         title="Property Compares"
         breadcrumbs={[
-          { label: "Dashboard", path: "/dashboard" },
-          { label: "Compares" },
+          {
+            label: "Dashboard",
+            path: "/dashboard",
+          },
+          {
+            label: "Compares",
+          },
         ]}
       />
 
