@@ -227,6 +227,7 @@ export interface PropertyProps extends Record<string, unknown> {
   property_description: string;
   property_email: string;
   property_type: string;
+  school_type: string;
   rank: string;
   lastRank: string;
   score: number;

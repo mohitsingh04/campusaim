@@ -123,9 +123,7 @@ export const usePropertyTabsData = ({
         label: "Ranking",
         icon: TrophyIcon,
         show: !!tabexistence?.RankingTabDocs,
-        tab: (
-          <RankingTab property={property} getCategoryById={getCategoryById} />
-        ),
+        tab: <RankingTab property={property} />,
       },
       {
         id: "teachers",

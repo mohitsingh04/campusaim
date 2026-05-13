@@ -33,6 +33,7 @@ export interface PropertyProps {
   country: string;
   est_year: string;
   property_type: string;
+  school_type: string;
   reviews?: PropertyReviewProps[];
   courses: PropertyCourseProps[];
   gallery: string[] | PropertyGalleryProps[];

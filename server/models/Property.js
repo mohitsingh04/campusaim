@@ -68,6 +68,10 @@ const PropertySchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category",
     },
+    school_type: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+    },
     property_website: {
       type: String,
     },

@@ -175,7 +175,7 @@ export default function Amenities({ property }: AmenitiesProps) {
       }
 
       const payload: any = {
-        property_id: property?._id,
+        propertyId: property?._id,
         selectedAmenities: [grouped],
       };
 
