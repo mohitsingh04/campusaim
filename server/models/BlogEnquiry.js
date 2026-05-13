@@ -3,10 +3,6 @@ import { regularDatabase } from "../database/Databases.js";
 
 const BlogEnquirySchema = mongoose.Schema(
   {
-    uniqueId: {
-      type: Number,
-      required: true,
-    },
     name: {
       type: String,
       required: true,
@@ -27,7 +23,7 @@ const BlogEnquirySchema = mongoose.Schema(
       required: true,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const BlogEnquiry = regularDatabase.model("blog_enquiry", BlogEnquirySchema);

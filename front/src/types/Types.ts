@@ -8,7 +8,6 @@ export interface FaqProps {
   answer: string;
 }
 export interface CategoryProps {
-  uniqueId: number;
   _id: string;
   category_name: string;
   parent_category: string;

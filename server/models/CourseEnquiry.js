@@ -3,10 +3,6 @@ import { regularDatabase } from "../database/Databases.js";
 
 const CourseEnquirySchema = mongoose.Schema(
   {
-    uniqueId: {
-      type: Number,
-      required: true,
-    },
     name: {
       type: String,
       required: true,

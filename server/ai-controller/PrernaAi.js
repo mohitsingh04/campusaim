@@ -78,20 +78,20 @@ export const PrernaAI = async (req, res) => {
     const mergedData = properties
       .map((property) => {
         const loc = locations.find(
-          (l) => Number(l.property_id) === Number(property.uniqueId)
+          (l) => Number(l.property_id) === Number(property.uniqueId),
         );
         const acc = accomodations.find(
-          (a) => Number(a.property_id) === Number(property.uniqueId)
+          (a) => Number(a.property_id) === Number(property.uniqueId),
         );
         const matchCategory = (id) => {
           const cat = categories.find((c) => Number(c.uniqueId) === Number(id));
           return cat?.category_name?.toLowerCase() || null;
         };
         const propReviews = reviews.filter(
-          (r) => Number(r.property_id) === Number(property.uniqueId)
+          (r) => Number(r.property_id) === Number(property.uniqueId),
         );
         const propRank = ranks.find(
-          (r) => String(r.property_id) === String(property._id)
+          (r) => String(r.property_id) === String(property._id),
         );
 
         return {
@@ -358,15 +358,11 @@ User question: "${prompt}"
       const updated = await PrernaAiModal.findOneAndUpdate(
         { _id: objectId },
         { $push: { chats: newChatData } },
-        { new: true }
+        { new: true },
       );
       chatId = updated?._id;
     } else {
-      const lastChat = await PrernaAiModal.findOne().sort({ uniqueId: -1 });
-      const uniqueId = lastChat ? lastChat.uniqueId + 1 : 1;
-
       const newChat = new PrernaAiModal({
-        uniqueId,
         user: user?._id,
         title: prompt,
         chats: [newChatData],
@@ -396,7 +392,7 @@ export const PrernaAIPropertySearch = async (req, res) => {
     const matchCategory = (id) => {
       if (!id) return null;
       const mainCat = categories.find(
-        (cat) => Number(cat.uniqueId) === Number(id)
+        (cat) => Number(cat.uniqueId) === Number(id),
       );
       return mainCat?.category_name?.toLowerCase() || null;
     };
@@ -412,7 +408,7 @@ export const PrernaAIPropertySearch = async (req, res) => {
         Gallery.findOne({ propertyId: property.uniqueId }),
         Rank.findOne({ property_id: property._id }),
         Review.find({ property_id: property.uniqueId }),
-      ]
+      ],
     );
 
     const mergedData = {
@@ -423,7 +419,7 @@ export const PrernaAIPropertySearch = async (req, res) => {
       property_state: location?.property_state || null,
       property_country: location?.property_country || null,
       property_url: `${process.env.FRONTEND_URL}/${generateSlug(
-        matchCategory(property?.category) || "property"
+        matchCategory(property?.category) || "property",
       )}/${generateSlug(property?.property_slug)}/overview`,
       property_description: property?.property_description || null,
       gallery:
@@ -449,7 +445,7 @@ export const PrernaAIPropertySearch = async (req, res) => {
     const updated = await PrernaAiModal.findOneAndUpdate(
       { _id: chat_id },
       { $push: { chats: newChatData } },
-      { new: true }
+      { new: true },
     );
     chatId = updated?._id;
 
@@ -492,7 +488,7 @@ export const PrernaAIPropertySearchSummaryData = async (req, res) => {
     const matchCategory = (id) => {
       if (!id) return null;
       const mainCat = categories.find(
-        (cat) => Number(cat.uniqueId) === Number(id)
+        (cat) => Number(cat.uniqueId) === Number(id),
       );
       return mainCat?.category_name?.toLowerCase() || null;
     };
@@ -508,7 +504,7 @@ export const PrernaAIPropertySearchSummaryData = async (req, res) => {
         Gallery.findOne({ propertyId: property.uniqueId }),
         Rank.findOne({ property_id: property._id }),
         Review.find({ property_id: property.uniqueId }),
-      ]
+      ],
     );
 
     const mergedData = {
@@ -519,7 +515,7 @@ export const PrernaAIPropertySearchSummaryData = async (req, res) => {
       property_state: location?.property_state || null,
       property_country: location?.property_country || null,
       property_url: `${process.env.FRONTEND_URL}/${generateSlug(
-        matchCategory(property?.category) || "property"
+        matchCategory(property?.category) || "property",
       )}/${generateSlug(property?.property_slug)}/overview`,
       property_description: property?.property_description || null,
       gallery:

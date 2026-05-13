@@ -22,11 +22,7 @@ export const addStatus = async (req, res) => {
       return res.status(400).json({ error: "This status already exists." });
     }
 
-    const lastStatus = await Status.findOne().sort({ _id: -1 }).exec();
-    const uniqueId = lastStatus ? lastStatus.uniqueId + 1 : 1;
-
     const newStatus = new Status({
-      uniqueId,
       name: status_name,
       parent_status,
       description,
@@ -58,7 +54,7 @@ export const updateStatus = async (req, res) => {
     const updatedStatus = await Status.findByIdAndUpdate(
       objectId,
       { name: status_name, parent_status, description },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     );
 
     if (!updatedStatus) {

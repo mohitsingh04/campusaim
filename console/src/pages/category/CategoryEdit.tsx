@@ -50,7 +50,7 @@ export function CategoryEdit() {
 
   const formik = useFormik({
     initialValues: {
-      userId: authUser?.uniqueId || "",
+      userId: authUser?._id || "",
       category_name: mainCategory?.category_name || "",
       parent_category: mainCategory?.parent_category || "",
       description: mainCategory?.description || "",

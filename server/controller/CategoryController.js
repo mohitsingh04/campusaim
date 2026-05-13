@@ -1,8 +1,4 @@
-import {
-  generateSlug,
-  generateUniqueId,
-  getUploadedFilePaths,
-} from "../utils/Callback.js";
+import { generateSlug, getUploadedFilePaths } from "../utils/Callback.js";
 import { downloadImageAndReplaceSrcNonProperty } from "../helper/folder-cleaners/EditorImagesController.js";
 import Category from "../models/Category.js";
 import RegularUser from "../profile-model/RegularUser.js";
@@ -42,7 +38,9 @@ export const getCategoryById = async (req, res) => {
 
 export const addCategory = async (req, res) => {
   try {
-    const { userId, category_name, parent_category, description } = req.body;
+    const { category_name, parent_category, description } = req.body;
+
+    const userId = await getDataFromToken(req);
 
     if (!userId || !category_name) {
       return res
@@ -62,20 +60,17 @@ export const addCategory = async (req, res) => {
       return res.status(400).json({ error: "This category already exists." });
     }
 
-    const uniqueId = await generateUniqueId(Category);
-
     let updatedDescription = description;
     if (description) {
       updatedDescription = await downloadImageAndReplaceSrcNonProperty(
         description,
-        "category"
+        "category",
       );
     }
 
     const generatedSlug = generateSlug(category_name);
 
     const newCategory = new Category({
-      uniqueId,
       userId,
       category_name,
       parent_category,
@@ -120,8 +115,9 @@ export const deleteCategory = async (req, res) => {
 export const updateCategory = async (req, res) => {
   try {
     const { objectId } = req.params;
-    const { userId, category_name, parent_category, description, status } =
-      req.body;
+    const { category_name, parent_category, description, status } = req.body;
+
+    const userId = await getDataFromToken(req);
 
     const category = await Category.findById(objectId);
     if (!category) {
@@ -159,7 +155,7 @@ export const updateCategory = async (req, res) => {
     if (description) {
       updatedDescription = await downloadImageAndReplaceSrcNonProperty(
         description,
-        "category"
+        "category",
       );
     }
 
@@ -177,7 +173,7 @@ export const updateCategory = async (req, res) => {
         description: updatedDescription,
         status,
       },
-      { new: true }
+      { new: true },
     );
 
     return res.status(200).json({ message: "Category updated successfully." });
@@ -270,7 +266,7 @@ export const getCategoryFollowers = async (req, res) => {
     // Fetch user info for all follower IDs
     const users = await RegularUser.find(
       { _id: { $in: followerIds } },
-      "name username avatar"
+      "name username avatar",
     );
 
     return res.status(200).json(users);
@@ -295,7 +291,7 @@ export const getFollowedCategories = async (req, res) => {
     // Fetch category info for all category IDs
     const categories = await Category.find(
       { _id: { $in: categoryIds } },
-      "category_name description"
+      "category_name description",
     );
 
     return res.status(200).json(categories);
@@ -329,7 +325,7 @@ export const getCategoryBySlug = async (req, res) => {
     // Fetch user info for all follower IDs
     const followers = await RegularUser.find(
       { _id: { $in: followerIds } },
-      "name username avatar"
+      "name username avatar",
     ).lean();
 
     // Attach followers to the category object

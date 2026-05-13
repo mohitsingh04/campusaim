@@ -28,7 +28,7 @@ import { StatusEdit } from "../pages/status/StatusEdit";
 import { UserList } from "../pages/users/UsersList";
 import { CategoryList } from "../pages/category/CategoryList";
 import { BlogList } from "../pages/blog/BlogList";
-// import { SearchList } from "../pages/search/SearchList";
+import { SearchList } from "../pages/search/SearchList";
 import { CourseList } from "../pages/course/CourseList";
 import StatusView from "../pages/status/StatusView";
 import { CategroyCreate } from "../pages/category/CategroyCreate";
@@ -82,7 +82,7 @@ import CourseSeo from "../pages/course/CourseSeo";
 import NewsSeo from "../pages/news/NewsSeo";
 import ProfessionalAssets from "../pages/professional-assets/ProfessionalAssets";
 import PropertyVerification from "../pages/property/PropertyVerification";
-// import PropertyCompares from "../pages/property-compares/PropertyCompares";
+import PropertyCompares from "../pages/property-compares/PropertyCompares";
 import ExamList from "../pages/exams/ExamList";
 import { ExamCreate } from "../pages/exams/ExamCreate";
 import ExamDeleted from "../pages/exams/ExamDeleted";
@@ -101,6 +101,8 @@ import { UniversitiesList } from "../pages/property/property_list_pages/Universi
 import { SchoolList } from "../pages/property/property_list_pages/Schools";
 import { CoachingList } from "../pages/property/property_list_pages/Coaching";
 import { SchoolView } from "../pages/property/property_view_pages/SchoolViewPage";
+import { FaMagnifyingGlass } from "react-icons/fa6";
+import { CoachingView } from "../pages/property/property_view_pages/CoachingViewPage";
 
 export const SidbarNavigations = [
   {
@@ -127,15 +129,15 @@ export const SidbarNavigations = [
     roles: ["Super Admin"],
     Permission: "Read User",
   },
-  // {
-  //   name: "Searches",
-  //   id: "search",
-  //   icon: Search,
-  //   href: "/dashboard/search",
-  //   component: SearchList,
-  //   roles: ["Seo Manager", "Editor", "Super Admin"],
-  //   Permission: "Read Search",
-  // },
+  {
+    name: "Searches",
+    id: "search",
+    icon: FaMagnifyingGlass,
+    href: "/dashboard/search",
+    component: SearchList,
+    roles: ["Seo Manager", "Editor", "Super Admin"],
+    Permission: "Read Search",
+  },
   {
     name: "Status",
     id: "status",
@@ -212,15 +214,15 @@ export const SidbarNavigations = [
   // 	roles: ["Seo Manager", "Editor", "Super Admin"],
   // 	Permission: "Read Scholarship",
   // },
-  // {
-  //   name: "Compares",
-  //   id: "compare",
-  //   icon: Building,
-  //   href: "/dashboard/property/compare",
-  //   component: PropertyCompares,
-  //   roles: ["Seo Manager", "Editor", "Super Admin"],
-  //   Permission: "Compare Property",
-  // },
+  {
+    name: "Compares",
+    id: "compare",
+    icon: Building,
+    href: "/dashboard/property/compare",
+    component: PropertyCompares,
+    roles: ["Seo Manager", "Editor", "Super Admin"],
+    Permission: "Compare Property",
+  },
   {
     name: "Blog",
     id: "blog",
@@ -511,6 +513,14 @@ export const NonSidebarNavigations = [
     id: "school-view",
     href: "/dashboard/school/:objectId",
     component: SchoolView,
+    roles: ["Property Manager", "Seo Manager", "Editor", "Super Admin"],
+    Permission: "Read Property",
+  },
+  {
+    name: "Coaching View",
+    id: "coaching-view",
+    href: "/dashboard/coaching/:objectId",
+    component: CoachingView,
     roles: ["Property Manager", "Seo Manager", "Editor", "Super Admin"],
     Permission: "Read Property",
   },

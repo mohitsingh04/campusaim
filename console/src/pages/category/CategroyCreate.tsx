@@ -35,7 +35,7 @@ interface SelectOption {
 // 💡 Custom Option Component for Indentation
 // ----------------------------------------------------
 const CategoryOption = (
-  props: OptionProps<SelectOption, false, GroupBase<SelectOption>>
+  props: OptionProps<SelectOption, false, GroupBase<SelectOption>>,
 ) => {
   const { data, label, isSelected } = props;
   const { level } = data;
@@ -100,12 +100,12 @@ export function CategroyCreate() {
       sortTree(tree);
       return tree;
     },
-    []
+    [],
   );
 
   const categoryTree = useMemo(
     () => buildCategoryTree(allCategories),
-    [allCategories, buildCategoryTree]
+    [allCategories, buildCategoryTree],
   );
 
   // Convert tree to react-select options
@@ -117,12 +117,12 @@ export function CategroyCreate() {
           ? getSelectOptions(node.children, level + 1)
           : []),
       ]),
-    []
+    [],
   );
 
   const selectOptions = useMemo(
     () => getSelectOptions(categoryTree),
-    [categoryTree, getSelectOptions]
+    [categoryTree, getSelectOptions],
   );
 
   const getAllCategories = useCallback(async () => {
@@ -143,7 +143,7 @@ export function CategroyCreate() {
   // ----------------------------------------------------
   const formik = useFormik({
     initialValues: {
-      userId: authUser?.uniqueId || "",
+      userId: authUser?._id || "",
       category_name: "",
       parent_category: "",
       description: "",
@@ -181,9 +181,9 @@ export function CategroyCreate() {
   const selectedOption = useMemo(
     () =>
       selectOptions.find(
-        (option) => option.value === formik.values.parent_category
+        (option) => option.value === formik.values.parent_category,
       ) || null,
-    [formik.values.parent_category, selectOptions]
+    [formik.values.parent_category, selectOptions],
   );
 
   // ----------------------------------------------------
@@ -231,7 +231,7 @@ export function CategroyCreate() {
                 onChange={(selected: SingleValue<SelectOption>) => {
                   formik.setFieldValue(
                     "parent_category",
-                    selected ? selected.value : ""
+                    selected ? selected.value : "",
                   );
                 }}
                 onBlur={formik.handleBlur}

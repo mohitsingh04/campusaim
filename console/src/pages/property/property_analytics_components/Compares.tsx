@@ -16,25 +16,23 @@ export default function Compares({
   allProperties: PropertyProps[];
 }) {
   const [comparedProperties, setComparedProperties] = useState<
-    { id: number; count: number }[]
+    { id: string; count: number }[]
   >([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   const { categories } = useOutletContext<DashboardOutletContextProps>();
 
-  // Helper to find category name
   const getCategoryToRelatedId = (id: any) => {
-    const category = categories.find((item) => item.uniqueId === Number(id));
+    const category = categories.find((item) => item._id === String(id));
     return category ? category.category_name : "Unknown";
   };
 
-  // Fetch compare analytics
   const getCurrentLocation = useCallback(async () => {
-    if (!currentProperty?.uniqueId) return;
+    if (!currentProperty?._id) return;
     try {
       setLoading(true);
       const response = await API.get(
-        `/compare/analytic/${currentProperty.uniqueId}?limit=5`
+        `/compare/analytic/${currentProperty._id}?limit=5`,
       );
       setComparedProperties(response.data || []);
     } catch (error) {
@@ -42,12 +40,11 @@ export default function Compares({
     } finally {
       setLoading(false);
     }
-  }, [currentProperty?.uniqueId]);
+  }, [currentProperty?._id]);
 
   useEffect(() => {
     getCurrentLocation();
   }, [getCurrentLocation]);
-
   return (
     <div>
       <div className="p-4 space-y-3 bg-[var(--yp-primary)] rounded-2xl shadow-sm items-center justify-center hover:shadow-md transition duration-300 w-full h-full">
@@ -86,18 +83,18 @@ export default function Compares({
           comparedProperties.length > 0 &&
           comparedProperties.map((item, i: number) => {
             const mainProperty = allProperties.find(
-              (prop) => Number(prop.uniqueId) === item.id
+              (prop) => String(prop._id) === String(item.id),
             );
 
             if (!mainProperty) return null;
 
             const categoryName = getCategoryToRelatedId(
-              mainProperty?.category || ""
+              mainProperty?.category || "",
             );
             const propertyUrl = `${
               import.meta.env.VITE_MAIN_URL
             }/${generateSlug(categoryName)}/${generateSlug(
-              mainProperty?.property_slug || ""
+              mainProperty?.property_slug || "",
             )}/overview`;
 
             return (

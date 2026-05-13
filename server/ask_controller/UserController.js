@@ -12,7 +12,9 @@ export const token = async (req, res) => {
     if (!token) return res.status(401).json({ error: "Unauthorized" });
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET_VALUE);
-    const user = await RegularUser.findById(decoded.id).select("-password").lean();
+    const user = await RegularUser.findById(decoded.id)
+      .select("-password")
+      .lean();
     if (!user) return res.status(404).json({ error: "User not found" });
 
     res.status(200).json({ user });
@@ -25,7 +27,9 @@ export const token = async (req, res) => {
 export const myProfile = async (req, res) => {
   try {
     const userId = await getDataFromToken(req);
-    const user = await RegularUser.findOne({ _id: userId }).select("-password").lean();
+    const user = await RegularUser.findOne({ _id: userId })
+      .select("-password")
+      .lean();
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
@@ -59,13 +63,17 @@ export const fetchSingleUser = async (req, res) => {
   try {
     const { username } = req.params;
 
-    const user = await RegularUser.findOne({ username }).select("-password").lean();
+    const user = await RegularUser.findOne({ username })
+      .select("-password")
+      .lean();
     if (!user) {
       return res.status(401).json({ success: false, error: "User not found" });
     }
 
     // Fetch the user's location(s)
-    const location = await ProfileLocation.findOne({ userId: user.uniqueId }).select("city state country").lean();
+    const location = await ProfileLocation.findOne({ userId: user._id })
+      .select("city state country")
+      .lean();
 
     // Attach location to user object
     user.location = location || null;
@@ -169,12 +177,12 @@ export const getFollowers = async (req, res) => {
     }).lean();
 
     // 2. Extract follower IDs
-    const followerIds = follows.map(f => f.follower);
+    const followerIds = follows.map((f) => f.follower);
 
     // 3. Fetch user info for all follower IDs
     const users = await RegularUser.find(
       { _id: { $in: followerIds } },
-      "name username avatar"
+      "name username avatar",
     ).lean();
 
     // 4. Return the user info
@@ -196,12 +204,12 @@ export const getFollowing = async (req, res) => {
     }).lean();
 
     // 2. Extract following user IDs
-    const followingIds = follows.map(f => f.following);
+    const followingIds = follows.map((f) => f.following);
 
     // 3. Fetch user info for all following IDs
     const users = await RegularUser.find(
       { _id: { $in: followingIds } },
-      "name username avatar"
+      "name username avatar",
     ).lean();
 
     // 4. Return the user info
@@ -222,13 +230,15 @@ export const fetchTopUsers = async (req, res) => {
     // Manually fetch user info for each reputation
     const topUsers = await Promise.all(
       topReputations.map(async (r) => {
-        const user = await RegularUser.findById(r.author).select("name username avatar");
+        const user = await RegularUser.findById(r.author).select(
+          "name username avatar",
+        );
         if (!user) return null; // skip if user not found
         return {
           user,
           score: r.score,
         };
-      })
+      }),
     );
 
     // Filter out any nulls (in case a user was deleted)

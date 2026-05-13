@@ -65,7 +65,7 @@ const LocationTab = ({ profile }: { profile: UserProps | null }) => {
 
   const formik = useFormik({
     initialValues: {
-      userId: profile?.uniqueId,
+      userId: profile?._id,
       address: profile?.address || "",
       pincode: profile?.pincode || "",
       city: profile?.city || "",

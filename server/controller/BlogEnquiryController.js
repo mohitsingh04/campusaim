@@ -8,11 +8,7 @@ export const createBlogEnquiry = async (req, res) => {
       return res.status(400).json({ error: "All fields are required." });
     }
 
-    const lastDoc = await BlogEnquiry.findOne().sort({ uniqueId: -1 }).lean();
-    const uniqueId = lastDoc ? lastDoc.uniqueId + 1 : 1;
-
     const newEnquiry = new BlogEnquiry({
-      uniqueId,
       name,
       email,
       mobile_no,

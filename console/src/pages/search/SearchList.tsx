@@ -11,7 +11,6 @@ import { IoMdTrendingUp, IoMdTrendingDown } from "react-icons/io";
 import TableSkeletonWithOutCards from "../../ui/loadings/pages/TableSkeletonWithOutCards";
 
 interface CombinedSearch extends Record<string, unknown> {
-  uniqueId: number;
   search: string;
   keyword_count: number;
   all_time_searched: number; // NEW FIELD
@@ -50,7 +49,7 @@ export function SearchList() {
       startPrevious.setDate(startPrevious.getDate() - 30);
 
       const merged: CombinedSearch[] = searchDocs.map((s) => {
-        const match = bySearchId.get(s.uniqueId);
+        const match = bySearchId.get(s._id);
 
         let currentCount = 0;
         let previousCount = 0;
@@ -84,7 +83,6 @@ export function SearchList() {
         }
 
         return {
-          uniqueId: s.uniqueId,
           search: s.search,
           keyword_count: currentCount,
           all_time_searched: allTimeCount, // SAVE HERE

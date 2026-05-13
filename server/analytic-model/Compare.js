@@ -3,10 +3,6 @@ import { analyticDatabase } from "../database/Databases.js";
 
 const CompareSchema = mongoose.Schema(
   {
-    uniqueId: {
-      type: Number,
-      required: true,
-    },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
     },
@@ -16,7 +12,7 @@ const CompareSchema = mongoose.Schema(
     },
     count: { type: Number },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const Compare = analyticDatabase.model("compare", CompareSchema);

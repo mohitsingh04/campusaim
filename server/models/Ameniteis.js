@@ -3,9 +3,6 @@ import { regularDatabase } from "../database/Databases.js";
 
 const AmenitiesSchema = new mongoose.Schema(
   {
-    uniqueId: {
-      type: mongoose.Schema.Types.ObjectId,
-    },
     propertyId: {
       type: mongoose.Schema.Types.ObjectId,
       required: [true, "Property ID is required"],
@@ -18,7 +15,7 @@ const AmenitiesSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 const Amenities = regularDatabase.model("Amenities", AmenitiesSchema);

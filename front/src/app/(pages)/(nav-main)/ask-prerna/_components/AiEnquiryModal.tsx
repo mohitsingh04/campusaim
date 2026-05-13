@@ -76,7 +76,7 @@ export function AiEnquiryModal({
           name: user?.name,
           email: user?.email,
           contact: user?.mobile_no,
-          property_id: property.uniqueId,
+          property_id: property._id,
           property_name: property.property_name,
           message: values.enquiryMessage,
         });

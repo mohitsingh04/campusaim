@@ -15,23 +15,19 @@ export const addSearch = async (req, res) => {
 
     let searchEntry = await Search.findOne({ search: normalizedSearch });
 
-    let searchUniqueId;
+    let searchobjectId;
 
     if (!searchEntry) {
-      const lastSearch = await Search.findOne().sort({ uniqueId: -1 }).lean();
-      searchUniqueId = lastSearch?.uniqueId ? lastSearch.uniqueId + 1 : 1;
-
       searchEntry = await Search.create({
-        uniqueId: searchUniqueId,
         search: normalizedSearch,
       });
     } else {
-      searchUniqueId = searchEntry.uniqueId;
+      searchobjectId = searchEntry._id;
     }
 
     // Check for existing SearchAppearance by searchId
     let appearance = await SearchAppearance.findOne({
-      searchId: searchUniqueId,
+      searchId: searchobjectId,
     });
 
     const newSearchedRecord = { ip, date: new Date() };
@@ -40,17 +36,8 @@ export const addSearch = async (req, res) => {
       appearance.searched.push(newSearchedRecord);
       await appearance.save();
     } else {
-      // Generate uniqueId for SearchAppearance
-      const lastAppearance = await SearchAppearance.findOne()
-        .sort({ uniqueId: -1 })
-        .lean();
-      const newAppearanceUniqueId = lastAppearance?.uniqueId
-        ? lastAppearance.uniqueId + 1
-        : 1;
-
       await SearchAppearance.create({
-        uniqueId: newAppearanceUniqueId,
-        searchId: searchUniqueId,
+        searchId: searchobjectId,
         searched: [newSearchedRecord],
       });
     }
@@ -92,7 +79,7 @@ export const getSearchesById = async (req, res) => {
     }
 
     const searchAppear = await SearchAppearance.findOne({
-      searchId: searches.uniqueId,
+      searchId: searches._id,
     });
 
     const finalData = {

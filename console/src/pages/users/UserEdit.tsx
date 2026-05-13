@@ -74,14 +74,14 @@ export function UserEdit() {
   }, [objectId]);
 
   const getUserLocation = useCallback(async () => {
-    if (!user?.uniqueId) return;
+    if (!user?._id) return;
     try {
-      const response = await API.get(`/profile/location/${user?.uniqueId}`);
+      const response = await API.get(`/profile/location/${user?._id}`);
       setUserLocation(response.data);
     } catch (error) {
       getErrorResponse(error, true);
     }
-  }, [user?.uniqueId]);
+  }, [user?._id]);
 
   useEffect(() => {
     getUserDetails();
@@ -112,7 +112,7 @@ export function UserEdit() {
       try {
         const payload = { ...values };
         const locationPayload = {
-          userId: user?.uniqueId,
+          userId: user?._id,
           address: values?.address,
           pincode: values?.pincode,
           city: values?.city,
@@ -122,15 +122,15 @@ export function UserEdit() {
 
         const response = await API.patch(
           `/profile/user/${objectId}/update`,
-          payload
+          payload,
         );
         const LocationResponse = await API.patch(
           `/profile/location`,
-          locationPayload
+          locationPayload,
         );
         toast.success(response.data.message || "User updated successfully");
         toast.success(
-          LocationResponse.data.message || "User updated successfully"
+          LocationResponse.data.message || "User updated successfully",
         );
         redirector(`/dashboard/user/${objectId}`);
         window.location.reload();
@@ -144,7 +144,7 @@ export function UserEdit() {
 
   useEffect(() => {
     const filtred = state?.filter(
-      (s) => s?.country_name === formik.values.country
+      (s) => s?.country_name === formik.values.country,
     );
     setFilteredStates(filtred);
   }, [formik.values.country, state]);

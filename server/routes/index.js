@@ -37,7 +37,6 @@ import {
   getProperty,
   getPropertyById,
   getPropertyBySlug,
-  getPropertyByUniqueId,
   getPropertyByUserId,
   getPropertyCategoryCounts,
   getPropertyMenuData,
@@ -109,14 +108,13 @@ import {
   getPropertyCourse,
   getPropertyCourseById,
   getPropertyCourseByPropertyId,
-  getPropertyCourseByUniqueId,
   updatePropertyCourse,
   getPropertyCourseBySlug,
   getPropertyCourseCountByPropertyId,
   getPropertyCourseNameListByPropertyId,
 } from "../controller/PropertyCourseController.js";
 import {
-    getAllRankList,
+  getAllRankList,
   getCity,
   getCountry,
   getState,
@@ -250,8 +248,7 @@ import {
   updateQnA,
 } from "../controller/QnaController.js";
 import {
-    createOrUpdatePropertyRanking,
-  getOrCreateRankingId,
+  createOrUpdatePropertyRanking,
   getPropertyRankAll,
   getRankByPropertyId,
 } from "../controller/RankingController.js";
@@ -286,6 +283,13 @@ import {
   createOrUpdatePropertyClassess,
   getPropertyClassess,
 } from "../controller/PropertyClassessController.js";
+import {
+  createPropertyBatch,
+  deleteBatch,
+  getAllBatches,
+  getBatchByPropertyId,
+  updatePropertyBatch,
+} from "../controller/PropertyBatchController.js";
 
 const router = express.Router();
 router.use(bodyParser.json());
@@ -416,7 +420,6 @@ router.patch(
   updatePropertyImages,
 );
 router.delete("/property/:objectId", Authorize, deleteProperty);
-router.get("/property/uniqueId/:uniqueId", getPropertyByUniqueId);
 router.get("/property/userId/:userId", getPropertyByUserId);
 router.get("/property/:objectId", getPropertyById);
 router.get("/property/slug/:property_slug", getPropertyBySlug);
@@ -593,7 +596,6 @@ router.patch(
   updatePropertyCourse,
 );
 router.get("/property-course/:objectId", getPropertyCourseById);
-router.get("/property-course/uniqueId/:uniqueId", getPropertyCourseByUniqueId);
 router.get(
   "/property/property-course/:propertyId",
   getPropertyCourseByPropertyId,
@@ -735,5 +737,12 @@ router.get(`/property/maps/all`, getAllPropertyMaps);
 
 router.post(`/property/school/classess/add`, createOrUpdatePropertyClassess);
 router.get(`/property/school/classess/:property_id`, getPropertyClassess);
+
+//? Batch Routes
+router.post(`/batch/create`, Authorize, createPropertyBatch);
+router.get(`/batch/property/:property_id`, getBatchByPropertyId);
+router.get(`/batch/all`, getAllBatches);
+router.delete(`/batch/delete/:batch_id`, Authorize, deleteBatch);
+router.patch(`/batch/update/:batch_id`, Authorize, updatePropertyBatch);
 
 export default router;

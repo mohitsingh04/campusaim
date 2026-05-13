@@ -1,5 +1,4 @@
 import CourseEnquiry from "../models/CourseEnquiry.js";
-import { generateUniqueId } from "../utils/Callback.js";
 
 export const createCourseEnquiry = async (req, res) => {
   try {
@@ -17,11 +16,8 @@ export const createCourseEnquiry = async (req, res) => {
       });
     }
 
-    const uniqueId = await generateUniqueId(CourseEnquiry);
-
     // Prepare payload dynamically
     const enquiryData = {
-      uniqueId,
       name,
       email,
       mobile_no,

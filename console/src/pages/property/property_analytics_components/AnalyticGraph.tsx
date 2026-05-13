@@ -34,16 +34,16 @@ export default function AnalyticGraph({
   const [loading, setLoading] = useState(true);
 
   const getTrafficAndEnquiries = useCallback(async () => {
-    if (!currentProperty?.uniqueId) return;
+    if (!currentProperty?._id) return;
 
     try {
       const trafficRes = await API.get<TrafficDoc[]>(
-        `/property/traffic/${currentProperty._id}`
+        `/property/traffic/${currentProperty._id}`,
       );
       const allTrafficDocs = trafficRes.data;
 
       const enquiryRes = await API.get<EnquiryDoc[]>(
-        `/property/enquiry/count/${currentProperty._id}`
+        `/property/enquiry/count/${currentProperty._id}`,
       );
       const allEnquiryDocs = enquiryRes.data;
 

@@ -18,7 +18,6 @@ import TableSkeletonWithOutCards from "../../../ui/loadings/pages/TableSkeletonW
 
 export interface BlogTagsProps extends Record<string, unknown> {
   _id: string;
-  uniqueId: number;
   blog_tag: string;
   createdAt: string;
   updatedAt: string;
@@ -109,7 +108,7 @@ export default function BlogTags() {
         key: "actions",
       },
     ],
-    [authLoading, authUser?.permissions]
+    [authLoading, authUser?.permissions],
   );
 
   if (loading) {

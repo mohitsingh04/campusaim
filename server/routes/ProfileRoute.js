@@ -23,7 +23,6 @@ import {
   GetAllProfileUser,
   GetProfileByEmail,
   GetProfileUserByObjectId,
-  GetProfileUserByUniqueId,
   ProfileAvatarChange,
   ProfileBannerChange,
   SwitchProfessionalMail,
@@ -85,7 +84,6 @@ const avatarUpload = upload.fields([{ name: "avatar", maxCount: 1 }]);
 profileRoutes.get(`/profile/users`, GetAllProfileUser);
 profileRoutes.get(`/profile/user/email/:email`, GetProfileByEmail);
 profileRoutes.get(`/profile/user/:objectId`, GetProfileUserByObjectId);
-profileRoutes.get(`/profile/user/uniqueId/:uniqueId`, GetProfileUserByUniqueId);
 profileRoutes.patch(`/profile/user/:objectId`, Authorize, UpdateProfileUser);
 profileRoutes.patch(
   `/profile/user/:objectId/update`,

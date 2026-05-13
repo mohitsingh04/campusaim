@@ -22,7 +22,7 @@ export default function Competition({
   const { categories } = useOutletContext<DashboardOutletContextProps>();
 
   const getCategoryToRelatedId = (id: number) => {
-    const category = categories.find((item) => item.uniqueId === Number(id));
+    const category = categories.find((item) => item._id === String(id));
     return category ? category.category_name : "Unknown";
   };
 
@@ -30,7 +30,7 @@ export default function Competition({
     if (currentProperty) {
       try {
         const response = await API.get(
-          `/property/location/${currentProperty?.uniqueId}`
+          `/property/location/${currentProperty?._id}`,
         );
         setCurrentLocation(response.data);
       } catch (error) {
@@ -54,15 +54,14 @@ export default function Competition({
         filtered = data.filter(
           (item: any) =>
             item.property_id !== currentLocation.property_id &&
-            item.property_city === currentLocation.property_city
+            item.property_city === currentLocation.property_city,
         );
       }
 
       const combined = filtered
         .map((location: any) => {
           const matchedProperty = allProperties.find(
-            (property: any) =>
-              property.uniqueId === Number(location.property_id)
+            (property: any) => property._id === String(location.property_id),
           );
           if (matchedProperty) {
             return { location, property: matchedProperty };
@@ -114,7 +113,7 @@ export default function Competition({
       {competitions.map((item: any, i: number) => (
         <a
           href={`${import.meta.env.VITE_MAIN_URL}/${generateSlug(
-            getCategoryToRelatedId(item.property.category)
+            getCategoryToRelatedId(item.property.category),
           )}/${generateSlug(item?.property?.property_slug)}/overview`}
           key={i}
           target="_blank"

@@ -6,7 +6,7 @@ export interface User {
 	role?: string;
 	status?: string;
 	verified?: boolean;
-	uniqueId?: number;
+	?: number;
 	createdAt?: string;
 	updatedAt?: string;
 	avatar?: string[];
