@@ -354,13 +354,17 @@ export const getMonthName = (dateString?: string) => {
 };
 
 export const isDateExpired = (date?: string) => {
-    if (!date) return false;
+  if (!date) return false;
 
-    const currentDate = new Date();
-    const targetDate = new Date(date);
+  const currentDate = new Date();
+  const targetDate = new Date(date);
 
-    currentDate.setHours(0, 0, 0, 0);
-    targetDate.setHours(0, 0, 0, 0);
+  currentDate.setHours(0, 0, 0, 0);
+  targetDate.setHours(0, 0, 0, 0);
 
-    return targetDate < currentDate;
-  };
+  return targetDate < currentDate;
+};
+
+export const NormalizedMetaDesc = (text: string) => {
+  return text?.replace(/\s+/g, " ")?.trim()?.slice(0, 160);
+};
