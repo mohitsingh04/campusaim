@@ -84,7 +84,7 @@ export const addExam = async (req, res) => {
       );
     }
 
-    const newExam = new Exam({
+    const payload = {
       userId,
       exam_name,
       exam_short_name,
@@ -103,7 +103,12 @@ export const addExam = async (req, res) => {
       exam_mode,
       answer_sheet,
       faqs: examFaq,
-    });
+    };
+    if (!payload.exam_sub_type || payload.exam_sub_type === "") {
+      delete payload.exam_sub_type;
+    }
+
+    const newExam = new Exam(payload);
 
     const examCreated = await newExam.save();
     autoAddAllSeo({
