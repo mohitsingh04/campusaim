@@ -60,11 +60,14 @@ export default function Navbar() {
     useState<NavbarMobileDetailMenuState | null>(null);
   const [activeAccordion, setActiveAccordion] = useState<string | null>(null);
 
+  const shouldFetchExams = hoveredMenu === "Exams" || isMobileMenuOpen;
   const shouldFetchCourses = hoveredMenu === "Courses" || isMobileMenuOpen;
   const shouldFetchProperties =
     hoveredMenu === "Institutes" || isMobileMenuOpen;
 
-  const { examLoading, examMenuData } = useExamMenuData();
+  const { examLoading, examMenuData } = useExamMenuData({
+    enabled: shouldFetchExams,
+  });
   const { courseMenuData, courseLoading } = useCoursesMenuData({
     enabled: shouldFetchCourses,
   });
@@ -93,13 +96,23 @@ export default function Navbar() {
       const firstKey = Object.keys(propertyMenuData)[0];
       if (firstKey) setActiveDesktopSubMenu(firstKey);
     }
-  }, [propertyMenuData, hoveredMenu, activeDesktopSubMenu]);
-  useEffect(() => {
+
     if (hoveredMenu === "Courses" && courseMenuData && !activeDesktopSubMenu) {
       const firstKey = Object.keys(courseMenuData)[0];
       if (firstKey) setActiveDesktopSubMenu(firstKey);
     }
-  }, [courseMenuData, hoveredMenu, activeDesktopSubMenu]);
+
+    if (hoveredMenu === "Exams" && examMenuData && !activeDesktopSubMenu) {
+      const firstKey = Object.keys(examMenuData)[0];
+      if (firstKey) setActiveDesktopSubMenu(firstKey);
+    }
+  }, [
+    hoveredMenu,
+    propertyMenuData,
+    courseMenuData,
+    examMenuData,
+    activeDesktopSubMenu,
+  ]);
 
   const menuItems = useMemo(
     () => [
@@ -125,7 +138,7 @@ export default function Navbar() {
         dropdownContent: examMenuData,
         isLoading: examLoading,
         external: false,
-        panel: "single",
+        panel: "double",
       },
       { name: "Ask", href: `${ASKURL}`, external: true, panel: "none" },
     ],

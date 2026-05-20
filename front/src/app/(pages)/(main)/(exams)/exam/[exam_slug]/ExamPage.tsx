@@ -130,103 +130,115 @@ const ExamDetails = ({ exam }: { exam: ExamProps }) => {
           </h1>
           <div className="bg-(--primary-bg) p-5 rounded-custom shadow-custom">
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mt-5">
-              <InfoCard
-                Icon={BarChartIcon}
-                title="Exam Mode"
-                value={getCategoryById(exam?.exam_mode || "") || "N/A"}
-              />
-              <InfoCard
-                Icon={BarChartIcon}
-                title="Exam Type"
-                value={[
-                  getCategoryById(exam?.exam_type || ""),
-                  exam?.exam_sub_type
-                    ? getCategoryById(exam?.exam_sub_type)
-                    : "",
-                ]
-                  .filter(Boolean)
-                  .join(" - ")}
-              />
+              {exam?.exam_mode && (
+                <InfoCard
+                  Icon={BarChartIcon}
+                  title="Exam Mode"
+                  value={getCategoryById(exam?.exam_mode || "") || "N/A"}
+                />
+              )}
+              {exam?.exam_mode && (
+                <InfoCard
+                  Icon={BarChartIcon}
+                  title="Exam Type"
+                  value={[
+                    getCategoryById(exam?.exam_type || ""),
+                    exam?.exam_sub_type
+                      ? getCategoryById(exam?.exam_sub_type)
+                      : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" - ")}
+                />
+              )}
 
-              <InfoCard
-                Icon={AwardIcon}
-                title="Upcoming Exam"
-                tags={[
-                  {
-                    name: "Tentative",
-                    value: exam?.upcoming_exam_date?.is_tentative,
-                    color: "yellow",
-                  },
-                  {
-                    name: "Exam concluded",
-                    value: isDateExpired(exam?.upcoming_exam_date?.date),
-                    color: "red",
-                  },
-                ]}
-                isDanger={isDateExpired(exam?.upcoming_exam_date?.date)}
-                value={`${formatDate(
-                  exam?.upcoming_exam_date?.date || "N/A",
-                )}*`}
-              />
+              {exam?.exam_mode && (
+                <InfoCard
+                  Icon={AwardIcon}
+                  title="Upcoming Exam"
+                  tags={[
+                    {
+                      name: "Tentative",
+                      value: exam?.upcoming_exam_date?.is_tentative,
+                      color: "yellow",
+                    },
+                    {
+                      name: "Exam concluded",
+                      value: isDateExpired(exam?.upcoming_exam_date?.date),
+                      color: "red",
+                    },
+                  ]}
+                  isDanger={isDateExpired(exam?.upcoming_exam_date?.date)}
+                  value={`${formatDate(
+                    exam?.upcoming_exam_date?.date || "N/A",
+                  )}*`}
+                />
+              )}
 
-              <InfoCard
-                Icon={CalendarClock}
-                tags={[
-                  {
-                    name: "Tentative",
-                    value: exam?.result_date?.is_tentative,
-                    color: "yellow",
-                  },
-                  {
-                    name: "Exam concluded",
-                    value: isDateExpired(exam?.result_date?.date),
-                    color: "red",
-                  },
-                ]}
-                isDanger={isDateExpired(exam?.result_date?.date)}
-                title="Result Date"
-                value={`${formatDate(exam?.result_date?.date || "N/A")}*`}
-                note=""
-              />
+              {exam?.exam_mode && (
+                <InfoCard
+                  Icon={CalendarClock}
+                  tags={[
+                    {
+                      name: "Tentative",
+                      value: exam?.result_date?.is_tentative,
+                      color: "yellow",
+                    },
+                    {
+                      name: "Exam concluded",
+                      value: isDateExpired(exam?.result_date?.date),
+                      color: "red",
+                    },
+                  ]}
+                  isDanger={isDateExpired(exam?.result_date?.date)}
+                  title="Result Date"
+                  value={`${formatDate(exam?.result_date?.date || "N/A")}*`}
+                  note=""
+                />
+              )}
 
-              <InfoCard
-                Icon={ZapIcon}
-                tags={[
-                  {
-                    name: "Tentative",
-                    value: exam?.application_form_date?.is_tentative,
-                    color: "yellow",
-                  },
-                  {
-                    name: "Exam concluded",
-                    value: isDateExpired(exam?.application_form_date?.start),
-                    color: "red",
-                  },
-                ]}
-                isDanger={isDateExpired(exam?.application_form_date?.start)}
-                title="Application Form Start Date"
-                value={`${formatDate(
-                  exam?.application_form_date?.start || "",
-                )}*`}
-              />
-              <InfoCard
-                Icon={ZapIcon}
-                tags={[
-                  {
-                    name: "Tentative",
-                    value: exam?.application_form_date?.is_tentative,
-                    color: "yellow",
-                  },
-                  {
-                    name: "Exam concluded",
-                    value: isDateExpired(exam?.application_form_date?.end),
-                    color: "red",
-                  },
-                ]}
-                isDanger={isDateExpired(exam?.application_form_date?.end)}
-                title="Application Form End Date"
-                value={`${formatDate(exam?.application_form_date?.end || "")}*`}
-              />
+              {exam?.exam_mode && (
+                <InfoCard
+                  Icon={ZapIcon}
+                  tags={[
+                    {
+                      name: "Tentative",
+                      value: exam?.application_form_date?.is_tentative,
+                      color: "yellow",
+                    },
+                    {
+                      name: "Exam concluded",
+                      value: isDateExpired(exam?.application_form_date?.start),
+                      color: "red",
+                    },
+                  ]}
+                  isDanger={isDateExpired(exam?.application_form_date?.start)}
+                  title="Application Form Start Date"
+                  value={`${formatDate(
+                    exam?.application_form_date?.start || "",
+                  )}*`}
+                />
+              )}
+              {exam?.exam_mode && (
+                <InfoCard
+                  Icon={ZapIcon}
+                  tags={[
+                    {
+                      name: "Tentative",
+                      value: exam?.application_form_date?.is_tentative,
+                      color: "yellow",
+                    },
+                    {
+                      name: "Exam concluded",
+                      value: isDateExpired(exam?.application_form_date?.end),
+                      color: "red",
+                    },
+                  ]}
+                  isDanger={isDateExpired(exam?.application_form_date?.end)}
+                  title="Application Form End Date"
+                  value={`${formatDate(exam?.application_form_date?.end || "")}*`}
+                />
+              )}
             </div>
             <p className="mt-4 text-[5px] italic">
               <span className="font-bold">Note: </span>Dates are tentative and

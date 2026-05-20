@@ -308,3 +308,120 @@ export const getExamWithSeoBySlug = async (req, res) => {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
+export const getExamMenuData = async (req, res) => {
+  try {
+    const exams = await Exam.find({
+      isDeleted: false,
+      status: "Active",
+    })
+      .select("exam_name exam_type exam_mode")
+      .populate("exam_type", "category_name")
+      .populate("exam_mode", "category_name")
+      .lean();
+
+    const examSeo = await AllSeo.find({
+      type: "exam",
+    }).lean();
+
+    const seoMap = new Map(
+      examSeo.map((seo) => [seo.exam_id?.toString(), seo]),
+    );
+
+    const menuData = {};
+
+    const shuffled = [...exams].sort(() => Math.random() - 0.5);
+
+    for (const exam of shuffled) {
+      const examTypeName = exam?.exam_type?.category_name;
+
+      const examModeName = exam?.exam_mode?.category_name?.toLowerCase();
+
+      if (!examTypeName || !examModeName) continue;
+
+      // ONLY ONLINE / OFFLINE
+      if (examModeName !== "online" && examModeName !== "offline") {
+        continue;
+      }
+
+      const matchedSeo = seoMap.get(exam?._id?.toString());
+
+      if (!matchedSeo?.slug) continue;
+
+      // CREATE CATEGORY
+      if (!menuData[examTypeName]) {
+        menuData[examTypeName] = [
+          {
+            title: "Online",
+            links: [],
+            viewAll: `/exams?exam_type=${generateSlug(
+              examTypeName,
+            )}&exam_mode=online`,
+          },
+          {
+            title: "Offline",
+            links: [],
+            viewAll: `/exams?exam_type=${generateSlug(
+              examTypeName,
+            )}&exam_mode=offline`,
+          },
+
+          // SECOND PAIR
+          {
+            title: "Online",
+            links: [],
+            viewAll: `/exams?exam_type=${generateSlug(
+              examTypeName,
+            )}&exam_mode=online`,
+          },
+          {
+            title: "Offline",
+            links: [],
+            viewAll: `/exams?exam_type=${generateSlug(
+              examTypeName,
+            )}&exam_mode=offline`,
+          },
+        ];
+      }
+
+      const onlineIndexes = [0, 2];
+      const offlineIndexes = [1, 3];
+
+      const targetIndexes =
+        examModeName === "online" ? onlineIndexes : offlineIndexes;
+
+      for (const index of targetIndexes) {
+        // MAX 10 RESULTS
+        if (menuData[examTypeName][index].links.length < 10) {
+          menuData[examTypeName][index].links.push({
+            name: exam.exam_name,
+            href: `/exam/${matchedSeo.slug}`,
+          });
+
+          break;
+        }
+      }
+    }
+
+    // REMOVE EMPTY PAIRS
+    const finalMenuData = {};
+
+    for (const [examType, sections] of Object.entries(menuData)) {
+      const filteredSections = sections.filter(
+        (section) => section.links.length > 0,
+      );
+
+      // REMOVE CATEGORY IF EVERYTHING EMPTY
+      if (filteredSections.length > 0) {
+        finalMenuData[examType] = filteredSections;
+      }
+    }
+
+    return res.status(200).json(finalMenuData);
+  } catch (error) {
+    console.error("Exam Menu Error:", error);
+
+    return res.status(500).json({
+      error: "Internal Server Error",
+    });
+  }
+};

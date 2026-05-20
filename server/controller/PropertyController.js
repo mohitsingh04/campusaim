@@ -407,6 +407,9 @@ export const updateProperty = async (req, res) => {
 
     // destructure incoming fields
     const {
+      property_name,
+      property_email,
+      property_mobile_no,
       property_alt_mobile_no,
       property_description,
       est_year,
@@ -498,6 +501,9 @@ export const updateProperty = async (req, res) => {
     if (!existProperty?.coaching_type && coaching_type) score += 1;
 
     const updatedFields = {
+      property_name,
+      property_email,
+      property_mobile_no,
       property_description: updatedDescription,
       est_year,
       academic_type,

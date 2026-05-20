@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import API from "@/context/API";
-import { ExamProps, SeoProps } from "@/types/Types";
+import { ExamProps } from "@/types/Types";
 import { getErrorResponse } from "@/context/Callbacks";
 
 export function useCoursesMenuData({ enabled = false }: { enabled?: boolean }) {
@@ -58,46 +58,20 @@ export function usePropertyMenuData({
   return { propertyMenuData, propertyLoading };
 }
 
-export function useExamMenuData() {
+export function useExamMenuData({ enabled = false }: { enabled?: boolean }) {
   const [examMenuData, setExamMenuData] = useState<any>(null);
   const [examLoading, setExamLoading] = useState(true);
 
   useEffect(() => {
     const fetchExams = async () => {
+      if (!enabled || examMenuData) return;
       try {
         setExamLoading(true);
 
-        const examRes = await API.get("/exam");
+        const examRes = await API.get("/menu/exam");
         const allExams: ExamProps[] = examRes.data;
 
-        const seoRes = await API.get("/all/seo?type=exam");
-        const seoList: SeoProps[] = seoRes.data;
-
-        const links = allExams
-          .map((exam) => {
-            const matchedSeo = seoList.find((seo) => seo.exam_id === exam._id);
-
-            if (!matchedSeo?.slug) return null;
-
-            return {
-              name: exam.exam_short_name,
-              href: `/exam/${matchedSeo.slug}`,
-            };
-          })
-          .filter(Boolean)
-          .slice(0, 30);
-
-        const formattedMenu = {
-          "Popular Exams": {
-            main: {
-              title: "Popular Exams",
-              links,
-              viewAll: "/exams",
-            },
-          },
-        };
-
-        setExamMenuData(formattedMenu);
+        setExamMenuData(allExams);
       } catch (err) {
         getErrorResponse(err, true);
       } finally {
@@ -106,7 +80,7 @@ export function useExamMenuData() {
     };
 
     fetchExams();
-  }, []);
+  }, [enabled, examMenuData]);
 
   return { examMenuData, examLoading };
 }

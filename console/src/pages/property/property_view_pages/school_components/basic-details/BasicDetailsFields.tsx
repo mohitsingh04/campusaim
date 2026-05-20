@@ -235,21 +235,21 @@ export default function BasicDetailsFields({
             <span className="text-[var(--yp-text-primary)]">
               {displayValue}
             </span>
-            {[
+            {/* {[
               "property_name",
               "property_email",
               "property_mobile_no",
               "academic_type",
               "property_type",
-            ].includes(String(field)) ? null : (
-              <button
-                type="button"
-                onClick={() => setEditableField(String(field))}
-                className="text-[var(--yp-main)]"
-              >
-                <Pencil className="w-4 h-4" />
-              </button>
-            )}
+            ].includes(String(field)) ? null : ( */}
+            <button
+              type="button"
+              onClick={() => setEditableField(String(field))}
+              className="text-[var(--yp-main)]"
+            >
+              <Pencil className="w-4 h-4" />
+            </button>
+            {/* )} */}
           </div>
         )}
         {getFormikError(formik, field)}

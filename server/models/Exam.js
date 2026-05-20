@@ -18,6 +18,7 @@ const ExamSchema = new mongoose.Schema(
     exam_type: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
+      ref: "Category",
     },
     exam_sub_type: {
       type: mongoose.Schema.Types.ObjectId,
@@ -55,6 +56,7 @@ const ExamSchema = new mongoose.Schema(
     },
     exam_mode: {
       type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
     },
     slug: {
       type: String,

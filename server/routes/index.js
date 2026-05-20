@@ -213,6 +213,7 @@ import {
   deleteExam,
   getExam,
   getExamById,
+  getExamMenuData,
   getExamWithSeoBySlug,
   restoreExam,
   softDeleteExam,
@@ -349,6 +350,7 @@ router.delete("/exam/:objectId", Authorize, deleteExam);
 router.get("/exam/soft/:objectId", Authorize, softDeleteExam);
 // router.post("/exam/create/enquiry", createCourseEnquiry);
 router.get("/exam/seo/:slug", getExamWithSeoBySlug);
+router.get("/menu/exam", getExamMenuData);
 
 // Scholarship Route
 router.get("/scholarship", getScholarship);
