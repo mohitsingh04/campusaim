@@ -264,3 +264,44 @@ export const newsValidation = Yup.object({
   title: getValidString("Title"),
   content: getValidForOnlyRequired("Content"),
 });
+
+
+ export const ExamEligibilityValidationSchema = Yup.object({
+    min_age: Yup.object({
+      year: Yup.number()
+        .typeError("Minimum year must be a number")
+        .required("Minimum year is required")
+        .min(0, "Minimum year cannot be negative")
+        .max(100, "Minimum year cannot exceed 100"),
+      month: Yup.number()
+        .typeError("Minimum month must be a number")
+        .required("Minimum month is required")
+        .min(0, "Minimum month cannot be less than 0")
+        .max(11, "Minimum month cannot exceed 11"),
+    }),
+    max_age: Yup.object({
+      year: Yup.number()
+        .typeError("Maximum year must be a number")
+        .required("Maximum year is required")
+        .min(0, "Maximum year cannot be negative")
+        .max(100, "Maximum year cannot exceed 100"),
+      month: Yup.number()
+        .typeError("Maximum month must be a number")
+        .required("Maximum month is required")
+        .min(0, "Maximum month cannot be less than 0")
+        .max(11, "Maximum month cannot exceed 11"),
+    }),
+  }).test(
+    "age-validation",
+    "Maximum age must be greater than minimum age",
+    (values) => {
+      if (!values) return true;
+      const minYear = Number(values.min_age.year);
+      const minMonth = Number(values.min_age.month);
+      const maxYear = Number(values.max_age.year);
+      const maxMonth = Number(values.max_age.month);
+      const minTotalMonths = minYear * 12 + minMonth;
+      const maxTotalMonths = maxYear * 12 + maxMonth;
+      return maxTotalMonths >= minTotalMonths;
+    },
+  );

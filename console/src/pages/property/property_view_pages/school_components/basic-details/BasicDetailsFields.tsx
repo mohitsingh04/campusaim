@@ -264,8 +264,18 @@ export default function BasicDetailsFields({
         {renderField("Email", "property_email", "input")}
         {renderField("Mobile No", "property_mobile_no", "input")}
         {renderField("Alternate No", "property_alt_mobile_no", "phone")}
-        {renderField("Academic Type", "academic_type", "input")}
-        {renderField("Property Type", "property_type", "input")}
+        {renderField(
+          "Academic Type",
+          "academic_type",
+          "select",
+          getCategoryAccodingToField(categories, "academic type"),
+        )}
+        {renderField(
+          "Property Type",
+          "property_type",
+          "select",
+          getCategoryAccodingToField(categories, "property type"),
+        )}{" "}
         {renderField("Website", "property_website", "input")}
         {renderField(
           "School Type",
@@ -282,21 +292,18 @@ export default function BasicDetailsFields({
             type_name: (new Date().getFullYear() - i).toString(),
           })),
         )}
-
         {renderField(
           "Affiliated By / Board",
           "affiliated_by",
           "multiselect",
           affiliatedOptions,
         )}
-
         {renderField(
           "Approved By",
           "approved_by",
           "multiselect",
           approvedOptions,
         )}
-
         {authUser?.role !== "Property Manager" &&
           authUser?.role !== "User" &&
           authUser?.role !== "Support" &&

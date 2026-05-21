@@ -314,7 +314,7 @@ export const getExamMenuData = async (req, res) => {
       isDeleted: false,
       status: "Active",
     })
-      .select("exam_name exam_type exam_mode")
+      .select("exam_name exam_short_name exam_type exam_mode")
       .populate("exam_type", "category_name")
       .populate("exam_mode", "category_name")
       .lean();
@@ -393,7 +393,7 @@ export const getExamMenuData = async (req, res) => {
         // MAX 10 RESULTS
         if (menuData[examTypeName][index].links.length < 10) {
           menuData[examTypeName][index].links.push({
-            name: exam.exam_name,
+            name: exam.exam_short_name,
             href: `/exam/${matchedSeo.slug}`,
           });
 

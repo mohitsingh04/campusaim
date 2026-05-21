@@ -1,7 +1,7 @@
 import { AxiosError } from "axios";
 import { CategoryProps, ReviewProps, StatusProps } from "../types/types";
 import toast from "react-hot-toast";
-import { FormikProps } from "formik";
+import { FormikProps, getIn } from "formik";
 
 export const getStatusColor = (status: string) => {
   switch (status?.toLowerCase()) {
@@ -55,7 +55,7 @@ export const timeAgo = (dateString: string) => {
 
 export const matchPermissions = (
   userPermissions: string[] = [],
-  requiredPermissions: string
+  requiredPermissions: string,
 ) => {
   const hasPermission =
     userPermissions?.some((item) => item === requiredPermissions) || false;
@@ -69,10 +69,10 @@ interface FieldDataSimple {
 
 export function getFieldDataSimple<T>(
   data: T[],
-  field: keyof T
+  field: keyof T,
 ): FieldDataSimple[] {
   const uniqueValues = Array.from(
-    new Set(data.map((item) => item[field]).filter(Boolean))
+    new Set(data.map((item) => item[field]).filter(Boolean)),
   );
 
   return uniqueValues.map((val) => ({
@@ -126,19 +126,19 @@ export function maskSensitive(input?: string | null): string {
 
 export const getStatusAccodingToField = (
   allStatus: StatusProps[],
-  field: string
+  field: string,
 ) => {
   return allStatus.filter(
-    (status) => status.name?.toLowerCase() === field.toLowerCase()
+    (status) => status.name?.toLowerCase() === field.toLowerCase(),
   );
 };
 export const getCategoryAccodingToField = (
   allCategories: CategoryProps[],
-  field: string
+  field: string,
 ) => {
   return allCategories.filter(
     (category) =>
-      category.parent_category?.toLowerCase() === field.toLowerCase()
+      category.parent_category?.toLowerCase() === field.toLowerCase(),
   );
 };
 export const formatToAmPm = (input: string | Date): string => {
@@ -230,7 +230,7 @@ export const getErrorResponse = (error: unknown, hide = false): void => {
     toast.error(
       err?.response?.data?.error ||
         err?.response?.data?.message ||
-        "Failed To Process Your Request"
+        "Failed To Process Your Request",
     );
   }
 
@@ -238,7 +238,7 @@ export const getErrorResponse = (error: unknown, hide = false): void => {
     err?.response?.data?.error ||
       err?.response?.data?.message ||
       err?.message ||
-      error
+      error,
   );
 };
 export const generateSlug = (text: string): string => {
@@ -256,14 +256,14 @@ export const getScoreStatus = (score: number) => {
     score <= 0
       ? "Very Poor"
       : score <= 30
-      ? "Poor"
-      : score <= 60
-      ? "Fair"
-      : score <= 90
-      ? "Good"
-      : score <= 100
-      ? "Excellent"
-      : "Poor";
+        ? "Poor"
+        : score <= 60
+          ? "Fair"
+          : score <= 90
+            ? "Good"
+            : score <= 100
+              ? "Excellent"
+              : "Poor";
 
   return status;
 };
@@ -276,18 +276,19 @@ export const getPercentageColor = (value: number) => {
 
 export function getFormikError<T>(
   formik: FormikProps<T>,
-  field: keyof T
+  field: string,
 ): JSX.Element | null {
-  const error =
-    formik.touched[field] && typeof formik.errors[field] === "string"
-      ? (formik.errors[field] as string)
-      : null;
+  const touched = getIn(formik.touched, field);
+  const error = getIn(formik.errors, field);
 
-  return error ? (
+  if (!touched || !error || typeof error !== "string") {
+    return null;
+  }
+  return (
     <div className="inline-flex">
       <p className="text-[var(--yp-error)] bg-[var(--yp-red-bg)] rounded px-2 py-1 text-xs mt-1">
         {error}
       </p>
     </div>
-  ) : null;
+  );
 }

@@ -291,6 +291,10 @@ import {
   getBatchByPropertyId,
   updatePropertyBatch,
 } from "../controller/PropertyBatchController.js";
+import {
+  createExamEligibility,
+  getExamEligibility,
+} from "../controller/ExamEligibilityController.js";
 
 const router = express.Router();
 router.use(bodyParser.json());
@@ -351,6 +355,10 @@ router.get("/exam/soft/:objectId", Authorize, softDeleteExam);
 // router.post("/exam/create/enquiry", createCourseEnquiry);
 router.get("/exam/seo/:slug", getExamWithSeoBySlug);
 router.get("/menu/exam", getExamMenuData);
+
+//? exam eligibility route
+router.post("/exam-eligibility", Authorize, createExamEligibility);
+router.get("/exam-eligibility/id/:exam_id", Authorize, getExamEligibility);
 
 // Scholarship Route
 router.get("/scholarship", getScholarship);

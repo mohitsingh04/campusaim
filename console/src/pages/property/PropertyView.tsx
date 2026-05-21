@@ -18,6 +18,7 @@ import {
   GraduationCap,
   BadgeDollarSign,
   MessageCircle,
+  Medal,
 } from "lucide-react";
 import { BiSolidCheckShield, BiSolidShieldX } from "react-icons/bi";
 import {
@@ -57,6 +58,7 @@ import AdmissionProcess from "./property_component/admission_process/AdmissionPr
 import LoanProcess from "./property_component/loan_process/LoanProcess";
 import Announcement from "./property_component/announcement/Announcement";
 import QnA from "./property_component/qna/QnA";
+import PropertyRanks from "./property_component/ranks/PropertyRanks";
 // import Ranking from "./property_component/ranking/Ranking";
 
 export function PropertyView() {
@@ -288,13 +290,13 @@ export function PropertyView() {
       component: <QnA property={property} />,
       online: false,
     },
-    // {
-    // 	id: "ranking",
-    // 	label: "Ranking",
-    // 	icon: Medal,
-    // 	component: <Ranking property={property} />,
-    // 	online: false,
-    // },
+    {
+      id: "ranking",
+      label: "Ranking",
+      icon: Medal,
+      component: <PropertyRanks property={property} />,
+      online: false,
+    },
   ];
 
   return (

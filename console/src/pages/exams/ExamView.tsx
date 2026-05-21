@@ -222,7 +222,7 @@ export default function ExamView() {
         ]}
       />
 
-      <div className="overflow-hidden rounded-lg border border-[var(--yp-border)] bg-[var(--yp-primary)] shadow-sm">
+      <div className="overflow-hidden rounded-lg bg-[var(--yp-primary)] shadow-sm">
         <div className="relative">
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent z-10" />
 
@@ -260,6 +260,15 @@ export default function ExamView() {
                   >
                     <Pencil className="h-4 w-4" />
                     Edit Exam
+                  </Link>
+                )}
+                {matchPermissions(authUser?.permissions, "Update Exam") && (
+                  <Link
+                    to={`/dashboard/exam/${exam?._id}/eligibility`}
+                    className="inline-flex items-center gap-2 rounded-xl bg-[var(--yp-main)] px-5 py-3 text-sm font-semibold text-[var(--yp-main-subtle)] transition-all duration-300 hover:scale-105"
+                  >
+                    <GraduationCap className="h-4 w-4" />
+                    Edit Eligibilty
                   </Link>
                 )}
 

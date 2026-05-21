@@ -63,7 +63,7 @@ export function PropertyTabs({ tabs, showNav = true }: TabsProps) {
                 <button
                   key={tab.id}
                   onClick={() => handleTabChange(tab.id)}
-                  className={`flex items-center space-x-2 py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
+                  className={`flex items-center capitalize space-x-2 py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
                     activeTabId === tab.id
                       ? "border-[var(--yp-main)] text-[var(--yp-main)]"
                       : "border-transparent text-[var(--yp-muted)] hover:text-[var(--yp-main)]"

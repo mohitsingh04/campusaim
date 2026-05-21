@@ -103,6 +103,7 @@ import { CoachingList } from "../pages/property/property_list_pages/Coaching";
 import { SchoolView } from "../pages/property/property_view_pages/SchoolViewPage";
 import { FaMagnifyingGlass } from "react-icons/fa6";
 import { CoachingView } from "../pages/property/property_view_pages/CoachingViewPage";
+import ExamEligibility from "../pages/exams/ExamEligibility";
 
 export const SidbarNavigations = [
   {
@@ -579,6 +580,14 @@ export const NonSidebarNavigations = [
     component: ExamsEdit,
     roles: ["Seo Manager", "Editor", "Super Admin"],
     Permission: "Update Exam",
+  },
+  {
+    name: "Exam Eligibility",
+    id: "exam-eligibility",
+    href: "/dashboard/exam/:objectId/eligibility",
+    component: ExamEligibility,
+    roles: ["Seo Manager", "Editor", "Super Admin"],
+    Permission: "Read Exam Eligibility",
   },
   {
     name: "Exam Seo",
